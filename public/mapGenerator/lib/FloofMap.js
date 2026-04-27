@@ -185,34 +185,6 @@ export default class FloofMap {
                 }
             }
         }   
-
-        // const knownPositions = new Set();
-        // const pathfinder = new Pathfinder(this);
-
-        // function scoreCell(x, y) {
-        //     const cell = this.cells[y][x];
-        //     const position = `${x},${y}`;
-        //     if (knownPositions.has(position)) return;
-        //     knownPositions.add(position);
-        //     if (cell.type === 0) return;
-
-        //     if (cell.type === 2 || cell.type === 3) {
-        //         cell.score = pathfinder.findPath(spawnX, spawnY, x, y).length;
-        //         maxScore = Math.max(maxScore, cell.score);
-        //     }
-
-        //     for (const neighbor of neighbors(x, y)) {
-        //         scoreCell(neighbor.x, neighbor.y);
-        //     }
-        // }
-
-        // scoreCell(spawnX, spawnY);
-
-        // for (let y = 0; y < this.height; y++) {
-        //     for (let x = 0; x < this.width; x++) {
-        //         this.cells[y][x].score /= maxScore;
-        //     }
-        // }
     }
 
     static deserialize(inputJSON) {
