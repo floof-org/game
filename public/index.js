@@ -1845,6 +1845,453 @@ function draw() {
         net.state.petalElements.forEach(petal => {
             const rect = petal.icon.getBoundingClientRect();
             const menuRect = menu.getBoundingClientRect();
+            const mouseX = mouse.x / window.devicePixelRatio;
+            const mouseY = mouse.y / window.devicePixelRatio;
+            if (mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom) {
+                // net.state.petalHover = [petal.index, petal.rarity, x, y];
+                if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
+                    beginInventoryDragDrop(
+                        rect.x * 1.1 / uScale,
+                        rect.y * 1.1 / uScale,
+                        rect.width,
+                        petal.index,
+                        petal.rarity
+                    );
+                    menu.classList.toggle("active");
+                    inventoryDragConfig.index = petal.index;
+                    inventoryDragConfig.rarity = petal.rarity;
+                    inventoryDragConfig.item.stableSize = rect.width;
+                    inventoryDragConfig.onDrop = () => {
+                        processInventoryDrop();
+                        menu.classList.toggle("active");
+                    };
+                }
+            }
+        });
+    }
+
+    ctx.restore();
+
+    { // Hovers
+        net.state.petalHoverAlpha ??= 0;
+        net.state.lastPetalHover ??= null;
+
+        if (net.state.petalHover !== null) {
+            net.state.lastPetalHover = [...net.state.petalHover];
+            net.state.petalHoverAlpha += .25;
+        } else {
+            net.state.petalHoverAlpha -= .25;
+        }
+
+        net.state.petalHoverAlpha = Math.max(0, Math.min(1, net.state.petalHoverAlpha));
+
+        if (net.state.lastPetalHover) {
+            ctx.save();
+            const img = petalTooltip(...net.state.lastPetalHover);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+
+            if (net.state.petalHoverAlpha > 0) {
+                ctx.globalAlpha = net.state.petalHoverAlpha;
+                let bw = 350;
+                let bh = 350 * img.height / img.width;
+
+                let x = net.state.lastPetalHover[2] - 150;
+                let y = net.state.lastPetalHover[3] - bh - 10;
+
+                x = Math.max(0, Math.min(x, width - bw));
+
+                ctx.drawImage(img, x, y, bw, bh);
+            }
+
+            ctx.restore();
+
+            if (net.state.petalHoverAlpha === 0) {
+                net.state.lastPetalHover = null;
+            }
+        }
+
+        net.state.mobHoverAlpha ??= 0;
+        net.state.lastMobHover ??= null;
+
+        if (net.state.mobHover !== null) {
+            net.state.lastMobHover = [...net.state.mobHover];
+            net.state.mobHoverAlpha += .25;
+        } else {
+            net.state.mobHoverAlpha -= .25;
+        }
+
+        net.state.mobHoverAlpha = Math.max(0, Math.min(1, net.state.mobHoverAlpha));
+
+        if (net.state.lastMobHover) {
+            ctx.save();
+            const img = mobTooltip(...net.state.lastMobHover);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+
+            if (net.state.mobHoverAlpha > 0) {
+                ctx.globalAlpha = net.state.mobHoverAlpha;
+                let bw = 350;
+                let bh = -350 * img.height / img.width;
+
+                let x = net.state.lastMobHover[2];
+                let y = net.state.lastMobHover[3] - bh;
+
+                x = Math.max(0, Math.min(x, width - bw));
+
+                ctx.drawImage(img, x, y, bw, bh);
+            }
+
+            ctx.restore();
+
+            if (net.state.mobHoverAlpha === 0) {
+                net.state.lastMobHover = null;
+            }
+        }
+    }
+
+    updateAndDrawDragDrop(mX, mY);
+    updateAndDrawInventoryDragDrop(mX, mY);
+
+    if (net.state.isDead) {
+        ctx.fillStyle = "rgba(0, 0, 0, .2)";
+        ctx.fillRect(0, 0, width, height);
+        text("You died", width / 2, height / 2, 30);
+        text(net.state.killMessage, width / 2, height / 2 + 30, 15);
+        if (isMobile) {
+            text("(Tap anywhere to respawn)", width / 2, height / 2 + 60, 15);
+        } else {
+            text("(Press Enter to respawn)", width / 2, height / 2 + 60, 15);
+        }
+    }
+
+    if (options.showDebug) {
+        ctx.textAlign = "right";
+        ctx.textBaseline = "top";
+
+        text(`C: ${clientDebug.fps} FPS | ${clientDebug.mspt.toFixed(2)} mspt`, width - 10, 10, 15);
+        text(`S: ${net.state.updateRate} UPS | ${+net.state.ping.toFixed(2)} ms ping`, width - 10, 25, 15);
+
+        if (net.state.socket) {
+            text(`B(I/O): ${net.state.socket.bandWidth.in}/${net.state.socket.bandWidth.out} KB/s`, width - 10, 40, 15);
+        } else {
+            text("Not connected", width - 10, 40, 15);
+        }
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+    }
+
+    ctx.restore();
+
+    if (isMobile) {
+        drawButtons(ctx)
+    }
+
+    clientDebug.frames++;
+    clientDebug.totalTime += performance.now() - start;
+
+    { // Chat
+        if (net.state.socket?.readyState !== WebSocket.OPEN) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(x, y, boxSize, boxSize, 5);
+
+                net.state.iconStuff.push({
+                    x, y, size: boxSize,
+                    index: entity.index,
+                    rarity: entity.rarity,
+                    count: entity.count
+                });
+
+                setStyle(net.state.tiers[entity.rarity].color, 5, .2, ctx);
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(x, y, boxSize, boxSize, 5);
+                ctx.fill();
+                ctx.clip();
+
+                ctx.translate(x + boxSize / 2, y + boxSize / 2);
+
+                let indexScales = {
+                    0: 4, // Ladybug
+                    1: 4, // Rock
+                    2: 4, // Bee
+                    3: 5.5, // Spider
+                    4: 4, // Beetle
+                    5: 3, // Leafbug
+                    6: 4, // Roach
+                    7: 4, // Hornet
+                    8: 3.25, // Mantis
+                    9: 4, // Pupa
+                    10: 3.25, // Sandstorm
+                    11: 3.25, // Scorpion
+                    12: 3.25, // Demon
+                    13: 4, // Jellyfish
+                    14: 4, // Cactus
+                    15: 6.25, // Baby Ant
+                    16: 6.25, // Worker Ant
+                    17: 6.25, // Soldier Ant
+                    18: 6.25, // Queen Ant
+                    19: 4, // Ant Hole
+                    20: 6.25, // Baby Fire Ant
+                    21: 6.25, // Worker Fire Ant
+                    22: 6.25, // Soldier Fire Ant
+                    23: 6.25, // Queen Fire Ant
+                    24: 4, // Fire Ant Hole
+                    25: 6.25, // Baby Termite
+                    26: 6.25, // Worker Termite
+                    27: 6.25, // Soldier Termite
+                    28: 4, // Termite Overmind
+                    29: 4, // Termite Mound
+                    30: 5.25, // Ant Egg
+                    31: 5.25, // Queen Ant Egg
+                    32: 5.25, // Fire Ant Egg
+                    33: 5.25, // Queen Fire Ant Egg
+                    34: 5.25, // Termite Egg
+                    35: 4, // Evil Ladybug
+                    36: 4, // Shiny Ladybug
+                    37: 4, // Angelic Ladybug
+                    38: 4.5, // Centipede
+                    39: 4.5, // Centipede Body
+                    40: 4.5, // Desert Centipede
+                    41: 4.5, // Desert Centipede Body
+                    42: 4.5, // Evil Centipede
+                    43: 4.5, // Evil Centipede Body
+                    44: 4.5, // Dandelion
+                    45: 3, // Sponge
+                    46: 4, // Bubble
+                    47: 3.25, // Shelll
+                    48: 5.25, // Starfish
+                    49: 3.35, // Leech
+                    50: 3, // Maggot
+                    51: 5.25, // Firefly
+                    52: 4, // Bumblebee
+                    53: 4.5, // Moth
+                    54: 4.5, // Fly
+                    55: 4, // Square
+                    56: 4, // Triangle
+                    57: 4, // Pentagon
+                    58: 4, // Hell Beetle
+                    59: 5.5, // Hell Spider
+                    60: 4, // Hell Yellowjacket
+                    61: 4.5, // Termite Overmind Egg
+                    62: 4, // Spirit
+                    63: 4, // Wasp
+                    64: 6.5, // Stickbug
+                    65: 4, // Hell Beetle
+                    66: 4.5, // Hell Centipede
+                    67: 4.5, // Hell Centipede Body
+                    68: 4, // Wilt
+                    69: 4, // Wilt Branch
+                    70: 4, // Pumpkin
+                    71: 4, // Jack O Lantern
+                    72: 4.5, // Crab
+                    73: 4.5, // Tank
+
+                    255: 4, // Bot
+                }
+
+                let scale = indexScales[entity.index] ? boxSize / indexScales[entity.index] : boxSize / defaultIconSize
+
+                ctx.scale(scale, scale);
+                if (entity.index !== 255) {
+                    if (entity.index !== 46 && entity.index !== 49 && entity.index !== 55) {
+                        ctx.rotate(-Math.PI / 4);
+                    }
+                    drawUIMob(entity.index, entity.rarity, ctx);
+                } else {
+                    setStyle(colors.crafting, .135, .2, ctx);
+
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 1, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+                    drawFace(.35, -Math.PI / 4, 1.7, 1.7, 1, false, ctx);
+                }
+
+                ctx.restore();
+
+                ctx.beginPath();
+                ctx.roundRect(x, y, boxSize, boxSize, 5);
+                ctx.stroke();
+
+                if (entity.count > 1) {
+                    ctx.save();
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "top";
+                    text(`x${entity.count}`, x + boxSize + 6, y - 5, boxSize * .275, colors.white, ctx);
+                    ctx.restore();
+                }
+            });
+        });
+    }
+
+    if (net.state.waveInfo !== null) { // Wave info
+        ctx.textBaseline = "middle";
+        text("Wave " + net.state.waveInfo.wave, width / 2, 30, 35);
+        drawBar(width / 2 - 200, width / 2 + 200, 65, 30, colors["???"]);
+        drawBar(width / 2 - 200, width / 2 - 200 + 400 * (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs), 65, 22.5, mixColors(BIOME_BACKGROUNDS[net.state.room.biome].color, colors.white, .2));
+        text(net.state.waveInfo.livingMobs + " / " + net.state.waveInfo.maxMobs, width / 2, 65, 22.5);
+        if (net.state.waveInfo.aliveMobs) {
+            if (JSON.stringify(net.state.aliveMobs2) !== JSON.stringify(net.state.waveInfo.aliveMobs)) {
+                drawIconsToOffscreen(net.state.waveInfo.aliveMobs);
+                net.state.aliveMobs2 = JSON.parse(JSON.stringify(net.state.waveInfo.aliveMobs));
+            }
+
+            ctx.drawImage(mobIconCanvas, 0, 0);
+
+            const mX = mouse.x / uiScale();
+            const mY = mouse.y / uiScale();
+
+            net.state.mobHover = null;
+
+            net.state.iconStuff.forEach(hit => {
+                if (mX > hit.x && mX < hit.x + hit.size && mY > hit.y && mY < hit.y + hit.size) {
+                    net.state.mobHover = [
+                        hit.index,
+                        hit.rarity,
+                        hit.x + hit.size / 2 - 350 / 2,
+                        hit.y + hit.size + 10
+                    ];
+                }
+            });
+        }
+    }
+
+    if (net.state.socket?.readyState === WebSocket.OPEN) {
+        if (!isHalloween || net.state.room.biome !== BIOME_TYPES.HALLOWEEN) { // Minimap
+            const doTerrain = net.state.terrain?.blocks?.length > 0;
+            const biggestSize = doTerrain ? 275 : Math.abs(1 - net.state.room.width / net.state.room.height) < .1 ? 150 : 200;
+            const bigger = Math.max(net.state.room.width, net.state.room.height);
+            const mapWidth = net.state.room.width / bigger * biggestSize;
+            const mapHeight = net.state.room.height / bigger * biggestSize;
+
+            const x = width - mapWidth - 10;
+            const y = height - mapHeight - 10;
+
+            if (doTerrain) {
+                ctx.drawImage(net.state.minimapImg, x, y, mapWidth, mapHeight);
+            } else {
+                ctx.fillStyle = BIOME_BACKGROUNDS[net.state.room.biome].color;
+                ctx.strokeStyle = "#444444";
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+
+                if (net.state.room.isRadial) {
+                    ctx.arc(x + mapWidth / 2, y + mapHeight / 2, mapWidth / 2, 0, Math.PI * 2);
+                } else {
+                    ctx.roundRect(x, y, mapWidth, mapHeight, 10);
+                }
+
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = doTerrain ? colors.peaGreen : colors.playerYellow;
+            ctx.beginPath();
+            ctx.arc(
+                net.state.camera.x / net.state.room.width * mapWidth + x + mapWidth / 2,
+                net.state.camera.y / net.state.room.height * mapHeight + y + mapHeight / 2,
+                biggestSize * (doTerrain ? .0225 : .025), 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
+
+        { // Level
+            net.state.levelProgress = lerp(net.state.levelProgress, net.state.levelProgressTarget, .1);
+
+            if (net.state.levelProgressTarget < net.state.levelProgress || isNaN(net.state.levelProgress)) {
+                net.state.levelProgress = 0;
+            }
+
+            const player = net.state.players.get(net.state.playerID);
+            drawBar(50, 275, 175, 37.5, colors["???"]);
+
+            ctx.save();
+            ctx.translate(50, 175);
+            ctx.beginPath();
+            ctx.arc(0, 0, 35, 0, Math.PI * 2);
+            setStyle(colors.playerYellow, 4, .2, ctx);
+            ctx.fill();
+            ctx.stroke();
+
+            if (player) {
+                drawFace(13, player.facing, player.mood, player.mouthDip, player.attack ? 2 : player.defend ? 3 : 1);
+                drawBar(70, 70 + 155 * player.secondaryHealthBar, 0, 25, colors.legendary);
+                drawBar(70, 70 + 155 * player.healthRatio, 0, 27.5, player.poisoned ? mixColors(colors.common, colors.irisPurple, .5 + Math.sin(performance.now() / 333 + player.id * 3) * .5) : colors.common);
+                drawBar(70, 70 + 155 * player.shieldRatio, 0, 22.5, colors.white);
+                cuteLittleAnimations.nameText = lerp(cuteLittleAnimations.nameText, 197.5, .1);
+            } else {
+                drawFace(13, 0, 1, .6, 1, true);
+                cuteLittleAnimations.nameText = lerp(cuteLittleAnimations.nameText, 180, .1);
+            }
+
+            ctx.restore();
+
+            text(net.state.username, cuteLittleAnimations.nameText, 175, 20);
+
+            drawBar(175, 275, 210, 22.5, colors["???"]);
+            drawBar(175, 175 + 100 * net.state.levelProgress, 210, 15, colors.playerYellow);
+            text("Level " + net.state.level, 225, 210, 12);
+        }
+    }
+
+    if (net.state.alivePlayers && net.state.alivePlayers.length > 0) { // Leaderboard
+        const spacing = 35;
+        const barMaxWidth = 180;
+        let x = width - barMaxWidth - 30;
+        let y = 175;
+
+        const playersSorted = [...net.state.alivePlayers].sort((a, b) => b.xp - a.xp).slice(0, 10);
+
+        const maxXp = playersSorted[0].xp;
+
+        playersSorted.forEach(player => {
+            const barWidth = maxXp > 0 ? (player.xp / maxXp) * barMaxWidth : barMaxWidth;
+            const barSize = 35;
+            const color = [colors.playerYellow, colors.team1, colors.team2][player.team] ?? colors.crafting;
+
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+
+            drawBar(x, x + barMaxWidth, y, barSize, colors.lighterBlack);
+            drawBar(x, x + barWidth, y, barSize * 0.75, color);
+
+            let w = x + text(`${player.username} - ${formatLargeNumber(player.xp.toFixed(2))}`, x, y, barSize * 0.5, colors.white);
+            w += text(` (${net.state.tiers[player.highestRarity].name.charAt(0)}.)`, w, y, barSize * 0.5, net.state.tiers[player.highestRarity].color);
+
+
+            x -= 45
+            setStyle(color, 4);
+            ctx.beginPath();
+            ctx.arc(x, y, 20, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.translate(x, y)
+            drawFace(7, -Math.PI / 4, 1.7, 1.7, 1);
+            ctx.translate(-x, -y)
+
+            y += spacing + 15;
+            x += 45
+        });
+    }
+
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    if (JSON.stringify(net.state.inventory2) !== JSON.stringify(net.state.inventory)) {
+        if (menu.classList.contains("active")) {
+            drawInventory();
+        }
+        net.state.inventory2 = JSON.parse(JSON.stringify(net.state.inventory));
+    }
+
+    if (menu.classList.contains("active") && net.state.petalElements) {
+        net.state.petalElements.forEach(petal => {
+            const rect = petal.icon.getBoundingClientRect();
+            const menuRect = menu.getBoundingClientRect();
             const mouseX = mouse.x;
             const mouseY = mouse.y;
             if (mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom) {
