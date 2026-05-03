@@ -1764,6 +1764,9 @@ function petalRender(index, hit, ctx, id, size) {
                 case "bezierCurveTo":
                     ctx.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
                     break;
+                case "rotate":
+                    ctx.rotate(args[0] * Math.PI / 180);
+                    break;
                 default:
                     ctx[actionFunc](...args);
                     break;
