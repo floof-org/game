@@ -1054,7 +1054,6 @@ export class Drawing {
         ellipse: [18, "x", "y", "radiusX", "radiusY", "rotation"],
         quadraticCurveTo: [19, "cx", "cy", "x", "y"],
         bezierCurveTo: [20, "cx1", "cy1", "cx2", "cy2", "x", "y"],
-        rotate: [21, "degrees"],
     };
 
     static reverseActions = Object.fromEntries(Object.keys(Drawing.actions).map(key => [Drawing.actions[key][0], key]));
