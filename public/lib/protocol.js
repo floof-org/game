@@ -559,15 +559,11 @@ export class PetalConfig {
         return this;
     }
     setIcon(size, count, name, rotation) {
-        for (let i = 0; i < this.tiers.length; i++) {
-            let c2 = count instanceof Array ? (count[i] ?? count[count.length - 1]) : count;
-
-            this.tiers[i].icon = {
-                size: size,
-                count: c2,
-                name: name,
-                rotation: rotation * Math.PI / 180
-            }
+        this.icon = {
+            size,
+            count,
+            name,
+            rotation: rotation * Math.PI / 180
         }
 
         return this;
@@ -1518,6 +1514,16 @@ export function encodePetalConfig(config) {
         output.push(config.splits.count);
     }
 
+    if (config.icon) {
+        output[flagsIndex] |= 0x80000000;
+        output.push(
+            config.icon.size,
+            config.icon.count,
+            config.icon.name,
+            config.icon.rotation
+        );
+    }
+
     return output.map(value => {
         if (Number.isFinite(value)) {
             return +value.toFixed(2);
@@ -1734,6 +1740,15 @@ export function decodePetalConfig(data, nTiers) {
 
     if (flags & 0x40000000) {
         output.splits = data.shift();
+    }
+
+    if (flags & 0x80000000) {
+        output.icon = {
+            size: data.shift(),
+            count: data.shift(),
+            name: data.shift(),
+            rotation: data.shift()
+        }
     }
 
     return output;
