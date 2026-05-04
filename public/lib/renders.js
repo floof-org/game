@@ -2161,12 +2161,10 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             ctx.restore();
             break;
         default:
-            const tier = state.petalConfigs[index].tiers[rarity];
-            if (tier.icon) {
-                let icon = tier.icon;
+            if (state.petalConfigs[index].icon) {
+                let icon = state.petalConfigs[index].icon;
                 let count = icon.count;
                 let size = icon.size;
-                
                 if (count > 1) {
                     for (let i = 0; i < count; i++) {
                         const angle = TAU / count * i;
