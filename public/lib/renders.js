@@ -931,7 +931,7 @@ function drawJelly(ctx = _ctx, hit = false) {
     ctx.closePath();
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(0, -.9, .35, 0, Math.PI);
+    ctx.arc(0, -.9, .35, 0, TAU);
     ctx.closePath();
     ctx.fill();
     ctx.closePath();
