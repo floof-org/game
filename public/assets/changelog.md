@@ -1,3 +1,6 @@
+# Update (5/5/2026)
+- Polished some petal renders and icons (With help from @Fubuki)
+
 # Update (5/3/2026)
 - Fixed some drawing bugs (Thanks to @Fubuki and @K3)
 - Added 3 new drawing options: quadraticCurveTo, bezierCurveTo, rotate
