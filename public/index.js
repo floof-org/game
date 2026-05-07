@@ -699,9 +699,39 @@ function drawInventory() {
         }
     });
 
-    if (inventoryEmpty) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
+        petal.appendChild(icon);
+
+        net.state.petalElements.push({
+          icon,
+          index: Number(petalIndex),
+          rarity: rarityIndex,
+          width: petalSize,
+          height: petalSize,
+        });
+      });
+  });
+}
+
+window.addEventListener("keydown", e => {
+    if (e.key === " " || e.key === "Enter") {
+        if (e.target.closest("button")) {
+            e.preventDefault();
+            return false;
+        }
+    }
+    if (e.key === "z" && !net.ChatMessage.showInput) {
+        const isNowActive = menu.classList.toggle("active");
+        if (isNowActive) {
+            drawInventory();
+        } else {
+            // Release GPU texture memory immediately rather than waiting for GC
+            net.state.petalElements?.forEach(({ icon }) => {
+                icon.width = 0;
+                icon.height = 0;
+            });
+            net.state.petalElements = [];
+            menu.innerHTML = "";
+        }
     }
 
     const petal = document.createElement("div");
