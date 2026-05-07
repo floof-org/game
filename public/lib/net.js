@@ -1717,7 +1717,9 @@ export const state = {
     /** @type {OffscreenCanvas|null} */
     terrainImg: null,
     /** @type {OffscreenCanvas|null} */
-    minimapImg: null
+    minimapImg: null,
+
+    inventoryDirty: false,
 };
 
 export const keyMap = new Set();

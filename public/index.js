@@ -1834,7 +1834,7 @@ function draw() {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    if (JSON.stringify(net.state.inventory2) !== JSON.stringify(net.state.inventory)) {
+    if (net.state.inventoryDirty) {
         if (menu.classList.contains("active")) {
             drawInventory();
         }
