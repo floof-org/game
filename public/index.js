@@ -720,18 +720,8 @@ window.addEventListener("keydown", e => {
         }
     }
     if (e.key === "z" && !net.ChatMessage.showInput) {
-        const isNowActive = menu.classList.toggle("active");
-        if (isNowActive) {
-            drawInventory();
-        } else {
-            // Release GPU texture memory immediately rather than waiting for GC
-            net.state.petalElements?.forEach(({ icon }) => {
-                icon.width = 0;
-                icon.height = 0;
-            });
-            net.state.petalElements = [];
-            menu.innerHTML = "";
-        }
+        menu.classList.toggle("active");
+        drawInventory();
     }
 
     const petal = document.createElement("div");
