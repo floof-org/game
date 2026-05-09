@@ -1,3 +1,6 @@
+# Update (5/9/2026)
+- Updated Pumpkin and Jack O' Lantern Drawings (Thanks to @Fubuki and @Dwajl)
+
 # Update (5/5/2026)
 - Polished some petal renders and icons (With help from @Fubuki)
 
