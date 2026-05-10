@@ -2216,27 +2216,671 @@ function getUIPetalName(index) {
     }
 }
 
+// Petals icon gradient
+const __ANIMATED_ICONS__ = new Set();
+
+let __RAF_RUNNING__ = false;
+
+function isAnimatedRarity(t) {
+    return isGradientOn() && t >= getGradientMinRarity();
+}
+
+function startIconRAF() {
+    if (__RAF_RUNNING__) return;
+    __RAF_RUNNING__ = true;
+
+    const loop = () => {
+        if (__ANIMATED_ICONS__.size === 0) {
+            __RAF_RUNNING__ = false;
+            return;
+        }
+
+        for (const draw of __ANIMATED_ICONS__) {
+            draw();
+        }
+
+        requestAnimationFrame(loop);
+    };
+
+    requestAnimationFrame(loop);
+}
+
+function getGradientMinRarity() {
+    return options.minimumGradientRarity;
+}
+
+const __PETAL_CACHE__ = [];
+const __PETAL_INTERVALS__ = [];
+
+const GLOW_PARTICLE_COUNT = 3;
+const GLOW_PARTICLE_MARGIN = 28;
+const GLOW_PARTICLE_SPEED = 0.011;
+
+function isGradientOn() {
+    return !options.disableGradients;
+}
+
+function getTierVisual(t) {
+    const tierData = state.tiers[t];
+    return (
+        globalThis.__CUSTOM_GRADIENTS?.[t] ||
+        tierData.gradient_3 ||
+        tierData.gradient_2 ||
+        tierData.gradient ||
+        {}
+    );
+}
+
+function rand01(n) {
+    const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+    return x - Math.floor(x);
+}
+
+function drawGlowParticles(ctx, t, size = 128) {
+    if (!isGradientOn()) return;
+    if (t < getGradientMinRarity()) return;
+
+    const custom = getTierVisual(t);
+
+    const count = custom.particlecount ?? custom.glowCount ?? GLOW_PARTICLE_COUNT;
+
+    const glowColor = custom.particleglowcolor || "rgba(255,255,255,0.25)";
+    const dotColor = custom.particledotcolor || "rgba(255,255,255,0.95)";
+    const shadowColor = custom.particleshadowcolor || "rgba(0,0,0,0.35)";
+
+    const now = performance.now();
+    const span = size + GLOW_PARTICLE_MARGIN * 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(10, 10, 108, 108, 6);
+    ctx.clip();
+    ctx.globalCompositeOperation = "screen";
+
+    for (let p = 0; p < count; p++) {
+        const seed = t * 1000 + p * 97;
+
+        const sideMode = rand01(seed + 10);
+
+        let startX, startY;
+
+        if (sideMode < 0.5) {
+            startX = -GLOW_PARTICLE_MARGIN;
+            startY = rand01(seed + 1) * span;
+        } else {
+            startX = rand01(seed) * 18;
+            startY = rand01(seed + 1) * 18;
+        }
+
+        const angle = -0.35 + rand01(seed + 2) * 1.2;
+
+        const vx = Math.cos(angle);
+        const vy = Math.sin(angle);
+
+        const travel = now * GLOW_PARTICLE_SPEED;
+
+        const x =
+            ((((startX + vx * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
+        const y =
+            ((((startY + vy * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
+
+        const pulse = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(now * 0.002 + t));
+
+        const glowR = 20 * pulse;
+        const shadowR = 30 * pulse;
+
+        const shadow = ctx.createRadialGradient(x, y, 0, x, y, shadowR);
+        shadow.addColorStop(0, shadowColor);
+        shadow.addColorStop(1, "rgba(0,0,0,0)");
+
+        ctx.fillStyle = shadow;
+        ctx.beginPath();
+        ctx.arc(x, y, shadowR, 0, Math.PI * 2);
+        ctx.fill();
+
+        const g = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+        g.addColorStop(0, glowColor);
+        g.addColorStop(1, "rgba(255,255,255,0)");
+
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = dotColor;
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
+function makeSweepGradient(ctx, t, base) {
+    const custom = getTierVisual(t);
+
+    const time = (performance.now() * 0.07) % 512;
+    const offset = time - 256;
+
+    const g = ctx.createLinearGradient(
+        offset - 160,
+        offset - 160,
+        offset + 160,
+        offset + 160,
+    );
+
+    const soft = custom.soft ?? mixColors(base, "#ffffff", 0.06);
+    const main = custom.base ?? base;
+    const mid = custom.mid ?? mixColors(base, "#ffffff", 0.14);
+    const glow = custom.glow ?? mixColors(base, "#ffffff", 0.24);
+
+    g.addColorStop(0.0, soft);
+    g.addColorStop(0.18, main);
+    g.addColorStop(0.36, mid);
+    g.addColorStop(0.5, glow);
+    g.addColorStop(0.64, mid);
+    g.addColorStop(0.82, main);
+    g.addColorStop(1.0, soft);
+
+    return g;
+}
+
+function drawGradient2(ctx, t, clipHeight = 120) {
+    const tierColor = state.tiers[t].color;
+    const custom = globalThis.__CUSTOM_GRADIENTS?.[t] || {};
+
+    const lines = custom.lines ?? 1;
+    const size = custom.size ?? 0.08;
+
+    const delay = custom.delay ?? 300;
+    const cycleDelay = custom.cycleDelay ?? 0;
+
+    const speed = custom.speed ?? 1;
+
+    const reversed = custom.reversed_animation ?? false;
+
+    const lineColor = custom.linecolor ?? mixColors(tierColor, "#000000", 0.15);
+
+    const lineGlow = custom.lineglow ?? mixColors(tierColor, "#ffffff", 0.25);
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.rect(4, 124 - clipHeight, 120, clipHeight);
+    ctx.clip();
+
+    const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
+
+    ctx.fillStyle = back;
+    ctx.fillRect(4, 4, 120, 120);
+
+    const now = performance.now();
+
+    const band = 120 * size;
+
+    const travelDistance = 120 + band * 2;
+    const pxPerMs = Math.max(speed, 0.001) * 0.05;
+    const lineDuration = travelDistance / pxPerMs;
+
+    function drawLine(elapsed) {
+        let pos;
+
+        if (!reversed) {
+            pos = -band + elapsed * pxPerMs;
+        } else {
+            pos = 120 + band - elapsed * pxPerMs;
+        }
+
+        const grad = ctx.createLinearGradient(
+            pos - band,
+            pos - band,
+            pos + band,
+            pos + band,
+        );
+
+        grad.addColorStop(0, "rgba(0,0,0,0)");
+        grad.addColorStop(0.15, lineGlow);
+        grad.addColorStop(0.5, lineColor);
+        grad.addColorStop(0.85, lineGlow);
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(4, 4, 120, 120);
+    }
+
+    if (cycleDelay <= 0) {
+        const firstIndex = Math.floor(now / delay);
+        const maxAlive = Math.ceil(lineDuration / delay);
+
+        for (let i = 0; i < maxAlive; i++) {
+            const spawnIndex = firstIndex - i;
+
+            if (spawnIndex < 0) continue;
+
+            const spawnTime = spawnIndex * delay;
+            const elapsed = now - spawnTime;
+
+            if (elapsed < 0 || elapsed > lineDuration) continue;
+
+            drawLine(elapsed);
+        }
+    } else {
+        const spawnCycleLength = lines * delay + cycleDelay;
+
+        const currentCycle = Math.floor(now / spawnCycleLength);
+
+        const cycleStart = currentCycle * spawnCycleLength;
+
+        for (let nLine = 0; nLine < lines; nLine++) {
+            const spawnTime = cycleStart + nLine * delay;
+
+            if (now < spawnTime) continue;
+
+            const elapsed = now - spawnTime;
+
+            if (elapsed < 0 || elapsed > lineDuration) continue;
+
+            drawLine(elapsed);
+        }
+
+        const previousCycleStart = cycleStart - spawnCycleLength;
+
+        if (previousCycleStart >= 0) {
+            for (let nLine = 0; nLine < lines; nLine++) {
+                const spawnTime = previousCycleStart + nLine * delay;
+
+                const elapsed = now - spawnTime;
+
+                if (elapsed < 0 || elapsed > lineDuration) continue;
+
+                drawLine(elapsed);
+            }
+        }
+    }
+
+    ctx.restore();
+}
+
+function getGradient3Rings(t) {
+    const custom = getTierVisual(t);
+    const tierColor = state.tiers[t].color;
+
+    const fallback = [
+        { color: mixColors(tierColor, "#ffffff", 0.12) },
+        { color: mixColors(tierColor, "#ffffff", 0.18) },
+        { color: mixColors(tierColor, "#ffffff", 0.24) },
+        { color: mixColors(tierColor, "#ffffff", 0.3) },
+        { color: mixColors(tierColor, "#ffffff", 0.36) },
+        { color: mixColors(tierColor, "#ffffff", 0.42) },
+    ];
+
+    const input = Array.isArray(custom.rings) ? custom.rings : [];
+    const count = input.length || 1;
+
+    const rings = new Array(count);
+    for (let i = 0; i < count; i++) {
+        const src = input[i] || {};
+        const def = fallback[i % fallback.length];
+
+        rings[i] = {
+            color: src.color ?? def.color,
+            glow: src.glow ?? src.ringglow ?? src.color ?? def.color,
+        };
+    }
+
+    return rings;
+}
+
+function drawGradient3(ctx, t, clipHeight = 120) {
+    const tierColor = state.tiers[t].color;
+    const custom = getTierVisual(t);
+
+    const rings = getGradient3Rings(t);
+
+    const delay = custom.delay ?? 180;
+    const cycleDelay = custom.cycleDelay ?? 0;
+    const speed = Math.max(custom.speed ?? 1.9, 0.001);
+    const reversed =
+        custom.reversed_animation ?? custom.revert_animation ?? false;
+
+    const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
+
+    const now = performance.now();
+
+    const cx = 64;
+    const cy = 64;
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.rect(4, 124 - clipHeight, 120, clipHeight);
+    ctx.clip();
+
+    ctx.fillStyle = back;
+    ctx.fillRect(4, 4, 120, 120);
+
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+
+    const pxPerMs = 0.04 * speed;
+    const MAX_RADIUS = (Math.hypot(60, 60) + 40) * 3;
+
+    const ringCount = rings.length || 1;
+
+    const cycleSpawnTime = ringCount * delay;
+    const cycleLength = cycleSpawnTime + cycleDelay;
+
+    const maxAlive = Math.min(25, Math.ceil(MAX_RADIUS / (pxPerMs * delay)) + 4);
+
+    if (!reversed) {
+        const infiniteLoop = cycleDelay <= 0;
+
+        const firstIndex = Math.floor(now / delay);
+
+        for (let i = maxAlive - 1; i >= 0; i--) {
+            const index = firstIndex - i;
+
+            if (index < 0) continue;
+
+            const linearSpawnTime = index * delay;
+
+            let spawnTime = linearSpawnTime;
+
+            if (!infiniteLoop) {
+                const cycleIndex = Math.floor(linearSpawnTime / cycleLength);
+
+                const cycleStart = cycleIndex * cycleLength;
+
+                const timeInCycle = linearSpawnTime - cycleStart;
+
+                if (timeInCycle >= cycleSpawnTime) {
+                    continue;
+                }
+
+                const ringOrder = Math.floor(timeInCycle / delay);
+
+                if (ringOrder < 0 || ringOrder >= ringCount) {
+                    continue;
+                }
+
+                spawnTime = cycleStart + ringOrder * delay;
+            }
+
+            const elapsed = now - spawnTime;
+
+            if (elapsed < 0) continue;
+
+            const radius = 1 + elapsed * pxPerMs;
+
+            if (radius <= 0 || radius > MAX_RADIUS) {
+                continue;
+            }
+
+            const ring =
+                rings[
+                infiniteLoop
+                    ? ((index % ringCount) + ringCount) % ringCount
+                    : Math.floor((linearSpawnTime % cycleLength) / delay)
+                ];
+
+            drawGradient3Ring(ctx, ring, radius, cx, cy);
+        }
+    } else {
+        const START_RADIUS = MAX_RADIUS * 0.22 * 1.15;
+
+        const shrinkDuration = START_RADIUS / pxPerMs;
+
+        const stepDelay = Math.max(delay, 1);
+
+        const activeDuration = (ringCount - 1) * stepDelay + shrinkDuration;
+
+        const infiniteLoop = cycleDelay <= 0;
+
+        const totalCycleLength = activeDuration + cycleDelay;
+
+        const cycleTime = infiniteLoop ? now : now % totalCycleLength;
+
+        const drawList = [];
+
+        for (let ringId = 0; ringId < ringCount; ringId++) {
+            const startTime = ringId * stepDelay;
+
+            let radius = START_RADIUS;
+
+            if (cycleTime < startTime) {
+                radius = START_RADIUS;
+            } else {
+                let elapsed = cycleTime - startTime;
+
+                if (infiniteLoop) {
+                    elapsed =
+                        ((elapsed % shrinkDuration) + shrinkDuration) % shrinkDuration;
+                }
+
+                if (elapsed < shrinkDuration) {
+                    radius = Math.max(0.001, START_RADIUS - elapsed * pxPerMs);
+                } else {
+                    radius = START_RADIUS;
+                }
+            }
+
+            drawList.push({
+                ringId,
+                radius,
+            });
+        }
+
+        drawList.sort((a, b) => {
+            if (b.radius !== a.radius) {
+                return b.radius - a.radius;
+            }
+
+            return b.ringId - a.ringId;
+        });
+
+        for (const item of drawList) {
+            drawGradient3Ring(ctx, rings[item.ringId], item.radius, cx, cy);
+        }
+    }
+
+    ctx.restore();
+    ctx.restore();
+}
+
+function drawGradient3Ring(ctx, ring, radius, cx, cy) {
+    const coreColor = ring.color;
+    const glowColor = ring.glow;
+
+    const GLOW_WIDTH = 20;
+    const GLOW_OFFSET = -7;
+
+    const innerR = Math.max(0, radius + GLOW_OFFSET);
+    const outerR = innerR + GLOW_WIDTH;
+
+    const time = (performance.now() * 0.05) % 128;
+    const sweep = (time / 128) * Math.PI * 2;
+
+    const segments = 64;
+
+    for (let s = 0; s < segments; s++) {
+        const t0 = s / segments;
+        const t1 = (s + 1) / segments;
+
+        const a0 = sweep + t0 * Math.PI * 2;
+        const a1 = sweep + t1 * Math.PI * 2;
+
+        const mid = (t0 + t1) * 0.5;
+
+        let alpha = 0.25;
+
+        if (mid >= 0.4 && mid <= 0.5) {
+            alpha = 0.25 + ((mid - 0.4) / 0.1) * 0.75;
+        } else if (mid > 0.5 && mid <= 0.6) {
+            alpha = 1.0 - ((mid - 0.5) / 0.1) * 0.75;
+        }
+
+        ctx.fillStyle = glowColor.startsWith("#")
+            ? glowColor +
+            Math.round(alpha * 255)
+                .toString(16)
+                .padStart(2, "0")
+            : glowColor.replace("rgb(", "rgba(").replace(")", `,${alpha})`);
+
+        ctx.beginPath();
+
+        ctx.arc(cx, cy, outerR, a0, a1);
+        ctx.arc(cx, cy, innerR, a1, a0, true);
+
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    ctx.globalCompositeOperation = "source-over";
+
+    ctx.fillStyle = coreColor;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalCompositeOperation = "screen";
+}
+
+function applyFillStyle(ctx, t, base, ratio = null) {
+    if (!isGradientOn() || t < getGradientMinRarity()) {
+        return base;
+    }
+
+    const custom = getTierVisual(t);
+
+    const hasGradient3 = Array.isArray(custom.rings) || custom.type === 3;
+
+    const hasGradient2 =
+        custom.lines !== undefined || custom.linecolor !== undefined;
+
+    if (hasGradient3) {
+        drawGradient3(ctx, t, ratio === null ? 120 : 120 * ratio);
+
+        return null;
+    }
+
+    if (hasGradient2) {
+        drawGradient2(ctx, t, ratio === null ? 120 : 120 * ratio);
+
+        return null;
+    }
+
+    return makeSweepGradient(ctx, t, base);
+}
+
+function getBorderStyle(t) {
+    const base = state.tiers[t].color;
+
+    if (!isGradientOn() || t < getGradientMinRarity()) {
+        return mixColors(base, "#000000", 0.2);
+    }
+
+    const custom = getTierVisual(t);
+
+    if (custom.border !== undefined) {
+        return custom.border;
+    }
+
+    return mixColors(base, "#000000", 0.2);
+}
+
 const petalIconCache = [];
+const petalIconIntervals = [];
 
 function createPetalIcon(index, rarity) {
+    const animated = isAnimatedRarity(rarity);
+
+    const modeKey = animated ? 1 : 0;
+
+    petalIconCache[index] ??= [];
+    petalIconCache[index][rarity] ??= {};
+
+    petalIconIntervals[index] ??= [];
+    petalIconIntervals[index][rarity] ??= {};
+
+    const otherModeKey = animated ? 0 : 1;
+
+    const oldDraw = petalIconIntervals[index][rarity][otherModeKey];
+
+    if (oldDraw) {
+        __ANIMATED_ICONS__.delete(oldDraw);
+        delete petalIconIntervals[index][rarity][otherModeKey];
+    }
+
+    delete petalIconCache[index][rarity][otherModeKey];
+
+    const cached = petalIconCache[index][rarity][modeKey];
+
+    if (cached) {
+        const draw = petalIconIntervals[index][rarity][modeKey];
+
+        if (draw) {
+            if (animated) {
+                if (!__ANIMATED_ICONS__.has(draw)) {
+                    __ANIMATED_ICONS__.add(draw);
+                    startIconRAF();
+                }
+            } else {
+                __ANIMATED_ICONS__.delete(draw);
+            }
+        }
+
+        return cached;
+    }
+
     const canvas = new OffscreenCanvas(128, 128);
     const ctx = canvas.getContext("2d");
-    const petalText = getUIPetalName(index)
+    const petalText = getUIPetalName(index);
+
+    const draw = () => {
+        if (!isAnimatedRarity(rarity)) {
+            __ANIMATED_ICONS__.delete(draw);
+        }
+
+        ctx.clearRect(0, 0, 128, 128);
+
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
+        const iconPath = new Path2D();
+        iconPath.roundRect(4, 4, 120, 120, 10);
+
     ctx.save();
 
-    ctx.beginPath();
-    ctx.roundRect(4, 4, 120, 120, 10);
+        const custom = getTierVisual(rarity);
 
-    ctx.strokeStyle = mixColors(state.tiers[rarity].color, "#000000", .2);
-    ctx.fillStyle = state.tiers[rarity].color;
+        const base = state.tiers[rarity].color;
+
+        const back = animated
+            ? (custom.back ?? custom.base ?? mixColors(base, "#000000", 0.1))
+            : mixColors(base, "#000000", 0.1);
+
+        ctx.fillStyle = back;
+        ctx.fill(iconPath);
+
+        ctx.save();
+        ctx.clip(iconPath);
+
+        const fill = applyFillStyle(ctx, rarity, base);
+
+        if (fill !== null) {
+            ctx.fillStyle = fill;
+            ctx.fill(iconPath);
+        }
+
+        ctx.restore();
+
     ctx.lineWidth = 12;
-    ctx.fill();
-    ctx.stroke();
+        ctx.strokeStyle = getBorderStyle(rarity);
+        ctx.stroke(iconPath);
+
+        drawGlowParticles(ctx, rarity);
 
     ctx.translate(64, 51.2);
     ctx.scale(23.75, 23.75);
@@ -2258,20 +2902,27 @@ function createPetalIcon(index, rarity) {
     }
 
     text(petalText, 64, 98, size, "#FFFFFF", ctx);
+    };
+
+    draw();
+
+    if (animated) {
+        if (!__ANIMATED_ICONS__.has(draw)) {
+            __ANIMATED_ICONS__.add(draw);
+            startIconRAF();
+    }
+
+        petalIconIntervals[index][rarity][modeKey] = draw;
+    }
+
+    petalIconCache[index][rarity][modeKey] = canvas;
 
     return canvas;
 }
 
 export function getPetalIcon(index, rarity) {
-    if (!petalIconCache[index]) {
-        petalIconCache[index] = [];
-    }
-
-    if (!petalIconCache[index][rarity]) {
-        petalIconCache[index][rarity] = createPetalIcon(index, rarity);
-    }
-
-    return petalIconCache[index][rarity];
+    petalIconCache[index] ??= [];
+    return createPetalIcon(index, rarity);
 }
 
 const ratioFontSizeCache = [];
@@ -2313,15 +2964,28 @@ export function drawPetalIconWithRatio(index, rarity, x, y, size, ratio, ctx = _
 
     ctx.clip(ratioClip, "evenodd");
 
-    ctx.fillStyle = mixColors(state.tiers[rarity].color, "#000000", .1);
+  const custom = getTierVisual(rarity);
+  const base = state.tiers[rarity].color;
+
+  const back = isAnimatedRarity(rarity)
+    ? (custom.back ?? custom.base ?? mixColors(base, "#000000", 0.1))
+    : mixColors(base, "#000000", 0.1);
+
+  ctx.fillStyle = back;
     ctx.fill(ratioPath);
 
-    ctx.fillStyle = state.tiers[rarity].color;
-    ctx.fillRect(4, 124, 120, -120 * ratio);
+  const fill = applyFillStyle(ctx, rarity, base, ratio);
 
-    ctx.strokeStyle = mixColors(state.tiers[rarity].color, "#000000", .2);
+  if (fill !== null) {
+    ctx.fillStyle = fill;
+    ctx.fillRect(4, 124, 120, -120 * ratio);
+  }
+
+  ctx.strokeStyle = getBorderStyle(rarity);
     ctx.lineWidth = 12;
     ctx.stroke(ratioPath);
+
+  drawGlowParticles(ctx, rarity);
 
     ctx.save();
     ctx.translate(64, 51.2);

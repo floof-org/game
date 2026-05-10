@@ -609,6 +609,28 @@ function processDrop() {
     return true;
 }
 
+function formatAmount(v) {
+    if (!isFinite(v)) return "∞";
+    if (isNaN(v)) return "0";
+
+    const f = (num, div, suffix) => {
+        const val = num / div;
+        if (!isFinite(val)) return "∞";
+
+        const str = val.toFixed(1);
+        return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
+    };
+
+    if (v >= 1e18) return f(v, 1e18, "Qt");
+    if (v >= 1e15) return f(v, 1e15, "Qd");
+    if (v >= 1e12) return f(v, 1e12, "t");
+    if (v >= 1e9) return f(v, 1e9, "b");
+    if (v >= 1e6) return f(v, 1e6, "m");
+    if (v >= 1e3) return f(v, 1e3, "k");
+
+    return Math.floor(v).toString();
+}
+
 function processInventoryDrop() {
     const drag = {
         index: inventoryDragConfig.index,
@@ -682,6 +704,17 @@ let cuteLittleAnimations = {
 
 const buttonsContainer = document.getElementById("menus2");
 const menu = buttonsContainer.children.item("inventory");
+const inventoryTooltipLayer = document.createElement("div");
+inventoryTooltipLayer.style.position = "fixed";
+inventoryTooltipLayer.style.left = "0";
+inventoryTooltipLayer.style.top = "0";
+inventoryTooltipLayer.style.width = "100vw";
+inventoryTooltipLayer.style.height = "100vh";
+inventoryTooltipLayer.style.pointerEvents = "none";
+inventoryTooltipLayer.style.zIndex = "999999";
+inventoryTooltipLayer.style.overflow = "visible";
+inventoryTooltipLayer.style.display = "none";
+document.body.appendChild(inventoryTooltipLayer);
 
 function drawInventory() {
     net.state.petalElements = [];
@@ -713,10 +746,9 @@ function drawInventory() {
 
     const petalSize = 56;
 
-    let sortedTiers = Object.entries(net.state.inventory)
-        .sort(([a], [b]) => {
-            const aIndex = net.state.tiers.findIndex(t => t.name === a);
-            const bIndex = net.state.tiers.findIndex(t => t.name === b);
+    let sortedTiers = Object.entries(net.state.inventory).sort(([a], [b]) => {
+        const aIndex = net.state.tiers.findIndex((t) => t.name === a);
+        const bIndex = net.state.tiers.findIndex((t) => t.name === b);
             return bIndex - aIndex;
         });
 
@@ -735,6 +767,31 @@ function drawInventory() {
                 const petalCanvas = getPetalIcon(Number(petalIndex), rarityIndex);
 
                 const icon = document.createElement("canvas");
+
+                icon.addEventListener("pointerenter", (ev) => {
+                    const r = ev.currentTarget.getBoundingClientRect();
+                    net.state.inventoryPetalHover = [
+                        Number(petalIndex),
+                        rarityIndex,
+                        r.left + r.width / 2,
+                        r.top + r.height / 2,
+                    ];
+                });
+
+                icon.addEventListener("pointermove", (ev) => {
+                    const r = ev.currentTarget.getBoundingClientRect();
+                    net.state.inventoryPetalHover = [
+                        Number(petalIndex),
+                        rarityIndex,
+                        r.left + r.width / 2,
+                        r.top + r.height / 2,
+                    ];
+                });
+
+                icon.addEventListener("pointerleave", () => {
+                    net.state.inventoryPetalHover = null;
+                });
+
                 icon.width = petalSize;
                 icon.height = petalSize;
 
@@ -785,8 +842,827 @@ window.addEventListener("keydown", e => {
     }
 });
 
+function hashAliveMobs(list) {
+    const grouped = {};
+
+    for (const m of list) {
+        const key = m.index + "_" + m.rarity;
+        grouped[key] = (grouped[key] || 0) + 1;
+    }
+
+    let h = 0;
+
+    for (const key in grouped) {
+        const [index, rarity] = key.split("_").map(Number);
+        const count = grouped[key];
+
+        h = (h * 31 + index) | 0;
+        h = (h * 31 + rarity) | 0;
+        h = (h * 31 + count) | 0;
+    }
+
+    return h;
+}
+
 const mobIconCanvas = document.createElement("canvas");
 const mobIconCtx = mobIconCanvas.getContext("2d");
+
+// Mob icons gradient
+const WAVE_CACHE = (globalThis.__WAVE_CACHE__ ||= Object.create(null));
+
+function getGradientMinRarity() {
+    return options.minimumGradientRarity;
+}
+
+const GLOW_PARTICLE_COUNT = 3;
+const GLOW_PARTICLE_MARGIN = 28;
+const GLOW_PARTICLE_SPEED = 0.011;
+
+function rand01(n) {
+    const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+    return x - Math.floor(x);
+}
+
+function wavesGradientOn() {
+    return !options.disableGradients;
+}
+
+function wavesTierVisual(t) {
+    const tierData = net.state.tiers?.[t] ?? {};
+    return (
+        globalThis.__CUSTOM_GRADIENTS?.[t] ||
+        tierData.gradient ||
+        tierData.gradient_2 ||
+        {}
+    );
+}
+
+function drawWaveMobIcon(ctx, entry) {
+    if (entry.index === 255) {
+        setStyle(colors.crafting, 0.135, 0.2, ctx);
+        ctx.beginPath();
+        ctx.arc(0, 0, 1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        drawFace(0.35, -Math.PI / 4, 1.7, 1.7, 1, false, ctx);
+        return;
+    }
+
+    if (![46, 49, 55].includes(entry.index)) {
+        ctx.rotate(-Math.PI / 4);
+    }
+
+    drawUIMob(entry.index, entry.rarity, ctx);
+}
+
+function makeWaveIcon(entry, mode, key) {
+    const size = Math.ceil(entry.size + 12);
+    const canvas = new OffscreenCanvas(size, size);
+    const ctx = canvas.getContext("2d");
+
+    function render(now, entryOverride) {
+        const e = entryOverride || entry;
+        now = Number.isFinite(now) ? now : performance.now();
+
+        const a = e.size;
+        const g = 6;
+        const u = 6;
+        const r = 5;
+
+        const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
+        const cx = g + a / 2;
+        const cy = u + a / 2;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(g, u, a, a, r);
+
+        const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
+
+        if (fill !== null) {
+            ctx.fillStyle = fill;
+            ctx.fill();
+        }
+
+        ctx.restore();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(g, u, a, a, r);
+        ctx.clip();
+
+        drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
+
+        ctx.translate(cx, cy);
+
+        const m = {
+            0: 4,
+            1: 4,
+            2: 4,
+            3: 5.5,
+            4: 4,
+            5: 3,
+            6: 4,
+            7: 4,
+            8: 3.25,
+            9: 4,
+            10: 3.25,
+            11: 3.25,
+            12: 3.25,
+            13: 4,
+            14: 4,
+            15: 6.25,
+            16: 6.25,
+            17: 6.25,
+            18: 6.25,
+            19: 4,
+            20: 6.25,
+            21: 6.25,
+            22: 6.25,
+            23: 6.25,
+            24: 4,
+            25: 6.25,
+            26: 6.25,
+            27: 6.25,
+            28: 4,
+            29: 4,
+            30: 5.25,
+            31: 5.25,
+            32: 5.25,
+            33: 5.25,
+            34: 5.25,
+            35: 4,
+            36: 4,
+            37: 4,
+            38: 4.5,
+            39: 4.5,
+            40: 4.5,
+            41: 4.5,
+            42: 4.5,
+            43: 4.5,
+            44: 4.5,
+            45: 3,
+            46: 4,
+            47: 3.25,
+            48: 5.25,
+            49: 3.35,
+            50: 3,
+            51: 5.25,
+            52: 4,
+            53: 4.5,
+            54: 4.5,
+            55: 4,
+            56: 4,
+            57: 4,
+            58: 4,
+            59: 5.5,
+            60: 4,
+            61: 4.5,
+            62: 4,
+            63: 4,
+            64: 6.5,
+            65: 4,
+            66: 4.5,
+            67: 4.5,
+            68: 4,
+            69: 4,
+            70: 4,
+            71: 4,
+            72: 4.5,
+            73: 4.5,
+            255: 4,
+        };
+
+        const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
+        const scale = m[entry.index] ? a / m[entry.index] : a / f;
+
+        ctx.scale(scale, scale);
+        drawWaveMobIcon(ctx, entry);
+
+        ctx.restore();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(g, u, a, a, r);
+        ctx.globalCompositeOperation = "source-over";
+        ctx.strokeStyle = wavesBorderStyle(entry.rarity);
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    canvas._render = (now, entry) => render(now, entry);
+    render(performance.now(), entry);
+    return canvas;
+}
+
+function getWaveIcon(entry, now) {
+    const mode = wavesGradientOn() ? 1 : 0;
+    const sizeKey = Math.round(entry.size * 100) / 100;
+    const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
+
+    let icon = WAVE_CACHE[key];
+
+    if (!icon) {
+        icon = makeWaveIcon(entry, mode, key);
+        WAVE_CACHE[key] = icon;
+    }
+
+    if (mode === 1 && icon._render) {
+        icon._render(now);
+    }
+
+    return icon;
+}
+
+function drawGlowParticles(
+    ctx,
+    t,
+    size,
+    clipX,
+    clipY,
+    clipW,
+    clipH,
+    clipR,
+    now,
+) {
+    if (!wavesGradientOn()) return;
+    if (t < getGradientMinRarity()) return;
+
+    const custom = wavesTierVisual(t);
+
+    const count = custom.particlecount ?? GLOW_PARTICLE_COUNT;
+    const glowColor = custom.particleglowcolor || "rgba(255,255,255,0.25)";
+    const dotColor = custom.particledotcolor || "rgba(255,255,255,0.95)";
+    const shadowColor = custom.particleshadowcolor || "rgba(0,0,0,0.35)";
+
+    const span = size + GLOW_PARTICLE_MARGIN * 2;
+    const scale = size / 128;
+    const pulse = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(now * 0.002 + t));
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.roundRect(clipX, clipY, clipW, clipH, clipR);
+    ctx.clip();
+
+    ctx.globalCompositeOperation = "screen";
+
+    for (let p = 0; p < count; p++) {
+        const seed = t * 1000 + p * 97;
+        const sideMode = rand01(seed + 10);
+
+        let startX, startY;
+
+        if (sideMode < 0.5) {
+            startX = -GLOW_PARTICLE_MARGIN;
+            startY = rand01(seed + 1) * span;
+        } else {
+            startX = rand01(seed) * (18 * scale);
+            startY = rand01(seed + 1) * (18 * scale);
+        }
+
+        const angle = -0.35 + rand01(seed + 2) * 1.2;
+        const vx = Math.cos(angle);
+        const vy = Math.sin(angle);
+        const travel = now * GLOW_PARTICLE_SPEED;
+
+        const x =
+            ((((startX + vx * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
+        const y =
+            ((((startY + vy * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
+
+        const glowR = 20 * scale * pulse;
+        const shadowR = 30 * scale * pulse;
+        const coreR = Math.max(0.8, 1 * scale);
+
+        const shadow = ctx.createRadialGradient(x, y, 0, x, y, shadowR);
+        shadow.addColorStop(0, shadowColor);
+        shadow.addColorStop(1, "rgba(0,0,0,0)");
+
+        ctx.fillStyle = shadow;
+        ctx.beginPath();
+        ctx.arc(x, y, shadowR, 0, Math.PI * 2);
+        ctx.fill();
+
+        const g = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+        g.addColorStop(0, glowColor);
+        g.addColorStop(0.22, glowColor);
+        g.addColorStop(1, "rgba(255,255,255,0)");
+
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = dotColor;
+        ctx.beginPath();
+        ctx.arc(x, y, coreR, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    ctx.restore();
+}
+
+function wavesSweepGradient(ctx, t, base, now) {
+    now = Number.isFinite(now) ? now : performance.now();
+
+    const custom = wavesTierVisual(t);
+
+    const time = (now * 0.07) % 512;
+    const offset = time - 256;
+
+    const g = ctx.createLinearGradient(
+        offset - 160,
+        offset - 160,
+        offset + 160,
+        offset + 160,
+    );
+
+    const soft = custom.soft ?? mixColors(base, "#ffffff", 0.06);
+    const main = custom.base ?? base;
+    const mid = custom.mid ?? mixColors(base, "#ffffff", 0.14);
+    const glow = custom.glow ?? mixColors(base, "#ffffff", 0.24);
+
+    g.addColorStop(0.0, soft);
+    g.addColorStop(0.18, main);
+    g.addColorStop(0.36, mid);
+    g.addColorStop(0.5, glow);
+    g.addColorStop(0.64, mid);
+    g.addColorStop(0.82, main);
+    g.addColorStop(1.0, soft);
+
+    return g;
+}
+
+function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
+    const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
+
+    const custom = wavesTierVisual(t);
+
+    const lines = custom.lines ?? 1;
+
+    const sizeMul = custom.size ?? 0.08;
+
+    const delay = custom.delay ?? 300;
+
+    const cycleDelay = custom.cycleDelay ?? 0;
+
+    const speed = custom.speed ?? 1;
+
+    const reversed = custom.reversed_animation ?? false;
+
+    const lineColor = custom.linecolor ?? mixColors(tierColor, "#000000", 0.15);
+
+    const lineGlow = custom.lineglow ?? mixColors(tierColor, "#ffffff", 0.25);
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.rect(x, y + size - clipHeight, size, clipHeight);
+    ctx.clip();
+
+    const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
+
+    ctx.fillStyle = back;
+    ctx.fillRect(x, y, size, size);
+
+    const now = performance.now();
+
+    const band = size * sizeMul;
+
+    const travelDistance = size + band * 2;
+
+    const pxPerMs = Math.max(speed, 0.001) * 0.05;
+
+    const lineDuration = travelDistance / pxPerMs;
+
+    function drawLine(elapsed) {
+        let pos;
+
+        if (!reversed) {
+            pos = -band + elapsed * pxPerMs;
+        } else {
+            pos = size + band - elapsed * pxPerMs;
+        }
+
+        const grad = ctx.createLinearGradient(
+            x + pos - band,
+            y + pos - band,
+            x + pos + band,
+            y + pos + band,
+        );
+
+        grad.addColorStop(0, "rgba(0,0,0,0)");
+
+        grad.addColorStop(0.15, lineGlow);
+
+        grad.addColorStop(0.5, lineColor);
+
+        grad.addColorStop(0.85, lineGlow);
+
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, size, size);
+    }
+
+    if (cycleDelay <= 0) {
+        const firstIndex = Math.floor(now / delay);
+
+        const maxAlive = Math.ceil(lineDuration / delay);
+
+        for (let i = 0; i < maxAlive; i++) {
+            const spawnIndex = firstIndex - i;
+
+            if (spawnIndex < 0) continue;
+
+            const spawnTime = spawnIndex * delay;
+
+            const elapsed = now - spawnTime;
+
+            if (elapsed < 0 || elapsed > lineDuration) {
+                continue;
+            }
+
+            drawLine(elapsed);
+        }
+    } else {
+        const spawnCycleLength = lines * delay + cycleDelay;
+
+        const currentCycle = Math.floor(now / spawnCycleLength);
+
+        const cycleStart = currentCycle * spawnCycleLength;
+
+        for (let nLine = 0; nLine < lines; nLine++) {
+            const spawnTime = cycleStart + nLine * delay;
+
+            if (now < spawnTime) continue;
+
+            const elapsed = now - spawnTime;
+
+            if (elapsed < 0 || elapsed > lineDuration) {
+                continue;
+            }
+
+            drawLine(elapsed);
+        }
+
+        const previousCycleStart = cycleStart - spawnCycleLength;
+
+        if (previousCycleStart >= 0) {
+            for (let nLine = 0; nLine < lines; nLine++) {
+                const spawnTime = previousCycleStart + nLine * delay;
+
+                const elapsed = now - spawnTime;
+
+                if (elapsed < 0 || elapsed > lineDuration) {
+                    continue;
+                }
+
+                drawLine(elapsed);
+            }
+        }
+    }
+
+    ctx.restore();
+}
+
+function wavesGetGradient3Rings(t) {
+    const custom = wavesTierVisual(t);
+
+    const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
+
+    const fallback = [
+        {
+            color: mixColors(tierColor, "#ffffff", 0.12),
+        },
+        {
+            color: mixColors(tierColor, "#ffffff", 0.18),
+        },
+        {
+            color: mixColors(tierColor, "#ffffff", 0.24),
+        },
+        {
+            color: mixColors(tierColor, "#ffffff", 0.3),
+        },
+        {
+            color: mixColors(tierColor, "#ffffff", 0.36),
+        },
+        {
+            color: mixColors(tierColor, "#ffffff", 0.42),
+        },
+    ];
+
+    const input = Array.isArray(custom.rings) ? custom.rings : [];
+
+    const count = input.length || 1;
+
+    const rings = new Array(count);
+
+    for (let i = 0; i < count; i++) {
+        const src = input[i] || {};
+
+        const def = fallback[i % fallback.length];
+
+        rings[i] = {
+            color: src.color ?? def.color,
+
+            glow: src.glow ?? src.ringglow ?? src.color ?? def.color,
+        };
+    }
+
+    return rings;
+}
+
+function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
+    const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
+
+    const custom = wavesTierVisual(t);
+
+    const rings = wavesGetGradient3Rings(t);
+
+    const delay = custom.delay ?? 180;
+
+    const cycleDelay = custom.cycleDelay ?? 0;
+
+    const speed = Math.max(custom.speed ?? 1.9, 0.001);
+
+    const reversed =
+        custom.reversed_animation ?? custom.revert_animation ?? false;
+
+    const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
+
+    const now = performance.now();
+
+    const cx = x + size * 0.5;
+
+    const cy = y + size * 0.5;
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.rect(x, y + size - clipHeight, size, clipHeight);
+    ctx.clip();
+
+    ctx.fillStyle = back;
+    ctx.fillRect(x, y, size, size);
+
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+
+    const pxPerMs = 0.04 * speed;
+
+    const MAX_RADIUS = (Math.hypot(size * 0.5, size * 0.5) + 40) * 3;
+
+    const ringCount = rings.length || 1;
+
+    const cycleSpawnTime = ringCount * delay;
+
+    const cycleLength = cycleSpawnTime + cycleDelay;
+
+    const maxAlive = Math.min(25, Math.ceil(MAX_RADIUS / (pxPerMs * delay)) + 4);
+
+    if (!reversed) {
+        const infiniteLoop = cycleDelay <= 0;
+
+        const firstIndex = Math.floor(now / delay);
+
+        for (let i = maxAlive - 1; i >= 0; i--) {
+            const index = firstIndex - i;
+
+            if (index < 0) continue;
+
+            const linearSpawnTime = index * delay;
+
+            let spawnTime = linearSpawnTime;
+
+            if (!infiniteLoop) {
+                const cycleIndex = Math.floor(linearSpawnTime / cycleLength);
+
+                const cycleStart = cycleIndex * cycleLength;
+
+                const timeInCycle = linearSpawnTime - cycleStart;
+
+                if (timeInCycle >= cycleSpawnTime) {
+                    continue;
+                }
+
+                const ringOrder = Math.floor(timeInCycle / delay);
+
+                if (ringOrder < 0 || ringOrder >= ringCount) {
+                    continue;
+                }
+
+                spawnTime = cycleStart + ringOrder * delay;
+            }
+
+            const elapsed = now - spawnTime;
+
+            if (elapsed < 0) continue;
+
+            const radius = 1 + elapsed * pxPerMs;
+
+            if (radius <= 0 || radius > MAX_RADIUS) {
+                continue;
+            }
+
+            const ring =
+                rings[
+                infiniteLoop
+                    ? ((index % ringCount) + ringCount) % ringCount
+                    : Math.floor((linearSpawnTime % cycleLength) / delay)
+                ];
+
+            wavesDrawGradient3Ring(ctx, ring, radius, cx, cy);
+        }
+    } else {
+        const START_RADIUS = MAX_RADIUS * 0.22 * 1.15;
+
+        const shrinkDuration = START_RADIUS / pxPerMs;
+
+        const stepDelay = Math.max(delay, 1);
+
+        const activeDuration = (ringCount - 1) * stepDelay + shrinkDuration;
+
+        const infiniteLoop = cycleDelay <= 0;
+
+        const totalCycleLength = activeDuration + cycleDelay;
+
+        const cycleTime = infiniteLoop ? now : now % totalCycleLength;
+
+        const drawList = [];
+
+        for (let ringId = 0; ringId < ringCount; ringId++) {
+            const startTime = ringId * stepDelay;
+
+            let radius = START_RADIUS;
+
+            if (cycleTime < startTime) {
+                radius = START_RADIUS;
+            } else {
+                let elapsed = cycleTime - startTime;
+
+                if (infiniteLoop) {
+                    elapsed =
+                        ((elapsed % shrinkDuration) + shrinkDuration) % shrinkDuration;
+                }
+
+                if (elapsed < shrinkDuration) {
+                    radius = Math.max(0.001, START_RADIUS - elapsed * pxPerMs);
+                } else {
+                    radius = START_RADIUS;
+                }
+            }
+
+            drawList.push({
+                ringId,
+                radius,
+            });
+        }
+
+        drawList.sort((a, b) => {
+            if (b.radius !== a.radius) {
+                return b.radius - a.radius;
+            }
+
+            return b.ringId - a.ringId;
+        });
+
+        for (const item of drawList) {
+            wavesDrawGradient3Ring(ctx, rings[item.ringId], item.radius, cx, cy);
+        }
+    }
+
+    ctx.restore();
+    ctx.restore();
+}
+
+function wavesDrawGradient3Ring(ctx, ring, radius, cx, cy) {
+    const coreColor = ring.color;
+
+    const glowColor = ring.glow;
+
+    const GLOW_WIDTH = 20;
+    const GLOW_OFFSET = -7;
+
+    const innerR = Math.max(0, radius + GLOW_OFFSET);
+
+    const outerR = innerR + GLOW_WIDTH;
+
+    const time = (performance.now() * 0.05) % 128;
+
+    const sweep = (time / 128) * Math.PI * 2;
+
+    const segments = 64;
+
+    for (let s = 0; s < segments; s++) {
+        const t0 = s / segments;
+
+        const t1 = (s + 1) / segments;
+
+        const a0 = sweep + t0 * Math.PI * 2;
+
+        const a1 = sweep + t1 * Math.PI * 2;
+
+        const mid = (t0 + t1) * 0.5;
+
+        let alpha = 0.25;
+
+        if (mid >= 0.4 && mid <= 0.5) {
+            alpha = 0.25 + ((mid - 0.4) / 0.1) * 0.75;
+        } else if (mid > 0.5 && mid <= 0.6) {
+            alpha = 1.0 - ((mid - 0.5) / 0.1) * 0.75;
+        }
+
+        ctx.fillStyle = glowColor.startsWith("#")
+            ? glowColor +
+            Math.round(alpha * 255)
+                .toString(16)
+                .padStart(2, "0")
+            : glowColor.replace("rgb(", "rgba(").replace(")", `,${alpha})`);
+
+        ctx.beginPath();
+
+        ctx.arc(cx, cy, outerR, a0, a1);
+
+        ctx.arc(cx, cy, innerR, a1, a0, true);
+
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    ctx.globalCompositeOperation = "source-over";
+
+    ctx.fillStyle = coreColor;
+
+    ctx.beginPath();
+
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+
+    ctx.fill();
+
+    ctx.globalCompositeOperation = "screen";
+}
+
+function wavesFillStyle(ctx, rarity, base, ratio = null, now, x, y, size) {
+    if (!wavesGradientOn() || rarity < getGradientMinRarity()) {
+        return base;
+    }
+
+    const custom = wavesTierVisual(rarity);
+
+    const hasGradient3 = Array.isArray(custom.rings) || custom.type === 3;
+
+    const hasGradient2 =
+        custom.lines !== undefined || custom.linecolor !== undefined;
+
+    if (hasGradient3) {
+        wavesDrawGradient3(
+            ctx,
+            rarity,
+            x,
+            y,
+            size,
+            ratio === null ? size : size * ratio,
+        );
+
+        return null;
+    }
+
+    if (hasGradient2) {
+        wavesDrawGradient2(
+            ctx,
+            rarity,
+            x,
+            y,
+            size,
+            ratio === null ? size : size * ratio,
+        );
+
+        return null;
+    }
+
+    const safeNow = Number.isFinite(now) ? now : performance.now();
+
+    return wavesSweepGradient(ctx, rarity, base, safeNow);
+}
+
+function wavesBorderStyle(rarity) {
+    const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
+
+    if (!wavesGradientOn() || rarity < getGradientMinRarity()) {
+        return mixColors(base, "#000000", 0.2);
+    }
+
+    const custom = wavesTierVisual(rarity);
+
+    if (custom.border !== undefined) {
+        return custom.border;
+    }
+
+    return mixColors(base, "#000000", 0.2);
+}
 
 function draw() {
     net.state.petalHover = null;
@@ -1031,7 +1907,15 @@ function draw() {
         }
     });
 
-    net.state.drops.forEach(entity => {
+    function formatAmount(n) {
+        if (n >= 1e12) return "x" + (n / 1e12).toFixed(1) + "t";
+        if (n >= 1e9) return "x" + (n / 1e9).toFixed(1) + "b";
+        if (n >= 1e6) return "x" + (n / 1e6).toFixed(1) + "m";
+        if (n >= 1e3) return "x" + (n / 1e3).toFixed(1) + "k";
+        return "x" + n;
+    }
+
+    net.state.drops.forEach((entity) => {
         const oldTransform = ctx.getTransform();
         const oldFillStyle = ctx.fillStyle;
         const oldAlpha = ctx.globalAlpha;
@@ -1055,8 +1939,24 @@ function draw() {
         ctx.closePath();
 
         ctx.globalAlpha *= 8;
+        ctx.drawImage(getPetalIcon(entity.index, entity.rarity), -0.5, -0.5, 1, 1);
 
-        ctx.drawImage(getPetalIcon(entity.index, entity.rarity), -.5, -.5, 1, 1);
+        if ((entity.amount ?? 1) > 1) {
+            const text = formatAmount(entity.amount);
+
+            ctx.font = "bold 0.35px Ubuntu";
+            ctx.fillStyle = "#ffffff";
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 0.06;
+            ctx.textAlign = "right";
+            ctx.textBaseline = "top";
+
+            const offsetX = 0.6;
+            const offsetY = -0.7;
+
+            ctx.strokeText(text, offsetX, offsetY);
+            ctx.fillText(text, offsetX, offsetY);
+        }
 
         // ctx.restore();
         ctx.fillStyle = oldFillStyle;
@@ -1510,17 +2410,16 @@ function draw() {
         mobIconCanvas.height = height;
 
         const ctx = mobIconCtx;
-        ctx.clearRect(0, 0, mobIconCanvas.width, mobIconCanvas.height);
+        ctx.clearRect(0, 0, width, height);
         let boxSize = 75;
         let gapY = 40;
         let gapX = 5;
 
         ctx.lineCap = ctx.lineJoin = "round";
-
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
-
         const groupedByIndex = {};
+
         net.state.waveInfo.aliveMobs.forEach(mob => {
             if (!groupedByIndex[mob.index]) groupedByIndex[mob.index] = {};
             if (!groupedByIndex[mob.index][mob.rarity]) {
@@ -1540,9 +2439,11 @@ function draw() {
                 if (b[0].index === 255) return 1;
                 return a[0].index - b[0].index;
             });
+
         boxSize -= mobStacks.length / 1.1;
         gapX -= mobStacks.length;
         gapY -= mobStacks.length / 1.2;
+        const indexScales = { 255: 4 };
 
         mobStacks.forEach((stack, stackI) => {
             stack.forEach((entity, rarityI) => {
@@ -1557,10 +2458,11 @@ function draw() {
                     count: entity.count
                 });
 
-                setStyle(net.state.tiers[entity.rarity].color, 5, .2, ctx);
+                const baseColor = net.state.tiers[entity.rarity].color;
                 ctx.save();
                 ctx.beginPath();
                 ctx.roundRect(x, y, boxSize, boxSize, 5);
+                ctx.fillStyle = baseColor;
                 ctx.fill();
                 ctx.clip();
 
@@ -1648,8 +2550,9 @@ function draw() {
                 let scale = indexScales[entity.index] ? boxSize / indexScales[entity.index] : boxSize / defaultIconSize
 
                 ctx.scale(scale, scale);
+
                 if (entity.index !== 255) {
-                    if (entity.index !== 46 && entity.index !== 49 && entity.index !== 55) {
+                    if (![46, 49, 55].includes(entity.index)) {
                         ctx.rotate(-Math.PI / 4);
                     }
                     drawUIMob(entity.index, entity.rarity, ctx);
@@ -1665,9 +2568,13 @@ function draw() {
 
                 ctx.restore();
 
+                ctx.save();
                 ctx.beginPath();
                 ctx.roundRect(x, y, boxSize, boxSize, 5);
+                ctx.strokeStyle = wavesBorderStyle(entity.rarity);
+                ctx.lineWidth = 5;
                 ctx.stroke();
+                ctx.restore();
 
                 if (entity.count > 1) {
                     ctx.save();
@@ -1680,19 +2587,71 @@ function draw() {
         });
     }
 
-    if (net.state.waveInfo !== null) { // Wave info
+    function renderWaveIcons() {
+        if (!net.state.iconStuff?.length) return;
+
+        mobIconCanvas.width = width;
+        mobIconCanvas.height = height;
+
+        const ctx = mobIconCtx;
+        ctx.clearRect(0, 0, width, height);
+
+        net.state.iconStuff.forEach((e) => {
+            const icon = getWaveIcon(e);
+            ctx.drawImage(icon, e.x - 6, e.y - 6);
+
+            if (e.count > 1) {
+                ctx.save();
+                ctx.textAlign = "right";
+                ctx.textBaseline = "top";
+                text(
+                    `x${e.count}`,
+                    e.x + e.size + 6,
+                    e.y - 5,
+                    e.size * 0.275,
+                    colors.white,
+                    ctx,
+                );
+                ctx.restore();
+            }
+        });
+    }
+
+    if (net.state.waveInfo) {
         ctx.textBaseline = "middle";
         text("Wave " + net.state.waveInfo.wave, width / 2, 30, 35);
         drawBar(width / 2 - 200, width / 2 + 200, 65, 30, colors["???"]);
         drawBar(width / 2 - 200, width / 2 - 200 + 400 * (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs), 65, 22.5, mixColors(BIOME_BACKGROUNDS[net.state.room.biome].color, colors.white, .2));
         text(net.state.waveInfo.livingMobs + " / " + net.state.waveInfo.maxMobs, width / 2, 65, 22.5);
         if (net.state.waveInfo.aliveMobs) {
-            if (JSON.stringify(net.state.aliveMobs2) !== JSON.stringify(net.state.waveInfo.aliveMobs)) {
+            const gradientState = wavesGradientOn() ? 1 : 0;
+
+            const gradientChanged = net.state.lastGradientState !== gradientState;
+
+            net.state.lastGradientState = gradientState;
+
+            const newHash = hashAliveMobs(net.state.waveInfo.aliveMobs);
+
+            const mobsChanged = newHash !== net.state._aliveMobsHash;
+            net.state._aliveMobsHash = newHash;
+
+            const resized = net.state._lastW !== width || net.state._lastH !== height;
+
+            net.state._lastW = width;
+            net.state._lastH = height;
+
+            if (mobsChanged || gradientChanged || resized) {
+                if (gradientChanged) {
+                    for (const k in WAVE_CACHE) {
+                        delete WAVE_CACHE[k];
+                    }
+                }
+
                 drawIconsToOffscreen(net.state.waveInfo.aliveMobs);
-                net.state.aliveMobs2 = JSON.parse(JSON.stringify(net.state.waveInfo.aliveMobs));
             }
 
-            ctx.drawImage(mobIconCanvas, 0, 0);
+            if (wavesGradientOn())  renderWaveIcons(); 
+            ctx.drawImage(mobIconCanvas, 0, 0, width, height);
 
             const mX = mouse.x / uiScale();
             const mY = mouse.y / uiScale();
@@ -1741,18 +2700,50 @@ function draw() {
                 ctx.stroke();
             }
 
+            const radius = biggestSize * (doTerrain ? 0.0225 : 0.025);
+            const blueDot = "#2F80FF";
+
+            const selfX =
+                (net.state.camera.x / net.state.room.width) * mapWidth +
+                x +
+                mapWidth / 2;
+
+            const selfY =
+                (net.state.camera.y / net.state.room.height) * mapHeight +
+                y +
+                mapHeight / 2;
+
             ctx.fillStyle = doTerrain ? colors.peaGreen : colors.playerYellow;
             ctx.beginPath();
-            ctx.arc(
-                net.state.camera.x / net.state.room.width * mapWidth + x + mapWidth / 2,
-                net.state.camera.y / net.state.room.height * mapHeight + y + mapHeight / 2,
-                biggestSize * (doTerrain ? .0225 : .025), 0, Math.PI * 2
-            );
+            ctx.arc(selfX, selfY, radius, 0, Math.PI * 2);
             ctx.fill();
+
+            if (net.state.minimapPlayers) {
+                for (const player of net.state.minimapPlayers.values()) {
+                    if (!player) continue;
+                    if (player.id === net.state.playerID) continue;
+
+                    const px =
+                        (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
+
+                    const py =
+                        (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
+
+                    ctx.fillStyle = blueDot;
+                    ctx.beginPath();
+                    ctx.arc(px, py, radius * 0.85, 0, Math.PI * 2);
+            ctx.fill();
+                }
+            }
         }
 
-        { // Level
-            net.state.levelProgress = lerp(net.state.levelProgress, net.state.levelProgressTarget, .1);
+        {
+            // Level
+            net.state.levelProgress = lerp(
+                net.state.levelProgress,
+                net.state.levelProgressTarget,
+                0.1,
+            );
 
             if (net.state.levelProgressTarget < net.state.levelProgress || isNaN(net.state.levelProgress)) {
                 net.state.levelProgress = 0;
@@ -1847,9 +2838,38 @@ function draw() {
             const menuRect = menu.getBoundingClientRect();
             const mouseX = mouse.x;
             const mouseY = mouse.y;
-            if (mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom) {
-                // net.state.petalHover = [petal.index, petal.rarity, x, y];
-                if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
+
+            const visible =
+                rect.top >= menuRect.top &&
+                rect.bottom <= menuRect.bottom &&
+                rect.left >= menuRect.left &&
+                rect.right <= menuRect.right;
+
+            const hovered =
+                visible &&
+                mouseX >= rect.left &&
+                mouseX <= rect.right &&
+                mouseY >= rect.top &&
+                mouseY <= rect.bottom;
+
+            if (hovered) {
+                net.state._foundHover = true;
+
+                net.state.inventoryPetalHover = [
+                    petal.index,
+                    petal.rarity,
+                    rect.left + rect.width / 2,
+                    rect.top + rect.height / 2 - 22,
+                ];
+
+                if (
+                    !inventoryDragConfig.enabled &&
+                    !dragConfig.enabled &&
+                    !joystick.on &&
+                    mouse.left &&
+                    rect.y > menuRect.top
+                ) {
+                    
                     beginInventoryDragDrop(
                         rect.x * 1.1 / uScale,
                         rect.y * 1.1 / uScale,
@@ -1857,10 +2877,13 @@ function draw() {
                         petal.index,
                         petal.rarity
                     );
+
                     menu.classList.toggle("active");
+
                     inventoryDragConfig.index = petal.index;
                     inventoryDragConfig.rarity = petal.rarity;
                     inventoryDragConfig.item.stableSize = rect.width;
+
                     inventoryDragConfig.onDrop = () => {
                         processInventoryDrop();
                         menu.classList.toggle("active");
@@ -1870,22 +2893,76 @@ function draw() {
         });
     }
 
+    if (!net.state._foundHover) {
+        net.state.inventoryPetalHover = null;
+    }
+
     ctx.restore();
 
     { // Hovers
         net.state.petalHoverAlpha ??= 0;
         net.state.lastPetalHover ??= null;
 
-        if (net.state.petalHover !== null) {
-            net.state.lastPetalHover = [...net.state.petalHover];
-            net.state.petalHoverAlpha += .25;
+        const inventoryHover = Array.isArray(net.state.inventoryPetalHover)
+            ? net.state.inventoryPetalHover
+            : null;
+
+        if (inventoryHover) {
+            const img = petalTooltip(...inventoryHover);
+
+            const maxW = 300;
+            const minW = 180;
+
+            let w = Math.min(maxW, Math.max(minW, window.innerWidth * 0.22));
+            let h = (w * img.height) / img.width;
+
+            const box = document.createElement("div");
+            box.style.position = "fixed";
+
+            let left = inventoryHover[2] - w / 2;
+            let top = inventoryHover[3] - h - 12;
+
+            left = Math.max(0, Math.min(left, window.innerWidth - w));
+            top = Math.max(0, Math.min(top, window.innerHeight - h));
+
+            box.style.left = `${left}px`;
+            box.style.top = `${top}px`;
+
+            const cv = document.createElement("canvas");
+            cv.width = w;
+            cv.height = h;
+
+            const cx = cv.getContext("2d");
+            cx.imageSmoothingEnabled = true;
+            cx.imageSmoothingQuality = "high";
+            cx.drawImage(img, 0, 0, w, h);
+
+            box.appendChild(cv);
+
+            inventoryTooltipLayer.replaceChildren(box);
+            inventoryTooltipLayer.style.display = "block";
         } else {
-            net.state.petalHoverAlpha -= .25;
+            inventoryTooltipLayer.replaceChildren();
+            inventoryTooltipLayer.style.display = "none";
         }
 
-        net.state.petalHoverAlpha = Math.max(0, Math.min(1, net.state.petalHoverAlpha));
+        if (Array.isArray(net.state.petalHover)) {
+            net.state.lastPetalHover = [...net.state.petalHover];
+            net.state.petalHoverAlpha += 0.25;
+        } else {
+            net.state.petalHoverAlpha -= 0.25;
+        }
+        net.state.petalHoverAlpha = Math.max(
+            0,
+            Math.min(1, net.state.petalHoverAlpha),
+        );
 
-        if (net.state.lastPetalHover) {
+        if (
+            Array.isArray(net.state.lastPetalHover) &&
+            net.state.lastPetalHover.length === 4 &&
+            net.state.lastPetalHover.every((v) => v !== undefined && v !== null) &&
+            !Array.isArray(net.state.inventoryPetalHover)
+        ) {
             ctx.save();
             const img = petalTooltip(...net.state.lastPetalHover);
             ctx.imageSmoothingEnabled = true;
@@ -1977,6 +3054,13 @@ function draw() {
         } else {
             text("Not connected", width - 10, 40, 15);
         }
+
+        text(
+            `X: ${net.state.camera?.x?.toFixed(0) ?? 0} | Y: ${net.state.camera?.y?.toFixed(0) ?? 0}`,
+            width - 10,
+            55,
+            15,
+        );
 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
