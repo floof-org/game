@@ -3068,7 +3068,7 @@ function draw() {
         if (net.ChatMessage.showInput) {
             const element = net.ChatMessage.element;
             element.style.display = "block";
-            element.style.left = `60px`;
+            element.style.left = `110px`;
             element.style.bottom = `12px`;
             element.style.width = `202px`;
             element.style.height = `7px`;
@@ -3077,7 +3077,7 @@ function draw() {
             element.style.backgroundColor = `white`;
             element.style.border = "4px solid black";
 
-            const overlayX = 66;
+            const overlayX = 116;
             const overlayY = canvas.height - 455;
             const overlayWidth = 250;
             const overlayHeight = 400;
@@ -3127,10 +3127,10 @@ function draw() {
         } else {
             ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
             ctx.beginPath();
-            ctx.roundRect(66, canvas.height - 51, 252, 38, 5);
+            ctx.roundRect(116, canvas.height - 51, 252, 38, 5);
             ctx.fill();
             net.ChatMessage.element.style.display = "none";
-            text("Press Enter to open chat", 81, canvas.height - 31, 14);
+            text("Press Enter to open chat", 131, canvas.height - 31, 14);
         }
 
         ctx.textBaseline = "top";
@@ -3150,11 +3150,11 @@ function draw() {
 
                 switch (message.type) {
                     case 0: // Chat
-                        const nameWidth = text(message.username, 66, message.y, 15, message.color);
-                        drawWrappedText(": " + message.message, nameWidth + 66, message.y, 15, 235, "#FFFFFF", ctx, 66);
+                        const nameWidth = text(message.username, 116, message.y, 15, message.color);
+                        drawWrappedText(": " + message.message, nameWidth + 116, message.y, 15, 235, "#FFFFFF", ctx, 116);
                         break;
                     case 1: // System
-                        drawWrappedText(message.message, 66, message.y, 15, 235, message.color, ctx, 66);
+                        drawWrappedText(message.message, 116, message.y, 15, 235, message.color, ctx, 116);
                         break;
                 }
 
