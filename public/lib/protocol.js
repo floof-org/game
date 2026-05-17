@@ -300,7 +300,7 @@ export class PetalConfig {
 
     setDescription(description) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].description = description instanceof Array ? (description[i] ?? description[count.length - 1]) : description;
+            this.tiers[i].description = description instanceof Array ? (description[i] ?? description[description.length - 1]) : description;
         }
 
         return this;
