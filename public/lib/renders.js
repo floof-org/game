@@ -2161,8 +2161,11 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             ctx.restore();
             break;
         default:
-            if (state.petalConfigs[index].icon) {
-                let icon = state.petalConfigs[index].icon;
+            const petal = state.petalConfigs[index];
+            const tier = petal.tiers[rarity];
+            
+            if (tier.icon) {
+                let icon = tier.icon;
                 let count = icon.count;
                 let size = icon.size;
                 if (count > 1) {
