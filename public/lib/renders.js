@@ -2203,7 +2203,7 @@ function getUIPetalName(index) {
         case 67:
             return "Eggs";
         default:
-            const tier = state.petalConfigs[index].tiers[rarity];
+            const tier = state.petalConfigs[index].tiers[0];
             let name = state.petalConfigs[index].name;
             if (tier.icon) {
                 name = tier.icon.name
