@@ -6,6 +6,29 @@ import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
 
+// Dev runtime setup (bun.js wrapper provides this in production)
+globalThis.environmentName = "bun";
+// Override fetch to prepend a base URL to relative paths (bun.js wrapper does this)
+if (typeof Bun !== "undefined") {
+    const _fetch = globalThis.fetch;
+    globalThis.fetch = async (...args) => {
+        if (typeof args[0] === "string" && !args[0].startsWith("http")) {
+            args[0] = (Bun.env.GAME_SERVER) + args[0];
+        }
+        return _fetch(...args);
+    };
+}
+
+globalThis.ANALYTICS_DATA ??= btoa(JSON.stringify({
+    screen: "0x0",
+    hardware: { gl:0, gl2:0, minCores:0, minMem:0, gpu:"Unknown", os:"Linux", bench:0 },
+    browser: typeof Bun !== "undefined" ? { name:"Bun", version:Bun.version } : { name:"Unknown", version:"0.0.0" },
+    locale: Intl.DateTimeFormat().resolvedOptions().locale,
+    tzOff: -(new Date().getTimezoneOffset() / 60),
+    dst: +(new Date().getTimezoneOffset() < Math.max(new Date(new Date().getFullYear(),0,1).getTimezoneOffset(), new Date(new Date().getFullYear(),6,1).getTimezoneOffset())),
+    isMobile: 0
+}));
+
 function createWave(n) {
     const output = [];
 
@@ -124,7 +147,7 @@ setInterval(() => {
 
     switch (state.gamemode) {
         case GAMEMODES.FFA:
-        case GAMEMODES.TDM: {
+        case GAMEMODES.TDM:
             const oldMapSize = state.width;
             const newMapSize = 1024 + 32 * 8 * (state.clients.size - 1);
 
@@ -134,7 +157,7 @@ setInterval(() => {
 
                 state.clients.forEach(client => client.sendRoom());
             }
-        } break;
+            break;
         case GAMEMODES.WAVES: {
             if (state.isWaves && state.livingMobCount <= 0) {
                 state.currentWave++;
@@ -185,7 +208,7 @@ setInterval(() => {
             let cfg = mobConfigs[getMobIndex()];
             const info = state.spawnNearPlayer(cfg);
             if (info.tile?.spawn !== undefined) {
-                const spawner = state.mapData.mobSpawners.find(spawner => {spawner.id == info.tile?.spawn} );
+                const spawner = state.mapData.mobSpawners.find(spawner => { spawner.id == info.tile?.spawn });
                 if (spawner && spawner.availableMobs.length) {
                     const spawn = spawner.availableMobs[spawner.availableMobs.length * Math.random() | 0]
                     cfg = mobConfigs[spawn[0]]
