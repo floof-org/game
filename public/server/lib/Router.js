@@ -230,23 +230,7 @@ export default class Router {
                 state.gamemode = GAMEMODES.MAZE;
                 state.mobsExpire = true;
                 state.teamCount = 0;
-                state.announceRarity = 10;
-
-                // setTimeout(() => {
-                //     state.clients.forEach(c => c.systemMessage("Lobby will be closing in 5 minutes...", "#FF0000"));
-
-                //     setTimeout(() => {
-                //         state.clients.forEach(c => c.systemMessage("Lobby will be closing in 1 minute...", "#FF0000"));
-
-                //         setTimeout(() => {
-                //             state.clients.forEach(c => c.systemMessage("Lobby is closing...", "#FF0000"));
-                //             state.clients.forEach(c => c.kick("Lobby Closed"));
-
-                //             setTimeout(() => process.exit(), 1E3);
-                //         }, 60000);
-                //     }, 240000);
-                // }, 1000 * 60 * 60 * 8);
-
+                state.announceRarity = 8;
                 await initTerrain(state.biome);
                 break;
             case "ffa":
