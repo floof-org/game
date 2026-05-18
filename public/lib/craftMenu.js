@@ -1,37 +1,74 @@
 import { getPetalIcon, petalTooltip } from "./renders.js";
 import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net.js";
 
+var craftRef = null;
+
 (function () {
-  var hoverEntry = null;
-  var btn, panel, tip, tipCanvas, fsBtn;
-  var isFullscreen = false;
+  var craft = {};
 
-  var craftSlots = [0, 0, 0, 0, 0];
-  var craftPetalIdx = null;
-  var craftRarity = null;
+  // State
 
-  var craftResult = null;
-  var craftResultToken = 0;
-  var CRAFT_RESULT_TTL_MS = 5000;
+  craft.btn = null;
+  craft.panel = null;
+  craft.tip = null;
+  craft.tipCanvas = null;
+  craft.fsBtn = null;
 
-  var searchQuery = '';
+  craft.hoverEntry = null;
+  craft.isFullscreen = false;
+  craft.searchQuery = '';
 
-  var fastCraft = false;
-  try { fastCraft = localStorage.getItem('craftMenuFastCraft') === 'true'; } catch (_) {}
-  function setFastCraft(val) {
-    fastCraft = !!val;
-    try { localStorage.setItem('craftMenuFastCraft', String(fastCraft)); } catch (_) {}
-  }
+  craft.craftSlots = [0, 0, 0, 0, 0];
+  craft.craftPetalIdx = null;
+  craft.craftRarity = null;
+  craft.craftResult = null;
+  craft.craftResultToken = 0;
 
-  function dlog()   { if (_debugMode) console.log.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments))); }
-  function dwarn()  { if (_debugMode) console.warn.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments))); }
-  function derror() { if (_debugMode) console.error.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments))); }
+  craft.fastCraft = false;
+  try { craft.fastCraft = localStorage.getItem('craftMenuFastCraft') === 'true'; } catch (_) {}
 
-  function getCraftPetalName(s, petalIdx) {
-    return (s && s.petalConfigs && s.petalConfigs[petalIdx] && s.petalConfigs[petalIdx].name) || '';
-  }
+  craft.liveCraftRates = null;
+  craft.craftRatesFetching = false;
 
-  var PETAL_NAME_SHORTHAND = {
+  craft.pityRates = {};
+  craft.pityInitialized = false;
+  craft._pendingBotPitySends = [];
+  craft._pityCurrentTier = null;
+  craft._pityCurrentSinglePetal = null;
+  craft._pitySuppressingCurrent = false;
+  craft._pityLastMessageAt = 0;
+  craft.pityInterceptorStarted = false;
+
+  craft._loginAt = 0;
+  craft._lastUsername = null;
+  craft._lastTiersSig = null;
+
+  craft.fastCraftInjectAttempts = 0;
+
+  craft.orbitRAF = null;
+  craft.orbitLastPositions = [];
+  craft.orbitCurrentProgress = 0;
+  craft.easeRAF = null;
+
+  craft._debugMode = false;
+  craft._simNextOutcome = null;
+
+
+  // Constants
+
+  craft.CRAFT_RESULT_TTL_MS = 5000;
+  craft.PITY_SEND_TIMEOUT_MS = 10000;
+  craft.PITY_WINDOW_MS = 2500;
+  craft.POST_LOGIN_PITY_DELAY_MS = 1500;
+  craft.PITY_INIT_POLL_MS = 2500;
+  craft.ORBIT_DURATION_MS = 1800;
+  craft.FALL_DURATION_MS = 333;
+  craft.EASE_DURATION_MS = 333;
+
+  craft.DESERT_PITY_MIN_TIER_IDX = 3;
+  craft.SUCCESS_SPIRAL_SWEEP = Math.PI / 2;
+
+  craft.PETAL_NAME_SHORTHAND = {
     'Third Eye': 'Teye',
     'Beetle Egg': 'Begg',
     'Ant Egg': 'Aegg',
@@ -52,290 +89,13 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
     'Fire Spellbook': 'Fspell',
   };
 
-  var liveCraftRates = null;
-  var craftRatesFetching = false;
+  craft.CRAFT_RATE_LINE_RE = /^([^:]+?):\s*([\d.]+)%(?:\s*$|\s*\|\s*PRNG\s+starts\s+at\s+attempt:\s*(\d+))/;
+  craft.PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
+  craft.PITY_SINGLE_HEADER_RE = /^(.+?)\s+pity:\s*(?:([\d.]+)%\s*\(\+([\d.]+)\s*pity\))?\s*$/i;
+  craft.PITY_RATE_ONLY_RE = /^([\d.]+)%\s*\(\+([\d.]+)\s*pity\)\s*$/i;
+  craft.PITY_LINE_RE = /^([^:]+?):\s*([\d.]+)%\s*\(\+([\d.]+)\s*pity\)/i;
 
-  var CRAFT_RATE_LINE_RE = /^([^:]+?):\s*([\d.]+)%(?:\s*$|\s*\|\s*PRNG\s+starts\s+at\s+attempt:\s*(\d+))/;
-
-  function fetchCraftRates() {
-    if (liveCraftRates || craftRatesFetching) return;
-    if (typeof captureChatMessage !== 'function') return;
-    if (typeof sendChatMessage !== 'function') return;
-    var s = state;
-    if (!s || !s.socket || s.socket.readyState !== WebSocket.OPEN) return;
-
-    var lobby = detectLobby(s);
-    if (!lobby || lobby.name !== 'Desert Maze') return;
-    craftRatesFetching = true;
-    var p = captureChatMessage(
-      function (e) {
-        return e.type === 1 && CRAFT_RATE_LINE_RE.test(e.message);
-      },
-
-      { count: 32, idleMs: 800, timeoutMs: 20000 }
-    );
-    if (!sendChatMessage('/craft')) {
-      craftRatesFetching = false;
-      return;
-    }
-    p.then(function (lines) {
-      var rates = {};
-      for (var i = 0; i < lines.length; i++) {
-        var m = CRAFT_RATE_LINE_RE.exec(lines[i].message);
-        if (m) rates[m[1].trim()] = parseFloat(m[2]);
-      }
-      if (Object.keys(rates).length) {
-        liveCraftRates = rates;
-        if (panel && panel.style.display !== 'none') render();
-      } else {
-        dwarn('/craft response empty; using hardcoded rates');
-      }
-    }).catch(function (err) {
-      derror('craft rate fetch failed', err);
-    }).finally(function () {
-      craftRatesFetching = false;
-    });
-  }
-
-  function getCraftRate(tierName) {
-    if (liveCraftRates && liveCraftRates[tierName] != null) return liveCraftRates[tierName];
-    var preset = detectLobby(state);
-    if (preset && preset.rates && preset.rates[tierName] != null) return preset.rates[tierName];
-    return CRAFT_SUCCESS_RATES[tierName];
-  }
-
-  var pityRates = {};
-  var pityInitialized = false;
-
-  var _pendingBotPitySends = [];
-  var PITY_SEND_TIMEOUT_MS = 10000;
-
-  var _pityCurrentTier = null;
-  var _pityCurrentSinglePetal = null;
-  var _pitySuppressingCurrent = false;
-  var _pityLastMessageAt = 0;
-  var PITY_WINDOW_MS = 2500;
-  var pityInterceptorStarted = false;
-
-  var _loginAt = 0;
-  var _lastUsername = null;
-  var POST_LOGIN_PITY_DELAY_MS = 1500;
-
-  var DESERT_PITY_MIN_TIER_IDX = 3;
-  var PITY_INIT_POLL_MS = 2500;
-  var PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
-
-  var PITY_SINGLE_HEADER_RE = /^(.+?)\s+pity:\s*(?:([\d.]+)%\s*\(\+([\d.]+)\s*pity\))?\s*$/i;
-
-  var PITY_RATE_ONLY_RE = /^([\d.]+)%\s*\(\+([\d.]+)\s*pity\)\s*$/i;
-
-  var PITY_LINE_RE = /^([^:]+?):\s*([\d.]+)%\s*\(\+([\d.]+)\s*pity\)/i;
-
-  function startPityInterceptor() {
-    if (pityInterceptorStarted) return;
-    if (typeof captureChatMessage !== 'function') return;
-    pityInterceptorStarted = true;
-
-    captureChatMessage(function (e) {
-      var msg = String(e.message || '');
-      var now = performance.now();
-
-      while (_pendingBotPitySends.length > 0 &&
-             now - _pendingBotPitySends[0] > PITY_SEND_TIMEOUT_MS) {
-        _pendingBotPitySends.shift();
-      }
-
-      if (_pityLastMessageAt > 0 && now - _pityLastMessageAt > PITY_WINDOW_MS) {
-        _pityCurrentTier = null;
-        _pityCurrentSinglePetal = null;
-        _pitySuppressingCurrent = false;
-      }
-
-      var headerMatch = PITY_HEADER_RE.exec(msg);
-      if (headerMatch) {
-        _pityLastMessageAt = now;
-        _pityCurrentTier = headerMatch[1].trim();
-        _pityCurrentSinglePetal = null;
-        if (!pityRates[_pityCurrentTier]) pityRates[_pityCurrentTier] = {};
-        if (_pendingBotPitySends.length > 0) {
-          _pendingBotPitySends.shift();
-          _pitySuppressingCurrent = true;
-          return true;
-        }
-        _pitySuppressingCurrent = false;
-        return false;
-      }
-
-      var singleHeader = PITY_SINGLE_HEADER_RE.exec(msg);
-      if (singleHeader) {
-        _pityLastMessageAt = now;
-        var headerPrefix = singleHeader[1].trim();
-        var inlineRate = singleHeader[2] != null ? parseFloat(singleHeader[2]) : null;
-        var sNow = state;
-        var ttn = null, pn = null;
-        if (sNow && sNow.tiers) {
-          for (var ti = 0; ti < sNow.tiers.length; ti++) {
-            var ttname = sNow.tiers[ti].name;
-            if (headerPrefix.indexOf(ttname + ' ') === 0) {
-              ttn = ttname;
-              pn = headerPrefix.substring(ttname.length + 1).trim();
-              break;
-            }
-          }
-        }
-        if (!ttn) {
-          var sp = headerPrefix.split(/\s+/);
-          ttn = sp[0];
-          pn = sp.slice(1).join(' ');
-        }
-        if (ttn && pn) {
-          if (!pityRates[ttn]) pityRates[ttn] = {};
-          if (inlineRate != null) pityRates[ttn][pn] = inlineRate;
-          _pityCurrentTier = ttn;
-          _pityCurrentSinglePetal = { tier: ttn, petal: pn };
-        }
-        if (_pendingBotPitySends.length > 0) {
-          _pendingBotPitySends.shift();
-          _pitySuppressingCurrent = true;
-          return true;
-        }
-        _pitySuppressingCurrent = false;
-        return false;
-      }
-
-      var rateOnly = PITY_RATE_ONLY_RE.exec(msg);
-      if (rateOnly && _pityCurrentSinglePetal) {
-        _pityLastMessageAt = now;
-        var splitRate = parseFloat(rateOnly[1]);
-        pityRates[_pityCurrentSinglePetal.tier][_pityCurrentSinglePetal.petal] = splitRate;
-        return _pitySuppressingCurrent;
-      }
-
-      var lineMatch = PITY_LINE_RE.exec(msg);
-      if (lineMatch && _pityCurrentTier && !_pityCurrentSinglePetal) {
-        _pityLastMessageAt = now;
-        pityRates[_pityCurrentTier][lineMatch[1].trim()] = parseFloat(lineMatch[2]);
-        return _pitySuppressingCurrent;
-      }
-
-      if (/^(?:Current\s+Attempt|Attempts\s+for\s+PRNG):/i.test(msg)) {
-        _pityLastMessageAt = now;
-        return _pitySuppressingCurrent;
-      }
-      return false;
-    }, { count: 1000000000, idleMs: 1000000000, timeoutMs: 1000000000 });
-    dlog('pity interceptor active');
-  }
-
-  function fetchPityForTier(targetTier, petalName) {
-    if (typeof sendChatMessage !== 'function') return;
-    var s = state;
-    if (!s || !s.socket || s.socket.readyState !== WebSocket.OPEN) return;
-    var lobby = detectLobby(s);
-    if (!lobby || lobby.name !== 'Desert Maze') return;
-    startPityInterceptor();
-    var cmd = '/pity ' + targetTier + (petalName ? ' ' + petalName : '');
-    _pendingBotPitySends.push(performance.now());
-    if (!sendChatMessage(cmd)) {
-
-      _pendingBotPitySends.pop();
-    }
-  }
-
-  function fetchInitialPity() {
-    if (pityInitialized) return;
-
-    if (_loginAt === 0) return;
-    if (performance.now() - _loginAt < POST_LOGIN_PITY_DELAY_MS) return;
-    var s = state;
-    if (!s || !s.inventory || !s.tiers) return;
-    if (!s.socket || s.socket.readyState !== WebSocket.OPEN) return;
-    var lobby = detectLobby(s);
-    if (!lobby || lobby.name !== 'Desert Maze') return;
-    var highestIdx = -1;
-    for (var i = s.tiers.length - 1; i >= 0; i--) {
-      var tn = s.tiers[i].name;
-      var inv = s.inventory[tn];
-      if (!inv) continue;
-      var hasAny = false;
-      for (var k in inv) { if (inv[k] > 0) { hasAny = true; break; } }
-      if (hasAny) { highestIdx = i; break; }
-    }
-    if (highestIdx < 0) return;
-
-    if (highestIdx < DESERT_PITY_MIN_TIER_IDX) {
-      dlog('highest owned tier: ' + s.tiers[highestIdx].name +
-        ' (idx ' + highestIdx + ') — below Epic threshold, /pity skipped');
-      return;
-    }
-    pityInitialized = true;
-    dlog('highest owned tier: ' + s.tiers[highestIdx].name +
-      ' (idx ' + highestIdx + '); fetching initial pity');
-    fetchPityForTier(s.tiers[highestIdx].name);
-    if (highestIdx - 1 >= 0) fetchPityForTier(s.tiers[highestIdx - 1].name);
-  }
-
-  function firePityRefresh(petalIdx, fromRarity) {
-    if (petalIdx == null || fromRarity == null) {
-      dlog('firePityRefresh: missing petalIdx/fromRarity', petalIdx, fromRarity);
-      return;
-    }
-    var s = state;
-    if (!s || !s.tiers) return;
-    var lobby = detectLobby(s);
-    if (!lobby || lobby.name !== 'Desert Maze') {
-      dlog('firePityRefresh skipped: not Desert Maze');
-      return;
-    }
-
-    var materialTier = s.tiers[fromRarity];
-    if (!materialTier) {
-      dlog('firePityRefresh: no materialTier for fromRarity', fromRarity);
-      return;
-    }
-    var petalName = getCraftPetalName(s, petalIdx);
-    if (!petalName) {
-      dlog('firePityRefresh: no petalName for petalIdx', petalIdx);
-      return;
-    }
-    dlog('Pity Update: ' + materialTier.name + ' ' + petalName);
-    fetchPityForTier(materialTier.name, petalName);
-  }
-
-  var CRAFT_SUCCESS_RATES = {
-    'Common': 100,
-    'Uncommon': 64,
-    'Rare': 32,
-    'Epic': 16,
-    'Legendary': 8,
-    'Mythic': 4,
-    'Ultra': 2,
-    'Super': 1,
-    'Ancient': 0.5,
-    'Omega': 0.4,
-    'Eternal': 0.3,
-    'Unique': 0.2,
-    'Hyper': 0.1,
-    'Galaxium': 0.09,
-    'Millom': 0.08,
-    'Fictional': 0.07,
-    'Transcestrial': 0.05,
-    'Chaos': 0.01,
-    'Absiorcadinary': 0.009,
-    'Absolute Fictional': 0.008,
-    'Nullified': 0.007,
-    'Hyperfixation': 0.006,
-    'Atlantical': 0.001,
-    'Alpha': 0.0003,
-    'Finalist': 0.0008,
-    'Epsilation': 0.0007,
-    'Improbable': 0.0006,
-    'Izolational': 0.0005,
-    'Chronodynamic': 0.0001,
-    'Multiversal': 0.00001,
-  };
-
-  var LOBBY_PRESETS = [
+  craft.LOBBY_PRESETS = [
     {
       name: 'Line Maze',
       short: 'Line',
@@ -372,15 +132,311 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         'Hyperfixation', 'Atlantical', 'Alpha', 'Finalist', 'Epsilation',
         'Improbable', 'Izolational', 'Chronodynamic', 'Multiversal',
       ],
-      rates: null,
+      rates: {
+        'Common': 100,
+        'Uncommon': 64,
+        'Rare': 32,
+        'Epic': 16,
+        'Legendary': 8,
+        'Mythic': 4,
+        'Ultra': 2,
+        'Super': 1,
+        'Ancient': 0.5,
+        'Omega': 0.4,
+        'Eternal': 0.3,
+        'Unique': 0.2,
+        'Hyper': 0.1,
+        'Galaxium': 0.09,
+        'Millom': 0.08,
+        'Fictional': 0.07,
+        'Transcestrial': 0.05,
+        'Chaos': 0.01,
+        'Absiorcadinary': 0.009,
+        'Absolute Fictional': 0.008,
+        'Nullified': 0.007,
+        'Hyperfixation': 0.006,
+        'Atlantical': 0.001,
+        'Alpha': 0.0003,
+        'Finalist': 0.0008,
+        'Epsilation': 0.0007,
+        'Improbable': 0.0006,
+        'Izolational': 0.0005,
+        'Chronodynamic': 0.0001,
+        'Multiversal': 0.00001,
+      },
     },
   ];
 
-  function detectLobby(s) {
+  craft.EXPAND_SVG =
+    '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" ' +
+    'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
+    'stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M9 7 L14 2 M10 2 L14 2 L14 6"/>' +
+    '<path d="M7 9 L2 14 M2 10 L2 14 L6 14"/></svg>';
+  craft.COLLAPSE_SVG =
+    '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" ' +
+    'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
+    'stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M14 2 L9 7 M9 3 L9 7 L13 7"/>' +
+    '<path d="M2 14 L7 9 M3 9 L7 9 L7 13"/></svg>';
+
+  craft.STAR_CENTER = { x: 130, y: 100 };
+  craft.STAR_OUTER = 65;
+  craft.STAR_INNER = 48;
+  craft.STAR_POINTS = [];
+  for (var _sk = 0; _sk < 10; _sk++) {
+    var _sa = (-Math.PI / 2) + _sk * (Math.PI / 5);
+    var _sr = (_sk % 2 === 0) ? craft.STAR_OUTER : craft.STAR_INNER;
+    craft.STAR_POINTS.push({
+      x: craft.STAR_CENTER.x + _sr * Math.cos(_sa),
+      y: craft.STAR_CENTER.y + _sr * Math.sin(_sa),
+    });
+  }
+
+  // Functions
+
+  craft.setFastCraft = function (val) {
+    craft.fastCraft = !!val;
+    try { localStorage.setItem('craftMenuFastCraft', String(craft.fastCraft)); } catch (_) {}
+  };
+
+  craft.dlog = function () {
+    if (craft._debugMode) console.log.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments)));
+  };
+  craft.dwarn = function () {
+    if (craft._debugMode) console.warn.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments)));
+  };
+  craft.derror = function () {
+    if (craft._debugMode) console.error.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments)));
+  };
+
+  craft.getCraftPetalName = function (s, petalIdx) {
+    return (s && s.petalConfigs && s.petalConfigs[petalIdx] && s.petalConfigs[petalIdx].name) || '';
+  };
+
+  craft.fetchCraftRates = function () {
+    if (craft.liveCraftRates || craft.craftRatesFetching) return;
+    if (typeof captureChatMessage !== 'function') return;
+    if (typeof sendChatMessage !== 'function') return;
+    var s = state;
+    if (!s || !s.socket || s.socket.readyState !== WebSocket.OPEN) return;
+
+    var lobby = craft.detectLobby(s);
+    if (!lobby || lobby.name !== 'Desert Maze') return;
+    craft.craftRatesFetching = true;
+    var p = captureChatMessage(
+      function (e) {
+        return e.type === 1 && craft.CRAFT_RATE_LINE_RE.test(e.message);
+      },
+
+      { count: 32, idleMs: 800, timeoutMs: 20000 }
+    );
+    if (!sendChatMessage('/craft')) {
+      craft.craftRatesFetching = false;
+      return;
+    }
+    p.then(function (lines) {
+      var rates = {};
+      for (var i = 0; i < lines.length; i++) {
+        var m = craft.CRAFT_RATE_LINE_RE.exec(lines[i].message);
+        if (m) rates[m[1].trim()] = parseFloat(m[2]);
+      }
+      if (Object.keys(rates).length) {
+        craft.liveCraftRates = rates;
+        if (craft.panel && craft.panel.style.display !== 'none') craft.render();
+      } else {
+        craft.dwarn('/craft response empty; using hardcoded rates');
+      }
+    }).catch(function (err) {
+      craft.derror('craft rate fetch failed', err);
+    }).finally(function () {
+      craft.craftRatesFetching = false;
+    });
+  };
+
+  craft.getCraftRate = function (tierName) {
+    if (craft.liveCraftRates && craft.liveCraftRates[tierName] != null) return craft.liveCraftRates[tierName];
+    var preset = craft.detectLobby(state);
+    if (preset && preset.rates && preset.rates[tierName] != null) return preset.rates[tierName];
+    return undefined;
+  };
+
+  craft.startPityInterceptor = function () {
+    if (craft.pityInterceptorStarted) return;
+    if (typeof captureChatMessage !== 'function') return;
+    craft.pityInterceptorStarted = true;
+
+    captureChatMessage(function (e) {
+      var msg = String(e.message || '');
+      var now = performance.now();
+
+      while (craft._pendingBotPitySends.length > 0 &&
+             now - craft._pendingBotPitySends[0] > craft.PITY_SEND_TIMEOUT_MS) {
+        craft._pendingBotPitySends.shift();
+      }
+
+      if (craft._pityLastMessageAt > 0 && now - craft._pityLastMessageAt > craft.PITY_WINDOW_MS) {
+        craft._pityCurrentTier = null;
+        craft._pityCurrentSinglePetal = null;
+        craft._pitySuppressingCurrent = false;
+      }
+
+      var headerMatch = craft.PITY_HEADER_RE.exec(msg);
+      if (headerMatch) {
+        craft._pityLastMessageAt = now;
+        craft._pityCurrentTier = headerMatch[1].trim();
+        craft._pityCurrentSinglePetal = null;
+        if (!craft.pityRates[craft._pityCurrentTier]) craft.pityRates[craft._pityCurrentTier] = {};
+        if (craft._pendingBotPitySends.length > 0) {
+          craft._pendingBotPitySends.shift();
+          craft._pitySuppressingCurrent = true;
+          return true;
+        }
+        craft._pitySuppressingCurrent = false;
+        return false;
+      }
+
+      var singleHeader = craft.PITY_SINGLE_HEADER_RE.exec(msg);
+      if (singleHeader) {
+        craft._pityLastMessageAt = now;
+        var headerPrefix = singleHeader[1].trim();
+        var inlineRate = singleHeader[2] != null ? parseFloat(singleHeader[2]) : null;
+        var sNow = state;
+        var ttn = null, pn = null;
+        if (sNow && sNow.tiers) {
+          for (var ti = 0; ti < sNow.tiers.length; ti++) {
+            var ttname = sNow.tiers[ti].name;
+            if (headerPrefix.indexOf(ttname + ' ') === 0) {
+              ttn = ttname;
+              pn = headerPrefix.substring(ttname.length + 1).trim();
+              break;
+            }
+          }
+        }
+        if (!ttn) {
+          var sp = headerPrefix.split(/\s+/);
+          ttn = sp[0];
+          pn = sp.slice(1).join(' ');
+        }
+        if (ttn && pn) {
+          if (!craft.pityRates[ttn]) craft.pityRates[ttn] = {};
+          if (inlineRate != null) craft.pityRates[ttn][pn] = inlineRate;
+          craft._pityCurrentTier = ttn;
+          craft._pityCurrentSinglePetal = { tier: ttn, petal: pn };
+        }
+        if (craft._pendingBotPitySends.length > 0) {
+          craft._pendingBotPitySends.shift();
+          craft._pitySuppressingCurrent = true;
+          return true;
+        }
+        craft._pitySuppressingCurrent = false;
+        return false;
+      }
+
+      var rateOnly = craft.PITY_RATE_ONLY_RE.exec(msg);
+      if (rateOnly && craft._pityCurrentSinglePetal) {
+        craft._pityLastMessageAt = now;
+        var splitRate = parseFloat(rateOnly[1]);
+        craft.pityRates[craft._pityCurrentSinglePetal.tier][craft._pityCurrentSinglePetal.petal] = splitRate;
+        return craft._pitySuppressingCurrent;
+      }
+
+      var lineMatch = craft.PITY_LINE_RE.exec(msg);
+      if (lineMatch && craft._pityCurrentTier && !craft._pityCurrentSinglePetal) {
+        craft._pityLastMessageAt = now;
+        craft.pityRates[craft._pityCurrentTier][lineMatch[1].trim()] = parseFloat(lineMatch[2]);
+        return craft._pitySuppressingCurrent;
+      }
+
+      if (/^(?:Current\s+Attempt|Attempts\s+for\s+PRNG):/i.test(msg)) {
+        craft._pityLastMessageAt = now;
+        return craft._pitySuppressingCurrent;
+      }
+      return false;
+    }, { count: 1000000000, idleMs: 1000000000, timeoutMs: 1000000000 });
+    craft.dlog('pity interceptor active');
+  };
+
+  craft.fetchPityForTier = function (targetTier, petalName) {
+    if (typeof sendChatMessage !== 'function') return;
+    var s = state;
+    if (!s || !s.socket || s.socket.readyState !== WebSocket.OPEN) return;
+    var lobby = craft.detectLobby(s);
+    if (!lobby || lobby.name !== 'Desert Maze') return;
+    craft.startPityInterceptor();
+    var cmd = '/pity ' + targetTier + (petalName ? ' ' + petalName : '');
+    craft._pendingBotPitySends.push(performance.now());
+    if (!sendChatMessage(cmd)) {
+
+      craft._pendingBotPitySends.pop();
+    }
+  };
+
+  craft.fetchInitialPity = function () {
+    if (craft.pityInitialized) return;
+
+    if (craft._loginAt === 0) return;
+    if (performance.now() - craft._loginAt < craft.POST_LOGIN_PITY_DELAY_MS) return;
+    var s = state;
+    if (!s || !s.inventory || !s.tiers) return;
+    if (!s.socket || s.socket.readyState !== WebSocket.OPEN) return;
+    var lobby = craft.detectLobby(s);
+    if (!lobby || lobby.name !== 'Desert Maze') return;
+    var highestIdx = -1;
+    for (var i = s.tiers.length - 1; i >= 0; i--) {
+      var tn = s.tiers[i].name;
+      var inv = s.inventory[tn];
+      if (!inv) continue;
+      var hasAny = false;
+      for (var k in inv) { if (inv[k] > 0) { hasAny = true; break; } }
+      if (hasAny) { highestIdx = i; break; }
+    }
+    if (highestIdx < 0) return;
+
+    if (highestIdx < craft.DESERT_PITY_MIN_TIER_IDX) {
+      craft.dlog('highest owned tier: ' + s.tiers[highestIdx].name +
+        ' (idx ' + highestIdx + ') — below Epic threshold, /pity skipped');
+      return;
+    }
+    craft.pityInitialized = true;
+    craft.dlog('highest owned tier: ' + s.tiers[highestIdx].name +
+      ' (idx ' + highestIdx + '); fetching initial pity');
+    craft.fetchPityForTier(s.tiers[highestIdx].name);
+    if (highestIdx - 1 >= 0) craft.fetchPityForTier(s.tiers[highestIdx - 1].name);
+  };
+
+  craft.firePityRefresh = function (petalIdx, fromRarity) {
+    if (petalIdx == null || fromRarity == null) {
+      craft.dlog('firePityRefresh: missing petalIdx/fromRarity', petalIdx, fromRarity);
+      return;
+    }
+    var s = state;
+    if (!s || !s.tiers) return;
+    var lobby = craft.detectLobby(s);
+    if (!lobby || lobby.name !== 'Desert Maze') {
+      craft.dlog('firePityRefresh skipped: not Desert Maze');
+      return;
+    }
+
+    var materialTier = s.tiers[fromRarity];
+    if (!materialTier) {
+      craft.dlog('firePityRefresh: no materialTier for fromRarity', fromRarity);
+      return;
+    }
+    var petalName = craft.getCraftPetalName(s, petalIdx);
+    if (!petalName) {
+      craft.dlog('firePityRefresh: no petalName for petalIdx', petalIdx);
+      return;
+    }
+    craft.dlog('Pity Update: ' + materialTier.name + ' ' + petalName);
+    craft.fetchPityForTier(materialTier.name, petalName);
+  };
+
+  craft.detectLobby = function (s) {
     if (!s || !Array.isArray(s.tiers)) return null;
     var names = s.tiers.map(function (t) { return t && t.name; });
-    for (var i = 0; i < LOBBY_PRESETS.length; i++) {
-      var preset = LOBBY_PRESETS[i];
+    for (var i = 0; i < craft.LOBBY_PRESETS.length; i++) {
+      var preset = craft.LOBBY_PRESETS[i];
       if (preset.tiers.length !== names.length) continue;
       var ok = true;
       for (var j = 0; j < preset.tiers.length; j++) {
@@ -389,22 +445,9 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       if (ok) return preset;
     }
     return null;
-  }
+  };
 
-  var EXPAND_SVG =
-    '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" ' +
-    'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
-    'stroke-linejoin="round" aria-hidden="true">' +
-    '<path d="M9 7 L14 2 M10 2 L14 2 L14 6"/>' +
-    '<path d="M7 9 L2 14 M2 10 L2 14 L6 14"/></svg>';
-  var COLLAPSE_SVG =
-    '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" ' +
-    'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" ' +
-    'stroke-linejoin="round" aria-hidden="true">' +
-    '<path d="M14 2 L9 7 M9 3 L9 7 L13 7"/>' +
-    '<path d="M2 14 L7 9 M3 9 L7 9 L7 13"/></svg>';
-
-  function injectStyles() {
+  craft.injectStyles = function () {
     if (document.getElementById('craftMenuStyles')) return;
     var st = document.createElement('style');
     st.id = 'craftMenuStyles';
@@ -418,148 +461,146 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       '@keyframes craftMenuSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}' +
       '.craftMenuSpinning{animation:craftMenuSpin 0.5s linear infinite;transform-origin:center center;}';
     (document.head || document.documentElement).appendChild(st);
-  }
+  };
 
-  function applyPanelSize() {
-    if (!panel) return;
-    if (isFullscreen) {
-      panel.style.width = '95vw';
-      panel.style.maxWidth = 'none';
-      panel.style.height = '95vh';
-      panel.style.maxHeight = '95vh';
-      panel.style.left = '2.5vw';
-      panel.style.right = 'auto';
-      panel.style.bottom = 'auto';
-      panel.style.top = '2.5vh';
+  craft.applyPanelSize = function () {
+    if (!craft.panel) return;
+    if (craft.isFullscreen) {
+      craft.panel.style.width = '95vw';
+      craft.panel.style.maxWidth = 'none';
+      craft.panel.style.height = '95vh';
+      craft.panel.style.maxHeight = '95vh';
+      craft.panel.style.left = '2.5vw';
+      craft.panel.style.right = 'auto';
+      craft.panel.style.bottom = 'auto';
+      craft.panel.style.top = '2.5vh';
     } else {
-      panel.style.width = '632px';
-      panel.style.maxWidth = '632px';
-      panel.style.height = 'auto';
-      panel.style.maxHeight = '45vh';
-      panel.style.left = '5px';
-      panel.style.right = 'auto';
-      panel.style.bottom = '65px';
-      panel.style.top = 'auto';
+      craft.panel.style.width = '632px';
+      craft.panel.style.maxWidth = '632px';
+      craft.panel.style.height = 'auto';
+      craft.panel.style.maxHeight = '45vh';
+      craft.panel.style.left = '5px';
+      craft.panel.style.right = 'auto';
+      craft.panel.style.bottom = '65px';
+      craft.panel.style.top = 'auto';
     }
-  }
+  };
 
-  function computeIconSize(nRarities) {
-    if (!isFullscreen) return 56;
+  craft.computeIconSize = function (nRarities) {
+    if (!craft.isFullscreen) return 56;
     var available = window.innerWidth * 0.95 - 32;
     var maxPerCol = Math.floor((available - (nRarities - 1) * 5) / nRarities);
     return Math.max(24, Math.min(56, maxPerCol));
-  }
+  };
 
-  function toggleFullscreen() {
-    isFullscreen = !isFullscreen;
-    applyPanelSize();
-    render();
-  }
+  craft.toggleFullscreen = function () {
+    craft.isFullscreen = !craft.isFullscreen;
+    craft.applyPanelSize();
+    craft.render();
+  };
 
-  var _lastTiersSig = null;
-  function updateButtonVisibility() {
-    if (!btn) return;
+  craft.updateButtonVisibility = function () {
+    if (!craft.btn) return;
     var s = state;
 
     var currentUsername = s && s.username;
-    if (currentUsername && currentUsername !== _lastUsername) {
-      _lastUsername = currentUsername;
-      _loginAt = performance.now();
-      pityInitialized = false;
-      dlog('login detected (' + currentUsername +
-        '); /pity init scheduled for ' + POST_LOGIN_PITY_DELAY_MS + 'ms later');
+    if (currentUsername && currentUsername !== craft._lastUsername) {
+      craft._lastUsername = currentUsername;
+      craft._loginAt = performance.now();
+      craft.pityInitialized = false;
+      craft.dlog('login detected (' + currentUsername +
+        '); /pity init scheduled for ' + craft.POST_LOGIN_PITY_DELAY_MS + 'ms later');
     }
     var names = (s && Array.isArray(s.tiers)) ? s.tiers.map(function (t) { return t && t.name; }) : null;
     var sig = names ? names.join('|') : null;
-    var lobby = detectLobby(s);
-    if (sig !== _lastTiersSig) {
-      _lastTiersSig = sig;
-      dlog('tiers update; matched preset=' + (lobby && lobby.name) + '; tiers=', names);
+    var lobby = craft.detectLobby(s);
+    if (sig !== craft._lastTiersSig) {
+      craft._lastTiersSig = sig;
+      craft.dlog('tiers update; matched preset=' + (lobby && lobby.name) + '; tiers=', names);
 
-      pityInitialized = false;
+      craft.pityInitialized = false;
     }
     var shouldShow = !!lobby;
     var newDisplay = shouldShow ? '' : 'none';
-    if (btn.style.display !== newDisplay) {
-      btn.style.display = newDisplay;
+    if (craft.btn.style.display !== newDisplay) {
+      craft.btn.style.display = newDisplay;
       if (!shouldShow) {
-        if (panel) panel.style.display = 'none';
-        if (tip) tip.style.display = 'none';
-        hoverEntry = null;
+        if (craft.panel) craft.panel.style.display = 'none';
+        if (craft.tip) craft.tip.style.display = 'none';
+        craft.hoverEntry = null;
       }
     }
-  }
+  };
 
-  function inject() {
+  craft.inject = function () {
     try {
-      injectStyles();
+      craft.injectStyles();
       var c = document.getElementById('bottomButtons');
       if (!c) return;
       if (document.getElementById('craftMenuButton')) return;
 
-      btn = document.createElement('button');
-      btn.id = 'craftMenuButton';
-      btn.tabIndex = -1;
-      btn.style.width = '40px';
-      btn.style.height = '40px';
-      btn.style.backgroundColor = 'rgba(219,157,90,0.5)';
-      btn.style.border = '3px solid #6e4924';
-      btn.style.display = 'none';
+      craft.btn = document.createElement('button');
+      craft.btn.id = 'craftMenuButton';
+      craft.btn.tabIndex = -1;
+      craft.btn.style.width = '40px';
+      craft.btn.style.height = '40px';
+      craft.btn.style.backgroundColor = 'rgba(219,157,90,0.5)';
+      craft.btn.style.border = '3px solid #6e4924';
+      craft.btn.style.display = 'none';
 
-      panel = document.createElement('div');
-      panel.id = 'craftMenuPanel';
+      craft.panel = document.createElement('div');
+      craft.panel.id = 'craftMenuPanel';
 
-      panel.style.cssText =
+      craft.panel.style.cssText =
         'position:fixed;display:none;flex-direction:column;' +
         'background:#db9d5a;border-radius:8px;border:4px solid #6e4924;' +
         'padding:8px;z-index:9999;font-family:Ubuntu,sans-serif;color:#fff;' +
         'overflow:hidden;box-sizing:border-box;';
-      applyPanelSize();
-      document.body.appendChild(panel);
+      craft.applyPanelSize();
+      document.body.appendChild(craft.panel);
 
-      tip = document.createElement('div');
-      tip.id = 'craftMenuTooltip';
-      tip.style.cssText =
+      craft.tip = document.createElement('div');
+      craft.tip.id = 'craftMenuTooltip';
+      craft.tip.style.cssText =
         'position:fixed;pointer-events:none;display:none;z-index:99999;' +
         'background:transparent;';
-      tipCanvas = document.createElement('canvas');
-      tip.appendChild(tipCanvas);
-      document.body.appendChild(tip);
+      craft.tipCanvas = document.createElement('canvas');
+      craft.tip.appendChild(craft.tipCanvas);
+      document.body.appendChild(craft.tip);
 
-      btn.addEventListener('click', togglePanel);
-      c.appendChild(btn);
+      craft.btn.addEventListener('click', craft.togglePanel);
+      c.appendChild(craft.btn);
 
       document.addEventListener('keydown', function (e) {
         if (e.key !== 'c' && e.key !== 'C') return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
-        if (!btn || btn.style.display === 'none') return;
+        if (!craft.btn || craft.btn.style.display === 'none') return;
         var ae = document.activeElement;
         if (ae) {
           var tag = ae.tagName;
           if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || ae.isContentEditable) return;
         }
         e.preventDefault();
-        togglePanel();
+        craft.togglePanel();
       });
 
-      setupCraftChatLogger();
-      injectFastCraftToggle();
+      craft.setupCraftChatLogger();
+      craft.injectFastCraftToggle();
 
-      updateButtonVisibility();
-      setInterval(updateButtonVisibility, 500);
+      craft.updateButtonVisibility();
+      setInterval(craft.updateButtonVisibility, 500);
 
-      setInterval(fetchInitialPity, PITY_INIT_POLL_MS);
+      setInterval(craft.fetchInitialPity, craft.PITY_INIT_POLL_MS);
     } catch (err) {
-      derror('inject failed', err);
+      craft.derror('inject failed', err);
     }
-  }
+  };
 
-  var fastCraftInjectAttempts = 0;
-  function injectFastCraftToggle() {
+  craft.injectFastCraftToggle = function () {
     if (document.getElementById('fastCraftCheckbox')) return;
     var menu = document.querySelector('#menus #optionsMenu');
     if (!menu) {
-      if (fastCraftInjectAttempts++ < 50) setTimeout(injectFastCraftToggle, 200);
+      if (craft.fastCraftInjectAttempts++ < 50) setTimeout(craft.injectFastCraftToggle, 200);
       return;
     }
     var label = document.createElement('label');
@@ -569,40 +610,40 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
     cb.type = 'checkbox';
     cb.id = 'fastCraftCheckbox';
     cb.name = 'fastCraftCheckbox';
-    cb.checked = fastCraft;
-    cb.addEventListener('change', function () { setFastCraft(cb.checked); });
+    cb.checked = craft.fastCraft;
+    cb.addEventListener('change', function () { craft.setFastCraft(cb.checked); });
     menu.appendChild(label);
     menu.appendChild(cb);
     menu.appendChild(document.createElement('br'));
-  }
+  };
 
-  function setupCraftChatLogger() {
-    dlog('craft chat listener registered');
+  craft.setupCraftChatLogger = function () {
+    craft.dlog('craft chat listener registered');
     onChatMessage(function (evt) {
 
       if (!evt) return;
       var msg = String(evt.message || '');
 
       function scheduleResult(prev, build) {
-        if (!craftResult || craftResult.type !== 'pending') return;
+        if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
         var result = build();
-        if (fastCraft) {
-          setCraftResult(result);
+        if (craft.fastCraft) {
+          craft.setCraftResult(result);
           return;
         }
-        var tokenAtSchedule = craftResultToken;
+        var tokenAtSchedule = craft.craftResultToken;
         setTimeout(function () {
-          if (craftResultToken !== tokenAtSchedule) return;
-          if (!craftResult || craftResult.type !== 'pending') return;
-          setCraftResult(result);
-        }, FALL_DURATION_MS);
+          if (craft.craftResultToken !== tokenAtSchedule) return;
+          if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
+          craft.setCraftResult(result);
+        }, craft.FALL_DURATION_MS);
       }
 
       var ok = /Crafted\s+(\d+)\b[^()]*\((\d+)\s*left/i.exec(msg);
       if (ok) {
         var gained = parseInt(ok[1], 10);
-        dlog('craft success (Desert), crafted ' + gained + ', ' + ok[2] + ' left');
-        var prevS = craftResult || {};
+        craft.dlog('craft success (Desert), crafted ' + gained + ', ' + ok[2] + ' left');
+        var prevS = craft.craftResult || {};
         scheduleResult(prevS, function () {
           return {
             type: 'success',
@@ -612,7 +653,7 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
             slots: prevS.slots,
           };
         });
-        firePityRefresh(prevS.petalIdx, prevS.fromRarity);
+        craft.firePityRefresh(prevS.petalIdx, prevS.fromRarity);
         return;
       }
 
@@ -621,8 +662,8 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         var gained = parseInt(lineMulti[1], 10);
         var consumedMulti = parseInt(lineMulti[2], 10);
         if (gained > 0) {
-          dlog('craft success (Line multi), crafted ' + gained);
-          var prevS = craftResult || {};
+          craft.dlog('craft success (Line multi), crafted ' + gained);
+          var prevS = craft.craftResult || {};
           scheduleResult(prevS, function () {
             return {
               type: 'success',
@@ -634,8 +675,8 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
           });
         } else {
           var attemptsMulti = Math.max(1, Math.round(consumedMulti / 5));
-          dlog('craft failed (Line multi, 0 gained), consumed ' + consumedMulti + ', ~' + attemptsMulti + ' attempts');
-          var prevF = craftResult || {};
+          craft.dlog('craft failed (Line multi, 0 gained), consumed ' + consumedMulti + ', ~' + attemptsMulti + ' attempts');
+          var prevF = craft.craftResult || {};
           scheduleResult(prevF, function () {
             return {
               type: 'fail',
@@ -650,8 +691,8 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       }
 
       if (/^Crafted\s+[A-Za-z]/.test(msg) && !/\(/.test(msg) && !/Mass\s*craft/i.test(msg)) {
-        dlog('craft success (Line single), crafted 1');
-        var prevS = craftResult || {};
+        craft.dlog('craft success (Line single), crafted 1');
+        var prevS = craft.craftResult || {};
         scheduleResult(prevS, function () {
           return {
             type: 'success',
@@ -667,9 +708,9 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       var fail = /[Cc]raft[^()]*?fail[^()]*?(\d+)\s*attempt[^()]*\((\d+)\s*left/i.exec(msg);
       if (fail) {
         var attempts = parseInt(fail[1], 10);
-        dlog('craft failed (Desert), ' + fail[2] + ' left');
+        craft.dlog('craft failed (Desert), ' + fail[2] + ' left');
 
-        var prevF = craftResult || {};
+        var prevF = craft.craftResult || {};
         scheduleResult(prevF, function () {
           return {
             type: 'fail',
@@ -679,7 +720,7 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
             slots: prevF.slots,
           };
         });
-        firePityRefresh(prevF.petalIdx, prevF.fromRarity);
+        craft.firePityRefresh(prevF.petalIdx, prevF.fromRarity);
         return;
       }
 
@@ -688,8 +729,8 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         var consumed = parseInt(lineFail[1], 10);
 
         var attempts = Math.max(1, Math.round(consumed / 5));
-        dlog('craft failed (Line), consumed ' + consumed + ', ~' + attempts + ' attempts');
-        var prevF = craftResult || {};
+        craft.dlog('craft failed (Line), consumed ' + consumed + ', ~' + attempts + ' attempts');
+        var prevF = craft.craftResult || {};
         scheduleResult(prevF, function () {
           return {
             type: 'fail',
@@ -703,54 +744,54 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       }
 
     });
-  }
+  };
 
-  function togglePanel() {
-    if (!panel) return;
-    if (panel.style.display === 'none') {
-      render();
-      panel.style.display = 'flex';
+  craft.togglePanel = function () {
+    if (!craft.panel) return;
+    if (craft.panel.style.display === 'none') {
+      craft.render();
+      craft.panel.style.display = 'flex';
     } else {
-      panel.style.display = 'none';
-      hoverEntry = null;
-      tip.style.display = 'none';
+      craft.panel.style.display = 'none';
+      craft.hoverEntry = null;
+      craft.tip.style.display = 'none';
     }
-  }
+  };
 
-  function clearCraft() {
-    craftSlots = [0, 0, 0, 0, 0];
-    craftPetalIdx = null;
-    craftRarity = null;
-  }
+  craft.clearCraft = function () {
+    craft.craftSlots = [0, 0, 0, 0, 0];
+    craft.craftPetalIdx = null;
+    craft.craftRarity = null;
+  };
 
-  function setCraftResult(result) {
-    var t = ++craftResultToken;
-    craftResult = result;
-    if (panel && panel.style.display !== 'none') render();
+  craft.setCraftResult = function (result) {
+    var t = ++craft.craftResultToken;
+    craft.craftResult = result;
+    if (craft.panel && craft.panel.style.display !== 'none') craft.render();
 
     if (result && result.type === 'success') return;
     setTimeout(function () {
-      if (craftResultToken === t) {
-        craftResult = null;
-        if (panel && panel.style.display !== 'none') render();
+      if (craft.craftResultToken === t) {
+        craft.craftResult = null;
+        if (craft.panel && craft.panel.style.display !== 'none') craft.render();
       }
-    }, CRAFT_RESULT_TTL_MS);
-  }
+    }, craft.CRAFT_RESULT_TTL_MS);
+  };
 
-  function loadCraft(petalIdx, rarity, owned, shift) {
+  craft.loadCraft = function (petalIdx, rarity, owned, shift) {
 
-    if (craftResult && craftResult.type !== 'pending') {
-      craftResult = null;
-      craftResultToken++;
+    if (craft.craftResult && craft.craftResult.type !== 'pending') {
+      craft.craftResult = null;
+      craft.craftResultToken++;
     }
 
-    if (_simNextOutcome != null) {
-      dlog('re-stage cleared pending SimCraft outcome:', _simNextOutcome);
-      _simNextOutcome = null;
+    if (craft._simNextOutcome != null) {
+      craft.dlog('re-stage cleared pending SimCraft outcome:', craft._simNextOutcome);
+      craft._simNextOutcome = null;
     }
     if (shift) {
-      craftPetalIdx = petalIdx;
-      craftRarity = rarity;
+      craft.craftPetalIdx = petalIdx;
+      craft.craftRarity = rarity;
       var per = Math.floor(owned / 5);
       var rem = owned - per * 5;
       var counts = [per, per, per, per, per];
@@ -760,57 +801,57 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         var t = idxs[i]; idxs[i] = idxs[j]; idxs[j] = t;
       }
       for (var k = 0; k < rem; k++) counts[idxs[k]]++;
-      craftSlots = counts;
+      craft.craftSlots = counts;
       return;
     }
 
-    var sameTarget = craftPetalIdx === petalIdx && craftRarity === rarity && craftPetalIdx != null;
+    var sameTarget = craft.craftPetalIdx === petalIdx && craft.craftRarity === rarity && craft.craftPetalIdx != null;
     if (sameTarget) {
       var staged = 0;
-      for (var s = 0; s < 5; s++) staged += craftSlots[s];
+      for (var s = 0; s < 5; s++) staged += craft.craftSlots[s];
       if (owned - staged >= 5) {
-        for (var ii = 0; ii < 5; ii++) craftSlots[ii]++;
+        for (var ii = 0; ii < 5; ii++) craft.craftSlots[ii]++;
       }
     } else {
-      craftPetalIdx = petalIdx;
-      craftRarity = rarity;
-      craftSlots = [1, 1, 1, 1, 1];
+      craft.craftPetalIdx = petalIdx;
+      craft.craftRarity = rarity;
+      craft.craftSlots = [1, 1, 1, 1, 1];
     }
-  }
+  };
 
-  function doCraft() {
-    if (craftPetalIdx == null || craftRarity == null) return;
+  craft.doCraft = function () {
+    if (craft.craftPetalIdx == null || craft.craftRarity == null) return;
     var s = state;
     if (!s) return;
     var total = 0;
-    for (var i = 0; i < 5; i++) total += craftSlots[i];
+    for (var i = 0; i < 5; i++) total += craft.craftSlots[i];
     if (total === 0) return;
 
-    if (_simNextOutcome != null) {
-      var simOutcome = _simNextOutcome === 'roll' ? undefined : _simNextOutcome;
-      _simNextOutcome = null;
-      var sim = _runSimulation(craftPetalIdx, craftRarity, total, simOutcome);
-      dlog('Craft Simulation Results:', sim);
+    if (craft._simNextOutcome != null) {
+      var simOutcome = craft._simNextOutcome === 'roll' ? undefined : craft._simNextOutcome;
+      craft._simNextOutcome = null;
+      var sim = craft._runSimulation(craft.craftPetalIdx, craft.craftRarity, total, simOutcome);
+      craft.dlog('Craft Simulation Results:', sim);
       return;
     }
-    var tierName = (s.tiers[craftRarity] || {}).name || '';
-    var petalName = getCraftPetalName(s, craftPetalIdx);
+    var tierName = (s.tiers[craft.craftRarity] || {}).name || '';
+    var petalName = craft.getCraftPetalName(s, craft.craftPetalIdx);
 
-    var lobbyForCraft = detectLobby(s);
+    var lobbyForCraft = craft.detectLobby(s);
     var craftPetalToken = petalName;
     if (lobbyForCraft && lobbyForCraft.name === 'Line Maze' &&
-        PETAL_NAME_SHORTHAND[petalName]) {
-      craftPetalToken = PETAL_NAME_SHORTHAND[petalName];
+        craft.PETAL_NAME_SHORTHAND[petalName]) {
+      craftPetalToken = craft.PETAL_NAME_SHORTHAND[petalName];
     }
     sendChatMessage('/craft ' + tierName + ' ' + craftPetalToken + ' ' + total);
 
-    orbitLastPositions = [];
-    setCraftResult({
+    craft.orbitLastPositions = [];
+    craft.setCraftResult({
       type: 'pending',
       delta: total,
-      petalIdx: craftPetalIdx,
-      fromRarity: craftRarity,
-      slots: craftSlots.slice(),
+      petalIdx: craft.craftPetalIdx,
+      fromRarity: craft.craftRarity,
+      slots: craft.craftSlots.slice(),
       startedAt: performance.now(),
     });
 
@@ -821,98 +862,72 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       var fresh = JSON.stringify(st && st.inventory);
       if (fresh !== snapshot || Date.now() > deadline) {
         clearInterval(poll);
-        clearCraft();
+        craft.clearCraft();
 
-        if (panel && panel.style.display !== 'none' && !craftResult) {
-          render();
+        if (craft.panel && craft.panel.style.display !== 'none' && !craft.craftResult) {
+          craft.render();
         }
       }
     }, 100);
-  }
+  };
 
-  var STAR_CENTER = { x: 130, y: 100 };
-  var STAR_OUTER = 65;
-  var STAR_INNER = 48;
-  var STAR_POINTS = [];
-  for (var _sk = 0; _sk < 10; _sk++) {
-    var _sa = (-Math.PI / 2) + _sk * (Math.PI / 5);
-    var _sr = (_sk % 2 === 0) ? STAR_OUTER : STAR_INNER;
-    STAR_POINTS.push({
-      x: STAR_CENTER.x + _sr * Math.cos(_sa),
-      y: STAR_CENTER.y + _sr * Math.sin(_sa),
-    });
-  }
-
-  function starPoint(progress) {
+  craft.starPoint = function (progress) {
     var t = (progress - Math.floor(progress)) * 10;
     var i0 = Math.floor(t) % 10;
     var localT = t - Math.floor(t);
-    var p0 = STAR_POINTS[(i0 + 9) % 10];
-    var p1 = STAR_POINTS[i0];
-    var p2 = STAR_POINTS[(i0 + 1) % 10];
-    var p3 = STAR_POINTS[(i0 + 2) % 10];
+    var p0 = craft.STAR_POINTS[(i0 + 9) % 10];
+    var p1 = craft.STAR_POINTS[i0];
+    var p2 = craft.STAR_POINTS[(i0 + 1) % 10];
+    var p3 = craft.STAR_POINTS[(i0 + 2) % 10];
     var t2 = localT * localT;
     var t3 = t2 * localT;
     return {
       x: 0.5 * (2 * p1.x + (-p0.x + p2.x) * localT + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
       y: 0.5 * (2 * p1.y + (-p0.y + p2.y) * localT + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3),
     };
-  }
+  };
 
-  var orbitRAF = null;
-  var orbitLastPositions = [];
+  craft.stopOrbitAnimation = function () {
+    if (craft.orbitRAF) cancelAnimationFrame(craft.orbitRAF);
+    craft.orbitRAF = null;
+  };
+  craft.stopEaseAnimation = function () {
+    if (craft.easeRAF) cancelAnimationFrame(craft.easeRAF);
+    craft.easeRAF = null;
+  };
 
-  var orbitCurrentProgress = 0;
+  craft.startOrbitAnimation = function (container) {
+    craft.stopOrbitAnimation();
 
-  var easeRAF = null;
-  function stopOrbitAnimation() {
-    if (orbitRAF) cancelAnimationFrame(orbitRAF);
-    orbitRAF = null;
-  }
-  function stopEaseAnimation() {
-    if (easeRAF) cancelAnimationFrame(easeRAF);
-    easeRAF = null;
-  }
-
-  var ORBIT_DURATION_MS = 1800;
-
-  var FALL_DURATION_MS = 333;
-
-  var EASE_DURATION_MS = 333;
-
-  var SUCCESS_SPIRAL_SWEEP = Math.PI / 2;
-  function startOrbitAnimation(container) {
-    stopOrbitAnimation();
-
-    if (fastCraft) { orbitRAF = null; return; }
+    if (craft.fastCraft) { craft.orbitRAF = null; return; }
 
     var slots = container.querySelectorAll('[data-craft-orbit]');
     if (!slots.length) {
-      orbitRAF = null;
+      craft.orbitRAF = null;
       return;
     }
     var start = performance.now();
     function tick(now) {
-      if (!craftResult || craftResult.type !== 'pending') {
-        orbitRAF = null;
+      if (!craft.craftResult || craft.craftResult.type !== 'pending') {
+        craft.orbitRAF = null;
         return;
       }
-      var progress = ((now - start) / ORBIT_DURATION_MS) % 1;
-      orbitCurrentProgress = progress;
+      var progress = ((now - start) / craft.ORBIT_DURATION_MS) % 1;
+      craft.orbitCurrentProgress = progress;
       for (var i = 0; i < slots.length; i++) {
         var p = (progress + i / 5) % 1;
-        var pt = starPoint(p);
+        var pt = craft.starPoint(p);
         var tx = pt.x - 25, ty = pt.y - 25;
         slots[i].style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
 
-        orbitLastPositions[i] = { x: tx, y: ty };
+        craft.orbitLastPositions[i] = { x: tx, y: ty };
       }
-      orbitRAF = requestAnimationFrame(tick);
+      craft.orbitRAF = requestAnimationFrame(tick);
     }
-    orbitRAF = requestAnimationFrame(tick);
-  }
+    craft.orbitRAF = requestAnimationFrame(tick);
+  };
 
-  function mixWithWhite(hex, amount) {
+  craft.mixWithWhite = function (hex, amount) {
     var m = /^#?([\da-fA-F]{6})$/.exec(hex || '');
     if (!m) return '#ffffff';
     var n = parseInt(m[1], 16);
@@ -921,77 +936,77 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
     g = Math.round(g + (255 - g) * amount);
     b = Math.round(b + (255 - b) * amount);
     return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
-  }
+  };
 
-  function startEaseAnimation(container, type) {
-    stopEaseAnimation();
-    if (!craftResult || (craftResult.type !== 'success' && craftResult.type !== 'fail')) {
+  craft.startEaseAnimation = function (container, type) {
+    craft.stopEaseAnimation();
+    if (!craft.craftResult || (craft.craftResult.type !== 'success' && craft.craftResult.type !== 'fail')) {
       return;
     }
     var slots = container.querySelectorAll('[data-craft-ease]');
     if (!slots.length) {
 
-      craftResult._easeComplete = true;
+      craft.craftResult._easeComplete = true;
       return;
     }
-    var startTime = craftResult._easeStartTime;
+    var startTime = craft.craftResult._easeStartTime;
     if (!startTime) {
       startTime = performance.now();
-      craftResult._easeStartTime = startTime;
+      craft.craftResult._easeStartTime = startTime;
     }
 
     var slotProgresses = [];
     for (var i = 0; i < 5; i++) {
-      slotProgresses[i] = (orbitCurrentProgress + i / 5) % 1;
+      slotProgresses[i] = (craft.orbitCurrentProgress + i / 5) % 1;
     }
-    var tokenAtSchedule = craftResultToken;
+    var tokenAtSchedule = craft.craftResultToken;
     function tick(now) {
-      if (craftResultToken !== tokenAtSchedule) { easeRAF = null; return; }
-      if (!craftResult || (craftResult.type !== 'success' && craftResult.type !== 'fail')) {
-        easeRAF = null;
+      if (craft.craftResultToken !== tokenAtSchedule) { craft.easeRAF = null; return; }
+      if (!craft.craftResult || (craft.craftResult.type !== 'success' && craft.craftResult.type !== 'fail')) {
+        craft.easeRAF = null;
         return;
       }
-      var p = Math.min(1, (now - startTime) / EASE_DURATION_MS);
+      var p = Math.min(1, (now - startTime) / craft.EASE_DURATION_MS);
       var inv = 1 - p;
       var eased = 1 - inv * inv;
       if (type === 'fail') {
         for (var i = 0; i < slots.length; i++) {
           var pStart = slotProgresses[i];
           var pCurrent = (pStart + 0.2 * eased) % 1;
-          var pt = starPoint(pCurrent);
+          var pt = craft.starPoint(pCurrent);
           slots[i].style.transform = 'translate(' + (pt.x - 25) + 'px,' + (pt.y - 25) + 'px)';
         }
       } else {
 
         for (var i = 0; i < slots.length; i++) {
-          var sp = orbitLastPositions[i];
+          var sp = craft.orbitLastPositions[i];
           if (!sp) continue;
-          var rx = sp.x + 25 - STAR_CENTER.x;
-          var ry = sp.y + 25 - STAR_CENTER.y;
+          var rx = sp.x + 25 - craft.STAR_CENTER.x;
+          var ry = sp.y + 25 - craft.STAR_CENTER.y;
           var startAngle = Math.atan2(ry, rx);
           var startRadius = Math.sqrt(rx * rx + ry * ry);
-          var angle = startAngle + SUCCESS_SPIRAL_SWEEP * eased;
+          var angle = startAngle + craft.SUCCESS_SPIRAL_SWEEP * eased;
           var radius = startRadius * (1 - eased);
-          var x = STAR_CENTER.x + radius * Math.cos(angle) - 25;
-          var y = STAR_CENTER.y + radius * Math.sin(angle) - 25;
+          var x = craft.STAR_CENTER.x + radius * Math.cos(angle) - 25;
+          var y = craft.STAR_CENTER.y + radius * Math.sin(angle) - 25;
           slots[i].style.transform = 'translate(' + x + 'px,' + y + 'px)';
         }
       }
       if (p < 1) {
-        easeRAF = requestAnimationFrame(tick);
+        craft.easeRAF = requestAnimationFrame(tick);
       } else {
-        easeRAF = null;
-        craftResult._easeComplete = true;
-        if (panel && panel.style.display !== 'none') render();
+        craft.easeRAF = null;
+        craft.craftResult._easeComplete = true;
+        if (craft.panel && craft.panel.style.display !== 'none') craft.render();
       }
     }
-    easeRAF = requestAnimationFrame(tick);
-  }
+    craft.easeRAF = requestAnimationFrame(tick);
+  };
 
-  function spawnSuccessBurst(container, cx, cy, baseColor) {
+  craft.spawnSuccessBurst = function (container, cx, cy, baseColor) {
     var N = 28;
     var c0 = baseColor || '#ffd860';
-    var COLORS = [c0, mixWithWhite(c0, 0.35), mixWithWhite(c0, 0.65), '#ffffff'];
+    var COLORS = [c0, craft.mixWithWhite(c0, 0.35), craft.mixWithWhite(c0, 0.65), '#ffffff'];
     var duration = 900;
     for (var i = 0; i < N; i++) {
       var size = 3 + Math.random() * 5;
@@ -1019,9 +1034,9 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         }, duration + 50);
       })(p, dx, dy);
     }
-  }
+  };
 
-  function renderCraftArea(getIcon) {
+  craft.renderCraftArea = function (getIcon) {
     var box = document.createElement('div');
 
     box.style.cssText =
@@ -1029,7 +1044,7 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       'margin-bottom:8px;flex:0 0 auto;overflow:hidden;' +
       'border-bottom:1px solid #000;';
 
-    var detected = detectLobby(state);
+    var detected = craft.detectLobby(state);
     if (detected && detected.short) {
       var chip = document.createElement('div');
       chip.textContent = 'Current rarity set: ' + detected.short;
@@ -1051,37 +1066,37 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
     ];
     var EMPTY_BG = '#a06d3e';
 
-    var hasSnap = craftResult && Array.isArray(craftResult.slots);
-    var snapSlots = hasSnap ? craftResult.slots : craftSlots;
-    var snapPetalIdx = hasSnap ? craftResult.petalIdx : craftPetalIdx;
-    var snapRarity = hasSnap ? craftResult.fromRarity : craftRarity;
+    var hasSnap = craft.craftResult && Array.isArray(craft.craftResult.slots);
+    var snapSlots = hasSnap ? craft.craftResult.slots : craft.craftSlots;
+    var snapPetalIdx = hasSnap ? craft.craftResult.petalIdx : craft.craftPetalIdx;
+    var snapRarity = hasSnap ? craft.craftResult.fromRarity : craft.craftRarity;
 
-    var orbiting = craftResult && craftResult.type === 'pending';
-    var merging = craftResult && craftResult.type === 'success';
-    var failed = craftResult && craftResult.type === 'fail';
+    var orbiting = craft.craftResult && craft.craftResult.type === 'pending';
+    var merging = craft.craftResult && craft.craftResult.type === 'success';
+    var failed = craft.craftResult && craft.craftResult.type === 'fail';
 
-    var easeComplete = (merging || failed) && craftResult._easeComplete;
-    var easing = (merging || failed) && !easeComplete && !fastCraft;
-    if ((merging || failed) && fastCraft && !craftResult._easeComplete) {
+    var easeComplete = (merging || failed) && craft.craftResult._easeComplete;
+    var easing = (merging || failed) && !easeComplete && !craft.fastCraft;
+    if ((merging || failed) && craft.fastCraft && !craft.craftResult._easeComplete) {
 
-      craftResult._easeComplete = true;
+      craft.craftResult._easeComplete = true;
       easeComplete = true;
       easing = false;
     }
-    var firstFinalFrame = merging && easeComplete && !craftResult._mergeStarted;
-    if (firstFinalFrame) craftResult._mergeStarted = true;
+    var firstFinalFrame = merging && easeComplete && !craft.craftResult._mergeStarted;
+    if (firstFinalFrame) craft.craftResult._mergeStarted = true;
 
     if (!merging || easing) {
       for (var i = 0; i < 5; i++) {
         var slot = document.createElement('div');
 
         var filled = !failed && snapSlots[i] > 0 && snapPetalIdx != null && snapRarity != null;
-        var clickable = filled && !craftResult;
+        var clickable = filled && !craft.craftResult;
 
         var initLeft = slotPositions[i].left, initTop = slotPositions[i].top;
-        if (easing && orbitLastPositions[i]) {
-          initLeft = orbitLastPositions[i].x;
-          initTop = orbitLastPositions[i].y;
+        if (easing && craft.orbitLastPositions[i]) {
+          initLeft = craft.orbitLastPositions[i].x;
+          initTop = craft.orbitLastPositions[i].y;
         }
         slot.style.cssText =
           'position:absolute;left:0;top:0;transition:none;' +
@@ -1115,20 +1130,20 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
           if (clickable) {
             slot.addEventListener('click', function () {
 
-              clearCraft();
-              render();
+              craft.clearCraft();
+              craft.render();
             });
           }
 
           (function (pi, ri, el) {
             el.addEventListener('mouseenter', function () {
-              hoverEntry = { index: pi, rarity: ri };
-              showTooltip(el);
+              craft.hoverEntry = { index: pi, rarity: ri };
+              craft.showTooltip(el);
             });
             el.addEventListener('mouseleave', function () {
-              if (hoverEntry && hoverEntry.index === pi && hoverEntry.rarity === ri) {
-                hoverEntry = null;
-                tip.style.display = 'none';
+              if (craft.hoverEntry && craft.hoverEntry.index === pi && craft.hoverEntry.rarity === ri) {
+                craft.hoverEntry = null;
+                craft.tip.style.display = 'none';
               }
             });
           })(snapPetalIdx, snapRarity, slot);
@@ -1146,16 +1161,16 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         var centerSlot = document.createElement('div');
         centerSlot.style.cssText =
           'position:absolute;' +
-          'left:' + (STAR_CENTER.x - SLOT / 2) + 'px;' +
-          'top:' + (STAR_CENTER.y - SLOT / 2) + 'px;' +
+          'left:' + (craft.STAR_CENTER.x - SLOT / 2) + 'px;' +
+          'top:' + (craft.STAR_CENTER.y - SLOT / 2) + 'px;' +
           'width:' + SLOT + 'px;height:' + SLOT + 'px;background:' + EMPTY_BG + ';' +
           'border-radius:8px;cursor:pointer;';
 
         centerSlot.addEventListener('click', function () {
-          craftResult = null;
-          craftResultToken++;
-          clearCraft();
-          render();
+          craft.craftResult = null;
+          craft.craftResultToken++;
+          craft.clearCraft();
+          craft.render();
         });
         var csc = document.createElement('canvas');
         csc.width = SLOT; csc.height = SLOT;
@@ -1170,20 +1185,20 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         csctx.font = 'bold 12px Ubuntu';
         csctx.textAlign = 'right';
         csctx.textBaseline = 'top';
-        var cct = 'x' + craftResult.delta;
+        var cct = 'x' + craft.craftResult.delta;
         csctx.strokeText(cct, SLOT - 4, 4);
         csctx.fillText(cct, SLOT - 4, 4);
         centerSlot.appendChild(csc);
 
         (function (pi, ri, el) {
           el.addEventListener('mouseenter', function () {
-            hoverEntry = { index: pi, rarity: ri };
-            showTooltip(el);
+            craft.hoverEntry = { index: pi, rarity: ri };
+            craft.showTooltip(el);
           });
           el.addEventListener('mouseleave', function () {
-            if (hoverEntry && hoverEntry.index === pi && hoverEntry.rarity === ri) {
-              hoverEntry = null;
-              tip.style.display = 'none';
+            if (craft.hoverEntry && craft.hoverEntry.index === pi && craft.hoverEntry.rarity === ri) {
+              craft.hoverEntry = null;
+              craft.tip.style.display = 'none';
             }
           });
         })(snapPetalIdx, resultRarity, centerSlot);
@@ -1195,18 +1210,18 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       var burstStateRef = state;
       var burstTier = burstStateRef && burstStateRef.tiers && burstStateRef.tiers[snapRarity + 1];
       var burstColor = (burstTier && burstTier.color) || '#ffd860';
-      spawnSuccessBurst(box, STAR_CENTER.x, STAR_CENTER.y, burstColor);
+      craft.spawnSuccessBurst(box, craft.STAR_CENTER.x, craft.STAR_CENTER.y, burstColor);
     }
 
     if (orbiting) {
-      startOrbitAnimation(box);
-      stopEaseAnimation();
+      craft.startOrbitAnimation(box);
+      craft.stopEaseAnimation();
     } else if (easing) {
-      stopOrbitAnimation();
-      startEaseAnimation(box, merging ? 'success' : 'fail');
+      craft.stopOrbitAnimation();
+      craft.startEaseAnimation(box, merging ? 'success' : 'fail');
     } else {
-      stopOrbitAnimation();
-      stopEaseAnimation();
+      craft.stopOrbitAnimation();
+      craft.stopEaseAnimation();
     }
 
     var craftBtn = document.createElement('button');
@@ -1216,22 +1231,22 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       'border:2px solid #000;border-radius:6px;padding:4px 18px;' +
       'font-family:Ubuntu,sans-serif;font-weight:bold;font-size:14px;' +
       'cursor:pointer;color:#000;';
-    craftBtn.addEventListener('click', doCraft);
+    craftBtn.addEventListener('click', craft.doCraft);
     box.appendChild(craftBtn);
 
     var rateText = '?';
-    if (craftRarity != null) {
+    if (craft.craftRarity != null) {
       var st = state;
 
-      var nextTier = st && st.tiers && st.tiers[craftRarity + 1];
+      var nextTier = st && st.tiers && st.tiers[craft.craftRarity + 1];
       var tn = nextTier && nextTier.name;
       if (tn) {
-        var pname = craftPetalIdx != null ? getCraftPetalName(st, craftPetalIdx) : null;
-        var pityRate = pname && pityRates[tn] && pityRates[tn][pname];
+        var pname = craft.craftPetalIdx != null ? craft.getCraftPetalName(st, craft.craftPetalIdx) : null;
+        var pityRate = pname && craft.pityRates[tn] && craft.pityRates[tn][pname];
         if (pityRate != null) {
           rateText = String(pityRate);
         } else {
-          var rate = getCraftRate(tn);
+          var rate = craft.getCraftRate(tn);
           if (rate != null) rateText = String(rate);
         }
       }
@@ -1244,14 +1259,14 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;';
     box.appendChild(sr);
 
-    if (craftResult) {
+    if (craft.craftResult) {
       var color, text;
-      if (craftResult.type === 'success') {
+      if (craft.craftResult.type === 'success') {
         color = '#4ade80';
-        text = 'Success. +' + craftResult.delta;
-      } else if (craftResult.type === 'fail') {
+        text = 'Success. +' + craft.craftResult.delta;
+      } else if (craft.craftResult.type === 'fail') {
         color = '#ff6b6b';
-        text = 'Failed after ' + craftResult.attempts + ' attempt(s).';
+        text = 'Failed after ' + craft.craftResult.attempts + ' attempt(s).';
       } else {
         color = '#fff';
         text = 'Crafting...';
@@ -1266,9 +1281,9 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
     }
 
     return box;
-  }
+  };
 
-  function render() {
+  craft.render = function () {
     try {
       var s = state;
       var getIcon = getPetalIcon;
@@ -1277,7 +1292,7 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       var savedScrollTop = oldWrap ? oldWrap.scrollTop : 0;
       var savedScrollLeft = oldWrap ? oldWrap.scrollLeft : 0;
 
-      panel.innerHTML = '';
+      craft.panel.innerHTML = '';
 
       var headerBar = document.createElement('div');
       headerBar.style.cssText =
@@ -1292,17 +1307,17 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       var searchInput = document.createElement('input');
       searchInput.type = 'text';
       searchInput.placeholder = 'Search petals...';
-      searchInput.value = searchQuery;
+      searchInput.value = craft.searchQuery;
       searchInput.id = 'craftMenuSearch';
       searchInput.style.cssText =
         'flex:1 1 auto;max-width:240px;background:#222;color:#fff;' +
         'border:1px solid #555;border-radius:4px;padding:3px 6px;' +
         'font-family:Ubuntu,sans-serif;font-size:12px;outline:none;';
       searchInput.addEventListener('input', function () {
-        searchQuery = searchInput.value;
+        craft.searchQuery = searchInput.value;
 
         var pos = searchInput.selectionStart;
-        render();
+        craft.render();
         var fresh = document.getElementById('craftMenuSearch');
         if (fresh) {
           fresh.focus();
@@ -1319,19 +1334,19 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       spacer.style.cssText = 'flex:1 1 auto;';
       headerBar.appendChild(spacer);
 
-      fsBtn = document.createElement('button');
-      fsBtn.innerHTML = isFullscreen ? COLLAPSE_SVG : EXPAND_SVG;
-      fsBtn.title = isFullscreen ? 'Return to compact view' : 'Show all rarities at once';
-      fsBtn.setAttribute('aria-label', isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen');
-      fsBtn.style.cssText =
+      craft.fsBtn = document.createElement('button');
+      craft.fsBtn.innerHTML = craft.isFullscreen ? craft.COLLAPSE_SVG : craft.EXPAND_SVG;
+      craft.fsBtn.title = craft.isFullscreen ? 'Return to compact view' : 'Show all rarities at once';
+      craft.fsBtn.setAttribute('aria-label', craft.isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen');
+      craft.fsBtn.style.cssText =
         'background:transparent;border:1px solid rgba(255,255,255,0.3);' +
         'color:#fff;cursor:pointer;border-radius:4px;padding:3px 5px;' +
         'display:inline-flex;align-items:center;justify-content:center;' +
         'line-height:0;';
-      fsBtn.addEventListener('click', toggleFullscreen);
-      headerBar.appendChild(fsBtn);
+      craft.fsBtn.addEventListener('click', craft.toggleFullscreen);
+      headerBar.appendChild(craft.fsBtn);
 
-      panel.appendChild(headerBar);
+      craft.panel.appendChild(headerBar);
 
       if (!s || !s.inventory || !s.tiers || !s.petalConfigs || typeof getIcon !== 'function') {
         var e = document.createElement('div');
@@ -1340,13 +1355,13 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
           'flex:1 1 auto;display:flex;align-items:center;justify-content:center;' +
           'color:#fff;font-size:16px;font-weight:bold;' +
           'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;';
-        panel.appendChild(e);
+        craft.panel.appendChild(e);
         return;
       }
 
-      fetchCraftRates();
+      craft.fetchCraftRates();
 
-      panel.appendChild(renderCraftArea(getIcon));
+      craft.panel.appendChild(craft.renderCraftArea(getIcon));
 
       var petalIdxSet = new Set();
       Object.keys(s.inventory).forEach(function (tn) {
@@ -1364,8 +1379,8 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
 
       var emptyInventory = !petalIndices.length;
 
-      if (searchQuery) {
-        var q = searchQuery.toLowerCase();
+      if (craft.searchQuery) {
+        var q = craft.searchQuery.toLowerCase();
         petalIndices = petalIndices.filter(function (idx) {
           var name = ((s.petalConfigs[idx] || {}).name || '').toLowerCase();
           return name.indexOf(q) !== -1;
@@ -1374,22 +1389,22 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
 
       if (!petalIndices.length) {
         var emp = document.createElement('div');
-        emp.textContent = emptyInventory ? 'Inventory is empty.' : 'No petals match "' + searchQuery + '".';
+        emp.textContent = emptyInventory ? 'Inventory is empty.' : 'No petals match "' + craft.searchQuery + '".';
         emp.style.cssText =
           'flex:1 1 auto;display:flex;align-items:center;justify-content:center;' +
           'color:#fff;font-size:16px;font-weight:bold;' +
           'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;';
-        panel.appendChild(emp);
+        craft.panel.appendChild(emp);
         return;
       }
 
       var nRarities = s.tiers.length;
-      var SIZE = computeIconSize(nRarities);
+      var SIZE = craft.computeIconSize(nRarities);
 
       var gridWrapper = document.createElement('div');
       gridWrapper.id = 'craftMenuGridWrapper';
       gridWrapper.style.cssText = 'flex:1 1 auto;overflow-x:scroll;overflow-y:auto;min-height:0;';
-      panel.appendChild(gridWrapper);
+      craft.panel.appendChild(gridWrapper);
 
       var grid = document.createElement('div');
       grid.style.cssText =
@@ -1409,12 +1424,12 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       });
 
       var stagedTotal = 0;
-      for (var st = 0; st < 5; st++) stagedTotal += craftSlots[st];
+      for (var st = 0; st < 5; st++) stagedTotal += craft.craftSlots[st];
 
       petalIndices.forEach(function (petalIdx) {
         s.tiers.forEach(function (tier, rarIdx) {
           var owned = (s.inventory[tier.name] || {})[petalIdx] || 0;
-          var staged = (petalIdx === craftPetalIdx && rarIdx === craftRarity) ? stagedTotal : 0;
+          var staged = (petalIdx === craft.craftPetalIdx && rarIdx === craft.craftRarity) ? stagedTotal : 0;
           var displayed = owned - staged;
           if (displayed > 0) {
             var icon = document.createElement('canvas');
@@ -1446,20 +1461,20 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
             }
             (function (pi, ri, ownedCount, canClick) {
               icon.addEventListener('mouseenter', function () {
-                hoverEntry = { index: pi, rarity: ri };
-                showTooltip(icon);
+                craft.hoverEntry = { index: pi, rarity: ri };
+                craft.showTooltip(icon);
               });
               icon.addEventListener('mouseleave', function () {
-                if (hoverEntry && hoverEntry.index === pi && hoverEntry.rarity === ri) {
-                  hoverEntry = null;
-                  tip.style.display = 'none';
+                if (craft.hoverEntry && craft.hoverEntry.index === pi && craft.hoverEntry.rarity === ri) {
+                  craft.hoverEntry = null;
+                  craft.tip.style.display = 'none';
                 }
               });
               if (canClick) {
                 icon.addEventListener('click', function (ev) {
 
-                  loadCraft(pi, ri, ownedCount, !!ev.shiftKey);
-                  render();
+                  craft.loadCraft(pi, ri, ownedCount, !!ev.shiftKey);
+                  craft.render();
                 });
               }
             })(petalIdx, rarIdx, owned, canCraft);
@@ -1478,38 +1493,38 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       gridWrapper.scrollTop = savedScrollTop;
       gridWrapper.scrollLeft = savedScrollLeft;
 
-      if (isFullscreen) {
+      if (craft.isFullscreen) {
         var gridWidth = grid.offsetWidth;
         var panelChrome = 8 * 2 + 4 * 2 + 12;
         var desired = gridWidth + panelChrome;
         if (desired < 632) desired = 632;
         var maxWidth = window.innerWidth * 0.95;
         if (desired > maxWidth) desired = maxWidth;
-        panel.style.width = desired + 'px';
-        panel.style.left = ((window.innerWidth - desired) / 2) + 'px';
+        craft.panel.style.width = desired + 'px';
+        craft.panel.style.left = ((window.innerWidth - desired) / 2) + 'px';
       }
     } catch (err) {
-      derror('render failed', err);
+      craft.derror('render failed', err);
     }
-  }
+  };
 
-  function showTooltip(target) {
+  craft.showTooltip = function (target) {
     try {
-      if (!hoverEntry) return;
+      if (!craft.hoverEntry) return;
       var fn = petalTooltip;
       if (typeof fn !== 'function') return;
-      var img = fn(hoverEntry.index, hoverEntry.rarity);
+      var img = fn(craft.hoverEntry.index, craft.hoverEntry.rarity);
       if (!img) return;
       var bw = 320;
       var bh = Math.round(bw * img.height / img.width);
-      tipCanvas.width = img.width;
-      tipCanvas.height = img.height;
-      var tctx = tipCanvas.getContext('2d');
+      craft.tipCanvas.width = img.width;
+      craft.tipCanvas.height = img.height;
+      var tctx = craft.tipCanvas.getContext('2d');
       tctx.clearRect(0, 0, img.width, img.height);
       tctx.drawImage(img, 0, 0);
-      tipCanvas.style.width = bw + 'px';
-      tipCanvas.style.height = bh + 'px';
-      tip.style.display = 'block';
+      craft.tipCanvas.style.width = bw + 'px';
+      craft.tipCanvas.style.height = bh + 'px';
+      craft.tip.style.display = 'block';
 
       var rect = null;
       if (target && target.getBoundingClientRect) {
@@ -1519,47 +1534,33 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         if (wrapper) rect = wrapper.getBoundingClientRect();
       }
       if (rect) {
-        var tw = tip.offsetWidth || bw;
-        var th = tip.offsetHeight || bh;
+        var tw = craft.tip.offsetWidth || bw;
+        var th = craft.tip.offsetHeight || bh;
         var x = rect.right + 8;
         if (x + tw > window.innerWidth - 2) x = rect.left - tw - 8;
         if (x < 2) x = 2;
         var y = rect.top;
         if (y + th > window.innerHeight - 2) y = window.innerHeight - th - 2;
         if (y < 2) y = 2;
-        tip.style.left = x + 'px';
-        tip.style.top = y + 'px';
+        craft.tip.style.left = x + 'px';
+        craft.tip.style.top = y + 'px';
       }
     } catch (err) {
-      derror('tooltip show failed', err);
+      craft.derror('tooltip show failed', err);
     }
-  }
+  };
 
-  var _debugMode = false;
+  // simCraft() simulation
 
-  var _simNextOutcome = null;
-
-  function CraftDebug(on) {
-    _debugMode = !!on;
-    if (_debugMode) {
-
-      globalThis.SimCraft = SimCraft;
-    } else {
-      _simNextOutcome = null;
-      try { delete globalThis.SimCraft; } catch (_) { globalThis.SimCraft = undefined; }
-    }
-    return _debugMode;
-  }
-
-  function _runSimulation(petalIdx, rarityIdx, count, outcome) {
+  craft._runSimulation = function (petalIdx, rarityIdx, count, outcome) {
     var s = state;
     var pname = (s && s.petalConfigs && s.petalConfigs[petalIdx]) ? s.petalConfigs[petalIdx].name : null;
     var targetTier = s.tiers[rarityIdx + 1];
     var targetTierName = targetTier ? targetTier.name : null;
     var forced = outcome === 'success' || outcome === 'fail';
     var attemptsCount = Math.max(1, Math.floor(count / 5));
-    var pity = targetTierName && pityRates[targetTierName] && pityRates[targetTierName][pname];
-    var rateUsed = pity != null ? pity : (targetTierName ? getCraftRate(targetTierName) : null);
+    var pity = targetTierName && craft.pityRates[targetTierName] && craft.pityRates[targetTierName][pname];
+    var rateUsed = pity != null ? pity : (targetTierName ? craft.getCraftRate(targetTierName) : null);
     if (rateUsed == null) rateUsed = 50;
     var p = rateUsed / 100;
     var successes = 0;
@@ -1574,15 +1575,15 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
         successes = Math.max(1, Math.round(expected + (Math.random() - 0.5) * Math.sqrt(expected + 1)));
         if (successes > attemptsCount) successes = attemptsCount;
         outcome = 'success';
-        dlog('Simulated craft: succeeded.');
+        craft.dlog('Simulated craft: succeeded.');
       } else {
         outcome = 'fail';
-        dlog('Simulated craft: failed in ' + attemptsCount + ' attempt(s).');
+        craft.dlog('Simulated craft: failed in ' + attemptsCount + ' attempt(s).');
       }
     }
-    var counts = craftSlots.slice();
-    orbitLastPositions = [];
-    setCraftResult({
+    var counts = craft.craftSlots.slice();
+    craft.orbitLastPositions = [];
+    craft.setCraftResult({
       type: 'pending',
       delta: count,
       petalIdx: petalIdx,
@@ -1590,109 +1591,144 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
       slots: counts,
       startedAt: performance.now(),
     });
-    clearCraft();
-    var token = craftResultToken;
+    craft.clearCraft();
+    var token = craft.craftResultToken;
     setTimeout(function () {
-      if (craftResultToken !== token) return;
-      if (!craftResult || craftResult.type !== 'pending') return;
+      if (craft.craftResultToken !== token) return;
+      if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
       if (outcome === 'fail') {
-        setCraftResult({ type: 'fail', attempts: attemptsCount, petalIdx: petalIdx, fromRarity: rarityIdx, slots: counts });
+        craft.setCraftResult({ type: 'fail', attempts: attemptsCount, petalIdx: petalIdx, fromRarity: rarityIdx, slots: counts });
       } else {
-        setCraftResult({ type: 'success', delta: successes, petalIdx: petalIdx, fromRarity: rarityIdx, slots: counts });
+        craft.setCraftResult({ type: 'success', delta: successes, petalIdx: petalIdx, fromRarity: rarityIdx, slots: counts });
       }
-    }, FALL_DURATION_MS);
+    }, craft.FALL_DURATION_MS);
     return { outcome: outcome, forced: forced, rate: rateUsed, successes: successes, attempts: attemptsCount, targetTier: targetTierName };
+  };
+
+  // Bootstrap
+
+  craftRef = craft;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', craft.inject);
+  } else {
+    craft.inject();
+  }
+})();
+
+// Debug tools (only when player has masterPermissions = 1)
+
+function CraftDebug(on) {
+  if (!craftRef) return null;
+  craftRef._debugMode = !!on;
+  if (craftRef._debugMode) {
+    globalThis.SimCraft = SimCraft;
+  } else {
+    craftRef._simNextOutcome = null;
+    try { delete globalThis.SimCraft; } catch (_) { globalThis.SimCraft = undefined; }
+  }
+  return craftRef._debugMode;
+}
+
+function SimCraft(petalName, rarityName, count) {
+  if (!craftRef) return null;
+  if (!craftRef._debugMode) {
+    console.warn('[CraftMenu] SimCraft requires debug mode. Call CraftDebug(true) first.');
+    return null;
+  }
+  var s = state;
+  if (!s || !s.petalConfigs || !s.tiers) {
+    console.warn('[CraftMenu] SimCraft: no game state'); return null;
+  }
+  count = +count || 5;
+
+  var outcome = null;
+  var doAutoCraft = true;
+  for (var ai = 3; ai < arguments.length; ai++) {
+    var v = arguments[ai];
+    if (typeof v === 'boolean') {
+      doAutoCraft = v;
+    } else if (typeof v === 'string') {
+      var low = v.toLowerCase();
+      if (low === 'true') doAutoCraft = true;
+      else if (low === 'false') doAutoCraft = false;
+      else if (low === 'success' || low === 'fail') outcome = low;
+    }
   }
 
-  function SimCraft(petalName, rarityName, count) {
-    if (!_debugMode) {
-      console.warn('[CraftMenu] SimCraft requires debug mode. Call CraftDebug(true) first.');
-      return null;
-    }
-    var s = state;
-    if (!s || !s.petalConfigs || !s.tiers) {
-      console.warn('[CraftMenu] SimCraft: no game state'); return null;
-    }
-    count = +count || 5;
+  var petalIdx = -1;
+  for (var i = 0; i < s.petalConfigs.length; i++) {
+    if (s.petalConfigs[i] && s.petalConfigs[i].name === petalName) { petalIdx = i; break; }
+  }
+  if (petalIdx < 0) {
+    console.warn('[CraftMenu] SimCraft: petal not found:', petalName); return null;
+  }
 
-    var outcome = null;
-    var doAutoCraft = true;
-    for (var ai = 3; ai < arguments.length; ai++) {
-      var v = arguments[ai];
-      if (typeof v === 'boolean') {
-        doAutoCraft = v;
-      } else if (typeof v === 'string') {
-        var low = v.toLowerCase();
-        if (low === 'true') doAutoCraft = true;
-        else if (low === 'false') doAutoCraft = false;
-        else if (low === 'success' || low === 'fail') outcome = low;
-      }
-    }
+  var rarityIdx = -1;
+  for (var j = 0; j < s.tiers.length; j++) {
+    if (s.tiers[j] && s.tiers[j].name === rarityName) { rarityIdx = j; break; }
+  }
+  if (rarityIdx < 0) {
+    console.warn('[CraftMenu] SimCraft: rarity not found:', rarityName); return null;
+  }
 
-    var petalIdx = -1;
-    for (var i = 0; i < s.petalConfigs.length; i++) {
-      if (s.petalConfigs[i] && s.petalConfigs[i].name === petalName) { petalIdx = i; break; }
-    }
-    if (petalIdx < 0) {
-      console.warn('[CraftMenu] SimCraft: petal not found:', petalName); return null;
-    }
+  var per = Math.floor(count / 5);
+  var rem = count - per * 5;
+  var counts = [per, per, per, per, per];
+  for (var k = 0; k < rem; k++) counts[k]++;
+  craftRef.craftSlots = counts.slice();
+  craftRef.craftPetalIdx = petalIdx;
+  craftRef.craftRarity = rarityIdx;
 
-    var rarityIdx = -1;
-    for (var j = 0; j < s.tiers.length; j++) {
-      if (s.tiers[j] && s.tiers[j].name === rarityName) { rarityIdx = j; break; }
-    }
-    if (rarityIdx < 0) {
-      console.warn('[CraftMenu] SimCraft: rarity not found:', rarityName); return null;
-    }
+  if (!doAutoCraft) {
 
-    var per = Math.floor(count / 5);
-    var rem = count - per * 5;
-    var counts = [per, per, per, per, per];
-    for (var k = 0; k < rem; k++) counts[k]++;
-    craftSlots = counts.slice();
-    craftPetalIdx = petalIdx;
-    craftRarity = rarityIdx;
-
-    if (!doAutoCraft) {
-
-      _simNextOutcome = (outcome === 'success' || outcome === 'fail') ? outcome : 'roll';
-      if (panel && panel.style.display === 'none') panel.style.display = 'flex';
-      render();
-      dlog('SimCraft loaded (' + petalName + ', ' + rarityName + ', ' + count + ')');
-      return {
-        petalName: petalName,
-        rarityName: rarityName,
-        count: count,
-        staged: true,
-        autoCraft: false,
-        pendingOutcome: _simNextOutcome,
-      };
-    }
-
-    _simNextOutcome = null;
-    var sim = _runSimulation(petalIdx, rarityIdx, count, outcome);
-    if (panel && panel.style.display === 'none') panel.style.display = 'flex';
-    render();
-    dlog('SimCraft started:', petalName, rarityName, 'count=' + count, 'outcome=' + sim.outcome);
+    craftRef._simNextOutcome = (outcome === 'success' || outcome === 'fail') ? outcome : 'roll';
+    if (craftRef.panel && craftRef.panel.style.display === 'none') craftRef.panel.style.display = 'flex';
+    craftRef.render();
+    craftRef.dlog('SimCraft loaded (' + petalName + ', ' + rarityName + ', ' + count + ')');
     return {
       petalName: petalName,
       rarityName: rarityName,
-      targetTier: sim.targetTier,
       count: count,
-      outcome: sim.outcome,
-      forced: sim.forced,
-      rate: sim.rate,
-      successes: sim.successes,
-      attempts: sim.attempts,
-      autoCraft: true,
+      staged: true,
+      autoCraft: false,
+      pendingOutcome: craftRef._simNextOutcome,
     };
   }
 
-  globalThis.CraftDebug = CraftDebug;
+  craftRef._simNextOutcome = null;
+  var sim = craftRef._runSimulation(petalIdx, rarityIdx, count, outcome);
+  if (craftRef.panel && craftRef.panel.style.display === 'none') craftRef.panel.style.display = 'flex';
+  craftRef.render();
+  craftRef.dlog('SimCraft started:', petalName, rarityName, 'count=' + count, 'outcome=' + sim.outcome);
+  return {
+    petalName: petalName,
+    rarityName: rarityName,
+    targetTier: sim.targetTier,
+    count: count,
+    outcome: sim.outcome,
+    forced: sim.forced,
+    rate: sim.rate,
+    successes: sim.successes,
+    attempts: sim.attempts,
+    autoCraft: true,
+  };
+}
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inject);
-  } else {
-    inject();
+// Lets user access debug only when the player has masterpermissions = 1.
+var _craftDebugExposed = false;
+function _maybeExposeCraftDebug() {
+  if (_craftDebugExposed) return;
+  var s = state;
+  if (!s) return;
+  var perms = (typeof s.masterPermissions === 'number')
+    ? s.masterPermissions
+    : (s.player && typeof s.player.masterPermissions === 'number')
+      ? s.player.masterPermissions
+      : 0;
+  if (perms >= 1) {
+    globalThis.CraftDebug = CraftDebug;
+    _craftDebugExposed = true;
   }
-})();
+}
+setInterval(_maybeExposeCraftDebug, 1000);
