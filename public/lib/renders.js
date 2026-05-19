@@ -147,23 +147,17 @@ function drawHeavy(ctx = _ctx, hit = false) {
 }
 
 function drawRice(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.white, "#FF0000", hit * .5), 1);
+    setStyle(ctx, mixColors(colors.white, "#FF0000", hit * .5), .7);
     ctx.rotate(Math.PI/4)
-    ctx.scale(.7 , .7)
     
     ctx.beginPath();
-    ctx.moveTo(-1, 0);
-    ctx.quadraticCurveTo(0, -.4, 1, 0);
+    ctx.moveTo(-.7, 0);
+    ctx.quadraticCurveTo(0, -.5, .7, 0);
     ctx.stroke();
-    ctx.closePath();
 
     ctx.strokeStyle = ctx.fillStyle;
-    ctx.lineWidth /= 2
-    ctx.beginPath();
-    ctx.moveTo(-1, 0);
-    ctx.quadraticCurveTo(0, -.4, 1, 0);
+    ctx.lineWidth = 0.4;
     ctx.stroke();
-    ctx.closePath();
 }
 
 function drawRockP(ctx = _ctx, hit = false) {
@@ -210,11 +204,11 @@ function drawLeaf(ctx = _ctx, hit = false) {
 }
 
 function drawWing(ctx = _ctx, hit = false) {
-    ctx.rotate(Math.PI / -4);
+    ctx.rotate(Math.PI / 4);
     setStyle(ctx, mixColors(colors.white, "#FF0000", hit * .5), .2);
     ctx.beginPath();
-    ctx.arc(0, 0, 1, 0, Math.PI * 1.1);
-    ctx.quadraticCurveTo(0, .8, .9, -.3);
+    ctx.arc(0, 0, 1, -0.63, Math.PI * 1.2);
+    ctx.quadraticCurveTo(0, .6, .77, -.63);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -307,7 +301,7 @@ function drawCorn(ctx = _ctx, hit = false) {
     ctx.moveTo(.85, .85);
     ctx.quadraticCurveTo(1.3, 0, .85, -.85);
     ctx.bezierCurveTo(.55, -1.3, -.05, -.95, -.9, -.65);
-    ctx.quadraticCurveTo(0, 0, -.9, .65);
+    ctx.quadraticCurveTo(-.1, 0, -.9, .65);
     ctx.bezierCurveTo(-.05, .95, .55, 1.3, .85, .85);
     ctx.closePath();
     ctx.fill();
@@ -576,7 +570,7 @@ export function drawThirdEye(ctx = _ctx, hit = false) {
 }
 
 function drawPincer(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.lighterBlack, "#FF0000", hit * .5), .2);
+    setStyle(ctx, mixColors(colors.stingerBlack, "#FF0000", hit * .5), .2);
     ctx.beginPath();
     ctx.moveTo(-1, -.2);
     ctx.quadraticCurveTo(-.2, -.95, .9, .2);
@@ -849,7 +843,7 @@ function drawYucca(ctx = _ctx, hit = false) {
 
     ctx.beginPath();
     ctx.moveTo(1, 0);
-    ctx.quadraticCurveTo(.4, -.4, -1, 0);
+    ctx.quadraticCurveTo(.3, -.3, -1, 0);
     ctx.stroke();
 }
 
@@ -907,66 +901,66 @@ export function drawArmor(ctx = _ctx, hit = false) {
 }
 
 function drawJelly(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.jelly, "#FF0000", hit * .5), .15);
+    setStyle(ctx, mixColors("#FBBAFF", "#FF0000", hit * .5), .2);
 
     ctx.beginPath();
     ctx.arc(0, 0, 1, 0, TAU);
     ctx.closePath();
-    ctx.globalAlpha = .7;
+    ctx.globalAlpha = .6;
     ctx.fill();
+    ctx.strokeStyle = mixColors("#d4b4d3", "#FF0000", hit * .5);
     ctx.globalAlpha = 1;
     ctx.stroke();
 
-    ctx.fillStyle = ctx.strokeStyle;
-    ctx.globalAlpha = .7;
-    ctx.beginPath();
-    ctx.arc(-.1, .35, .4, 0, TAU);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(.5, -.4, .2, 0, TAU);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(-.4, -.3, .3, 0, TAU);
-    ctx.closePath();
-    ctx.fill();
-    ctx.closePath();
-
+    ctx.fillStyle = mixColors("#d4b4d3", "#FF0000", hit * .5);
     ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.arc(.25, .45, .35, 0, TAU);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-.55, .3, .2, 0, TAU);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(.3, -.25, .2, 0, TAU);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-.4, -.25, .25, 0, TAU);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, -.9, .35, 0, Math.PI);
+    ctx.closePath();
+    ctx.fill();
+    ctx.closePath();
 }
+
 
 function drawYggdrasil(ctx = _ctx, hit = false) {
     const innerColor = mixColors("#aa853f", "#FF0000", hit * .5);
-    const outerColor = mixColors("#876e36", "#FF0000", hit * .5);
-
-    // Outer color
-    ctx.lineCap = "round";
+    const outerColor = mixColors("#886a32", "#FF0000", hit * .5);
+    // Inner color
     ctx.strokeStyle = outerColor;
     ctx.fillStyle = outerColor;
-    ctx.beginPath(); // Stem
+    ctx.lineWidth = .4;
+    
+    // Stem
+    ctx.beginPath();
     ctx.moveTo(1.13, .54);
     ctx.quadraticCurveTo(1.20, .6, 1.16, .69);
     ctx.quadraticCurveTo(1.13, .8, 1.03, .81);
     ctx.quadraticCurveTo(-.52, .14, -.63, -1.13);
     ctx.lineTo(-.56, -1.13);
     ctx.quadraticCurveTo(-.1, .38, 1.13, .54);
-    ctx.lineWidth = .4;
-    ctx.fill();
-    ctx.stroke();
-    ctx.closePath();
-
-    ctx.beginPath(); // Curvy leaf
+    // Curvy leaf
     ctx.moveTo(.72, .54);
     ctx.quadraticCurveTo(.3, .97, -.49, .13);
     ctx.quadraticCurveTo(-.92, -.44, -.57, -.98);
     ctx.quadraticCurveTo(-.2, -1.01, .24, -.8);
     ctx.quadraticCurveTo(1.31, -.2, .72, .54);
-    ctx.fill();
-    ctx.closePath();
-
-    ctx.beginPath(); // Spines
-    ctx.lineWidth = .4;
+    // Spines
     ctx.moveTo(.97, -.14);
     ctx.quadraticCurveTo(.91, .24, .72, .54);
     ctx.moveTo(.82, -.47);
@@ -1000,71 +994,24 @@ function drawYggdrasil(ctx = _ctx, hit = false) {
     ctx.quadraticCurveTo(.15, .6, .49, .47);
     ctx.moveTo(.26, .72);
     ctx.quadraticCurveTo(.5, .72, .72, .54);
+    ctx.fill();
     ctx.stroke();
-
-    // Inner color
+    
     ctx.strokeStyle = innerColor;
     ctx.fillStyle = innerColor;
-    ctx.beginPath(); // Stem
+    ctx.lineWidth = .125;
+    ctx.stroke();
+
+    // Stem
+    ctx.beginPath();
     ctx.moveTo(1.13, .54);
     ctx.quadraticCurveTo(1.20, .6, 1.16, .69);
     ctx.quadraticCurveTo(1.13, .8, 1.03, .81);
     ctx.quadraticCurveTo(-.52, .14, -.63, -1.13);
     ctx.lineTo(-.56, -1.13);
     ctx.quadraticCurveTo(-.1, .38, 1.13, .54);
-    ctx.lineWidth = .1;
-    ctx.stroke();
     ctx.fill();
-    ctx.closePath();
-
-    ctx.lineCap = "square";
-    ctx.beginPath(); // Curvy leaf
-    ctx.lineWidth = .1;
-    ctx.moveTo(.72, .54);
-    ctx.quadraticCurveTo(.3, .97, -.49, .13);
-    ctx.quadraticCurveTo(-.92, -.44, -.57, -.98);
-    ctx.quadraticCurveTo(-.2, -1.01, .24, -.8);
-    ctx.quadraticCurveTo(1.31, -.2, .72, .54);
     ctx.stroke();
-    ctx.closePath();
-
-    ctx.beginPath(); // Spines
-    ctx.lineWidth = .125;
-    ctx.moveTo(.97, -.14);
-    ctx.quadraticCurveTo(.91, .24, .72, .54);
-    ctx.moveTo(.82, -.47);
-    ctx.quadraticCurveTo(.78, -.13, .61, .38);
-    ctx.moveTo(.66, -.7);
-    ctx.quadraticCurveTo(.64, -.38, .43, .26);
-    ctx.moveTo(.46, -.79);
-    ctx.quadraticCurveTo(.42, -.36, .22, .1);
-    ctx.moveTo(.26, -.92);
-    ctx.quadraticCurveTo(.21, -.59, .04, -.06);
-    ctx.moveTo(.02, -.97);
-    ctx.quadraticCurveTo(0, -.72, -.14, -.28);
-    ctx.moveTo(-.18, -1.04);
-    ctx.quadraticCurveTo(-.17, -.83, -.29, -.47);
-    ctx.moveTo(-.38, -1.07);
-    ctx.quadraticCurveTo(-.35, -.34, -.74, -.88);
-    ctx.moveTo(-.76, -.59);
-    ctx.quadraticCurveTo(-.61, -.49, -.4, -.46);
-    ctx.moveTo(-.78, -.34);
-    ctx.quadraticCurveTo(-.61, -.26, -.3, -.24);
-    ctx.moveTo(-.69, -.06);
-    ctx.quadraticCurveTo(-.47, -.04, -.15, -.09);
-    ctx.moveTo(-.65, .14);
-    ctx.quadraticCurveTo(-.47, .15, .05, .05);
-    ctx.moveTo(-.53, .33);
-    ctx.quadraticCurveTo(-.18, .32, .12, .2);
-    ctx.quadraticCurveTo(-.19, .31, .12, .2);
-    ctx.moveTo(-.35, .5);
-    ctx.quadraticCurveTo(.02, .47, .27, .35);
-    ctx.moveTo(-.08, .63);
-    ctx.quadraticCurveTo(.15, .6, .49, .47);
-    ctx.moveTo(.26, .72);
-    ctx.quadraticCurveTo(.5, .72, .72, .54);
-    ctx.stroke();
-    ctx.lineCap = "round";
 }
 
 function drawGlass(id, ctx = _ctx, hit = false) {
@@ -1215,7 +1162,7 @@ function drawBubblePetal(ctx = _ctx, hit = false) {
 }
 
 function drawStarfishPetal(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.starfish, "#FF0000", hit * .5), .125);
+    setStyle(ctx, mixColors(colors.starfish, "#FF0000", hit * .5), .2);
 
     ctx.beginPath();
     ctx.moveTo(-1.2, -.5);
@@ -1231,22 +1178,23 @@ function drawStarfishPetal(ctx = _ctx, hit = false) {
     ctx.fillStyle = mixColors(ctx.fillStyle, colors.white, .3);
 
     ctx.beginPath();
-    ctx.arc(-.75, 0, .4, 0, TAU);
-    ctx.moveTo(0, 0);
-    ctx.arc(0, 0, .3, 0, TAU);
-    ctx.moveTo(.667, 0);
-    ctx.arc(.667, 0, .2, 0, TAU);
+    ctx.arc(-.7, 0, .325, 0, TAU);
+    ctx.moveTo(.125, 0);
+    ctx.arc(.125, 0, .25, 0, TAU);
+    ctx.moveTo(.8, 0);
+    ctx.arc(.8, 0, .2, 0, TAU);
     ctx.fill();
     ctx.closePath();
 }
 
 function drawFangPetal(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.evilLadybugRed, "#FF0000", hit * .5), .2);
+    setStyle(ctx, mixColors(colors.evilLadybugRed, "#FF0000", hit * .5), .25);
+    ctx.rotate(-Math.PI / 4);
     ctx.beginPath();
-    ctx.moveTo(1, 0);
-    ctx.lineTo(0, -.5);
-    ctx.lineTo(-1, 0);
-    ctx.lineTo(0, .5);
+    ctx.moveTo(-1, 0);
+    ctx.lineTo(0, .375);
+    ctx.lineTo(1, 0);
+    ctx.lineTo(0, -.375);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -1718,7 +1666,7 @@ function petalRender(index, hit, ctx, id, size) {
                     ctx.stroke();
                     break;
                 case "paint":
-                    ctx.fillStyle = mixColors(args[0], "#FF0000", hit * .5);;
+                    ctx.fillStyle = mixColors(args[0], "#FF0000", hit * .5);
                     ctx.strokeStyle = mixColors(mixColors(args[0], "#FF0000", hit * .5), "#000000", args[2]);
                     ctx.lineWidth = args[1];
                     ctx.fill();
@@ -1782,7 +1730,7 @@ function petalRender(index, hit, ctx, id, size) {
                     break;
                 }
                 case "opacity":
-                    ctx.globalAlpha *= args[0];
+                    ctx.globalAlpha = args[0];
                     break;
                 case "blur":
                     ctx.shadowColor = args[0];
@@ -1810,6 +1758,15 @@ function petalRender(index, hit, ctx, id, size) {
                     ctx.ellipse(args[0], args[1], args[2], args[3], arg4, 0, Math.PI * 2);
                     break;
                 }
+                case "quadraticCurveTo":
+                    ctx.quadraticCurveTo(args[0], args[1], args[2], args[3]);
+                    break;
+                case "bezierCurveTo":
+                    ctx.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
+                    break;
+                case "rotate":
+                    ctx.rotate(args[0] * Math.PI / 180);
+                    break;
                 default:
                     ctx[actionFunc](...args);
                     break;
@@ -2066,10 +2023,22 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
         case 4: // Stinger
             drawStinger(ctx, index, rarity);
             break;
+        case 8: // Leaf
+            ctx.save();
+            ctx.rotate(-Math.PI / 4);
+            drawLeaf(ctx);
+            ctx.restore();
+            break;
         case 10: // Bone
             ctx.save();
             ctx.scale(1.25, 1.25);
             drawBone(ctx);
+            ctx.restore();
+            break;
+        case 13: // Corn
+            ctx.save();
+            ctx.rotate(-Math.PI / 4);
+            drawCorn(ctx);
             ctx.restore();
             break;
         case 14: // Sand
@@ -2077,6 +2046,12 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             break;
         case 15: // Orange
             drawOranges(ctx, index, rarity);
+            break;
+        case 16: // Missile
+            ctx.save();
+            ctx.rotate(-Math.PI / 4);
+            drawMissile(ctx);
+            ctx.restore();
             break;
         case 18: // Basic
             drawBasicPetals(ctx, index, rarity, 0.8, colors.rosePink);
@@ -2099,7 +2074,7 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             break;
         case 29: // Peas
             ctx.save();
-            ctx.scale(.9, .9);
+            ctx.scale(.85, .85);
             drawPeas(ctx, 0, colors.peaGreen, index);
             ctx.restore();
             break;
@@ -2118,6 +2093,12 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
         case 38: // Ant Egg
             drawAntEgg(ctx, index, rarity);
             break;
+        case 39: // Yucca
+            ctx.save();
+            ctx.rotate(-Math.PI / 4);
+            drawYucca(ctx);
+            ctx.restore();
+            break;
         case 45: // Dandelion
             drawDandyIcon(ctx, index, rarity);
             break;
@@ -2131,6 +2112,12 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             ctx.save();
             ctx.scale(1.25, 1.25);
             drawPearl(ctx);
+            ctx.restore();
+            break;
+        case 51: // Starfish
+            ctx.save();
+            ctx.rotate(-Math.PI / 4);
+            drawStarfishPetal(ctx);
             ctx.restore();
             break;
         case 53: // Goo
@@ -2151,7 +2138,7 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             break;
         case 62: // Grapes
             ctx.save();
-            ctx.scale(.9, .9);
+            ctx.scale(.85, .85);
             drawPeas(ctx, 0, colors.irisPurple, index);
             ctx.restore();
             break;
@@ -2174,9 +2161,12 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             ctx.restore();
             break;
         default:
-            if (state.petalConfigs[index].icon) {
-                let count = state.petalConfigs[index].icon.count;
-                let size = state.petalConfigs[index].icon.size;
+            const tier = state.petalConfigs[index].tiers[rarity];
+            if (tier.icon) {
+                let icon = tier.icon;
+                let count = icon.count;
+                let size = icon.size;
+                
                 if (count > 1) {
                     for (let i = 0; i < count; i++) {
                         const angle = TAU / count * i;
@@ -2190,6 +2180,7 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
                     }
                 } else {
                     ctx.save();
+                    ctx.rotate(icon.rotation);
                     ctx.scale(size, size);
                     drawPetal(index, false, ctx);
                     ctx.restore();
@@ -2212,7 +2203,12 @@ function getUIPetalName(index) {
         case 67:
             return "Eggs";
         default:
-            return state.petalConfigs[index].icon?.name ?? state.petalConfigs[index].name;
+            const tier = state.petalConfigs[index].tiers[0];
+            let name = state.petalConfigs[index].name;
+            if (tier.icon) {
+                name = tier.icon.name
+            }
+            return name;
     }
 }
 
@@ -4810,25 +4806,40 @@ function drawShrub(id, color, ctx = _ctx, hit = false) {
     };
 }
 
-const PumpkinPath = new Path2D("M.7247-.3319C.6942-.3316.6609-.3288.6245-.3232.1584-.2507 0 0 0 0S.1584.2507.6245.3232C1.0907.3956 1.0457 0 1.0457 0S1.0839-.3362.7247-.3319Z");
-function drawPumpkin(color, altColor, ctx, hit) {
-    setStyle(ctx, mixColors(color, "#FF0000", hit * .5), .125);
-
-    for (let i = 0; i < 10; i++) {
-        ctx.fill(PumpkinPath);
-        ctx.stroke(PumpkinPath);
-        ctx.rotate(TAU / 10);
-    }
-
-    setStyle(ctx, mixColors(altColor, "#FF0000", hit * .5), .1);
+function drawPumpkin(color, altColor, ctx, hit, id) {
+    const sides = (id % 3) + 5
+    setStyle(ctx, mixColors(mixColors(color, "#000000", .1), "#FF0000", hit * .5), .2);
     ctx.beginPath();
-    polygon(ctx, 7, .25, 0);
+    dipPolygon(ctx, sides, 1, -5/3, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    setStyle(ctx, mixColors(color, "#FF0000", hit * .5), .2);
+    ctx.beginPath();
+    dipPolygon(ctx, sides, .75, -5/3, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    setStyle(ctx, mixColors(mixColors(color, "#000000", .1), "#FF0000", hit * .5), .2);
+    ctx.beginPath();
+    for (let count = 0; count < sides; count++) {
+        ctx.moveTo(.75, 0)
+        ctx.lineTo(1, 0)
+        ctx.rotate(TAU / sides);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    setStyle(ctx, mixColors(altColor, "#FF0000", hit * .5), .2);
+    ctx.beginPath();
+    dipPolygon(ctx, 3, .25, -1, ((id % 3) + 1) * .3);
     ctx.fill();
     ctx.stroke();
     ctx.closePath();
 }
 
-function drawJackOLantern(color, altColor, ctx, hit, date) {
+function drawJackOLantern(color, altColor, ctx, hit, date, id) {
     // Fire animation
     ctx.save();
     ctx.globalAlpha *= .5;
@@ -4849,7 +4860,7 @@ function drawJackOLantern(color, altColor, ctx, hit, date) {
     ctx.fill();
     ctx.restore();
 
-    drawPumpkin(color, altColor, ctx, hit);
+    drawPumpkin(color, altColor, ctx, hit, id);
 }
 
 const crabBodyColors = [
@@ -5030,7 +5041,7 @@ function mobRender(ctx, id, index, rarity, hit, attack, friend, rot, extra, date
                     ctx.stroke();
                     break;
                 case "paint":
-                    ctx.fillStyle = mixColors(args[0], "#FF0000", hit * .5);;
+                    ctx.fillStyle = mixColors(args[0], "#FF0000", hit * .5);
                     ctx.strokeStyle = mixColors(mixColors(args[0], "#FF0000", hit * .5), "#000000", args[2]);
                     ctx.lineWidth = args[1];
                     ctx.fill();
@@ -5122,6 +5133,15 @@ function mobRender(ctx, id, index, rarity, hit, attack, friend, rot, extra, date
                     ctx.ellipse(args[0], args[1], args[2], args[3], arg4, 0, Math.PI * 2);
                     break;
                 }
+                case "quadraticCurveTo":
+                    ctx.quadraticCurveTo(args[0], args[1], args[2], args[3]);
+                    break;
+                case "bezierCurveTo":
+                    ctx.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
+                    break;
+                case "rotate":
+                    ctx.rotate(args[0] * Math.PI / 180);
+                    break;
                 default:
                     ctx[actionFunc](...args);
                     break;
@@ -5337,10 +5357,10 @@ function mobRender(ctx, id, index, rarity, hit, attack, friend, rot, extra, date
             drawShrub(id, mixColors(friend ? colors.playerYellow : colors.rockGray, "#000000", .25 + Math.sin(id * 1000) * .125), ctx, hit);
             break;
         case 70:
-            drawPumpkin(friend ? colors.playerYellow : colors.ancient, colors.cactusGreen, ctx, hit);
+            drawPumpkin(friend ? colors.playerYellow : "#D97232", colors.peaGreen, ctx, hit, id);
             break;
         case 71:
-            drawJackOLantern(friend ? colors.playerYellow : colors.ancient, colors.cactusGreen, ctx, hit, date);
+            drawJackOLantern(friend ? colors.playerYellow : "#D97232", colors.peaGreen, ctx, hit, date, id);
             break;
         case 72:
             drawCrab(ctx, friend, id, attack, hit, date)
@@ -5407,7 +5427,7 @@ function createPetalTooltip(index, rarityIndex) {
     const tier = petal.tiers[rarityIndex];
 
     let width = 350,
-        height = 60 + drawWrappedText(petal.description, -10000, -10000, 15, width - 20) + 30;
+        height = 60 + drawWrappedText(tier.description, -10000, -10000, 15, width - 20) + 30;
 
     height += 17.5 * (
         (tier.health > 0) +
@@ -5480,7 +5500,7 @@ function createPetalTooltip(index, rarityIndex) {
     text(timerString, width - 10, 10, 17.5, "#FFFFFF", ctx);
     ctx.textAlign = "left";
 
-    let newY = 80 + drawWrappedText(petal.description, 10, 60, 15, width - 20, "#FFFFFF", ctx);
+    let newY = 80 + drawWrappedText(tier.description, 10, 60, 15, width - 20, "#FFFFFF", ctx);
 
     if (tier.health > 0) {
         let x = 10 + text("Health: ", 10, newY, 15, colors.common, ctx);
@@ -5750,7 +5770,7 @@ function createMobTooltip(index, rarityIndex) {
         (tier.lightning > 0) +
         (mob.damageReflection.reflection > 0) +
         (mob.damageReflection?.cap > 0) +
-        (tier.armor) +
+        (tier.armor !== 0) +
         ((tier.projectile !== null) * 3) +
         (tier.projectile?.damage > 0) +
         (Number.isFinite(tier.projectile?.health)) +
