@@ -1,3 +1,19 @@
+# Update (5/18/2026)
+- Added gradients for both Petal icons and Mob icons
+- Inventory can now be hovered
+- You can now view everyone in minimap in certain lobbies
+
+# Update (5/9/2026)
+- Updated Pumpkin and Jack O' Lantern Drawings (Thanks to @Fubuki and @Dwajl)
+
+# Update (5/5/2026)
+- Polished some petal renders and icons (With help from @Fubuki)
+
+# Update (5/3/2026)
+- Fixed some drawing bugs (Thanks to @Fubuki and @K3)
+- Added 3 new drawing options: quadraticCurveTo, bezierCurveTo, rotate
+- Updated Wing, Fang, and Jelly drawings (Thanks to @Fubuki)
+
 # Update (11/29/2025)
 - Hundreds of petal/mob rebalances
 - Bone now has proper armor and can now be given to mobs as well
