@@ -33,42 +33,42 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
     }
     return actions;
     function parseGroup(/*SVGGElement*/group) {
-        if (!(group instanceof SVGGElement)) { return; }
-        group;
-        for (let i = 0; i < group.children.length; i++) {
-            //
-        }
+        // if (!(group instanceof SVGGElement)) { return; }
+        // group;
+        // for (let i = 0; i < group.children.length; i++) {
+        //     //
+        // }
     }
     function parseRect(/*SVGRectElement*/rect) {
-        if (!(rect instanceof SVGRectElement)) { return; }
-        const transform = rect.getScreenCTM().scale(drawScale, drawScale).translate(xOffset, yOffset).rotate(rotation);
-        const rectX = rect.x.baseVal.value, rectY = rect.y.baseVal.value, rectWidth = rect.width.baseVal.value, rectHeight = rect.height.baseVal.value;
-        const topLeft = new DOMPoint(rectX, rectY).matrixTransform(transform);
-        const topRight = new DOMPoint(rectX + rectWidth, rectY).matrixTransform(transform);
-        const bottomLeft = new DOMPoint(rectX, rectY + rectHeight).matrixTransform(transform);
-        const bottomRight = new DOMPoint(rectX + rectWidth, rectY + rectHeight).matrixTransform(transform);
-        actions.push(["beginPath"]);
-        actions.push(["moveTo", topLeft.x, topLeft.y]);
-        actions.push(["lineTo", topRight.x, topRight.y]);
-        actions.push(["lineTo", bottomRight.x, bottomRight.y]);
-        actions.push(["lineTo", bottomLeft.x, bottomLeft.y]);
-        actions.push(["lineTo", topLeft.x, topLeft.y]);
-        const classInt = parseInt(rect.getAttribute("class")?.match(/\d+/g)[0]);
-        const style = styleSheetRules ? styleSheetRules[classInt].style
-            : {
-                stroke: rect.attributeStyleMap.get("stroke")?.toString(),
-                strokeWidth: rect.attributeStyleMap.get("stroke-width")?.toString(),
-                fill: rect.attributeStyleMap.get("fill")?.toString()
-            };
-        if (style.stroke && style.stroke != "none" && style.stroke != "") { actions.push(["stroke", `${parseRGB(style.stroke)}`, parseInt(style.strokeWidth)]); }
-        if (style.fill && style.fill != "none" && style.fill != "") { actions.push(["fill", `${parseRGB(style.fill)}`]); }
-        actions.push(["closePath"]);
-        rect.style.stroke
+        // if (!(rect instanceof SVGRectElement)) { return; }
+        // const transform = rect.getScreenCTM()//.scale(drawScale, drawScale).translate(xOffset, yOffset).rotate(rotation);
+        // const rectX = rect.x.baseVal.value, rectY = rect.y.baseVal.value, rectWidth = rect.width.baseVal.value, rectHeight = rect.height.baseVal.value;
+        // const topLeft = new DOMPoint(rectX, rectY).matrixTransform(transform);
+        // const topRight = new DOMPoint(rectX + rectWidth, rectY).matrixTransform(transform);
+        // const bottomLeft = new DOMPoint(rectX, rectY + rectHeight).matrixTransform(transform);
+        // const bottomRight = new DOMPoint(rectX + rectWidth, rectY + rectHeight).matrixTransform(transform);
+        // actions.push(["beginPath"]);
+        // actions.push(["moveTo", topLeft.x, topLeft.y]);
+        // actions.push(["lineTo", topRight.x, topRight.y]);
+        // actions.push(["lineTo", bottomRight.x, bottomRight.y]);
+        // actions.push(["lineTo", bottomLeft.x, bottomLeft.y]);
+        // actions.push(["lineTo", topLeft.x, topLeft.y]);
+        // const classInt = parseInt(rect.getAttribute("class")?.match(/\d+/g)[0]);
+        // const style = styleSheetRules ? styleSheetRules[classInt].style
+        //     : {
+        //         stroke: rect.attributeStyleMap.get("stroke")?.toString(),
+        //         strokeWidth: rect.attributeStyleMap.get("stroke-width")?.toString(),
+        //         fill: rect.attributeStyleMap.get("fill")?.toString()
+        //     };
+        // if (style.stroke && style.stroke != "none" && style.stroke != "") { actions.push(["stroke", `${parseRGB(style.stroke)}`, parseInt(style.strokeWidth), 0]); }
+        // if (style.fill && style.fill != "none" && style.fill != "") { actions.push(["fill", `${parseRGB(style.fill)}`]); }
+        // actions.push(["closePath"]);
+        // rect.style.stroke
     }
     function parsePath(path) {
         if (!(path instanceof SVGPathElement)) { return; }
         const rawData = path.getAttribute("d");
-        const rawActions = rawData.match(/[a-zA-z][^a-zA-z]+/g);
+        const rawActions = rawData.match(/[a-zA-z][^a-zA-z]*/g);
         let pathData = [];
         for (let i = 0; i < rawActions.length; i++) {
             const rawAction = rawActions[i];
@@ -79,14 +79,21 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
         }
         const transform = path.getScreenCTM().scale(drawScale, drawScale).translate(xOffset, yOffset).rotate(rotation);
         // const pathData = path.getPathData({normalize: true});
-        const firstPoint = new DOMPoint(pathData[0].values[0], pathData[0].values[1]).matrixTransform(transform);
+        const firstPoint = new DOMPoint(pathData[0].values[0], pathData[0].values[1]);
         let previousPoint = new DOMPoint(pathData[0].values[0], pathData[0].values[1]);
         let previousPoint2 = new DOMPoint(previousPoint.x, previousPoint.y);
-        actions.push(["beginPath"]);
-        actions.push(["moveTo", firstPoint.x, firstPoint.y]);
+        
         let point;
         let point2;
         let point3;
+
+        let tempPoint = firstPoint.matrixTransform(transform);
+        let tempPoint2;
+        let tempPoint3;
+
+        actions.push(["beginPath"]);
+        actions.push(["moveTo", tempPoint.x, tempPoint.y]);
+
         let valueLength;
         for (let i = 1; i < pathData.length; i++) {
             const pointData = pathData[i];
@@ -100,9 +107,9 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                         else {
                             point = new DOMPoint(pointData.values[i + 0], pointData.values[i + 1]);
                         };
-                        point = point.matrixTransform(transform);
                         previousPoint = point;
-                        actions.push(["moveTo", point.x, point.y]);
+                        tempPoint = point.matrixTransform(transform);
+                        actions.push(["moveTo", tempPoint.x, tempPoint.y]);
                     }
                     break;
                 case "L":
@@ -114,9 +121,9 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                         else {
                             point = new DOMPoint(pointData.values[i + 0], pointData.values[i + 1]);
                         };
-                        point = point.matrixTransform(transform);
                         previousPoint = point;
-                        actions.push(["lineTo", point.x, point.y]);
+                        tempPoint = point.matrixTransform(transform);
+                        actions.push(["lineTo", tempPoint.x, tempPoint.y]);
                     }
                     break;
                 case "H":
@@ -128,9 +135,9 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                         else {
                             point = new DOMPoint(pointData.values[i + 0], previousPoint.y)
                         };
-                        point = point.matrixTransform(transform);
                         previousPoint = point;
-                        actions.push(["lineTo", point.x, point.y]);
+                        tempPoint = point.matrixTransform(transform);
+                        actions.push(["lineTo", tempPoint.x, tempPoint.y]);
                     }
                     break;
                 case "V":
@@ -142,9 +149,9 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                         else {
                             point = new DOMPoint(previousPoint.x, pointData.values[i + 0])
                         };
-                        point = point.matrixTransform(transform);
                         previousPoint = point;
-                        actions.push(["lineTo", point.x, point.y]);
+                        tempPoint = point.matrixTransform(transform);
+                        actions.push(["lineTo", tempPoint.x, tempPoint.y]);
                     }
                     break;
                 case "C":
@@ -160,12 +167,12 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                             point2 = new DOMPoint(pointData.values[i + 2], pointData.values[i + 3]);
                             point3 = new DOMPoint(pointData.values[i + 0], pointData.values[i + 1]);
                         };
-                        point = point.matrixTransform(transform);
-                        point2 = point2.matrixTransform(transform);
-                        point3 = point3.matrixTransform(transform);
                         previousPoint = point;
                         previousPoint2 = point2;
-                        actions.push(["bezierCurveTo", point3.x, point3.y, point2.x, point2.y, point.x, point.y]);
+                        tempPoint = point.matrixTransform(transform);
+                        tempPoint2 = point2.matrixTransform(transform);
+                        tempPoint3 = point3.matrixTransform(transform);
+                        actions.push(["bezierCurveTo", tempPoint3.x, tempPoint3.y, tempPoint2.x, tempPoint2.y, tempPoint.x, tempPoint.y]);
                     }
                     break;
                 case "S":
@@ -180,12 +187,12 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                             point2 = new DOMPoint(pointData.values[i + 0], pointData.values[i + 1]);
                         };
                         point3 = new DOMPoint(2 * previousPoint.x - previousPoint2.x, 2 * previousPoint.y - previousPoint2.y);
-                        point = point.matrixTransform(transform);
-                        point2 = point2.matrixTransform(transform);
-                        point3 = point3.matrixTransform(transform);
                         previousPoint = point;
                         previousPoint2 = point2;
-                        actions.push(["bezierCurveTo", point3.x, point3.y, point2.x, point2.y, point.x, point.y]);
+                        tempPoint = point.matrixTransform(transform);
+                        tempPoint2 = point2.matrixTransform(transform);
+                        tempPoint3 = point3.matrixTransform(transform);
+                        actions.push(["bezierCurveTo", tempPoint3.x, tempPoint3.y, tempPoint2.x, tempPoint2.y, tempPoint.x, tempPoint.y]);
                     }
                     break;
                 case "Q":
@@ -199,11 +206,11 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                             point = new DOMPoint(pointData.values[i + 2], pointData.values[i + 3]);
                             point2 = new DOMPoint(pointData.values[i + 0], pointData.values[i + 1]);
                         };
-                        point = point.matrixTransform(transform);
-                        point2 = point2.matrixTransform(transform);
                         previousPoint = point;
                         previousPoint2 = point2;
-                        actions.push(["quadraticCurveTo", point2.x, point2.y, point.x, point.y]);
+                        tempPoint = point.matrixTransform(transform);
+                        tempPoint2 = point2.matrixTransform(transform);
+                        actions.push(["quadraticCurveTo", tempPoint2.x, tempPoint2.y, tempPoint.x, tempPoint.y]);
                     }
                     break;
                 case "T":
@@ -216,18 +223,20 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                             point = new DOMPoint(pointData.values[i + 0], pointData.values[i + 1]);
                         };
                         point2 = new DOMPoint(2 * previousPoint.x - previousPoint2.x, 2 * previousPoint.y - previousPoint2.y);
-                        point = point.matrixTransform(transform);
-                        point2 = point2.matrixTransform(transform);
                         previousPoint = point;
                         previousPoint2 = point2;
-                        actions.push(["quadraticCurveTo", point2.x, point2.y, point.x, point.y]);
+                        tempPoint = point.matrixTransform(transform);
+                        tempPoint2 = point2.matrixTransform(transform);
+                        actions.push(["quadraticCurveTo", tempPoint2.x, tempPoint2.y, tempPoint.x, tempPoint.y]);
                     }
                     break;
                 case "Z":
-                    actions.push(["lineTo", firstPoint.x, firstPoint.y]);
+                    tempPoint = firstPoint.matrixTransform(transform);
+                    actions.push(["lineTo", tempPoint.x, tempPoint.y]);
                     break;
             }
         }
+        
         const classInt = parseInt(path.getAttribute("class")?.match(/\d+/g)[0]);
         const style = styleSheetRules ? styleSheetRules[classInt].style
             : {
@@ -235,8 +244,8 @@ function parseSVG(text, drawScale = 1, xOffset = 0, yOffset = 0, rotation = 0) {
                 strokeWidth: path.attributeStyleMap.get("stroke-width")?.toString(),
                 fill: path.attributeStyleMap.get("fill")?.toString()
             };
-        if (style.stroke && style.stroke != "none" && style.stroke != "") { actions.push(["stroke", `${parseRGB(style.stroke)}`, Math.ceil(parseFloat(style.strokeWidth ? style.strokeWidth : 1)) * drawScale]); }
         if (style.fill && style.fill != "none" && style.fill != "") { actions.push(["fill", `${parseRGB(style.fill)}`]); }
+        if (style.stroke && style.stroke != "none" && style.stroke != "") { actions.push(["stroke", `${parseRGB(style.stroke)}`, parseFloat(style.strokeWidth ? style.strokeWidth : 1) * drawScale, 0]); }
         actions.push(["closePath"]);
     }
     function rgb(r, g, b) {
@@ -283,10 +292,10 @@ convertButton.onclick = (() => {
     if (svgInput.textContent == "") return;
     const actions = parseSVG(
         svgInput.textContent,
-        parseFloat(scaleSetting.value),
-        parseFloat(xOffsetSetting.value),
-        parseFloat(yOffsetSetting.value),
-        parseFloat(rotationSetting.value)
+        scaleSetting.value == "" ? 1 : parseFloat(scaleSetting.value),
+        xOffsetSetting.value == "" ? 0 : parseFloat(xOffsetSetting.value),
+        yOffsetSetting.value == "" ? 0 : parseFloat(yOffsetSetting.value),
+        rotationSetting.value == "" ? 0 : parseFloat(rotationSetting.value)
     );
     if (actions.length == 0) return;
     let output = drawingClassSetting.value.toString();
