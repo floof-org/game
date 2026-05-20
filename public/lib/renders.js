@@ -2787,10 +2787,13 @@ function getBorderStyle(t) {
 const petalIconCache = [];
 const petalIconIntervals = [];
 
-function createPetalIcon(index, rarity) {
-    const animated = isAnimatedRarity(rarity);
+function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
+  const permanentAnimated = animated === true;
+  const oneshot = animated === "oneshot";
 
-    const modeKey = animated ? 1 : 0;
+  const shouldAnimate = permanentAnimated || oneshot;
+
+  const modeKey = animated === true ? 1 : animated === "oneshot" ? 2 : 0;
 
     petalIconCache[index] ??= [];
     petalIconCache[index][rarity] ??= {};
@@ -2798,16 +2801,18 @@ function createPetalIcon(index, rarity) {
     petalIconIntervals[index] ??= [];
     petalIconIntervals[index][rarity] ??= {};
 
-    const otherModeKey = animated ? 0 : 1;
+  for (const key of [0, 1, 2]) {
+    if (key === modeKey) continue;
 
-    const oldDraw = petalIconIntervals[index][rarity][otherModeKey];
+    const oldDraw = petalIconIntervals[index][rarity][key];
 
     if (oldDraw) {
-        __ANIMATED_ICONS__.delete(oldDraw);
-        delete petalIconIntervals[index][rarity][otherModeKey];
+      __ANIMATED_ICONS__.delete(oldDraw);
+      delete petalIconIntervals[index][rarity][key];
     }
 
-    delete petalIconCache[index][rarity][otherModeKey];
+    delete petalIconCache[index][rarity][key];
+  }
 
     const cached = petalIconCache[index][rarity][modeKey];
 
@@ -2815,7 +2820,7 @@ function createPetalIcon(index, rarity) {
         const draw = petalIconIntervals[index][rarity][modeKey];
 
         if (draw) {
-            if (animated) {
+            if (shouldAnimate) {
                 if (!__ANIMATED_ICONS__.has(draw)) {
                     __ANIMATED_ICONS__.add(draw);
                     startIconRAF();
@@ -2832,12 +2837,8 @@ function createPetalIcon(index, rarity) {
     const ctx = canvas.getContext("2d");
     const petalText = getUIPetalName(index);
 
-    const draw = () => {
-        if (!isAnimatedRarity(rarity)) {
-            __ANIMATED_ICONS__.delete(draw);
-        }
-
-        ctx.clearRect(0, 0, 128, 128);
+  function renderIcon() {
+    ctx.clearRect(0, 0, 128, 128);
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -2853,7 +2854,7 @@ function createPetalIcon(index, rarity) {
 
         const base = state.tiers[rarity].color;
 
-        const back = animated
+    const back = shouldAnimate
             ? (custom.back ?? custom.base ?? mixColors(base, "#000000", 0.1))
             : mixColors(base, "#000000", 0.1);
 
@@ -2898,11 +2899,19 @@ function createPetalIcon(index, rarity) {
     }
 
     text(petalText, 64, 98, size, "#FFFFFF", ctx);
+    }
+
+    const draw = () => {
+        if (!isAnimatedRarity(rarity)) {
+            __ANIMATED_ICONS__.delete(draw);
+        }
+
+        renderIcon();
     };
 
     draw();
 
-    if (animated) {
+    if (permanentAnimated) {
         if (!__ANIMATED_ICONS__.has(draw)) {
             __ANIMATED_ICONS__.add(draw);
             startIconRAF();
@@ -2916,9 +2925,9 @@ function createPetalIcon(index, rarity) {
     return canvas;
 }
 
-export function getPetalIcon(index, rarity) {
+export function getPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
     petalIconCache[index] ??= [];
-    return createPetalIcon(index, rarity);
+    return createPetalIcon(index, rarity, animated);
 }
 
 const ratioFontSizeCache = [];
