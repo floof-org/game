@@ -1,645 +1,788 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>floof</title>
-    <link rel="icon" href="./assets/favicon.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&display=swap" rel="stylesheet">
+    <link rel="icon" href="./assets/favicon.ico" type="image/x-icon" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        * {
-            font-family: 'Ubuntu', sans-serif;
-            font-weight: bold;
-            transition: all .25s ease-in-out;
-
-            -webkit-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 0;
-        }
-
-        ::-webkit-scrollbar-track {
-            border-radius: 3px;
-            background: rgba(0, 0, 0, 0.15);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            border-radius: 3px;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        html,
-        body,
-        canvas {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            display: block;
-        }
-
-        .preMenu {
-            position: absolute;
-            top: -50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, .2);
-            padding: 1vmin;
-            border-radius: 1vmin;
-            color: white;
-            text-align: center;
-        }
-
-        .preMenu.active {
-            top: 50%;
-        }
-
-        .preMenu button {
-            padding: 1vmin;
-            margin: 1vmin 0;
-            background-color: rgba(0, 0, 0, .2);
-            border: none;
-            border-radius: 1vmin;
-            color: white;
-            cursor: pointer;
-        }
-
-        .preMenu button:hover {
-            background-color: rgba(0, 0, 0, .4);
-        }
-
-        .preMenu button:active {
-            background-color: rgba(0, 0, 0, .6);
-        }
-
-        .preMenu input[type=text] {
-            padding: 1vmin;
-            margin: 1vmin 0;
-            background-color: rgba(255, 255, 255, .8);
-            border: none;
-            border-radius: 1vmin;
-            color: rgba(128, 128, 128, 1);
-            text-align: center;
-            font-size: 1.5vmin;
-        }
-
-        .preMenu input[type=text]:focus {
-            outline: none;
-            background-color: rgba(255, 255, 255, 1);
-        }
-
-        #lobbiesDisplay div {
-            padding: 1vmin;
-            margin: 1vmin 0;
-            background-color: rgba(0, 0, 0, .2);
-            border: none;
-            border-radius: 1vmin;
-            color: white;
-            cursor: pointer;
-        }
-
-        #lobbiesDisplay div:hover {
-            background-color: rgba(0, 0, 0, .4);
-        }
-
-        @keyframes shakeAnimation {
-            0% {
-                transform: translateX(0)
-            }
-
-            25% {
-                transform: translateX(.5vmin)
-            }
-
-            50% {
-                transform: translateX(-.5vmin)
-            }
-
-            75% {
-                transform: translateX(.5vmin)
-            }
-
-            100% {
-                transform: translateX(0)
-            }
-        }
-
-        .shake {
-            animation: shakeAnimation .25s infinite;
-        }
-
-        select {
-            margin: 1vmin 0;
-            background-color: rgba(255, 255, 255, .8);
-            border: none;
-            border-radius: 1vmin;
-            color: rgba(128, 128, 128, 1);
-            text-align: center;
-            font-size: 1.5vmin;
-            vertical-align: middle;
-        }
-
-        select:focus {
-            outline: none;
-            background-color: rgba(255, 255, 255, 1);
-        }
-
-        label {
-            margin: 8px 0;
-            color: white;
-            vertical-align: middle;
-        }
-
-        input[type=checkbox] {
-            width: 10px;
-            height: 10px;
-            accent-color: rgba(85, 200, 119, 1);
-            color: white;
-            vertical-align: middle;
-        }
-
-        #menuContainer {
-            position: fixed;
-            top: 5px;
-            left: 5px;
-        }
-
-        #menuContainer.active {
-            left: 5px;
-        }
-
-        #buttonsContainer {
-            position: fixed;
-            bottom: 5px;
-            left: 5px;
-        }
-
-        #buttonsContainer.active {
-            left: 5px;
-        }
-
-        #topButtons {
-            background-color: rgba(0, 0, 0, .15);
-            border-radius: 5px;
-            padding: 5px;
-        }
-
-        #topButtons button {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            border: 4px solid black;
-        }
-
-        #topButtons button img {
-            width: 100%;
-            height: 100%;
-            align-self: center;
-        }
-
-        #topButtons button:hover {
-            filter: brightness(.9);
-        }
-
-        #topButtons button:active {
-            filter: brightness(.8);
-        }
-
-        #topButtons button img.alert {
-            width: 20px;
-            height: 20px;
-        }
-
-        #bottomButtons {
-            background-color: rgba(0, 0, 0, .15);
-            border-radius: 5px;
-            padding: 5px;
-        }
-
-        #bottomButtons button {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            border: 4px solid black;
-        }
-
-        #bottomButtons button:hover {
-            filter: brightness(.9);
-        }
-
-        #bottomButtons button:active {
-            filter: brightness(.8);
-        }
-
-        #bottomButtons button img.alert {
-            width: 20px;
-            height: 20px;
-        }
-
-        #menus .menu {
-            position: fixed;
-            top: 60px;
-            left: -700px;
-            border-radius: 5px;
-            width: 300px;
-            height: 380px;
-            border: 5px solid black;
-            overflow-y: auto;
-            padding: 10px;
-            font-size: 15px;
-            scrollbar-width: none;
-        }
-        
-        #menus .menu::-webkit-scrollbar {
-            display: none;
-        }
-
-        #menus .menu.active {
-            left: 5px;
-            top: 60px;
-        }
-
-        #menus .menu h2 {
-            margin-top: 0;
-            font-size: 25px;
-        }
-
-        #menus .menu label {
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        #menus .menu input[type=checkbox] {
-            width: 20px;
-            height: 20px;
-            vertical-align: middle;
-            accent-color: #EFEFEF;
-        }
-
-        #menus .menu button {
-            width: 100%;
-            padding: 10px;
-            background-color: #88C8BA;
-            border-radius: 10px;
-            border: 10px solid #6CA094;
-            margin-top: 10px;
-        }
-
-        #menus .menu button:hover {
-            filter: brightness(.9);
-        }
-
-        #menus .menu button:active {
-            filter: brightness(.8);
-        }
-
-        #menus2 .menu {
-            position: fixed;
-            bottom: -500px;
-            left: 60px;
-            border-radius: 5px;
-            width: 300px;
-            height: 350px;
-            border: 4px solid black;
-            overflow-y: auto;
-            padding: 10px;
-            font-size: 15px;
-            scrollbar-width: none;
-        }
-        
-        #menus2 .menu::-webkit-scrollbar {
-            display: none;
-        }
-
-        #menus2 .menu.active {
-            left: 60px;
-            bottom: 5px;
-        }
-
-        #menus2 .menu h2 {
-            margin-top: 0;
-            font-size: 3vmin;
-        }
-
-        #menus2 .menu label {
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        #menus2 .menu input[type=checkbox] {
-            width: 10px;
-            height: 10px;
-            vertical-align: middle;
-            accent-color: #EFEFEF;
-        }
-
-        #menus2 .menu button {
-            width: 100%;
-            padding: 1vmin;
-            background-color: #88C8BA;
-            border-radius: .5vmin;
-            border: .5vmin solid #6CA094;
-            margin-top: 1vmin;
-        }
-
-        #menus2 .menu button:hover {
-            filter: brightness(.9);
-        }
-
-        #menus2 .menu button:active {
-            filter: brightness(.8);
-        }
-
-        button {
-            outline: none;
-        }
-        button:focus {
-            outline: none;
-        }
-
-        #closeButton.inactive {
-            position: fixed;
-            top: -100px;
-        }
-
-        #closeButton {
-            position: fixed;
-            left: 192.5px;
-            top: 10px;
-        }
-
-        #accountTopPart {
-            width: calc(100% - 1.5vmin);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0vmin 0vmin 0vmin 1.5vmin;
-            margin-bottom: 1.5vmin;
-        }
-
-        #accountDiscord {
-            padding: 1vmin;
-            background-color: rgba(0, 0, 0, .15);
-            border-radius: 1vmin;
-        }
-
-        #accountDiscord img {
-            width: 4vmin;
-            height: 4vmin;
-            vertical-align: middle;
-            border-radius: 50%;
-            margin-right: 2vmin;
-        }
-
-        #accountDiscord a {
-            color: #555555;
-            text-decoration: wavy;
-        }
-
-        #accountDiscord a:hover {
-            color: #777777;
-        }
-
-        #accountDiscord a:active {
-            color: #999999;
-        }
-
-        #accountDiscord a:visited {
-            color: #555555;
-        }
-
-        .alert {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        #chatInput {
-            display: none;
-            position: fixed;
-            bottom: 12px;
-            left: 60px;
-            border-radius: 5px;
-            border: none;
-            background-color: rgba(0, 0, 0, .4);
-            color: black;
-            line-height: 1;
-            padding: 0;
-            margin: 0;
-            resize: none;
-        }
-
-        #chatInput:focus {
-            outline: none;
-        }
+      * {
+        font-family: "Ubuntu", sans-serif;
+        font-weight: bold;
+        transition: all 0.25s ease-in-out;
+
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 0;
+      }
+
+      ::-webkit-scrollbar-track {
+        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.15);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.3);
+      }
+
+      html,
+      body,
+      canvas {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        display: block;
+      }
+
+      .preMenu {
+        position: absolute;
+        top: -50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 1vmin;
+        border-radius: 1vmin;
+        color: white;
+        text-align: center;
+      }
+
+      .preMenu.active {
+        top: 50%;
+      }
+
+      .preMenu button {
+        padding: 1vmin;
+        margin: 1vmin 0;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: none;
+        border-radius: 1vmin;
+        color: white;
+        cursor: pointer;
+      }
+
+      .preMenu button:hover {
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      .preMenu button:active {
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+
+      .preMenu input[type="text"] {
+        padding: 1vmin;
+        margin: 1vmin 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 1vmin;
+        color: rgba(128, 128, 128, 1);
+        text-align: center;
+        font-size: 1.5vmin;
+      }
+
+      .preMenu input[type="text"]:focus {
+        outline: none;
+        background-color: rgba(255, 255, 255, 1);
+      }
+
+      #lobbiesDisplay div {
+        padding: 1vmin;
+        margin: 1vmin 0;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: none;
+        border-radius: 1vmin;
+        color: white;
+        cursor: pointer;
+      }
+
+      #lobbiesDisplay div:hover {
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      @keyframes shakeAnimation {
+        0% {
+          transform: translateX(0);
+        }
+
+        25% {
+          transform: translateX(0.5vmin);
+        }
+
+        50% {
+          transform: translateX(-0.5vmin);
+        }
+
+        75% {
+          transform: translateX(0.5vmin);
+        }
+
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      .shake {
+        animation: shakeAnimation 0.25s infinite;
+      }
+
+      select {
+        margin: 1vmin 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 1vmin;
+        color: rgba(128, 128, 128, 1);
+        text-align: center;
+        font-size: 1.5vmin;
+        vertical-align: middle;
+      }
+
+      select:focus {
+        outline: none;
+        background-color: rgba(255, 255, 255, 1);
+      }
+
+      label {
+        margin: 8px 0;
+        color: white;
+        vertical-align: middle;
+      }
+
+      input[type="checkbox"] {
+        width: 10px;
+        height: 10px;
+        accent-color: rgba(85, 200, 119, 1);
+        color: white;
+        vertical-align: middle;
+      }
+
+      #menuContainer {
+        position: fixed;
+        top: 5px;
+        left: 5px;
+      }
+
+      #menuContainer.active {
+        left: 5px;
+      }
+
+      #buttonsContainer {
+        position: fixed;
+        bottom: 5px;
+        left: 5px;
+      }
+
+      #buttonsContainer.active {
+        left: 5px;
+      }
+
+      #topButtons {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 5px;
+        padding: 5px;
+      }
+
+      #topButtons button {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 4px solid black;
+      }
+
+      #topButtons button img {
+        width: 100%;
+        height: 100%;
+        align-self: center;
+      }
+
+      #topButtons button:hover {
+        filter: brightness(0.9);
+      }
+
+      #topButtons button:active {
+        filter: brightness(0.8);
+      }
+
+      #topButtons button img.alert {
+        width: 20px;
+        height: 20px;
+      }
+
+      #bottomButtons {
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 5px;
+        padding: 5px;
+      }
+
+      #bottomButtons button {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        border: 4px solid black;
+      }
+
+      #bottomButtons button:hover {
+        filter: brightness(0.9);
+      }
+
+      #bottomButtons button:active {
+        filter: brightness(0.8);
+      }
+
+      #bottomButtons button img.alert {
+        width: 20px;
+        height: 20px;
+      }
+
+      #menus .menu {
+        position: fixed;
+        top: 60px;
+        left: -700px;
+        border-radius: 5px;
+        width: 300px;
+        height: 380px;
+        border: 5px solid black;
+        overflow-y: auto;
+        padding: 10px;
+        font-size: 15px;
+        scrollbar-width: none;
+      }
+
+      #menus .menu::-webkit-scrollbar {
+        display: none;
+      }
+
+      #menus .menu.active {
+        left: 5px;
+        top: 60px;
+      }
+
+      #menus .menu h2 {
+        margin-top: 0;
+        font-size: 25px;
+      }
+
+      #menus .menu label {
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      #menus .menu input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+        accent-color: #efefef;
+      }
+
+      #menus .menu button {
+        width: 100%;
+        padding: 10px;
+        background-color: #88c8ba;
+        border-radius: 10px;
+        border: 10px solid #6ca094;
+        margin-top: 10px;
+      }
+
+      #menus .menu button:hover {
+        filter: brightness(0.9);
+      }
+
+      #menus .menu button:active {
+        filter: brightness(0.8);
+      }
+
+      #menus2 .menu {
+        position: fixed;
+        bottom: -500px;
+        left: 60px;
+        border-radius: 5px;
+        width: 300px;
+        height: 350px;
+        border: 4px solid black;
+        overflow-y: auto;
+        padding: 10px;
+        font-size: 15px;
+        scrollbar-width: none;
+      }
+
+      #menus2 .menu::-webkit-scrollbar {
+        display: none;
+      }
+
+      #menus2 .menu.active {
+        left: 60px;
+        bottom: 5px;
+      }
+
+      #menus2 .menu h2 {
+        margin-top: 0;
+        font-size: 3vmin;
+      }
+
+      #menus2 .menu label {
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      #menus2 .menu input[type="checkbox"] {
+        width: 10px;
+        height: 10px;
+        vertical-align: middle;
+        accent-color: #efefef;
+      }
+
+      #menus2 .menu button {
+        width: 100%;
+        padding: 1vmin;
+        background-color: #88c8ba;
+        border-radius: 0.5vmin;
+        border: 0.5vmin solid #6ca094;
+        margin-top: 1vmin;
+      }
+
+      #menus2 .menu button:hover {
+        filter: brightness(0.9);
+      }
+
+      #menus2 .menu button:active {
+        filter: brightness(0.8);
+      }
+
+      button {
+        outline: none;
+      }
+      button:focus {
+        outline: none;
+      }
+
+      #closeButton.inactive {
+        position: fixed;
+        top: -100px;
+      }
+
+      #closeButton {
+        position: fixed;
+        left: 192.5px;
+        top: 10px;
+      }
+
+      #accountTopPart {
+        width: calc(100% - 1.5vmin);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0vmin 0vmin 0vmin 1.5vmin;
+        margin-bottom: 1.5vmin;
+      }
+
+      #accountDiscord {
+        padding: 1vmin;
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 1vmin;
+      }
+
+      #accountDiscord img {
+        width: 4vmin;
+        height: 4vmin;
+        vertical-align: middle;
+        border-radius: 50%;
+        margin-right: 2vmin;
+      }
+
+      #accountDiscord a {
+        color: #555555;
+        text-decoration: wavy;
+      }
+
+      #accountDiscord a:hover {
+        color: #777777;
+      }
+
+      #accountDiscord a:active {
+        color: #999999;
+      }
+
+      #accountDiscord a:visited {
+        color: #555555;
+      }
+
+      .alert {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      #chatInput {
+        display: none;
+        position: fixed;
+        bottom: 12px;
+        left: 60px;
+        border-radius: 5px;
+        border: none;
+        background-color: rgba(0, 0, 0, 0.4);
+        color: black;
+        line-height: 1;
+        padding: 0;
+        margin: 0;
+        resize: none;
+      }
+
+      #chatInput:focus {
+        outline: none;
+      }
     </style>
-</head>
+  </head>
 
-<script type="module">
-  document.addEventListener("DOMContentLoaded", () => {
-    const redirect = window.location.href;
-    document.getElementById("discordLoginBtn").href = `<%= DISCORD_OAUTH2_REDIRECT_URL %>&state=${encodeURIComponent(JSON.stringify({ redirect }))}`});
-</script>
+  <script type="module">
+    document.addEventListener("DOMContentLoaded", () => {
+      const redirect = window.location.href;
+      document.getElementById("discordLoginBtn").href =
+        `<%= DISCORD_OAUTH2_REDIRECT_URL %>&state=${encodeURIComponent(JSON.stringify({ redirect }))}`;
+    });
+  </script>
 
-<body oncontextmenu="return false;">
+  <body oncontextmenu="return false;">
     <canvas></canvas>
-    
+
     <div id="menuContainer">
-        <div id="topButtons">
-            <button id="optionsMenu" tabindex="-1"></button>
-            <button id="accountMenu" tabindex="-1"></button>
-            <button id="changelogMenu" tabindex="-1" style="position:relative;"></button>
-            <button id="discordButton" tabindex="-1"></button>
+      <div id="topButtons">
+        <button id="optionsMenu" tabindex="-1"></button>
+        <button id="accountMenu" tabindex="-1"></button>
+        <button
+          id="changelogMenu"
+          tabindex="-1"
+          style="position: relative"
+        ></button>
+        <button id="discordButton" tabindex="-1"></button>
 
-            <button id="closeButton" class="inactive"></button>
+        <button id="closeButton" class="inactive"></button>
+      </div>
+
+      <div id="menus">
+        <div class="menu" id="optionsMenu" style="height: 460px">
+          <h2>Options:</h2>
+
+          <label for="show-debug">Show Debug Info:</label>
+          <input
+            type="checkbox"
+            id="show-debug"
+            name="show-debug"
+            value="show-debug"
+          /><br />
+
+          <label for="hide-grid">Hide Grid:</label>
+          <input
+            type="checkbox"
+            id="hide-grid"
+            name="hide-grid"
+            value="hide-grid"
+          /><br />
+
+          <label for="rigid-interpolation">Rigid Interpolation:</label>
+          <input
+            type="checkbox"
+            id="rigid-interpolation"
+            name="rigid-interpolation"
+            value="rigid-interpolation"
+          /><br />
+
+          <label for="mouse-movement">Mouse Movement:</label>
+          <input
+            type="checkbox"
+            id="mouse-movement"
+            name="mouse-movement"
+            value="mouse-movement"
+          /><br />
+
+          <label for="hide-entity-ui">Hide Entity UI:</label>
+          <input
+            type="checkbox"
+            id="hide-entity-ui"
+            name="hide-entity-ui"
+            value="hide-entity-ui"
+          /><br />
+
+          <label for="disable-tiled-background"
+            >Disable Tiled Background:</label
+          >
+          <input
+            type="checkbox"
+            id="disable-tiled-background"
+            name="disable-tiled-background"
+            value="disable-tiled-background"
+          /><br />
+
+          <label for="extra-graphics">Fancy Graphics:</label>
+          <input
+            type="checkbox"
+            id="extra-graphics"
+            name="extra-graphics"
+            value="extra-graphics"
+          /><br />
+
+          <label for="disable-gradients">Disable Gradients:</label>
+          <input
+            type="checkbox"
+            id="disable-gradients"
+            name="disable-gradients"
+            value="disable-gradients"
+          /><br />
+
+          <label for="minimum-gradient-rarity">Minimum Gradient Rarity:</label>
+          <input
+            type="number"
+            id="minimum-gradient-rarity"
+            name="minimum-gradient-rarity"
+            min="0"
+            step="1"
+            value="0"
+          /><br />
+
+          <label for="show-hitboxes">Show Hitboxes:</label>
+          <input
+            type="checkbox"
+            id="show-hitboxes"
+            name="show-hitboxes"
+            value="show-hitboxes"
+          /><br />
+
+          <label for="cache-mob-assets">Cache Mob Assets:</label>
+          <input
+            type="checkbox"
+            id="cache-mob-assets"
+            name="cache-mob-assets"
+            value="cache-mob-assets"
+          /><br />
+
+          <label for="cache-petal-assets">Cache Petal Assets:</label>
+          <input
+            type="checkbox"
+            id="cache-petal-assets"
+            name="cache-petal-assets"
+            value="cache-petal-assets"
+          /><br />
         </div>
 
-        <div id="menus">
-            <div class="menu" id="optionsMenu" style="height:380px">
-                <h2>Options:</h2>
-                <label for="show-debug">Show Debug Info:</label>
-                <input type="checkbox" id="show-debug" name="show-debug" value="show-debug"><br />
+        <div class="menu" id="accountMenu" style="height: 38vmin">
+          <!-- Logged In -->
+          <div
+            id="accountLoggedIn"
+            style="display: none; padding: 2vmin; text-align: center"
+          >
+            <img
+              id="accountAvatar"
+              src=""
+              width="128"
+              height="128"
+              style="
+                border-radius: 50%;
+                margin-bottom: 1.5vmin;
+                image-rendering: -webkit-optimize-contrast;
+              "
+            />
 
-                <label for="hide-grid">Hide Grid:</label>
-                <input type="checkbox" id="hide-grid" name="hide-grid" value="hide-grid"><br />
-
-                <label for="rigid-interpolation">Rigid Interpolation:</label>
-                <input type="checkbox" id="rigid-interpolation" name="rigid-interpolation" value="rigid-interpolation"><br />
-
-                <label for="mouse-movement">Mouse Movement:</label>
-                <input type="checkbox" id="mouse-movement" name="mouse-movement" value="mouse-movement"><br />
-
-                <label for="hide-entity-ui">Hide Entity UI:</label>
-                <input type="checkbox" id="hide-entity-ui" name="hide-entity-ui" value="hide-entity-ui"><br />
-
-                <label for="disable-tiled-background">Disable Tiled Background:</label>
-                <input type="checkbox" id="disable-tiled-background" name="disable-tiled-background" value="disable-tiled-background"><br />
-
-                <label for="extra-graphics">Fancy Graphics:</label>
-                <input type="checkbox" id="extra-graphics" name="extra-graphics" value="extra-graphics"><br />
-
-                <label for="show-hitboxes">Show Hitboxes:</label>
-                <input type="checkbox" id="show-hitboxes" name="show-hitboxes" value="show-hitboxes"><br />
-
-                <label for="cache-mob-assets">Cache Mob Assets:</label>
-                <input type="checkbox" id="cache-mob-assets" name="cache-mob-assets" value="cache-mob-assets"><br />
-
-                <label for="cache-petal-assets">Cache Petal Assets:</label>
-                <input type="checkbox" id="cache-petal-assets" name="cache-petal-assets" value="cache-petal-assets"><br />
+            <div
+              id="accountUsernameDisplay"
+              style="
+                font-size: 3.2vmin;
+                font-weight: bold;
+                margin-bottom: 2.5vmin;
+                white-space: nowrap;
+              "
+            >
+              Loading...
             </div>
 
-            <div class="menu" id="accountMenu" style="height:38vmin">
-                <!-- Logged In -->
-                <div id="accountLoggedIn" style="display:none; padding:2vmin; text-align:center;">
-                    <img id="accountAvatar" src="" width="128" height="128"
-                        style="border-radius:50%; margin-bottom:1.5vmin; image-rendering: -webkit-optimize-contrast;">
+            <button
+              id="logoutButton"
+              style="
+                background: #ed4245;
+                color: white;
+                border: none;
+                padding: 1.4vmin 4vmin;
+                border-radius: 2px solid #c13537;
+                border-radius: 1vmin;
+                font-weight: bold;
+                font-size: 2.2vmin;
+                cursor: pointer;
+                width: 80%;
+              "
+            >
+              Log Out
+            </button>
+          </div>
 
-                    <div id="accountUsernameDisplay"
-                        style="font-size:3.2vmin; font-weight:bold; margin-bottom:2.5vmin; white-space:nowrap;">
-                        Loading...
-                    </div>
-
-                    <button id="logoutButton"
-                        style="background:#ed4245; color:white; border:none; padding:1.4vmin 4vmin; border-radius:2px solid #c13537; border-radius:1vmin; font-weight:bold; font-size:2.2vmin; cursor:pointer; width:80%;">
-                        Log Out
-                    </button>
-                </div>
-
-                <!-- Logged Out -->
-                <div id="accountLoggedOut" style="text-align:center; padding:4vmin 2vmin;">
-                    <div style="color:#888; margin-bottom:3vmin; font-size:2.2vmin;">Sign in to save progress</div>
-                    <a href="<%= DISCORD_OAUTH2_REDIRECT_URL %>" id="discordLoginBtn"
-                        style="display:inline-flex; align-items:center; justify-content:center; gap:14px; padding:1.6vmin 4vmin; background:#5865F2; color:white; border-radius:1.2vmin; text-decoration:none; font-weight:bold; font-size:2.2vmin; box-shadow:0 6px 16px rgba(88,101,242,.4);">
-                        <img src="/assets/Discord-Symbol-Black.png" width="32" height="32"style="object-fit:contain;">
-                        <span>Log in with Discord</span>
-                    </a>
-                </div>
+          <!-- Logged Out -->
+          <div
+            id="accountLoggedOut"
+            style="text-align: center; padding: 4vmin 2vmin"
+          >
+            <div style="color: #888; margin-bottom: 3vmin; font-size: 2.2vmin">
+              Sign in to save progress
             </div>
-
-            <div class="menu" id="changelogMenu" style="width: 42vmin;">
-                <h2>Changelogs:</h2>
-            </div>
+            <a
+              href="<%= DISCORD_OAUTH2_REDIRECT_URL %>"
+              id="discordLoginBtn"
+              style="
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 14px;
+                padding: 1.6vmin 4vmin;
+                background: #5865f2;
+                color: white;
+                border-radius: 1.2vmin;
+                text-decoration: none;
+                font-weight: bold;
+                font-size: 2.2vmin;
+                box-shadow: 0 6px 16px rgba(88, 101, 242, 0.4);
+              "
+            >
+              <img
+                src="/assets/Discord-Symbol-Black.png"
+                width="32"
+                height="32"
+                style="object-fit: contain"
+              />
+              <span>Log in with Discord</span>
+            </a>
+          </div>
         </div>
+
+        <div class="menu" id="changelogMenu" style="width: 42vmin">
+          <h2>Changelogs:</h2>
+        </div>
+      </div>
     </div>
 
     <div id="buttonsContainer">
-        <div id="bottomButtons">
-            <button id="inventory" tabindex="-1"></button>
-        </div>
+      <div id="bottomButtons">
+        <button id="inventory" tabindex="-1"></button>
+      </div>
 
-        <div id="menus2">
-            <div class="menu" id="inventory">
-                <span>Your inventory is empty :(</span>
-            </div>
+      <div id="menus2">
+        <div class="menu" id="inventory">
+          <span>Your inventory is empty :(</span>
         </div>
+      </div>
     </div>
 
     <div class="preMenu active" id="mainMenu">
-        <h1>floof beta</h1>
-        <button data-switchmenu="createLobby" tabindex="-1">Create Lobby</button>
-        <button data-switchmenu="findLobbies" tabindex="-1">Find Lobbies</button>
+      <h1>floof beta</h1>
+      <button data-switchmenu="createLobby" tabindex="-1">Create Lobby</button>
+      <button data-switchmenu="findLobbies" tabindex="-1">Find Lobbies</button>
     </div>
 
     <div class="preMenu" id="createLobby">
-        <h1>Create Lobby</h1>
-        <input type="text" placeholder="Lobby Name" id="lobbyName" />
-        <button id="createLobbyButton" tabindex="-1">Create</button>
-        <button data-switchmenu="mainMenu" tabindex="-1">Back</button><br />
-        <label for="gamemodeSelect">Gamemode</label>
-        <select id="gamemodeSelect">
-            <option value="ffa" selected>FFA</option>
-            <option value="tdm">TDM</option>
-            <option value="waves">Waves</option>
-            <option value="line">Line</option>
-            <option value="maze">Maze</option>
-        </select>
-        <label for="biomeSelect">Biome</label>
-        <select id="biomeSelect">
-            <option value="default" selected>All Mobs</option>
-            <option value="garden">Garden</option>
-            <option value="desert">Desert</option>
-            <option value="ocean">Ocean</option>
-            <option value="antHell">Ant Hell</option>
-            <option value="sewers">Sewers</option>
-            <option value="hell">Hell</option>
-            <option value="dark_forest">Dark Forest</option>
-        </select><br />
-        <label for="enableMods">Enable Mods</label>
-        <input type="checkbox" id="enableMods" />
-        <label for="privateLobby">Private</label>
-        <input type="checkbox" id="privateLobby" />
+      <h1>Create Lobby</h1>
+      <input type="text" placeholder="Lobby Name" id="lobbyName" />
+      <button id="createLobbyButton" tabindex="-1">Create</button>
+      <button data-switchmenu="mainMenu" tabindex="-1">Back</button><br />
+      <label for="gamemodeSelect">Gamemode</label>
+      <select id="gamemodeSelect">
+        <option value="ffa" selected>FFA</option>
+        <option value="tdm">TDM</option>
+        <option value="waves">Waves</option>
+        <option value="line">Line</option>
+        <option value="maze">Maze</option>
+      </select>
+      <label for="biomeSelect">Biome</label>
+      <select id="biomeSelect">
+        <option value="default" selected>All Mobs</option>
+        <option value="garden">Garden</option>
+        <option value="desert">Desert</option>
+        <option value="ocean">Ocean</option>
+        <option value="antHell">Ant Hell</option>
+        <option value="sewers">Sewers</option>
+        <option value="hell">Hell</option>
+        <option value="dark_forest">Dark Forest</option></select
+      ><br />
+      <label for="enableMods">Enable Mods</label>
+      <input type="checkbox" id="enableMods" />
+      <label for="privateLobby">Private</label>
+      <input type="checkbox" id="privateLobby" />
     </div>
 
     <div class="preMenu" id="findLobbies">
-        <h1>Find Lobbies</h1>
-        <button data-switchmenu="mainMenu" tabindex="-1">Back</button>
-        <button id="refreshLobbies" tabindex="-1">Refresh</button>
-        <div id="lobbiesDisplay"></div>
+      <h1>Find Lobbies</h1>
+      <button data-switchmenu="mainMenu" tabindex="-1">Back</button>
+      <button id="refreshLobbies" tabindex="-1">Refresh</button>
+      <div id="lobbiesDisplay"></div>
     </div>
 
     <div class="preMenu" id="usernameInput">
-        <h1>Enter Username</h1>
-        <input type="text" placeholder="Username" id="usernameInputInput" />
-        <button id="usernameButton" tabindex="-1">Enter</button>
+      <h1>Enter Username</h1>
+      <input type="text" placeholder="Username" id="usernameInputInput" />
+      <button id="usernameButton" tabindex="-1">Enter</button>
     </div>
 
-    <input type="text" maxlength="128" id="chatInput" placeholder="Enter to chat; Esc to close"/>
+    <input
+      type="text"
+      maxlength="128"
+      id="chatInput"
+      placeholder="Enter to chat; Esc to close"
+    />
     <script type="module">
-        const AUTH_SERVER = "<%= AUTH_SERVER %>".replace(/\/+$/, "");
+      const AUTH_SERVER = "<%= AUTH_SERVER %>".replace(/\/+$/, "");
 
-        async function updateAccountMenu() {
-            const loggedIn = document.getElementById("accountLoggedIn");
-            const loggedOut = document.getElementById("accountLoggedOut");
-            const avatar = document.getElementById("accountAvatar");
-            const username = document.getElementById("accountUsernameDisplay");
-            const logoutBtn = document.getElementById("logoutButton");
+      async function updateAccountMenu() {
+        const loggedIn = document.getElementById("accountLoggedIn");
+        const loggedOut = document.getElementById("accountLoggedOut");
+        const avatar = document.getElementById("accountAvatar");
+        const username = document.getElementById("accountUsernameDisplay");
+        const logoutBtn = document.getElementById("logoutButton");
 
-            try {
-                const res = await fetch(`${AUTH_SERVER}/api/me`, { credentials: "include" });
-                if (!res.ok) throw new Error();
+        try {
+          const res = await fetch(`${AUTH_SERVER}/api/me`, {
+            credentials: "include",
+          });
+          if (!res.ok) throw new Error();
 
-                const user = await res.json();
-                const name = user.global_name || user.username || "User";
-                const tag = user.discriminator === "0" ? "" : `#${user.discriminator}`;
+          const user = await res.json();
+          const name = user.global_name || user.username || "User";
+          const tag =
+            user.discriminator === "0" ? "" : `#${user.discriminator}`;
 
-                username.textContent = `${name}${tag}`;
+          username.textContent = `${name}${tag}`;
 
-                // GIF SUPPORT + FALLBACK
-                if (user.avatar?.startsWith("a_")) {
-                    avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.gif?size=128`;
-                } else if (user.avatar) {
-                    avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=128`;
-                } else {
-                    avatar.src = `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) >> 22n) % 6n}.png`;
-                }
+          // GIF SUPPORT + FALLBACK
+          if (user.avatar?.startsWith("a_")) {
+            avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.gif?size=128`;
+          } else if (user.avatar) {
+            avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=128`;
+          } else {
+            avatar.src = `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) >> 22n) % 6n}.png`;
+          }
 
-                loggedIn.style.display = "block";
-                loggedOut.style.display = "none";
+          loggedIn.style.display = "block";
+          loggedOut.style.display = "none";
 
-                logoutBtn.onclick = async () => {
-                    await fetch(`${AUTH_SERVER}/api/logout`, {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "Content-Type": "application/json" }
-                    });
-                    location.reload();
-                };
-
-            } catch (e) {
-                loggedIn.style.display = "none";
-                loggedOut.style.display = "block";
-            }
+          logoutBtn.onclick = async () => {
+            await fetch(`${AUTH_SERVER}/api/logout`, {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+            });
+            location.reload();
+          };
+        } catch (e) {
+          loggedIn.style.display = "none";
+          loggedOut.style.display = "block";
         }
+      }
 
-        updateAccountMenu();
+      updateAccountMenu();
     </script>
-</body>
-
+  </body>
 </html>
