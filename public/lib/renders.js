@@ -16,7 +16,7 @@ function dipPolygon(ctx, sides, r, dipMult, R) {
 
     ctx.beginPath();
 
-    ctx.moveTo(r, 0);
+    ctx.moveTo(Math.cos(R) * r, Math.sin(R) * r);
 
     for (let i = 0; i < sides; i++) {
         const theta = (i + 1) / sides * TAU;
