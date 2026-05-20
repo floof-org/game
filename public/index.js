@@ -927,7 +927,11 @@ function drawInventory() {
       .forEach(([petalIndex, count]) => {
         if (count <= 0) return;
 
-        const petalCanvas = getPetalIcon(Number(petalIndex), rarityIndex);
+        const petalCanvas = getPetalIcon(
+        Number(petalIndex),
+        rarityIndex,
+        "oneshot"
+        );
 
                 const icon = document.createElement("canvas");
 
@@ -3370,12 +3374,12 @@ function draw() {
 
   net.state._foundHover = false;
 
-    if (menu.classList.contains("active") && net.state.petalElements) {
-        net.state.petalElements.forEach(petal => {
-            const rect = petal.icon.getBoundingClientRect();
-            const menuRect = menu.getBoundingClientRect();
-            const mouseX = mouse.x;
-            const mouseY = mouse.y;
+  if (menu.classList.contains("active") && net.state.petalElements) {
+    net.state.petalElements.forEach((petal) => {
+      const rect = petal.icon.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const mouseX = mouse.x / window.devicePixelRatio;
+      const mouseY = mouse.y / window.devicePixelRatio;
 
             const visible =
                 rect.top >= menuRect.top &&
