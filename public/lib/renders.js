@@ -22,7 +22,7 @@ function dipPolygon(ctx, sides, r, dipMult, R) {
 
   ctx.beginPath();
 
-    ctx.moveTo(Math.cos(R) * r, Math.sin(R) * r);
+  ctx.moveTo(Math.cos(R) * r, Math.sin(R) * r);
 
   for (let i = 0; i < sides; i++) {
     const theta = ((i + 1) / sides) * TAU;
@@ -166,17 +166,17 @@ function drawHeavy(ctx = _ctx, hit = false) {
 }
 
 function drawRice(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.white, "#FF0000", hit * .5), .7);
-    ctx.rotate(Math.PI/4)
-    
-    ctx.beginPath();
-    ctx.moveTo(-.7, 0);
-    ctx.quadraticCurveTo(0, -.5, .7, 0);
-    ctx.stroke();
+  setStyle(ctx, mixColors(colors.white, "#FF0000", hit * 0.5), 0.7);
+  ctx.rotate(Math.PI / 4);
 
-    ctx.strokeStyle = ctx.fillStyle;
-    ctx.lineWidth = 0.4;
-    ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-0.7, 0);
+  ctx.quadraticCurveTo(0, -0.5, 0.7, 0);
+  ctx.stroke();
+
+  ctx.strokeStyle = ctx.fillStyle;
+  ctx.lineWidth = 0.4;
+  ctx.stroke();
 }
 
 function drawRockP(ctx = _ctx, hit = false) {
@@ -200,37 +200,37 @@ function drawCactusPetal(ctx = _ctx, hit = false) {
 }
 
 function drawLeaf(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.leafGreen, "#FF0000", hit * .5), .15);
-    ctx.beginPath();
-    ctx.moveTo(-.6609, .4525);
-    ctx.quadraticCurveTo(-.2989, .6336, .1536, .5431);
-    ctx.quadraticCurveTo(.5157, .4525, .7872, .2715);
-    ctx.quadraticCurveTo(1.104, .0453, .8777, -.181);
-    ctx.quadraticCurveTo(.6062, -.4525, .1536, -.5431);
-    ctx.quadraticCurveTo(-.2989, -.6336, -.7062, -.4073);
-    ctx.quadraticCurveTo(-1.2493, .0453, -.6609, .4525);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+  setStyle(ctx, mixColors(colors.leafGreen, "#FF0000", hit * 0.5), 0.15);
+  ctx.beginPath();
+  ctx.moveTo(-0.6609, 0.4525);
+  ctx.quadraticCurveTo(-0.2989, 0.6336, 0.1536, 0.5431);
+  ctx.quadraticCurveTo(0.5157, 0.4525, 0.7872, 0.2715);
+  ctx.quadraticCurveTo(1.104, 0.0453, 0.8777, -0.181);
+  ctx.quadraticCurveTo(0.6062, -0.4525, 0.1536, -0.5431);
+  ctx.quadraticCurveTo(-0.2989, -0.6336, -0.7062, -0.4073);
+  ctx.quadraticCurveTo(-1.2493, 0.0453, -0.6609, 0.4525);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(.6, 0);
-    ctx.quadraticCurveTo(0, .1, -.6, 0);
-    ctx.moveTo(-1, 0);
-    ctx.quadraticCurveTo(-1.3, -.05, -1.35, -.1);
-    ctx.stroke();
-    ctx.closePath();
+  ctx.beginPath();
+  ctx.moveTo(0.6, 0);
+  ctx.quadraticCurveTo(0, 0.1, -0.6, 0);
+  ctx.moveTo(-1, 0);
+  ctx.quadraticCurveTo(-1.3, -0.05, -1.35, -0.1);
+  ctx.stroke();
+  ctx.closePath();
 }
 
 function drawWing(ctx = _ctx, hit = false) {
-    ctx.rotate(Math.PI / 4);
-    setStyle(ctx, mixColors(colors.white, "#FF0000", hit * .5), .2);
-    ctx.beginPath();
-    ctx.arc(0, 0, 1, -0.63, Math.PI * 1.2);
-    ctx.quadraticCurveTo(0, .6, .77, -.63);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+  ctx.rotate(Math.PI / 4);
+  setStyle(ctx, mixColors(colors.white, "#FF0000", hit * 0.5), 0.2);
+  ctx.beginPath();
+  ctx.arc(0, 0, 1, -0.63, Math.PI * 1.2);
+  ctx.quadraticCurveTo(0, 0.6, 0.77, -0.63);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 }
 
 function drawBone(ctx = _ctx, hit = false) {
@@ -331,16 +331,16 @@ function drawMagnolia(ctx = _ctx, hit = false) {
 }
 
 function drawCorn(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.beeYellow, "#FF0000", hit * .5), .25);
-    ctx.beginPath();
-    ctx.moveTo(.85, .85);
-    ctx.quadraticCurveTo(1.3, 0, .85, -.85);
-    ctx.bezierCurveTo(.55, -1.3, -.05, -.95, -.9, -.65);
-    ctx.quadraticCurveTo(-.1, 0, -.9, .65);
-    ctx.bezierCurveTo(-.05, .95, .55, 1.3, .85, .85);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+  setStyle(ctx, mixColors(colors.beeYellow, "#FF0000", hit * 0.5), 0.25);
+  ctx.beginPath();
+  ctx.moveTo(0.85, 0.85);
+  ctx.quadraticCurveTo(1.3, 0, 0.85, -0.85);
+  ctx.bezierCurveTo(0.55, -1.3, -0.05, -0.95, -0.9, -0.65);
+  ctx.quadraticCurveTo(-0.1, 0, -0.9, 0.65);
+  ctx.bezierCurveTo(-0.05, 0.95, 0.55, 1.3, 0.85, 0.85);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 }
 
 function drawSingleSand(ctx = _ctx, hit = false) {
@@ -605,15 +605,15 @@ export function drawThirdEye(ctx = _ctx, hit = false) {
 }
 
 function drawPincer(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.stingerBlack, "#FF0000", hit * .5), .2);
-    ctx.beginPath();
-    ctx.moveTo(-1, -.2);
-    ctx.quadraticCurveTo(-.2, -.95, .9, .2);
-    ctx.lineTo(.9, .2);
-    ctx.quadraticCurveTo(.2, -.1, -1, .2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+  setStyle(ctx, mixColors(colors.stingerBlack, "#FF0000", hit * 0.5), 0.2);
+  ctx.beginPath();
+  ctx.moveTo(-1, -0.2);
+  ctx.quadraticCurveTo(-0.2, -0.95, 0.9, 0.2);
+  ctx.lineTo(0.9, 0.2);
+  ctx.quadraticCurveTo(0.2, -0.1, -1, 0.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 }
 
 function drawEgg(ctx = _ctx, color, hit = false) {
@@ -894,19 +894,19 @@ function drawAntEgg(ctx = _ctx, index, rarity) {
 }
 
 function drawYucca(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.peaGreen, "#FF0000", hit * .5), .225);
-    ctx.beginPath();
-    ctx.moveTo(1.1, 0);
-    ctx.bezierCurveTo(.5, -.9, -.5, -.7, -1.1, 0);
-    ctx.bezierCurveTo(-.9, .9, .5, .7, 1.1, 0);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+  setStyle(ctx, mixColors(colors.peaGreen, "#FF0000", hit * 0.5), 0.225);
+  ctx.beginPath();
+  ctx.moveTo(1.1, 0);
+  ctx.bezierCurveTo(0.5, -0.9, -0.5, -0.7, -1.1, 0);
+  ctx.bezierCurveTo(-0.9, 0.9, 0.5, 0.7, 1.1, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(1, 0);
-    ctx.quadraticCurveTo(.3, -.3, -1, 0);
-    ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(1, 0);
+  ctx.quadraticCurveTo(0.3, -0.3, -1, 0);
+  ctx.stroke();
 }
 
 const magnetPath = new Path2D(
@@ -974,117 +974,116 @@ export function drawArmor(ctx = _ctx, hit = false) {
 }
 
 function drawJelly(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors("#FBBAFF", "#FF0000", hit * .5), .2);
+  setStyle(ctx, mixColors("#FBBAFF", "#FF0000", hit * 0.5), 0.2);
 
-    ctx.beginPath();
-    ctx.arc(0, 0, 1, 0, TAU);
-    ctx.closePath();
-    ctx.globalAlpha = .6;
-    ctx.fill();
-    ctx.strokeStyle = mixColors("#d4b4d3", "#FF0000", hit * .5);
-    ctx.globalAlpha = 1;
-    ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, 0, 1, 0, TAU);
+  ctx.closePath();
+  ctx.globalAlpha = 0.6;
+  ctx.fill();
+  ctx.strokeStyle = mixColors("#d4b4d3", "#FF0000", hit * 0.5);
+  ctx.globalAlpha = 1;
+  ctx.stroke();
 
-    ctx.fillStyle = mixColors("#d4b4d3", "#FF0000", hit * .5);
-    ctx.globalAlpha = 1;
-    ctx.beginPath();
-    ctx.arc(.25, .45, .35, 0, TAU);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(-.55, .3, .2, 0, TAU);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(.3, -.25, .2, 0, TAU);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(-.4, -.25, .25, 0, TAU);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(0, -.9, .35, 0, Math.PI);
-    ctx.closePath();
-    ctx.fill();
-    ctx.closePath();
+  ctx.fillStyle = mixColors("#d4b4d3", "#FF0000", hit * 0.5);
+  ctx.globalAlpha = 1;
+  ctx.beginPath();
+  ctx.arc(0.25, 0.45, 0.35, 0, TAU);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(-0.55, 0.3, 0.2, 0, TAU);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(0.3, -0.25, 0.2, 0, TAU);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(-0.4, -0.25, 0.25, 0, TAU);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(0, -0.9, 0.35, 0, Math.PI);
+  ctx.closePath();
+  ctx.fill();
+  ctx.closePath();
 }
 
-
 function drawYggdrasil(ctx = _ctx, hit = false) {
-    const innerColor = mixColors("#aa853f", "#FF0000", hit * .5);
-    const outerColor = mixColors("#886a32", "#FF0000", hit * .5);
-    // Inner color
-    ctx.strokeStyle = outerColor;
-    ctx.fillStyle = outerColor;
-    ctx.lineWidth = .4;
-    
-    // Stem
-    ctx.beginPath();
-    ctx.moveTo(1.13, .54);
-    ctx.quadraticCurveTo(1.20, .6, 1.16, .69);
-    ctx.quadraticCurveTo(1.13, .8, 1.03, .81);
-    ctx.quadraticCurveTo(-.52, .14, -.63, -1.13);
-    ctx.lineTo(-.56, -1.13);
-    ctx.quadraticCurveTo(-.1, .38, 1.13, .54);
-    // Curvy leaf
-    ctx.moveTo(.72, .54);
-    ctx.quadraticCurveTo(.3, .97, -.49, .13);
-    ctx.quadraticCurveTo(-.92, -.44, -.57, -.98);
-    ctx.quadraticCurveTo(-.2, -1.01, .24, -.8);
-    ctx.quadraticCurveTo(1.31, -.2, .72, .54);
-    // Spines
-    ctx.moveTo(.97, -.14);
-    ctx.quadraticCurveTo(.91, .24, .72, .54);
-    ctx.moveTo(.82, -.47);
-    ctx.quadraticCurveTo(.78, -.13, .61, .38);
-    ctx.moveTo(.66, -.7);
-    ctx.quadraticCurveTo(.64, -.38, .43, .26);
-    ctx.moveTo(.46, -.79);
-    ctx.quadraticCurveTo(.42, -.36, .22, .1);
-    ctx.moveTo(.26, -.92);
-    ctx.quadraticCurveTo(.21, -.59, .04, -.06);
-    ctx.moveTo(.02, -.97);
-    ctx.quadraticCurveTo(0, -.72, -.14, -.28);
-    ctx.moveTo(-.18, -1.04);
-    ctx.quadraticCurveTo(-.17, -.83, -.29, -.47);
-    ctx.moveTo(-.38, -1.07);
-    ctx.quadraticCurveTo(-.35, -.34, -.74, -.88);
-    ctx.moveTo(-.76, -.59);
-    ctx.quadraticCurveTo(-.61, -.49, -.4, -.46);
-    ctx.moveTo(-.78, -.34);
-    ctx.quadraticCurveTo(-.61, -.26, -.3, -.24);
-    ctx.moveTo(-.69, -.06);
-    ctx.quadraticCurveTo(-.47, -.04, -.15, -.09);
-    ctx.moveTo(-.65, .14);
-    ctx.quadraticCurveTo(-.47, .15, .05, .05);
-    ctx.moveTo(-.53, .33);
-    ctx.quadraticCurveTo(-.18, .32, .12, .2);
-    ctx.quadraticCurveTo(-.19, .31, .12, .2);
-    ctx.moveTo(-.35, .5);
-    ctx.quadraticCurveTo(.02, .47, .27, .35);
-    ctx.moveTo(-.08, .63);
-    ctx.quadraticCurveTo(.15, .6, .49, .47);
-    ctx.moveTo(.26, .72);
-    ctx.quadraticCurveTo(.5, .72, .72, .54);
-    ctx.fill();
-    ctx.stroke();
-    
-    ctx.strokeStyle = innerColor;
-    ctx.fillStyle = innerColor;
-    ctx.lineWidth = .125;
-    ctx.stroke();
+  const innerColor = mixColors("#aa853f", "#FF0000", hit * 0.5);
+  const outerColor = mixColors("#886a32", "#FF0000", hit * 0.5);
+  // Inner color
+  ctx.strokeStyle = outerColor;
+  ctx.fillStyle = outerColor;
+  ctx.lineWidth = 0.4;
 
-    // Stem
-    ctx.beginPath();
-    ctx.moveTo(1.13, .54);
-    ctx.quadraticCurveTo(1.20, .6, 1.16, .69);
-    ctx.quadraticCurveTo(1.13, .8, 1.03, .81);
-    ctx.quadraticCurveTo(-.52, .14, -.63, -1.13);
-    ctx.lineTo(-.56, -1.13);
-    ctx.quadraticCurveTo(-.1, .38, 1.13, .54);
-    ctx.fill();
-    ctx.stroke();
+  // Stem
+  ctx.beginPath();
+  ctx.moveTo(1.13, 0.54);
+  ctx.quadraticCurveTo(1.2, 0.6, 1.16, 0.69);
+  ctx.quadraticCurveTo(1.13, 0.8, 1.03, 0.81);
+  ctx.quadraticCurveTo(-0.52, 0.14, -0.63, -1.13);
+  ctx.lineTo(-0.56, -1.13);
+  ctx.quadraticCurveTo(-0.1, 0.38, 1.13, 0.54);
+  // Curvy leaf
+  ctx.moveTo(0.72, 0.54);
+  ctx.quadraticCurveTo(0.3, 0.97, -0.49, 0.13);
+  ctx.quadraticCurveTo(-0.92, -0.44, -0.57, -0.98);
+  ctx.quadraticCurveTo(-0.2, -1.01, 0.24, -0.8);
+  ctx.quadraticCurveTo(1.31, -0.2, 0.72, 0.54);
+  // Spines
+  ctx.moveTo(0.97, -0.14);
+  ctx.quadraticCurveTo(0.91, 0.24, 0.72, 0.54);
+  ctx.moveTo(0.82, -0.47);
+  ctx.quadraticCurveTo(0.78, -0.13, 0.61, 0.38);
+  ctx.moveTo(0.66, -0.7);
+  ctx.quadraticCurveTo(0.64, -0.38, 0.43, 0.26);
+  ctx.moveTo(0.46, -0.79);
+  ctx.quadraticCurveTo(0.42, -0.36, 0.22, 0.1);
+  ctx.moveTo(0.26, -0.92);
+  ctx.quadraticCurveTo(0.21, -0.59, 0.04, -0.06);
+  ctx.moveTo(0.02, -0.97);
+  ctx.quadraticCurveTo(0, -0.72, -0.14, -0.28);
+  ctx.moveTo(-0.18, -1.04);
+  ctx.quadraticCurveTo(-0.17, -0.83, -0.29, -0.47);
+  ctx.moveTo(-0.38, -1.07);
+  ctx.quadraticCurveTo(-0.35, -0.34, -0.74, -0.88);
+  ctx.moveTo(-0.76, -0.59);
+  ctx.quadraticCurveTo(-0.61, -0.49, -0.4, -0.46);
+  ctx.moveTo(-0.78, -0.34);
+  ctx.quadraticCurveTo(-0.61, -0.26, -0.3, -0.24);
+  ctx.moveTo(-0.69, -0.06);
+  ctx.quadraticCurveTo(-0.47, -0.04, -0.15, -0.09);
+  ctx.moveTo(-0.65, 0.14);
+  ctx.quadraticCurveTo(-0.47, 0.15, 0.05, 0.05);
+  ctx.moveTo(-0.53, 0.33);
+  ctx.quadraticCurveTo(-0.18, 0.32, 0.12, 0.2);
+  ctx.quadraticCurveTo(-0.19, 0.31, 0.12, 0.2);
+  ctx.moveTo(-0.35, 0.5);
+  ctx.quadraticCurveTo(0.02, 0.47, 0.27, 0.35);
+  ctx.moveTo(-0.08, 0.63);
+  ctx.quadraticCurveTo(0.15, 0.6, 0.49, 0.47);
+  ctx.moveTo(0.26, 0.72);
+  ctx.quadraticCurveTo(0.5, 0.72, 0.72, 0.54);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = innerColor;
+  ctx.fillStyle = innerColor;
+  ctx.lineWidth = 0.125;
+  ctx.stroke();
+
+  // Stem
+  ctx.beginPath();
+  ctx.moveTo(1.13, 0.54);
+  ctx.quadraticCurveTo(1.2, 0.6, 1.16, 0.69);
+  ctx.quadraticCurveTo(1.13, 0.8, 1.03, 0.81);
+  ctx.quadraticCurveTo(-0.52, 0.14, -0.63, -1.13);
+  ctx.lineTo(-0.56, -1.13);
+  ctx.quadraticCurveTo(-0.1, 0.38, 1.13, 0.54);
+  ctx.fill();
+  ctx.stroke();
 }
 
 function drawGlass(id, ctx = _ctx, hit = false) {
@@ -1240,42 +1239,42 @@ function drawBubblePetal(ctx = _ctx, hit = false) {
 }
 
 function drawStarfishPetal(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.starfish, "#FF0000", hit * .5), .2);
+  setStyle(ctx, mixColors(colors.starfish, "#FF0000", hit * 0.5), 0.2);
 
-    ctx.beginPath();
-    ctx.moveTo(-1.2, -.5);
-    ctx.lineTo(1, -.4);
-    ctx.arc(1, 0, .4, -Math.PI / 2, Math.PI / 2);
-    ctx.lineTo(-1.2, .5);
-    ctx.lineTo(-1.3, .3);
-    ctx.lineTo(-1.3, -.3);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-1.2, -0.5);
+  ctx.lineTo(1, -0.4);
+  ctx.arc(1, 0, 0.4, -Math.PI / 2, Math.PI / 2);
+  ctx.lineTo(-1.2, 0.5);
+  ctx.lineTo(-1.3, 0.3);
+  ctx.lineTo(-1.3, -0.3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 
-    ctx.fillStyle = mixColors(ctx.fillStyle, colors.white, .3);
+  ctx.fillStyle = mixColors(ctx.fillStyle, colors.white, 0.3);
 
-    ctx.beginPath();
-    ctx.arc(-.7, 0, .325, 0, TAU);
-    ctx.moveTo(.125, 0);
-    ctx.arc(.125, 0, .25, 0, TAU);
-    ctx.moveTo(.8, 0);
-    ctx.arc(.8, 0, .2, 0, TAU);
-    ctx.fill();
-    ctx.closePath();
+  ctx.beginPath();
+  ctx.arc(-0.7, 0, 0.325, 0, TAU);
+  ctx.moveTo(0.125, 0);
+  ctx.arc(0.125, 0, 0.25, 0, TAU);
+  ctx.moveTo(0.8, 0);
+  ctx.arc(0.8, 0, 0.2, 0, TAU);
+  ctx.fill();
+  ctx.closePath();
 }
 
 function drawFangPetal(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.evilLadybugRed, "#FF0000", hit * .5), .25);
-    ctx.rotate(-Math.PI / 4);
-    ctx.beginPath();
-    ctx.moveTo(-1, 0);
-    ctx.lineTo(0, .375);
-    ctx.lineTo(1, 0);
-    ctx.lineTo(0, -.375);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+  setStyle(ctx, mixColors(colors.evilLadybugRed, "#FF0000", hit * 0.5), 0.25);
+  ctx.rotate(-Math.PI / 4);
+  ctx.beginPath();
+  ctx.moveTo(-1, 0);
+  ctx.lineTo(0, 0.375);
+  ctx.lineTo(1, 0);
+  ctx.lineTo(0, -0.375);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 }
 
 function drawGoo(id, ctx = _ctx, hit = false) {
@@ -1732,608 +1731,623 @@ function drawClaw(ctx, hit) {
 const petalCache = new Map();
 
 export function drawPetal(index, hit = false, ctx = _ctx, id = 0, size) {
-    if (options.cachePetalAssets) {
-        const key = `${index}`;
-        let cached = petalCache.get(key);
-        if (!cached) {
-            const img = document.createElement("canvas");
-            const _ctx = img.getContext("2d");
+  if (options.cachePetalAssets) {
+    const key = `${index}`;
+    let cached = petalCache.get(key);
+    if (!cached) {
+      const img = document.createElement("canvas");
+      const _ctx = img.getContext("2d");
 
-            const baseSize = 256;
-            img.width = img.height = baseSize;
-            _ctx.translate(baseSize / 2, baseSize / 2);
-            _ctx.scale(baseSize / 6, baseSize / 6);
+      const baseSize = 256;
+      img.width = img.height = baseSize;
+      _ctx.translate(baseSize / 2, baseSize / 2);
+      _ctx.scale(baseSize / 6, baseSize / 6);
 
-            _ctx.save();
-            _ctx.lineCap = "round";
-            _ctx.lineJoin = "round";
-            
-            petalRender(index, hit, _ctx, id, size);
-            _ctx.restore();
+      _ctx.save();
+      _ctx.lineCap = "round";
+      _ctx.lineJoin = "round";
 
-            cached = img;
-            petalCache.set(key, cached);
-        }
-        const drawSize = 6;
-        ctx.drawImage(cached, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
-        return;
+      petalRender(index, hit, _ctx, id, size);
+      _ctx.restore();
+
+      cached = img;
+      petalCache.set(key, cached);
     }
-    petalRender(index, hit, ctx, id, size);
+    const drawSize = 6;
+    ctx.drawImage(cached, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+    return;
+  }
+  petalRender(index, hit, ctx, id, size);
 }
 
 function petalRender(index, hit, ctx, id, size) {
-    if (state.petalConfigs[index].drawing) {
-        const actions = state.petalConfigs[index].drawing.actions;
-        for (const action of actions) {
-            const [actionName, ...args] = action;
-            const actionFunc = Drawing.reverseActions[actionName];
+  if (state.petalConfigs[index].drawing) {
+    const actions = state.petalConfigs[index].drawing.actions;
+    for (const action of actions) {
+      const [actionName, ...args] = action;
+      const actionFunc = Drawing.reverseActions[actionName];
 
-            if (!actionFunc) {
-                throw new Error(`Unknown action: ${actionName} ${action}`);
-            }
+      if (!actionFunc) {
+        throw new Error(`Unknown action: ${actionName} ${action}`);
+      }
 
-            switch (actionFunc) {
-                case "circle":
-                    ctx.arc(args[0], args[1], args[2], 0, Math.PI * 2);
-                    break;
-                case "line":
-                    ctx.moveTo(args[0], args[1]);
-                    ctx.lineTo(args[2], args[3]);
-                    break;
-                case "fill":
-                    ctx.fillStyle = mixColors(args[0], "#FF0000", hit * .5);
-                    ctx.fill();
-                    break;
-                case "stroke":
-                    ctx.strokeStyle = mixColors(mixColors(args[0], "#FF0000", hit * .5), "#000000", args[2]);
-                    ctx.lineWidth = args[1];
-                    ctx.stroke();
-                    break;
-                case "paint":
-                    ctx.fillStyle = mixColors(args[0], "#FF0000", hit * .5);
-                    ctx.strokeStyle = mixColors(mixColors(args[0], "#FF0000", hit * .5), "#000000", args[2]);
-                    ctx.lineWidth = args[1];
-                    ctx.fill();
-                    ctx.stroke();
-                    break;
-                case "polygon": {
-                    let arg2 = args[2];
-                
-                    if (isNaN(arg2)) {
-                        if (typeof arg2 === "string" && arg2.startsWith("date_")) {
-                            const mult = parseFloat(arg2.split("_")[1]);
-                            arg2 = date * (isNaN(mult) ? 1 : mult);
-                        } else if (arg2 === "date") {
-                            arg2 = date;
-                        } else {
-                            arg2 = 0;
-                        }
-                    } else {
-                        arg2 = Number(arg2);
-                    }
-                
-                    polygon(ctx, args[0], args[1], arg2);
-                    break;
-                }
-                case "spikeBall": {
-                    let arg2 = args[2];
-                
-                    if (isNaN(arg2)) {
-                        if (typeof arg2 === "string" && arg2.startsWith("date_")) {
-                            const mult = parseFloat(arg2.split("_")[1]);
-                            arg2 = date * (isNaN(mult) ? 1 : mult);
-                        } else if (arg2 === "date") {
-                            arg2 = date;
-                        } else {
-                            arg2 = 0;
-                        }
-                    } else {
-                        arg2 = Number(arg2);
-                    }
-                
-                    spikeBall(ctx, args[0], args[1], arg2);
-                    break;
-                }
-                case "dipPolygon": {
-                    let arg3 = args[3];
-                
-                    if (isNaN(arg3)) {
-                        if (typeof arg3 === "string" && arg3.startsWith("date_")) {
-                            const mult = parseFloat(arg3.split("_")[1]);
-                            arg3 = date * (isNaN(mult) ? 1 : mult);
-                        } else if (arg3 === "date") {
-                            arg3 = date;
-                        } else {
-                            arg3 = 0;
-                        }
-                    } else {
-                        arg3 = Number(arg3);
-                    }
-                
-                    dipPolygon(ctx, args[0], args[1], args[2], arg3);
-                    break;
-                }
-                case "opacity":
-                    ctx.globalAlpha = args[0];
-                    break;
-                case "blur":
-                    ctx.shadowColor = args[0];
-                    ctx.shadowBlur = args[1];
-                    break;
-                case "noBlur":
-                    ctx.shadowBlur = 0;
-                    break;
-                case "ellipse": {
-                    let arg4 = args[4];
-                
-                    if (isNaN(arg4)) {
-                        if (typeof arg4 === "string" && arg4.startsWith("date_")) {
-                            const mult = parseFloat(arg4.split("_")[1]);
-                            arg4 = date * (isNaN(mult) ? 1 : mult);
-                        } else if (arg4 === "date") {
-                            arg4 = date;
-                        } else {
-                            arg4 = 0;
-                        }
-                    } else {
-                        arg4 = Number(arg4);
-                    }
-                
-                    ctx.ellipse(args[0], args[1], args[2], args[3], arg4, 0, Math.PI * 2);
-                    break;
-                }
-                case "quadraticCurveTo":
-                    ctx.quadraticCurveTo(args[0], args[1], args[2], args[3]);
-                    break;
-                case "bezierCurveTo":
-                    ctx.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
-                    break;
-                case "rotate":
-                    ctx.rotate(args[0] * Math.PI / 180);
-                    break;
-                default:
-                    ctx[actionFunc](...args);
-                    break;
+      switch (actionFunc) {
+        case "circle":
+          ctx.arc(args[0], args[1], args[2], 0, Math.PI * 2);
+          break;
+        case "line":
+          ctx.moveTo(args[0], args[1]);
+          ctx.lineTo(args[2], args[3]);
+          break;
+        case "fill":
+          ctx.fillStyle = mixColors(args[0], "#FF0000", hit * 0.5);
+          ctx.fill();
+          break;
+        case "stroke":
+          ctx.strokeStyle = mixColors(
+            mixColors(args[0], "#FF0000", hit * 0.5),
+            "#000000",
+            args[2],
+          );
+          ctx.lineWidth = args[1];
+          ctx.stroke();
+          break;
+        case "paint":
+          ctx.fillStyle = mixColors(args[0], "#FF0000", hit * 0.5);
+          ctx.strokeStyle = mixColors(
+            mixColors(args[0], "#FF0000", hit * 0.5),
+            "#000000",
+            args[2],
+          );
+          ctx.lineWidth = args[1];
+          ctx.fill();
+          ctx.stroke();
+          break;
+        case "polygon": {
+          let arg2 = args[2];
+
+          if (isNaN(arg2)) {
+            if (typeof arg2 === "string" && arg2.startsWith("date_")) {
+              const mult = parseFloat(arg2.split("_")[1]);
+              arg2 = date * (isNaN(mult) ? 1 : mult);
+            } else if (arg2 === "date") {
+              arg2 = date;
+            } else {
+              arg2 = 0;
             }
+          } else {
+            arg2 = Number(arg2);
+          }
+
+          polygon(ctx, args[0], args[1], arg2);
+          break;
         }
+        case "spikeBall": {
+          let arg2 = args[2];
 
-        return;
-    }
-    
-    switch (index) {
-        case 0: // Basic
-        case 1: // Light
-            basicPetal(ctx, hit, colors.white, size);
-            break;
-        case 2: // Faster
-            basicPetal(ctx, hit, colors.cumWhite, size);
-            break;
-        case 3: // Heavy
-            drawHeavy(ctx, hit);
-            break;
-        case 4: // Stinger
-            trianglePetal(ctx, hit, colors.stingerBlack);
-            break;
-        case 5: // Rice
-            drawRice(ctx, hit);
-            break;
-        case 6: // Rock
-            drawRockP(ctx, hit);
-            break;
-        case 7: // Cactus
-            drawCactusPetal(ctx, hit);
-            break;
-        case 8: // Leaf
-            drawLeaf(ctx, hit);
-            break;
-        case 9: // Wing
-            drawWing(ctx, hit);
-            break;
-        case 10: // Bone
-            drawBone(ctx, hit);
-            break;
-        case 11: // Dirt
-            drawDirt(ctx, hit);
-            break;
-        case 12: // Magnolia
-            drawMagnolia(ctx, hit);
-            break;
-        case 13: // Corn
-            drawCorn(ctx, hit);
-            break;
-        case 14: // Sand
-            drawSingleSand(ctx, hit);
-            break;
-        case 15: // Orange
-            drawOrange(ctx, hit);
-            break;
-        case 16: // Missile
-            drawMissile(ctx, hit);
-            break;
-        case 17: // projectile.pea
-            basicPetal(ctx, hit, colors.peaGreen, size);
-            break;
-        case 18: // Rose
-            basicPetal(ctx, hit, colors.rosePink, size);
-            break;
-        case 19: // Yin Yang
-            drawYinYang(ctx, hit);
-            break;
-        case 20: // Pollen
-            basicPetal(ctx, hit, colors.pollenGold, size);
-            break;
-        case 21: // Honey
-            drawHoney(ctx, hit);
-            break;
-        case 22: // Iris
-            basicPetal(ctx, hit, colors.irisPurple, size);
-            break;
-        case 23: // Web
-            drawWebPetal(ctx, hit);
-            break;
-        case 24: // web.mob.launched
-            drawWebMob(ctx, colors.white);
-            break;
-        case 25: // Third Eye
-            drawThirdEye(ctx, hit);
-            break;
-        case 26: // Pincer
-            drawPincer(ctx, hit);
-            break;
-        case 27: // Beetle Egg
-            drawEgg(ctx, colors.peach, hit);
-            break;
-        case 28: // Antennae
-            drawAntennae(ctx);
-            break;
-        case 29: // Peas
-            drawPeas(ctx, hit, colors.peaGreen, index);
-            break;
-        case 30: // Stick
-            drawStick(colors.spider, ctx, hit);
-            break;
-        case 31: // scorpion.projectile
-            drawScorpionProjectile(ctx, hit);
-            break;
-        case 32: // Dahlia
-            basicPetal(ctx, hit, colors.rosePink, size);
-            break;
-        case 33: // Primrose
-            drawPrimrose(ctx, hit, true);
-            break;
-        case 34: // Fire Spellbook
-            drawSpellbook(ctx, hit, true, 0);
-            break;
-        case 35: // Deity
-            drawDeity(ctx, hit);
-            break;
-        case 36: // Lightning
-            drawLightning(ctx, hit);
-            break;
-        case 37: // Powder
-            drawPowderDynamic(id, ctx, hit);
-            break;
-        case 38: // Ant Eggs
-            basicPetal(ctx, hit, colors.peach, size);
-            break;
-        case 39: // Yucca
-            drawYucca(ctx, hit);
-            break;
-        case 40: // Magnet
-            drawMagnet(ctx, hit);
-            break;
-        case 41: // Amulet
-            drawAmulet(ctx, hit);
-            break;
-        case 42: // Jelly
-            drawJelly(ctx, hit);
-            break;
-        case 43: // Yggdrasil
-            drawYggdrasil(ctx, hit);
-            break;
-        case 44: // Glass
-            drawGlass(id, ctx, hit);
-            break;
-        case 45: // Dandelion
-            drawDandy(ctx, hit);
-            break;
-        case 46: // Sponge
-            drawSpongePetal(ctx, hit);
-            break;
-        case 47: // Pearl
-            drawPearl(ctx, hit);
-            break;
-        case 48: // Shell
-            drawShellPetal(ctx, hit);
-            break;
-        case 49: // Bubble
-            drawBubblePetal(ctx, hit);
-            break;
-        case 50: // Air
-            break;
-        case 51: // Starfish
-            drawStarfishPetal(ctx, hit);
-            break;
-        case 52: // Fangs
-            drawFangPetal(ctx, hit);
-            break;
-        case 53: // Goo
-            drawGoo(id, ctx, hit);
-            break;
-        case 54: // Maggot Poo
-            drawMaggotPoo(ctx, hit);
-            break;
-        case 55: // Lightbulb
-            drawLightbulb(id, ctx, hit, true);
-            break;
-        case 56: // Battery
-            drawBattery(ctx, hit);
-            break;
-        case 57: // Dust
-            setStyle(ctx, mixColors(colors.rockGray, "#FF0000", hit * .5), .3);
-            polygon(ctx, 5, 1, performance.now() * .001 + id);
-            ctx.fill();
-            ctx.stroke();
-            break;
-        case 58: // Armor
-            drawArmor(ctx, hit)
-            break;
-        case 59: // wasp.projectile
-            drawWaspMissile(ctx, hit);
-            break;
-        case 60: // Shrub
-            drawShrubPetal(colors.shrubGreen, ctx, hit);
-            break;
-        case 61: // projectile.grape
-            basicPetal(ctx, hit, colors.irisPurple, size);
-            break;
-        case 62: // Grapes
-            drawPeas(ctx, hit, colors.irisPurple, index);
-            break;
-        case 63: // Lantern
-            drawLantern(colors.rockGray, colors.orange, ctx, hit);
-            break;
-        case 64: // web.player.launched
-            drawWebMob(ctx, colors.playerYellow);
-            break;
-        case 65: // Branch
-            drawStick(colors.rockGray, ctx, hit);
-            break;
-        case 66: // Leech Egg
-            drawEgg(ctx, colors.lighterBlack, hit);
-            break;
-        case 67: // Hornet Egg
-            drawEgg(ctx, colors.peach, hit);
-            break;
-        case 68: // Candy
-            drawCandy(id, ctx, hit);
-            break;
-        case 69: // Claw
-            drawClaw(ctx, hit);
-            break;
-        case 70: // Diep Bullet
-            setStyle(ctx, mixColors(colors.diepBlue, "#FF0000", hit * .5), .45);
-            ctx.beginPath();
-            ctx.arc(0, 0, 1, 0, TAU);
-            ctx.fill();
-            ctx.stroke();
-            break;
-        case 71: // Diep Square
-            drawSquareMob(ctx, hit);
-            break;
-        case 72: // Diep Triangle
-            drawTriangleMob(ctx, hit);
-            break;
-        case 73: // Diep Pentagon
-            drawPentagonMob(ctx, hit);
-            break;
+          if (isNaN(arg2)) {
+            if (typeof arg2 === "string" && arg2.startsWith("date_")) {
+              const mult = parseFloat(arg2.split("_")[1]);
+              arg2 = date * (isNaN(mult) ? 1 : mult);
+            } else if (arg2 === "date") {
+              arg2 = date;
+            } else {
+              arg2 = 0;
+            }
+          } else {
+            arg2 = Number(arg2);
+          }
+
+          spikeBall(ctx, args[0], args[1], arg2);
+          break;
+        }
+        case "dipPolygon": {
+          let arg3 = args[3];
+
+          if (isNaN(arg3)) {
+            if (typeof arg3 === "string" && arg3.startsWith("date_")) {
+              const mult = parseFloat(arg3.split("_")[1]);
+              arg3 = date * (isNaN(mult) ? 1 : mult);
+            } else if (arg3 === "date") {
+              arg3 = date;
+            } else {
+              arg3 = 0;
+            }
+          } else {
+            arg3 = Number(arg3);
+          }
+
+          dipPolygon(ctx, args[0], args[1], args[2], arg3);
+          break;
+        }
+        case "opacity":
+          ctx.globalAlpha = args[0];
+          break;
+        case "blur":
+          ctx.shadowColor = args[0];
+          ctx.shadowBlur = args[1];
+          break;
+        case "noBlur":
+          ctx.shadowBlur = 0;
+          break;
+        case "ellipse": {
+          let arg4 = args[4];
+
+          if (isNaN(arg4)) {
+            if (typeof arg4 === "string" && arg4.startsWith("date_")) {
+              const mult = parseFloat(arg4.split("_")[1]);
+              arg4 = date * (isNaN(mult) ? 1 : mult);
+            } else if (arg4 === "date") {
+              arg4 = date;
+            } else {
+              arg4 = 0;
+            }
+          } else {
+            arg4 = Number(arg4);
+          }
+
+          ctx.ellipse(args[0], args[1], args[2], args[3], arg4, 0, Math.PI * 2);
+          break;
+        }
+        case "quadraticCurveTo":
+          ctx.quadraticCurveTo(args[0], args[1], args[2], args[3]);
+          break;
+        case "bezierCurveTo":
+          ctx.bezierCurveTo(
+            args[0],
+            args[1],
+            args[2],
+            args[3],
+            args[4],
+            args[5],
+          );
+          break;
+        case "rotate":
+          ctx.rotate((args[0] * Math.PI) / 180);
+          break;
         default:
-            console.log("Unknown petal index: " + index);
-            basicPetal(ctx, hit, "#FF0000", size);
+          ctx[actionFunc](...args);
+          break;
+      }
     }
+
+    return;
+  }
+
+  switch (index) {
+    case 0: // Basic
+    case 1: // Light
+      basicPetal(ctx, hit, colors.white, size);
+      break;
+    case 2: // Faster
+      basicPetal(ctx, hit, colors.cumWhite, size);
+      break;
+    case 3: // Heavy
+      drawHeavy(ctx, hit);
+      break;
+    case 4: // Stinger
+      trianglePetal(ctx, hit, colors.stingerBlack);
+      break;
+    case 5: // Rice
+      drawRice(ctx, hit);
+      break;
+    case 6: // Rock
+      drawRockP(ctx, hit);
+      break;
+    case 7: // Cactus
+      drawCactusPetal(ctx, hit);
+      break;
+    case 8: // Leaf
+      drawLeaf(ctx, hit);
+      break;
+    case 9: // Wing
+      drawWing(ctx, hit);
+      break;
+    case 10: // Bone
+      drawBone(ctx, hit);
+      break;
+    case 11: // Dirt
+      drawDirt(ctx, hit);
+      break;
+    case 12: // Magnolia
+      drawMagnolia(ctx, hit);
+      break;
+    case 13: // Corn
+      drawCorn(ctx, hit);
+      break;
+    case 14: // Sand
+      drawSingleSand(ctx, hit);
+      break;
+    case 15: // Orange
+      drawOrange(ctx, hit);
+      break;
+    case 16: // Missile
+      drawMissile(ctx, hit);
+      break;
+    case 17: // projectile.pea
+      basicPetal(ctx, hit, colors.peaGreen, size);
+      break;
+    case 18: // Rose
+      basicPetal(ctx, hit, colors.rosePink, size);
+      break;
+    case 19: // Yin Yang
+      drawYinYang(ctx, hit);
+      break;
+    case 20: // Pollen
+      basicPetal(ctx, hit, colors.pollenGold, size);
+      break;
+    case 21: // Honey
+      drawHoney(ctx, hit);
+      break;
+    case 22: // Iris
+      basicPetal(ctx, hit, colors.irisPurple, size);
+      break;
+    case 23: // Web
+      drawWebPetal(ctx, hit);
+      break;
+    case 24: // web.mob.launched
+      drawWebMob(ctx, colors.white);
+      break;
+    case 25: // Third Eye
+      drawThirdEye(ctx, hit);
+      break;
+    case 26: // Pincer
+      drawPincer(ctx, hit);
+      break;
+    case 27: // Beetle Egg
+      drawEgg(ctx, colors.peach, hit);
+      break;
+    case 28: // Antennae
+      drawAntennae(ctx);
+      break;
+    case 29: // Peas
+      drawPeas(ctx, hit, colors.peaGreen, index);
+      break;
+    case 30: // Stick
+      drawStick(colors.spider, ctx, hit);
+      break;
+    case 31: // scorpion.projectile
+      drawScorpionProjectile(ctx, hit);
+      break;
+    case 32: // Dahlia
+      basicPetal(ctx, hit, colors.rosePink, size);
+      break;
+    case 33: // Primrose
+      drawPrimrose(ctx, hit, true);
+      break;
+    case 34: // Fire Spellbook
+      drawSpellbook(ctx, hit, true, 0);
+      break;
+    case 35: // Deity
+      drawDeity(ctx, hit);
+      break;
+    case 36: // Lightning
+      drawLightning(ctx, hit);
+      break;
+    case 37: // Powder
+      drawPowderDynamic(id, ctx, hit);
+      break;
+    case 38: // Ant Eggs
+      basicPetal(ctx, hit, colors.peach, size);
+      break;
+    case 39: // Yucca
+      drawYucca(ctx, hit);
+      break;
+    case 40: // Magnet
+      drawMagnet(ctx, hit);
+      break;
+    case 41: // Amulet
+      drawAmulet(ctx, hit);
+      break;
+    case 42: // Jelly
+      drawJelly(ctx, hit);
+      break;
+    case 43: // Yggdrasil
+      drawYggdrasil(ctx, hit);
+      break;
+    case 44: // Glass
+      drawGlass(id, ctx, hit);
+      break;
+    case 45: // Dandelion
+      drawDandy(ctx, hit);
+      break;
+    case 46: // Sponge
+      drawSpongePetal(ctx, hit);
+      break;
+    case 47: // Pearl
+      drawPearl(ctx, hit);
+      break;
+    case 48: // Shell
+      drawShellPetal(ctx, hit);
+      break;
+    case 49: // Bubble
+      drawBubblePetal(ctx, hit);
+      break;
+    case 50: // Air
+      break;
+    case 51: // Starfish
+      drawStarfishPetal(ctx, hit);
+      break;
+    case 52: // Fangs
+      drawFangPetal(ctx, hit);
+      break;
+    case 53: // Goo
+      drawGoo(id, ctx, hit);
+      break;
+    case 54: // Maggot Poo
+      drawMaggotPoo(ctx, hit);
+      break;
+    case 55: // Lightbulb
+      drawLightbulb(id, ctx, hit, true);
+      break;
+    case 56: // Battery
+      drawBattery(ctx, hit);
+      break;
+    case 57: // Dust
+      setStyle(ctx, mixColors(colors.rockGray, "#FF0000", hit * 0.5), 0.3);
+      polygon(ctx, 5, 1, performance.now() * 0.001 + id);
+      ctx.fill();
+      ctx.stroke();
+      break;
+    case 58: // Armor
+      drawArmor(ctx, hit);
+      break;
+    case 59: // wasp.projectile
+      drawWaspMissile(ctx, hit);
+      break;
+    case 60: // Shrub
+      drawShrubPetal(colors.shrubGreen, ctx, hit);
+      break;
+    case 61: // projectile.grape
+      basicPetal(ctx, hit, colors.irisPurple, size);
+      break;
+    case 62: // Grapes
+      drawPeas(ctx, hit, colors.irisPurple, index);
+      break;
+    case 63: // Lantern
+      drawLantern(colors.rockGray, colors.orange, ctx, hit);
+      break;
+    case 64: // web.player.launched
+      drawWebMob(ctx, colors.playerYellow);
+      break;
+    case 65: // Branch
+      drawStick(colors.rockGray, ctx, hit);
+      break;
+    case 66: // Leech Egg
+      drawEgg(ctx, colors.lighterBlack, hit);
+      break;
+    case 67: // Hornet Egg
+      drawEgg(ctx, colors.peach, hit);
+      break;
+    case 68: // Candy
+      drawCandy(id, ctx, hit);
+      break;
+    case 69: // Claw
+      drawClaw(ctx, hit);
+      break;
+    case 70: // Diep Bullet
+      setStyle(ctx, mixColors(colors.diepBlue, "#FF0000", hit * 0.5), 0.45);
+      ctx.beginPath();
+      ctx.arc(0, 0, 1, 0, TAU);
+      ctx.fill();
+      ctx.stroke();
+      break;
+    case 71: // Diep Square
+      drawSquareMob(ctx, hit);
+      break;
+    case 72: // Diep Triangle
+      drawTriangleMob(ctx, hit);
+      break;
+    case 73: // Diep Pentagon
+      drawPentagonMob(ctx, hit);
+      break;
+    default:
+      console.log("Unknown petal index: " + index);
+      basicPetal(ctx, hit, "#FF0000", size);
+  }
 }
 
 export function drawUIPetal(index, rarity, ctx = _ctx) {
-    switch (index) {
-        case 0: // Basic
-            drawBasicPetals(ctx, index, rarity, 1, colors.white);
-            break;
-        case 1: // Light
-            drawBasicPetals(ctx, index, rarity, .5, colors.white);
-            break;
-        case 2: // Faster
-            drawBasicPetals(ctx, index, rarity, .5, colors.cumWhite);
-            break;
-        case 4: // Stinger
-            drawStinger(ctx, index, rarity);
-            break;
-        case 8: // Leaf
+  switch (index) {
+    case 0: // Basic
+      drawBasicPetals(ctx, index, rarity, 1, colors.white);
+      break;
+    case 1: // Light
+      drawBasicPetals(ctx, index, rarity, 0.5, colors.white);
+      break;
+    case 2: // Faster
+      drawBasicPetals(ctx, index, rarity, 0.5, colors.cumWhite);
+      break;
+    case 4: // Stinger
+      drawStinger(ctx, index, rarity);
+      break;
+    case 8: // Leaf
+      ctx.save();
+      ctx.rotate(-Math.PI / 4);
+      drawLeaf(ctx);
+      ctx.restore();
+      break;
+    case 10: // Bone
+      ctx.save();
+      ctx.scale(1.25, 1.25);
+      drawBone(ctx);
+      ctx.restore();
+      break;
+    case 13: // Corn
+      ctx.save();
+      ctx.rotate(-Math.PI / 4);
+      drawCorn(ctx);
+      ctx.restore();
+      break;
+    case 14: // Sand
+      drawSands(ctx, index, rarity);
+      break;
+    case 15: // Orange
+      drawOranges(ctx, index, rarity);
+      break;
+    case 16: // Missile
+      ctx.save();
+      ctx.rotate(-Math.PI / 4);
+      drawMissile(ctx);
+      ctx.restore();
+      break;
+    case 18: // Basic
+      drawBasicPetals(ctx, index, rarity, 0.8, colors.rosePink);
+      break;
+    case 20: // Pollen
+      drawBasicPetals(ctx, index, rarity, 0.5, colors.playerYellow);
+      break;
+    case 22: // Iris
+      drawBasicPetals(ctx, index, rarity, 0.6, colors.irisPurple);
+      break;
+    case 27: // Beetle Egg
+      drawEggs(ctx, colors.peach, index, rarity);
+      break;
+    case 28: // Antennae
+      ctx.save();
+      ctx.translate(0, 0.85);
+      ctx.scale(1.65, 1.65);
+      drawAntennae(ctx);
+      ctx.restore();
+      break;
+    case 29: // Peas
+      ctx.save();
+      ctx.scale(0.85, 0.85);
+      drawPeas(ctx, 0, colors.peaGreen, index);
+      ctx.restore();
+      break;
+    case 32: // Dahlia
+      drawDahlia(ctx, index, rarity);
+      break;
+    case 33: // Primrose
+      drawPrimrose(ctx, false, false);
+      break;
+    case 34: // Fire Spellbook
+      drawSpellbook(ctx, false, false, 0);
+      break;
+    case 37: // Powder
+      drawPowderStatic(ctx);
+      break;
+    case 38: // Ant Egg
+      drawAntEgg(ctx, index, rarity);
+      break;
+    case 39: // Yucca
+      ctx.save();
+      ctx.rotate(-Math.PI / 4);
+      drawYucca(ctx);
+      ctx.restore();
+      break;
+    case 45: // Dandelion
+      drawDandyIcon(ctx, index, rarity);
+      break;
+    case 46: // Sponge
+      ctx.save();
+      ctx.scale(1.25, 1.25);
+      drawSpongePetal(ctx);
+      ctx.restore();
+      break;
+    case 47: // Pearl
+      ctx.save();
+      ctx.scale(1.25, 1.25);
+      drawPearl(ctx);
+      ctx.restore();
+      break;
+    case 51: // Starfish
+      ctx.save();
+      ctx.rotate(-Math.PI / 4);
+      drawStarfishPetal(ctx);
+      ctx.restore();
+      break;
+    case 53: // Goo
+      ctx.save();
+      ctx.translate(0.5, 0);
+      ctx.scale(0.9, 0.9);
+      drawStaticGoo(ctx);
+      ctx.restore();
+      break;
+    case 55: // Lightbulb
+      drawLightbulb(0, ctx, false, false);
+      break;
+    case 57: // Dust
+      ctx.save();
+      ctx.scale(1.1, 1.1);
+      drawDust(ctx, index, rarity);
+      ctx.restore();
+      break;
+    case 62: // Grapes
+      ctx.save();
+      ctx.scale(0.85, 0.85);
+      drawPeas(ctx, 0, colors.irisPurple, index);
+      ctx.restore();
+      break;
+    case 63: // Lantern
+      ctx.save();
+      ctx.scale(0.8, 0.8);
+      drawStaticLantern(colors.rockGray, colors.orange, ctx);
+      ctx.restore();
+      break;
+    case 66: // Leech Egg
+      drawEggs(ctx, colors.lighterBlack, index, rarity);
+      break;
+    case 67: // Hornet Egg
+      drawEggs(ctx, colors.peach, index, rarity);
+      break;
+    case 68: // Candy
+      ctx.save();
+      ctx.scale(1.05, 1.05);
+      drawCandyIcon(ctx, index, rarity);
+      ctx.restore();
+      break;
+    default:
+      const tier = state.petalConfigs[index].tiers[rarity];
+      if (tier.icon) {
+        let icon = tier.icon;
+        let count = icon.count;
+        let size = icon.size;
+
+        if (count > 1) {
+          for (let i = 0; i < count; i++) {
+            const angle = (TAU / count) * i;
+
             ctx.save();
-            ctx.rotate(-Math.PI / 4);
-            drawLeaf(ctx);
+            ctx.translate(Math.cos(angle) * 0.775, Math.sin(angle) * 0.775);
+            ctx.scale(size * 0.85, size * 0.85);
+            ctx.rotate(angle);
+            drawPetal(index, false, ctx);
             ctx.restore();
-            break;
-        case 10: // Bone
-            ctx.save();
-            ctx.scale(1.25, 1.25);
-            drawBone(ctx);
-            ctx.restore();
-            break;
-        case 13: // Corn
-            ctx.save();
-            ctx.rotate(-Math.PI / 4);
-            drawCorn(ctx);
-            ctx.restore();
-            break;
-        case 14: // Sand
-            drawSands(ctx, index, rarity);
-            break;
-        case 15: // Orange
-            drawOranges(ctx, index, rarity);
-            break;
-        case 16: // Missile
-            ctx.save();
-            ctx.rotate(-Math.PI / 4);
-            drawMissile(ctx);
-            ctx.restore();
-            break;
-        case 18: // Basic
-            drawBasicPetals(ctx, index, rarity, 0.8, colors.rosePink);
-            break;
-        case 20: // Pollen
-            drawBasicPetals(ctx, index, rarity, .5, colors.playerYellow);
-            break;
-        case 22: // Iris
-            drawBasicPetals(ctx, index, rarity, .6, colors.irisPurple);
-            break;
-        case 27: // Beetle Egg
-            drawEggs(ctx, colors.peach, index, rarity);
-            break;
-        case 28: // Antennae
-            ctx.save();
-            ctx.translate(0, .85)
-            ctx.scale(1.65, 1.65);
-            drawAntennae(ctx);
-            ctx.restore()
-            break;
-        case 29: // Peas
-            ctx.save();
-            ctx.scale(.85, .85);
-            drawPeas(ctx, 0, colors.peaGreen, index);
-            ctx.restore();
-            break;
-        case 32: // Dahlia
-            drawDahlia(ctx, index, rarity);
-            break;
-        case 33: // Primrose
-            drawPrimrose(ctx, false, false);
-            break;
-        case 34: // Fire Spellbook
-            drawSpellbook(ctx, false, false, 0);
-            break;
-        case 37: // Powder
-            drawPowderStatic(ctx);
-            break;
-        case 38: // Ant Egg
-            drawAntEgg(ctx, index, rarity);
-            break;
-        case 39: // Yucca
-            ctx.save();
-            ctx.rotate(-Math.PI / 4);
-            drawYucca(ctx);
-            ctx.restore();
-            break;
-        case 45: // Dandelion
-            drawDandyIcon(ctx, index, rarity);
-            break;
-        case 46: // Sponge
-            ctx.save();
-            ctx.scale(1.25, 1.25);
-            drawSpongePetal(ctx);
-            ctx.restore();
-            break;
-        case 47: // Pearl
-            ctx.save();
-            ctx.scale(1.25, 1.25);
-            drawPearl(ctx);
-            ctx.restore();
-            break;
-        case 51: // Starfish
-            ctx.save();
-            ctx.rotate(-Math.PI / 4);
-            drawStarfishPetal(ctx);
-            ctx.restore();
-            break;
-        case 53: // Goo
-            ctx.save();
-            ctx.translate(.5, 0);
-            ctx.scale(.9, .9);
-            drawStaticGoo(ctx);
-            ctx.restore();
-            break;
-        case 55: // Lightbulb
-            drawLightbulb(0, ctx, false, false);
-            break;
-        case 57: // Dust
-            ctx.save();
-            ctx.scale(1.1, 1.1);
-            drawDust(ctx, index, rarity);
-            ctx.restore()
-            break;
-        case 62: // Grapes
-            ctx.save();
-            ctx.scale(.85, .85);
-            drawPeas(ctx, 0, colors.irisPurple, index);
-            ctx.restore();
-            break;
-        case 63: // Lantern
-            ctx.save();
-            ctx.scale(.8, .8);
-            drawStaticLantern(colors.rockGray, colors.orange, ctx);
-            ctx.restore();
-            break;
-        case 66: // Leech Egg
-            drawEggs(ctx, colors.lighterBlack, index, rarity);
-            break;
-        case 67: // Hornet Egg
-            drawEggs(ctx, colors.peach, index, rarity);
-            break;
-        case 68: // Candy
-            ctx.save();
-            ctx.scale(1.05, 1.05);
-            drawCandyIcon(ctx, index, rarity);
-            ctx.restore();
-            break;
-        default:
-            const tier = state.petalConfigs[index].tiers[rarity];
-            if (tier.icon) {
-                let icon = tier.icon;
-                let count = icon.count;
-                let size = icon.size;
-                
-                if (count > 1) {
-                    for (let i = 0; i < count; i++) {
-                        const angle = TAU / count * i;
-                
-                        ctx.save();
-                        ctx.translate(Math.cos(angle) * .775, Math.sin(angle) * .775);
-                        ctx.scale(size * .85, size * .85);
-                        ctx.rotate(angle)
-                        drawPetal(index, false, ctx);
-                        ctx.restore();
-                    }
-                } else {
-                    ctx.save();
-                    ctx.rotate(icon.rotation);
-                    ctx.scale(size, size);
-                    drawPetal(index, false, ctx);
-                    ctx.restore();
-                }
-            } else {
-                drawPetal(index, false, ctx);
-            }
-            break;
-    }
+          }
+        } else {
+          ctx.save();
+          ctx.rotate(icon.rotation);
+          ctx.scale(size, size);
+          drawPetal(index, false, ctx);
+          ctx.restore();
+        }
+      } else {
+        drawPetal(index, false, ctx);
+      }
+      break;
+  }
 }
 
 function getUIPetalName(index) {
-    switch (index) {
-        case 27:
-            return "Egg";
-        case 38:
-            return "Eggs";
-        case 66:
-            return "Egg";
-        case 67:
-            return "Eggs";
-        default:
-            const tier = state.petalConfigs[index].tiers[0];
-            let name = state.petalConfigs[index].name;
-            if (tier.icon) {
-                name = tier.icon.name
-            }
-            return name;
-    }
+  switch (index) {
+    case 27:
+      return "Egg";
+    case 38:
+      return "Eggs";
+    case 66:
+      return "Egg";
+    case 67:
+      return "Eggs";
+    default:
+      const tier = state.petalConfigs[index].tiers[0];
+      let name = state.petalConfigs[index].name;
+      if (tier.icon) {
+        name = tier.icon.name;
+      }
+      return name;
+  }
 }
 
 // Petals icon gradient
@@ -2911,10 +2925,13 @@ function getBorderStyle(t) {
 const petalIconCache = [];
 const petalIconIntervals = [];
 
-function createPetalIcon(index, rarity) {
-  const animated = isAnimatedRarity(rarity);
+function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
+  const permanentAnimated = animated === true;
+  const oneshot = animated === "oneshot";
 
-  const modeKey = animated ? 1 : 0;
+  const shouldAnimate = permanentAnimated || oneshot;
+
+  const modeKey = animated === true ? 1 : animated === "oneshot" ? 2 : 0;
 
   petalIconCache[index] ??= [];
   petalIconCache[index][rarity] ??= {};
@@ -2922,16 +2939,18 @@ function createPetalIcon(index, rarity) {
   petalIconIntervals[index] ??= [];
   petalIconIntervals[index][rarity] ??= {};
 
-  const otherModeKey = animated ? 0 : 1;
+  for (const key of [0, 1, 2]) {
+    if (key === modeKey) continue;
 
-  const oldDraw = petalIconIntervals[index][rarity][otherModeKey];
+    const oldDraw = petalIconIntervals[index][rarity][key];
 
-  if (oldDraw) {
-    __ANIMATED_ICONS__.delete(oldDraw);
-    delete petalIconIntervals[index][rarity][otherModeKey];
+    if (oldDraw) {
+      __ANIMATED_ICONS__.delete(oldDraw);
+      delete petalIconIntervals[index][rarity][key];
+    }
+
+    delete petalIconCache[index][rarity][key];
   }
-
-  delete petalIconCache[index][rarity][otherModeKey];
 
   const cached = petalIconCache[index][rarity][modeKey];
 
@@ -2939,7 +2958,7 @@ function createPetalIcon(index, rarity) {
     const draw = petalIconIntervals[index][rarity][modeKey];
 
     if (draw) {
-      if (animated) {
+      if (shouldAnimate) {
         if (!__ANIMATED_ICONS__.has(draw)) {
           __ANIMATED_ICONS__.add(draw);
           startIconRAF();
@@ -2958,11 +2977,7 @@ function createPetalIcon(index, rarity) {
 
   const petalText = getUIPetalName(index);
 
-  const draw = () => {
-    if (!isAnimatedRarity(rarity)) {
-      __ANIMATED_ICONS__.delete(draw);
-    }
-
+  function renderIcon() {
     ctx.clearRect(0, 0, 128, 128);
 
     ctx.textAlign = "center";
@@ -2979,7 +2994,7 @@ function createPetalIcon(index, rarity) {
 
     const base = state.tiers[rarity].color;
 
-    const back = animated
+    const back = shouldAnimate
       ? (custom.back ?? custom.base ?? mixColors(base, "#000000", 0.1))
       : mixColors(base, "#000000", 0.1);
 
@@ -3025,11 +3040,19 @@ function createPetalIcon(index, rarity) {
     }
 
     text(petalText, 64, 98, size, "#FFFFFF", ctx);
+  }
+
+  const draw = () => {
+    if (!isAnimatedRarity(rarity)) {
+      __ANIMATED_ICONS__.delete(draw);
+    }
+
+    renderIcon();
   };
 
   draw();
 
-  if (animated) {
+  if (permanentAnimated) {
     if (!__ANIMATED_ICONS__.has(draw)) {
       __ANIMATED_ICONS__.add(draw);
       startIconRAF();
@@ -3043,9 +3066,13 @@ function createPetalIcon(index, rarity) {
   return canvas;
 }
 
-export function getPetalIcon(index, rarity) {
+export function getPetalIcon(
+  index,
+  rarity,
+  animated = isAnimatedRarity(rarity),
+) {
   petalIconCache[index] ??= [];
-  return createPetalIcon(index, rarity);
+  return createPetalIcon(index, rarity, animated);
 }
 
 const ratioFontSizeCache = [];
@@ -5270,60 +5297,72 @@ function drawShrub(id, color, ctx = _ctx, hit = false) {
 }
 
 function drawPumpkin(color, altColor, ctx, hit, id) {
-    const sides = (id % 3) + 5
-    setStyle(ctx, mixColors(mixColors(color, "#000000", .1), "#FF0000", hit * .5), .2);
-    ctx.beginPath();
-    dipPolygon(ctx, sides, 1, -5/3, 0);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+  const sides = (id % 3) + 5;
+  setStyle(
+    ctx,
+    mixColors(mixColors(color, "#000000", 0.1), "#FF0000", hit * 0.5),
+    0.2,
+  );
+  ctx.beginPath();
+  dipPolygon(ctx, sides, 1, -5 / 3, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
 
-    setStyle(ctx, mixColors(color, "#FF0000", hit * .5), .2);
-    ctx.beginPath();
-    dipPolygon(ctx, sides, .75, -5/3, 0);
-    ctx.closePath();
-    ctx.fill();
+  setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.2);
+  ctx.beginPath();
+  dipPolygon(ctx, sides, 0.75, -5 / 3, 0);
+  ctx.closePath();
+  ctx.fill();
 
-    setStyle(ctx, mixColors(mixColors(color, "#000000", .1), "#FF0000", hit * .5), .2);
-    ctx.beginPath();
-    for (let count = 0; count < sides; count++) {
-        ctx.moveTo(.75, 0)
-        ctx.lineTo(1, 0)
-        ctx.rotate(TAU / sides);
-    }
-    ctx.closePath();
-    ctx.stroke();
+  setStyle(
+    ctx,
+    mixColors(mixColors(color, "#000000", 0.1), "#FF0000", hit * 0.5),
+    0.2,
+  );
+  ctx.beginPath();
+  for (let count = 0; count < sides; count++) {
+    ctx.moveTo(0.75, 0);
+    ctx.lineTo(1, 0);
+    ctx.rotate(TAU / sides);
+  }
+  ctx.closePath();
+  ctx.stroke();
 
-    setStyle(ctx, mixColors(altColor, "#FF0000", hit * .5), .2);
-    ctx.beginPath();
-    dipPolygon(ctx, 3, .25, -1, ((id % 3) + 1) * .3);
-    ctx.fill();
-    ctx.stroke();
-    ctx.closePath();
+  setStyle(ctx, mixColors(altColor, "#FF0000", hit * 0.5), 0.2);
+  ctx.beginPath();
+  dipPolygon(ctx, 3, 0.25, -1, ((id % 3) + 1) * 0.3);
+  ctx.fill();
+  ctx.stroke();
+  ctx.closePath();
 }
 
 function drawJackOLantern(color, altColor, ctx, hit, date, id) {
-    // Fire animation
-    ctx.save();
-    ctx.globalAlpha *= .5;
-    ctx.fillStyle = mixColors(mixColors(color, "#000000", Math.sin(date) * .5 + .5), "#FF0000", hit * .5);
-    ctx.beginPath();
-    for (let i = 0; i < 14; i++) {
-        let a = i * TAU / 14,
-            d = .75 + Math.sin(1 + date + i * Math.cos(8 + date / 1000) * .5);
+  // Fire animation
+  ctx.save();
+  ctx.globalAlpha *= 0.5;
+  ctx.fillStyle = mixColors(
+    mixColors(color, "#000000", Math.sin(date) * 0.5 + 0.5),
+    "#FF0000",
+    hit * 0.5,
+  );
+  ctx.beginPath();
+  for (let i = 0; i < 14; i++) {
+    let a = (i * TAU) / 14,
+      d = 0.75 + Math.sin(1 + date + i * Math.cos(8 + date / 1000) * 0.5);
 
-        if (i === 0) {
-            ctx.moveTo(Math.cos(a) * d, Math.sin(a) * d);
-        } else {
-            ctx.lineTo(Math.cos(a) * d, Math.sin(a) * d);
-        }
+    if (i === 0) {
+      ctx.moveTo(Math.cos(a) * d, Math.sin(a) * d);
+    } else {
+      ctx.lineTo(Math.cos(a) * d, Math.sin(a) * d);
     }
+  }
 
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 
-    drawPumpkin(color, altColor, ctx, hit, id);
+  drawPumpkin(color, altColor, ctx, hit, id);
 }
 
 const crabBodyColors = [
@@ -5496,363 +5535,692 @@ export function drawMob(
   mobRender(ctx, id, index, rarity, hit, attack, friend, rot, extra, date);
 }
 
-function mobRender(ctx, id, index, rarity, hit, attack, friend, rot, extra, date = performance.now()) {
-    if (state.mobConfigs[index].drawing) {
-        const actions = state.mobConfigs[index].drawing.actions;
-        for (const action of actions) {
-            const [actionName, ...args] = action;
-            const actionFunc = Drawing.reverseActions[actionName];
+function mobRender(
+  ctx,
+  id,
+  index,
+  rarity,
+  hit,
+  attack,
+  friend,
+  rot,
+  extra,
+  date = performance.now(),
+) {
+  if (state.mobConfigs[index].drawing) {
+    const actions = state.mobConfigs[index].drawing.actions;
+    for (const action of actions) {
+      const [actionName, ...args] = action;
+      const actionFunc = Drawing.reverseActions[actionName];
 
-            if (!actionFunc) {
-                throw new Error(`Unknown action: ${actionName} ${action}`);
-            }
+      if (!actionFunc) {
+        throw new Error(`Unknown action: ${actionName} ${action}`);
+      }
 
-            switch (actionFunc) {
-                case "circle":
-                    ctx.arc(args[0], args[1], args[2], 0, Math.PI * 2);
-                    break;
-                case "line":
-                    ctx.moveTo(args[0], args[1]);
-                    ctx.lineTo(args[2], args[3]);
-                    break;
-                case "fill":
-                    ctx.fillStyle = mixColors(args[0], "#FF0000", hit * .5);
-                    ctx.fill();
-                    break;
-                case "stroke":
-                    ctx.strokeStyle = mixColors(mixColors(args[0], "#FF0000", hit * .5), "#000000", args[2]);
-                    ctx.lineWidth = args[1];
-                    ctx.stroke();
-                    break;
-                case "paint":
-                    ctx.fillStyle = mixColors(args[0], "#FF0000", hit * .5);
-                    ctx.strokeStyle = mixColors(mixColors(args[0], "#FF0000", hit * .5), "#000000", args[2]);
-                    ctx.lineWidth = args[1];
-                    ctx.fill();
-                    ctx.stroke();
-                    break;
-                case "polygon": {
-                    let arg2 = args[2];
-                
-                    if (isNaN(arg2)) {
-                        if (typeof arg2 === "string" && arg2.startsWith("date_")) {
-                            const mult = parseFloat(arg2.split("_")[1]);
-                            arg2 = date * (isNaN(mult) ? 1 : mult);
-                        } else if (arg2 === "date") {
-                            arg2 = date;
-                        } else {
-                            arg2 = 0;
-                        }
-                    } else {
-                        arg2 = Number(arg2);
-                    }
-                
-                    polygon(ctx, args[0], args[1], arg2);
-                    break;
-                }
-                case "spikeBall": {
-                    let arg2 = args[2];
-                
-                    if (isNaN(arg2)) {
-                        if (typeof arg2 === "string" && arg2.startsWith("date_")) {
-                            const mult = parseFloat(arg2.split("_")[1]);
-                            arg2 = date * (isNaN(mult) ? 1 : mult);
-                        } else if (arg2 === "date") {
-                            arg2 = date;
-                        } else {
-                            arg2 = 0;
-                        }
-                    } else {
-                        arg2 = Number(arg2);
-                    }
-                
-                    spikeBall(ctx, args[0], args[1], arg2);
-                    break;
-                }
-                case "dipPolygon": {
-                    let arg3 = args[3];
-                
-                    if (isNaN(arg3)) {
-                        if (typeof arg3 === "string" && arg3.startsWith("date_")) {
-                            const mult = parseFloat(arg3.split("_")[1]);
-                            arg3 = date * (isNaN(mult) ? 1 : mult);
-                        } else if (arg3 === "date") {
-                            arg3 = date;
-                        } else {
-                            arg3 = 0;
-                        }
-                    } else {
-                        arg3 = Number(arg3);
-                    }
-                
-                    dipPolygon(ctx, args[0], args[1], args[2], arg3);
-                    break;
-                }
-                case "opacity":
-                    ctx.globalAlpha = args[0];
-                    break;
-                case "blur":
-                    ctx.shadowColor = args[0];
-                    ctx.shadowBlur = args[1];
-                    break;
-                case "noBlur":
-                    ctx.shadowBlur = 0;
-                    break;
-                case "ellipse": {
-                    let arg4 = args[4];
-                
-                    if (isNaN(arg4)) {
-                        if (typeof arg4 === "string" && arg4.startsWith("date_")) {
-                            const mult = parseFloat(arg4.split("_")[1]);
-                            arg4 = date * (isNaN(mult) ? 1 : mult);
-                        } else if (arg4 === "date") {
-                            arg4 = date;
-                        } else {
-                            arg4 = 0;
-                        }
-                    } else {
-                        arg4 = Number(arg4);
-                    }
-                
-                    ctx.ellipse(args[0], args[1], args[2], args[3], arg4, 0, Math.PI * 2);
-                    break;
-                }
-                case "quadraticCurveTo":
-                    ctx.quadraticCurveTo(args[0], args[1], args[2], args[3]);
-                    break;
-                case "bezierCurveTo":
-                    ctx.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
-                    break;
-                case "rotate":
-                    ctx.rotate(args[0] * Math.PI / 180);
-                    break;
-                default:
-                    ctx[actionFunc](...args);
-                    break;
+      switch (actionFunc) {
+        case "circle":
+          ctx.arc(args[0], args[1], args[2], 0, Math.PI * 2);
+          break;
+        case "line":
+          ctx.moveTo(args[0], args[1]);
+          ctx.lineTo(args[2], args[3]);
+          break;
+        case "fill":
+          ctx.fillStyle = mixColors(args[0], "#FF0000", hit * 0.5);
+          ctx.fill();
+          break;
+        case "stroke":
+          ctx.strokeStyle = mixColors(
+            mixColors(args[0], "#FF0000", hit * 0.5),
+            "#000000",
+            args[2],
+          );
+          ctx.lineWidth = args[1];
+          ctx.stroke();
+          break;
+        case "paint":
+          ctx.fillStyle = mixColors(args[0], "#FF0000", hit * 0.5);
+          ctx.strokeStyle = mixColors(
+            mixColors(args[0], "#FF0000", hit * 0.5),
+            "#000000",
+            args[2],
+          );
+          ctx.lineWidth = args[1];
+          ctx.fill();
+          ctx.stroke();
+          break;
+        case "polygon": {
+          let arg2 = args[2];
+
+          if (isNaN(arg2)) {
+            if (typeof arg2 === "string" && arg2.startsWith("date_")) {
+              const mult = parseFloat(arg2.split("_")[1]);
+              arg2 = date * (isNaN(mult) ? 1 : mult);
+            } else if (arg2 === "date") {
+              arg2 = date;
+            } else {
+              arg2 = 0;
             }
+          } else {
+            arg2 = Number(arg2);
+          }
+
+          polygon(ctx, args[0], args[1], arg2);
+          break;
         }
+        case "spikeBall": {
+          let arg2 = args[2];
 
-        return;
+          if (isNaN(arg2)) {
+            if (typeof arg2 === "string" && arg2.startsWith("date_")) {
+              const mult = parseFloat(arg2.split("_")[1]);
+              arg2 = date * (isNaN(mult) ? 1 : mult);
+            } else if (arg2 === "date") {
+              arg2 = date;
+            } else {
+              arg2 = 0;
+            }
+          } else {
+            arg2 = Number(arg2);
+          }
+
+          spikeBall(ctx, args[0], args[1], arg2);
+          break;
+        }
+        case "dipPolygon": {
+          let arg3 = args[3];
+
+          if (isNaN(arg3)) {
+            if (typeof arg3 === "string" && arg3.startsWith("date_")) {
+              const mult = parseFloat(arg3.split("_")[1]);
+              arg3 = date * (isNaN(mult) ? 1 : mult);
+            } else if (arg3 === "date") {
+              arg3 = date;
+            } else {
+              arg3 = 0;
+            }
+          } else {
+            arg3 = Number(arg3);
+          }
+
+          dipPolygon(ctx, args[0], args[1], args[2], arg3);
+          break;
+        }
+        case "opacity":
+          ctx.globalAlpha = args[0];
+          break;
+        case "blur":
+          ctx.shadowColor = args[0];
+          ctx.shadowBlur = args[1];
+          break;
+        case "noBlur":
+          ctx.shadowBlur = 0;
+          break;
+        case "ellipse": {
+          let arg4 = args[4];
+
+          if (isNaN(arg4)) {
+            if (typeof arg4 === "string" && arg4.startsWith("date_")) {
+              const mult = parseFloat(arg4.split("_")[1]);
+              arg4 = date * (isNaN(mult) ? 1 : mult);
+            } else if (arg4 === "date") {
+              arg4 = date;
+            } else {
+              arg4 = 0;
+            }
+          } else {
+            arg4 = Number(arg4);
+          }
+
+          ctx.ellipse(args[0], args[1], args[2], args[3], arg4, 0, Math.PI * 2);
+          break;
+        }
+        case "quadraticCurveTo":
+          ctx.quadraticCurveTo(args[0], args[1], args[2], args[3]);
+          break;
+        case "bezierCurveTo":
+          ctx.bezierCurveTo(
+            args[0],
+            args[1],
+            args[2],
+            args[3],
+            args[4],
+            args[5],
+          );
+          break;
+        case "rotate":
+          ctx.rotate((args[0] * Math.PI) / 180);
+          break;
+        default:
+          ctx[actionFunc](...args);
+          break;
+      }
     }
 
-    switch (index) {
-        case 0:
-            drawLadybug(id, friend ? colors.playerYellow : colors.ladybugRed, hit, ctx, index, rarity);
-            break;
-        case 1:
-            drawRock(id, friend ? colors.playerYellow : colors.rockGray, rarity, hit, ctx);
-            break;
-        case 2:
-            drawBee(id, hit, ctx, date);
-            break;
-        case 3:
-            drawSpider(ctx, id, friend ? colors.playerYellow : colors.spider, attack, hit, date);
-            break;
-        case 4:
-            drawBeetle(id, friend ? colors.playerYellow : colors.beetlePurple, hit, ctx, attack, date);
-            break;
-        case 5:
-            drawLeafbug(id, friend ? colors.playerYellow : colors.leafGreen, attack, hit, ctx, date);
-            break;
-        case 6:
-            drawRoach(hit, friend, ctx);
-            break;
-        case 7:
-            drawHornet(id, friend ? colors.playerYellow : colors.hornet, colors.stingerBlack, hit, ctx, date);
-            break;
-        case 8:
-            drawMantis(id, friend ? colors.playerYellow : colors.peaGreen, attack, hit, ctx, date);
-            break;
-        case 9:
-            drawPupa(hit, friend ? colors.playerYellow : colors.peaGreen, ctx);
-            break;
-        case 10:
-            drawSandstorm(id, friend ? colors.playerYellow : colors.sand, attack, hit, ctx, date);
-            break;
-        case 11:
-            drawScorpion(id, friend ? colors.playerYellow : colors.scorpionBrown, hit, ctx, date);
-            break;
-        case 12:
-            drawDemon(id, friend, hit, ctx, attack, date);
-            break;
-        case 13:
-            drawJellyfish(id, friend ? colors.playerYellow : colors.white, attack, hit, ctx, date);
-            break;
-        case 14:
-            drawCactusMob(rarity, friend ? colors.playerYellow : colors.cactusGreen, hit, ctx);
-            break;
-        case 15:
-            drawBabyAnt(id, friend ? colors.playerYellow : colors.ants, attack, hit, ctx, date);
-            break;
-        case 16:
-            drawWorkerAnt(id, friend ? colors.playerYellow : colors.ants, attack, hit, ctx, date);
-            break;
-        case 17:
-            drawSoldierAnt(id, friend ? colors.playerYellow : colors.ants, attack, hit, ctx, date);
-            break;
-        case 18:
-            drawQueenAnt(id, friend ? colors.playerYellow : colors.ants, attack, hit, ctx, date);
-            break;
-        case 19:
-            drawAntHole(hit, friend ? colors.playerYellow : colors.antHole, ctx);
-            break;
-        case 20:
-            drawBabyFireAnt(id, friend ? colors.playerYellow : colors.fireAnt, attack, hit, ctx, date);
-            break;
-        case 21:
-            drawWorkerFireAnt(id, friend ? colors.playerYellow : colors.fireAnt, attack, hit, ctx, date);
-            break;
-        case 22:
-            drawSoldierFireAnt(id, friend ? colors.playerYellow : colors.fireAnt, attack, hit, ctx, date);
-            break;
-        case 23:
-            drawQueenFireAnt(id, friend ? colors.playerYellow : colors.fireAnt, attack, hit, ctx, date);
-            break;
-        case 24:
-            drawFireAntHole(hit, friend ? colors.playerYellow : colors.fireAnt, ctx);
-            break;
-        case 25:
-            drawBabyTermite(id, friend ? colors.playerYellow : colors.termite, attack, hit, ctx, date);
-            break;
-        case 26:
-            drawWorkerTermite(id, friend ? colors.playerYellow : colors.termite, attack, hit, ctx, date);
-            break;
-        case 27:
-            drawSoldierTermite(id, friend ? colors.playerYellow : colors.termite, attack, hit, ctx, date);
-            break;
-        case 28:
-            drawTermiteOvermind(id, friend ? colors.playerYellow : colors.termite, attack, hit, ctx, date);
-            break;
-        case 29:
-            drawTermiteMound(hit, friend, ctx);
-            break;
-        case 30: // Ant Egg
-        case 31: // Queen Ant Egg
-            basicPetal(ctx, hit, colors.peach);
-            break;
-        case 32: // Fire Ant Egg
-        case 33: // Queen Fire Ant Egg
-            basicPetal(ctx, hit, mixColors(colors.peach, colors.fireAnt, .2));
-            break;
-        case 34: // Termite Egg
-            basicPetal(ctx, hit, mixColors(colors.peach, colors.termite, .5));
-            break;
-        case 35:
-            drawLadybug(id, friend ? colors.playerYellow : colors.evilLadybugRed, hit, ctx, index, rarity);
-            break;
-        case 36:
-            drawLadybug(id, friend ? colors.playerYellow : colors.shinyLadybugGold, hit, ctx, index, rarity);
-            break;
-        case 37:
-            drawLadybug(id, friend ? colors.playerYellow : colors.lightningTeal, hit, ctx, index, rarity);
-            break;
-        case 38:
-            drawCentipedeHead(id, friend ? colors.playerYellow : colors.peaGreen, hit, ctx, date);
-            break;
-        case 39:
-            drawCentipedeSegment(friend ? colors.playerYellow : colors.peaGreen, hit, ctx);
-            break;
-        case 40:
-            drawCentipedeHead(id, friend ? colors.playerYellow : colors.sand, hit, ctx, date);
-            break;
-        case 41:
-            drawCentipedeSegment(friend ? colors.playerYellow : colors.sand, hit, ctx);
-            break;
-        case 42:
-            drawCentipedeHead(id, friend ? colors.playerYellow : colors.irisPurple, hit, ctx, date);
-            break;
-        case 43:
-            drawCentipedeSegment(friend ? colors.playerYellow : colors.irisPurple, hit, ctx);
-            break;
-        case 44:
-            drawDandelionCore(ctx, hit);
-            break;
-        case 45:
-            drawSponge(id, friend, hit, ctx);
-            break;
-        case 46:
-            drawBubbleMob(friend ? colors.playerYellow : colors.white, friend ? colors.playerYellow : colors.white, hit, ctx);
-            break;
-        case 47:
-            drawShellMob(ctx, friend ? colors.playerYellow : colors.peach, hit);
-            break;
-        case 48:
-            drawLivingStarfish(ctx, friend ? colors.playerYellow : colors.starfish, hit, extra);
-            break;
-        case 49:
-            drawLeechLive(hit, ctx, extra, rot, attack, id, friend);
-            break;
-        case 50:
-            drawMaggot(ctx, friend, hit);
-            break;
-        case 51:
-            drawFirefly(ctx, friend, id, hit, date);
-            break;
-        case 52:
-            drawBumbleBee(ctx, id, hit, date);
-            break;
-        case 53:
-            drawMoth(ctx, friend ? colors.playerYellow : colors.spider, id, attack, hit, date);
-            break;
-        case 54:
-            drawFly(ctx, friend ? colors.playerYellow : colors.ants, id, attack, hit, date);
-            break;
-        case 55:
-            drawSquareMob(ctx, hit);
-            break;
-        case 56:
-            drawTriangleMob(ctx, hit);
-            break;
-        case 57:
-            drawPentagonMob(ctx, hit);
-            break;
-        case 58:
-            drawHellBeetle(ctx, friend ? colors.playerYellow : colors.hellMobColor, id, hit, attack, date);
-            break;
-        case 59:
-            drawHellSpider(ctx, friend ? colors.playerYellow : colors.hellMobColor, id, hit, attack, date);
-            break;
-        case 60:
-            drawHellYellowjacket(ctx, friend ? colors.playerYellow : colors.hellMobColor, id, hit, attack, date);
-            break;
-        case 61: // Termite Ant Egg Poop
-            basicPetal(ctx, hit, mixColors(colors.peach, colors.termite, .5));
-            break;
-        case 62:
-            drawSpirit(ctx, friend, id, hit)
-            break;
-        case 63:
-            drawHornet(id, friend ? colors.playerYellow : colors.wasp, friend ? mixColors(colors.stingerBlack, colors.playerYellow, .1) : colors.waspDark, hit, ctx, date);
-            break;
-        case 64:
-            drawStickbug(ctx, id, friend ? colors.playerYellow : colors.peach, colors.spider, colors.uncommon, attack, hit, date);
-            break;
-        case 65:
-            drawShrub(id, friend ? colors.playerYellow : colors.shrubGreen, ctx, hit)
-            break;
-        case 66:
-            drawCentipedeHead(id, friend ? colors.playerYellow : colors.hellMobColor, hit, ctx, date);
-            break;
-        case 67:
-            drawCentipedeSegment(friend ? colors.playerYellow : colors.hellMobColor, hit, ctx);
-            break;
-        case 68: // Wilt Head
-        case 69: // Wilt Segment
-            drawShrub(id, mixColors(friend ? colors.playerYellow : colors.rockGray, "#000000", .25 + Math.sin(id * 1000) * .125), ctx, hit);
-            break;
-        case 70:
-            drawPumpkin(friend ? colors.playerYellow : "#D97232", colors.peaGreen, ctx, hit, id);
-            break;
-        case 71:
-            drawJackOLantern(friend ? colors.playerYellow : "#D97232", colors.peaGreen, ctx, hit, date, id);
-            break;
-        case 72:
-            drawCrab(ctx, friend, id, attack, hit, date)
-            break;
-        case 73:
-            drawDiepTank(ctx, hit);
-            break;
-    }
+    return;
+  }
+
+  switch (index) {
+    case 0:
+      drawLadybug(
+        id,
+        friend ? colors.playerYellow : colors.ladybugRed,
+        hit,
+        ctx,
+        index,
+        rarity,
+      );
+      break;
+    case 1:
+      drawRock(
+        id,
+        friend ? colors.playerYellow : colors.rockGray,
+        rarity,
+        hit,
+        ctx,
+      );
+      break;
+    case 2:
+      drawBee(id, hit, ctx, date);
+      break;
+    case 3:
+      drawSpider(
+        ctx,
+        id,
+        friend ? colors.playerYellow : colors.spider,
+        attack,
+        hit,
+        date,
+      );
+      break;
+    case 4:
+      drawBeetle(
+        id,
+        friend ? colors.playerYellow : colors.beetlePurple,
+        hit,
+        ctx,
+        attack,
+        date,
+      );
+      break;
+    case 5:
+      drawLeafbug(
+        id,
+        friend ? colors.playerYellow : colors.leafGreen,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 6:
+      drawRoach(hit, friend, ctx);
+      break;
+    case 7:
+      drawHornet(
+        id,
+        friend ? colors.playerYellow : colors.hornet,
+        colors.stingerBlack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 8:
+      drawMantis(
+        id,
+        friend ? colors.playerYellow : colors.peaGreen,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 9:
+      drawPupa(hit, friend ? colors.playerYellow : colors.peaGreen, ctx);
+      break;
+    case 10:
+      drawSandstorm(
+        id,
+        friend ? colors.playerYellow : colors.sand,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 11:
+      drawScorpion(
+        id,
+        friend ? colors.playerYellow : colors.scorpionBrown,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 12:
+      drawDemon(id, friend, hit, ctx, attack, date);
+      break;
+    case 13:
+      drawJellyfish(
+        id,
+        friend ? colors.playerYellow : colors.white,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 14:
+      drawCactusMob(
+        rarity,
+        friend ? colors.playerYellow : colors.cactusGreen,
+        hit,
+        ctx,
+      );
+      break;
+    case 15:
+      drawBabyAnt(
+        id,
+        friend ? colors.playerYellow : colors.ants,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 16:
+      drawWorkerAnt(
+        id,
+        friend ? colors.playerYellow : colors.ants,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 17:
+      drawSoldierAnt(
+        id,
+        friend ? colors.playerYellow : colors.ants,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 18:
+      drawQueenAnt(
+        id,
+        friend ? colors.playerYellow : colors.ants,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 19:
+      drawAntHole(hit, friend ? colors.playerYellow : colors.antHole, ctx);
+      break;
+    case 20:
+      drawBabyFireAnt(
+        id,
+        friend ? colors.playerYellow : colors.fireAnt,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 21:
+      drawWorkerFireAnt(
+        id,
+        friend ? colors.playerYellow : colors.fireAnt,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 22:
+      drawSoldierFireAnt(
+        id,
+        friend ? colors.playerYellow : colors.fireAnt,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 23:
+      drawQueenFireAnt(
+        id,
+        friend ? colors.playerYellow : colors.fireAnt,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 24:
+      drawFireAntHole(hit, friend ? colors.playerYellow : colors.fireAnt, ctx);
+      break;
+    case 25:
+      drawBabyTermite(
+        id,
+        friend ? colors.playerYellow : colors.termite,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 26:
+      drawWorkerTermite(
+        id,
+        friend ? colors.playerYellow : colors.termite,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 27:
+      drawSoldierTermite(
+        id,
+        friend ? colors.playerYellow : colors.termite,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 28:
+      drawTermiteOvermind(
+        id,
+        friend ? colors.playerYellow : colors.termite,
+        attack,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 29:
+      drawTermiteMound(hit, friend, ctx);
+      break;
+    case 30: // Ant Egg
+    case 31: // Queen Ant Egg
+      basicPetal(ctx, hit, colors.peach);
+      break;
+    case 32: // Fire Ant Egg
+    case 33: // Queen Fire Ant Egg
+      basicPetal(ctx, hit, mixColors(colors.peach, colors.fireAnt, 0.2));
+      break;
+    case 34: // Termite Egg
+      basicPetal(ctx, hit, mixColors(colors.peach, colors.termite, 0.5));
+      break;
+    case 35:
+      drawLadybug(
+        id,
+        friend ? colors.playerYellow : colors.evilLadybugRed,
+        hit,
+        ctx,
+        index,
+        rarity,
+      );
+      break;
+    case 36:
+      drawLadybug(
+        id,
+        friend ? colors.playerYellow : colors.shinyLadybugGold,
+        hit,
+        ctx,
+        index,
+        rarity,
+      );
+      break;
+    case 37:
+      drawLadybug(
+        id,
+        friend ? colors.playerYellow : colors.lightningTeal,
+        hit,
+        ctx,
+        index,
+        rarity,
+      );
+      break;
+    case 38:
+      drawCentipedeHead(
+        id,
+        friend ? colors.playerYellow : colors.peaGreen,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 39:
+      drawCentipedeSegment(
+        friend ? colors.playerYellow : colors.peaGreen,
+        hit,
+        ctx,
+      );
+      break;
+    case 40:
+      drawCentipedeHead(
+        id,
+        friend ? colors.playerYellow : colors.sand,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 41:
+      drawCentipedeSegment(
+        friend ? colors.playerYellow : colors.sand,
+        hit,
+        ctx,
+      );
+      break;
+    case 42:
+      drawCentipedeHead(
+        id,
+        friend ? colors.playerYellow : colors.irisPurple,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 43:
+      drawCentipedeSegment(
+        friend ? colors.playerYellow : colors.irisPurple,
+        hit,
+        ctx,
+      );
+      break;
+    case 44:
+      drawDandelionCore(ctx, hit);
+      break;
+    case 45:
+      drawSponge(id, friend, hit, ctx);
+      break;
+    case 46:
+      drawBubbleMob(
+        friend ? colors.playerYellow : colors.white,
+        friend ? colors.playerYellow : colors.white,
+        hit,
+        ctx,
+      );
+      break;
+    case 47:
+      drawShellMob(ctx, friend ? colors.playerYellow : colors.peach, hit);
+      break;
+    case 48:
+      drawLivingStarfish(
+        ctx,
+        friend ? colors.playerYellow : colors.starfish,
+        hit,
+        extra,
+      );
+      break;
+    case 49:
+      drawLeechLive(hit, ctx, extra, rot, attack, id, friend);
+      break;
+    case 50:
+      drawMaggot(ctx, friend, hit);
+      break;
+    case 51:
+      drawFirefly(ctx, friend, id, hit, date);
+      break;
+    case 52:
+      drawBumbleBee(ctx, id, hit, date);
+      break;
+    case 53:
+      drawMoth(
+        ctx,
+        friend ? colors.playerYellow : colors.spider,
+        id,
+        attack,
+        hit,
+        date,
+      );
+      break;
+    case 54:
+      drawFly(
+        ctx,
+        friend ? colors.playerYellow : colors.ants,
+        id,
+        attack,
+        hit,
+        date,
+      );
+      break;
+    case 55:
+      drawSquareMob(ctx, hit);
+      break;
+    case 56:
+      drawTriangleMob(ctx, hit);
+      break;
+    case 57:
+      drawPentagonMob(ctx, hit);
+      break;
+    case 58:
+      drawHellBeetle(
+        ctx,
+        friend ? colors.playerYellow : colors.hellMobColor,
+        id,
+        hit,
+        attack,
+        date,
+      );
+      break;
+    case 59:
+      drawHellSpider(
+        ctx,
+        friend ? colors.playerYellow : colors.hellMobColor,
+        id,
+        hit,
+        attack,
+        date,
+      );
+      break;
+    case 60:
+      drawHellYellowjacket(
+        ctx,
+        friend ? colors.playerYellow : colors.hellMobColor,
+        id,
+        hit,
+        attack,
+        date,
+      );
+      break;
+    case 61: // Termite Ant Egg Poop
+      basicPetal(ctx, hit, mixColors(colors.peach, colors.termite, 0.5));
+      break;
+    case 62:
+      drawSpirit(ctx, friend, id, hit);
+      break;
+    case 63:
+      drawHornet(
+        id,
+        friend ? colors.playerYellow : colors.wasp,
+        friend
+          ? mixColors(colors.stingerBlack, colors.playerYellow, 0.1)
+          : colors.waspDark,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 64:
+      drawStickbug(
+        ctx,
+        id,
+        friend ? colors.playerYellow : colors.peach,
+        colors.spider,
+        colors.uncommon,
+        attack,
+        hit,
+        date,
+      );
+      break;
+    case 65:
+      drawShrub(id, friend ? colors.playerYellow : colors.shrubGreen, ctx, hit);
+      break;
+    case 66:
+      drawCentipedeHead(
+        id,
+        friend ? colors.playerYellow : colors.hellMobColor,
+        hit,
+        ctx,
+        date,
+      );
+      break;
+    case 67:
+      drawCentipedeSegment(
+        friend ? colors.playerYellow : colors.hellMobColor,
+        hit,
+        ctx,
+      );
+      break;
+    case 68: // Wilt Head
+    case 69: // Wilt Segment
+      drawShrub(
+        id,
+        mixColors(
+          friend ? colors.playerYellow : colors.rockGray,
+          "#000000",
+          0.25 + Math.sin(id * 1000) * 0.125,
+        ),
+        ctx,
+        hit,
+      );
+      break;
+    case 70:
+      drawPumpkin(
+        friend ? colors.playerYellow : "#D97232",
+        colors.peaGreen,
+        ctx,
+        hit,
+        id,
+      );
+      break;
+    case 71:
+      drawJackOLantern(
+        friend ? colors.playerYellow : "#D97232",
+        colors.peaGreen,
+        ctx,
+        hit,
+        date,
+        id,
+      );
+      break;
+    case 72:
+      drawCrab(ctx, friend, id, attack, hit, date);
+      break;
+    case 73:
+      drawDiepTank(ctx, hit);
+      break;
+  }
 }
 
 const UIMobCache = new Map();
@@ -5906,361 +6274,839 @@ function formatNegativeOrPositive(number, type = 1) {
   }
 }
 function createPetalTooltip(index, rarityIndex) {
-    /** @type {PetalConfig} */
-    const petal = state.petalConfigs[index];
-    const tier = petal.tiers[rarityIndex];
+  /** @type {PetalConfig} */
+  const petal = state.petalConfigs[index];
+  const tier = petal.tiers[rarityIndex];
 
-    let width = 350,
-        height = 60 + drawWrappedText(tier.description, -10000, -10000, 15, width - 20) + 30;
+  let width = 350,
+    height =
+      60 +
+      drawWrappedText(tier.description, -10000, -10000, 15, width - 20) +
+      30;
 
-    height += 17.5 * (
-        (tier.health > 0) +
-        (tier.damage > 0) +
-        (tier.extraHealth !== 0) +
-        (tier.constantHeal !== 0) +
-        (tier.damageReduction > 0 || tier.damageReduction < 0) +
-        (tier.speedMultiplier !== 1) +
-        (tier.extraSize !== 0) +
-        (tier.extraRadians > 0) +
-        (tier.healing > 0) +
-        (petal.enemySpeedDebuff !== undefined) +
-        (tier.poison !== undefined) +
-        (tier.extraRange > 0) +
-        (tier.spawnable !== undefined) +
-        (tier.extraVision > 0 || tier.extraVision < 0) +
-        ((tier.pentagramAbility !== undefined) * 4) +
-        (tier.lightning !== undefined) +
-        (tier.extraPickupRange > 0) +
-        (tier.healSpit > 0) +
-        ((tier.damageReflection !== undefined)) +
-        (tier.damageReflection?.cap > 0) +
-        (tier.density !== 1) +
-        ((tier.deathDefying !== undefined) * 2) +
-        (tier.absorbsDamage !== undefined) +
-        (tier.shield > 0) +
-        (tier.boost !== undefined) +
-        (tier.healBack > 0 || tier.healBack < 0) +
-        (tier.lightning?.charges > 1) +
-        (petal.extraLighting > 0) +
-        ((petal.extraDamage !== undefined) * 2) +
-        (tier.armor !== 0)
+  height +=
+    17.5 *
+    ((tier.health > 0) +
+      (tier.damage > 0) +
+      (tier.extraHealth !== 0) +
+      (tier.constantHeal !== 0) +
+      (tier.damageReduction > 0 || tier.damageReduction < 0) +
+      (tier.speedMultiplier !== 1) +
+      (tier.extraSize !== 0) +
+      (tier.extraRadians > 0) +
+      (tier.healing > 0) +
+      (petal.enemySpeedDebuff !== undefined) +
+      (tier.poison !== undefined) +
+      (tier.extraRange > 0) +
+      (tier.spawnable !== undefined) +
+      (tier.extraVision > 0 || tier.extraVision < 0) +
+      (tier.pentagramAbility !== undefined) * 4 +
+      (tier.lightning !== undefined) +
+      (tier.extraPickupRange > 0) +
+      (tier.healSpit > 0) +
+      (tier.damageReflection !== undefined) +
+      (tier.damageReflection?.cap > 0) +
+      (tier.density !== 1) +
+      (tier.deathDefying !== undefined) * 2 +
+      (tier.absorbsDamage !== undefined) +
+      (tier.shield > 0) +
+      (tier.boost !== undefined) +
+      (tier.healBack > 0 || tier.healBack < 0) +
+      (tier.lightning?.charges > 1) +
+      (petal.extraLighting > 0) +
+      (petal.extraDamage !== undefined) * 2 +
+      (tier.armor !== 0));
+
+  const canvas = new OffscreenCanvas(width * 2, height * 2);
+  const ctx = canvas.getContext("2d");
+
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.scale(2, 2);
+
+  ctx.beginPath();
+  ctx.roundRect(0, 0, width, height, width / 20);
+  ctx.globalAlpha = 0.334;
+  ctx.fillStyle = "#000000";
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  text(petal.name, 10, 10, 22.5, "#FFFFFF", ctx);
+  text(
+    state.tiers[rarityIndex].name,
+    10,
+    35,
+    15,
+    state.tiers[rarityIndex].color,
+    ctx,
+  );
+
+  let timerString = petal.wearable
+    ? "🎩"
+    : (((petal.cooldown / 22.5) * 100) | 0) / 100 + "s ⟳";
+
+  if (tier.count > 1) {
+    timerString = tier.count + "x | " + timerString;
+  }
+
+  if (tier.spawnable?.timer > 0) {
+    timerString += " + " + +tier.spawnable.timer.toFixed(2) + "s ⚡︎";
+  }
+
+  if (tier.boost !== undefined) {
+    timerString += " + " + +tier.boost.delay.toFixed(2) + "s ⚡︎";
+  }
+
+  ctx.textAlign = "right";
+  text(timerString, width - 10, 10, 17.5, "#FFFFFF", ctx);
+  ctx.textAlign = "left";
+
+  let newY =
+    80 +
+    drawWrappedText(tier.description, 10, 60, 15, width - 20, "#FFFFFF", ctx);
+
+  if (tier.health > 0) {
+    let x = 10 + text("Health: ", 10, newY, 15, colors.common, ctx);
+    x += text(
+      formatLargeNumber(+(tier.health * tier.count).toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    if (tier.count > 1) {
+      x += text(
+        " (" +
+          formatLargeNumber(+tier.health.toFixed(2)) +
+          " x " +
+          tier.count +
+          ")",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+    }
+    newY += 17.5;
+  }
+
+  if (tier.damage > 0) {
+    let x =
+      10 +
+      text(
+        "Damage: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.legendary, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+(tier.damage * tier.count).toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    if (tier.count > 1) {
+      x += text(
+        " (" +
+          formatLargeNumber(+tier.damage.toFixed(2)) +
+          " x " +
+          tier.count +
+          ")",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+    }
+    newY += 17.5;
+  }
+
+  if (tier.extraHealth !== 0) {
+    let x =
+      10 +
+      text(
+        "Extra Health: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.epic, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive(+tier.extraHealth.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.constantHeal !== 0) {
+    let x =
+      10 +
+      text(
+        "Constant Heal: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.common, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive(+(tier.constantHeal * 22.5).toFixed(2)) + "/s",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
     );
 
-    const canvas = new OffscreenCanvas(width * 2, height * 2);
-    const ctx = canvas.getContext("2d");
-
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-
-    ctx.scale(2, 2);
-
-    ctx.beginPath();
-    ctx.roundRect(0, 0, width, height, width / 20);
-    ctx.globalAlpha = .334;
-    ctx.fillStyle = "#000000";
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    text(petal.name, 10, 10, 22.5, "#FFFFFF", ctx);
-    text(state.tiers[rarityIndex].name, 10, 35, 15, state.tiers[rarityIndex].color, ctx);
-
-    let timerString = petal.wearable ? "🎩" : (((petal.cooldown / 22.5 * 100) | 0) / 100) + "s ⟳";
-
-    if (tier.count > 1) {
-        timerString = tier.count + "x | " + timerString;
+    if (petal.healWhenUnder < 1) {
+      x += text(" (", x, newY, 15, colors.white, ctx);
+      x += text(
+        "Under " + +(petal.healWhenUnder * 100).toFixed(2) + "% HP",
+        x,
+        newY,
+        15,
+        colors.rosePink,
+        ctx,
+      );
+      text(")", x, newY, 15, colors.white, ctx);
     }
 
-    if (tier.spawnable?.timer > 0) {
-        timerString += " + " + +tier.spawnable.timer.toFixed(2) + "s ⚡︎";
+    newY += 17.5;
+  }
+
+  if (tier.damageReduction !== 0) {
+    if (tier.damageReduction > 0) {
+      let x =
+        10 +
+        text(
+          "Damage Reduction: ",
+          10,
+          newY,
+          15,
+          mixColors(colors.ultra, "#FFFFFF", 0.2),
+          ctx,
+        );
+      x += text(
+        "-" +
+          formatNegativeOrPositive(+(tier.damageReduction * 100).toFixed(2)) +
+          "%",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+    } else {
+      let x =
+        10 +
+        text(
+          "Extra Damage Taken: ",
+          10,
+          newY,
+          15,
+          mixColors(colors.ultra, "#FFFFFF", 0.2),
+          ctx,
+        );
+      x += text(
+        "+" +
+          formatNegativeOrPositive(
+            +(tier.damageReduction * 100).toFixed(2),
+            3,
+          ) +
+          "%",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
     }
+    newY += 17.5;
+  }
 
-    if (tier.boost !== undefined) {
-        timerString += " + " + +tier.boost.delay.toFixed(2) + "s ⚡︎";
+  if (tier.speedMultiplier !== 1) {
+    let x =
+      10 +
+      text(
+        "Speed: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.mythic, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive(
+        +((tier.speedMultiplier - 1) * 100).toFixed(2),
+        2,
+      ) + "%",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.extraSize !== 0) {
+    let x =
+      10 +
+      text(
+        "Extra Size: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.ancient, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive(+tier.extraSize.toFixed(2), 2),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.extraRadians > 0) {
+    let x =
+      10 +
+      text(
+        "Radians: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.super, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive((+tier.extraRadians * 22.5).toFixed(2), 2) +
+        " rad/s",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.healing > 0) {
+    let x = 10 + text("Heal: ", 10, newY, 15, colors.rosePink, ctx);
+    x += text(
+      formatNegativeOrPositive(+tier.healing.toFixed(2), 2),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (petal.enemySpeedDebuff !== undefined) {
+    let x = 10 + text("Speed Debuff: ", 10, newY, 15, colors.white, ctx);
+    x += text(
+      "-" +
+        +((1 - petal.enemySpeedDebuff.speedMultiplier) * 100).toFixed(2) +
+        "% for " +
+        (petal.enemySpeedDebuff.duration / 22.5).toFixed(2) +
+        "s",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.poison !== undefined) {
+    let x = 10 + text("Poison: ", 10, newY, 15, colors.irisPurple, ctx);
+    x += text(
+      formatLargeNumber(+tier.poison.damage.toFixed(2)) +
+        "/s for " +
+        tier.poison.duration.toFixed(2) +
+        "s",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.extraRange > 0 || tier.extraRange < 0) {
+    let x = 10 + text("Range: ", 10, newY, 15, colors.orange, ctx);
+    x += text(
+      formatNegativeOrPositive(+tier.extraRange.toFixed(2), 2),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.spawnable !== undefined) {
+    let x = 10 + text("Spawns: ", 10, newY, 15, colors.bubbleGrey, ctx);
+    x += text(
+      state.mobConfigs[tier.spawnable.index].name,
+      x,
+      newY,
+      15,
+      colors.peaGreen,
+      ctx,
+    );
+    x += text(" (", x, newY, 15, colors.bubbleGrey, ctx);
+    x += text(
+      state.tiers[tier.spawnable.rarity].name,
+      x,
+      newY,
+      15,
+      state.tiers[tier.spawnable.rarity].color,
+      ctx,
+    );
+    text(")", x, newY, 15, colors.bubbleGrey, ctx);
+
+    newY += 17.5;
+  }
+
+  if (tier.extraVision > 0 || tier.extraVision < 0) {
+    let x = 10 + text("Vision: ", 10, newY, 15, colors.orange, ctx);
+    x += text(
+      formatNegativeOrPositive(+tier.extraVision.toFixed(2), 2),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.pentagramAbility !== undefined) {
+    text(
+      "Spell: " +
+        +(tier.pentagramAbility.cooldown / 22.5).toFixed(2) +
+        "s ⚡︎, " +
+        formatLargeNumber(+tier.pentagramAbility.range.toFixed(2)) +
+        " range",
+      10,
+      newY,
+      15,
+      colors.evilLadybugRed,
+      ctx,
+    );
+    newY += 17.5;
+
+    text(
+      "- Damage: " +
+        formatLargeNumber(+tier.pentagramAbility.damage.toFixed(2)),
+      20,
+      newY,
+      15,
+      mixColors(colors.legendary, "#FFFFFF", 0.2),
+      ctx,
+    );
+    newY += 17.5;
+
+    text(
+      "- Poison Inflicted: " +
+        formatLargeNumber(+tier.pentagramAbility.poison.damage.toFixed(2)) +
+        "/s for " +
+        +tier.pentagramAbility.poison.duration.toFixed(2) +
+        "s",
+      20,
+      newY,
+      15,
+      colors.irisPurple,
+      ctx,
+    );
+    newY += 17.5;
+
+    text(
+      "- Speed Debuff: " +
+        +((1 - tier.pentagramAbility.speedDebuff.multiplier) * 100).toFixed(2) +
+        "% for " +
+        +tier.pentagramAbility.speedDebuff.duration.toFixed(2) +
+        "s",
+      20,
+      newY,
+      15,
+      colors.jellyfish,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.lightning !== undefined) {
+    let x = 10 + text("Lightning: ", 10, newY, 15, colors.lightningTeal, ctx);
+    x += text(
+      formatLargeNumber(+tier.lightning.damage.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.lightning?.charges > 1) {
+    let x =
+      10 +
+      text(
+        "Charges: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.lightningTeal, "#FFFFFF", 0.4),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+tier.lightning.charges),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.extraPickupRange > 0) {
+    let x =
+      10 +
+      text(
+        "Pickup Range: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.rare, "#FFFFFF", 0.35),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive(+tier.extraPickupRange.toFixed(2), 2),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.healSpit > 0) {
+    let x = 10 + text("Team Heal: ", 10, newY, 15, colors.rosePink, ctx);
+    x += text(
+      formatNegativeOrPositive(+tier.healSpit.toFixed(2), 2) +
+        "/nearby teammate",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.damageReflection !== undefined) {
+    let x =
+      10 +
+      text(
+        "Damage Reflection: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.legendary, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+(tier.damageReflection.reflection * 100).toFixed(2)) +
+        "%",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+
+    if (tier.damageReflection.cap > 0) {
+      let y =
+        10 +
+        text(
+          "Reflection Cap: ",
+          10,
+          newY,
+          15,
+          mixColors(colors.legendary, "#FFFFFF", 0.35),
+          ctx,
+        );
+      y += text(
+        +(+(tier.damageReflection.cap * 100).toFixed(2)) + "%",
+        y,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+      newY += 17.5;
     }
+  }
 
-    ctx.textAlign = "right";
-    text(timerString, width - 10, 10, 17.5, "#FFFFFF", ctx);
-    ctx.textAlign = "left";
+  if (tier.density !== 1) {
+    let x =
+      10 +
+      text(
+        "Density: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.epic, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+tier.density.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
 
-    let newY = 80 + drawWrappedText(tier.description, 10, 60, 15, width - 20, "#FFFFFF", ctx);
+  if (tier.deathDefying !== undefined) {
+    let x =
+      10 +
+      text(
+        "Resurrection Health: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.mythic, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      +(tier.deathDefying.health * 100).toFixed(2) + "%",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    let y =
+      10 +
+      text(
+        "Resurrection Immunity: ",
+        10,
+        newY + 17.5,
+        15,
+        mixColors(colors.super, "#FFFFFF", 0.2),
+        ctx,
+      );
+    y += text(
+      +tier.deathDefying.duration.toFixed(2) + "s",
+      y,
+      newY + 17.5,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5 * 2;
+  }
 
-    if (tier.health > 0) {
-        let x = 10 + text("Health: ", 10, newY, 15, colors.common, ctx);
-        x += text(formatLargeNumber(+(tier.health * tier.count).toFixed(2)), x, newY, 15, colors.white, ctx);
-        if (tier.count > 1) {
-            x += text(" (" + formatLargeNumber(+(tier.health).toFixed(2)) + " x " + tier.count + ")", x, newY, 15, colors.white, ctx);
-        }
-        newY += 17.5;
+  if (tier.absorbsDamage !== undefined) {
+    let x =
+      10 +
+      text(
+        "Absorption: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.peaGreen, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+tier.absorbsDamage.maxDamage.toFixed(2)) +
+        " dmg over " +
+        +tier.absorbsDamage.period.toFixed(2) +
+        "s",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.shield > 0) {
+    let x =
+      10 +
+      text(
+        "Shield: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.mythic, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+tier.shield.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.boost !== undefined) {
+    let x =
+      10 +
+      text(
+        "Boost: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.rare, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+tier.boost.length.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.healBack > 0 || tier.healBack < 0) {
+    if (tier.healBack > 0) {
+      let x = 10 + text("Heal Back: ", 10, newY, 15, colors.inventory, ctx);
+      x += text(
+        formatLargeNumber(+(tier.damage * tier.healBack).toFixed(2)),
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+    } else {
+      let x = 10 + text("Self Damage: ", 10, newY, 15, "#A44343", ctx);
+      x += text(
+        formatNegativeOrPositive(+(tier.damage * tier.healBack).toFixed(2), 3),
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
     }
+    newY += 17.5;
+  }
 
-    if (tier.damage > 0) {
-        let x = 10 + text("Damage: ", 10, newY, 15, mixColors(colors.legendary, "#FFFFFF", .2), ctx);
-        x += text(formatLargeNumber(+(tier.damage * tier.count).toFixed(2)), x, newY, 15, colors.white, ctx);
-        if (tier.count > 1) {
-            x += text(" (" + formatLargeNumber(+(tier.damage).toFixed(2)) + " x " + tier.count + ")", x, newY, 15, colors.white, ctx);
-        }
-        newY += 17.5;
-    }
+  if (petal.extraLighting > 0) {
+    let x = 10 + text("Lighting: ", 10, newY, 15, colors.beeYellow, ctx);
+    x += text(
+      formatNegativeOrPositive(+petal.extraLighting.toFixed(2), 2),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
 
-    if (tier.extraHealth !== 0) {
-        let x = 10 + text("Extra Health: ", 10, newY, 15, mixColors(colors.epic, "#FFFFFF", .2), ctx);
-        x += text(formatNegativeOrPositive(+tier.extraHealth.toFixed(2)), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
+  if (petal.extraDamage !== undefined) {
+    text(
+      "If target is between " +
+        petal.extraDamage.minHp.toFixed(2) * 100 +
+        "% and " +
+        petal.extraDamage.maxHp.toFixed(2) * 100 +
+        "%:",
+      10,
+      newY,
+      15,
+      colors.legendary,
+      ctx,
+    );
+    text(
+      "Extra Damage: " +
+        formatLargeNumber(
+          tier.damage.toFixed(2) * petal.extraDamage.multiplier.toFixed(2),
+        ),
+      10,
+      newY + 17.5,
+      15,
+      colors.legendary,
+      ctx,
+    );
+    newY += 17.5 * 2;
+  }
 
-    if (tier.constantHeal !== 0) {
-        let x = 10 + text("Constant Heal: ", 10, newY, 15, mixColors(colors.common, "#FFFFFF", .2), ctx);
-        x += text(formatNegativeOrPositive(+(tier.constantHeal * 22.5).toFixed(2)) + "/s", x, newY, 15, colors.white, ctx);
-        
-        if (petal.healWhenUnder < 1) {
-            x += text(" (", x, newY, 15, colors.white, ctx);
-            x += text("Under " + +(petal.healWhenUnder * 100).toFixed(2) + "% HP", x, newY, 15, colors.rosePink, ctx);
-            text(")", x, newY, 15, colors.white, ctx);
-        }
+  if (tier.armor !== 0) {
+    let x =
+      10 +
+      text(
+        "Armor: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.lighterBlack, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive(+tier.armor.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
 
-        newY += 17.5;
-    }
-
-    if (tier.damageReduction !== 0) {
-        if (tier.damageReduction > 0) {
-            let x = 10 + text("Damage Reduction: ", 10, newY, 15, mixColors(colors.ultra, "#FFFFFF", .2), ctx);
-            x += text("-" + formatNegativeOrPositive(+(tier.damageReduction * 100).toFixed(2)) + "%", x, newY, 15, colors.white, ctx);
-        } else {
-            let x = 10 + text("Extra Damage Taken: ", 10, newY, 15, mixColors(colors.ultra, "#FFFFFF", .2), ctx);
-            x += text("+" + formatNegativeOrPositive(+(tier.damageReduction * 100).toFixed(2), 3) + "%", x, newY, 15, colors.white, ctx);
-        }
-        newY += 17.5;
-    }
-
-    if (tier.speedMultiplier !== 1) {
-        let x = 10 + text("Speed: ", 10, newY, 15, mixColors(colors.mythic, "#FFFFFF", .2), ctx);
-        x += text(formatNegativeOrPositive(+((tier.speedMultiplier - 1) * 100).toFixed(2), 2) + "%", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.extraSize !== 0) {
-        let x = 10 + text("Extra Size: ", 10, newY, 15, mixColors(colors.ancient, "#FFFFFF", .2), ctx);
-        x += text(formatNegativeOrPositive(+tier.extraSize.toFixed(2), 2), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.extraRadians > 0) {
-        let x = 10 + text("Radians: ", 10, newY, 15, mixColors(colors.super, "#FFFFFF", .2), ctx);
-        x += text(formatNegativeOrPositive((+tier.extraRadians * 22.5).toFixed(2), 2) + " rad/s", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.healing > 0) {
-        let x = 10 + text("Heal: ", 10, newY, 15, colors.rosePink, ctx);
-        x += text(formatNegativeOrPositive(+tier.healing.toFixed(2), 2), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (petal.enemySpeedDebuff !== undefined) {
-        let x = 10 + text("Speed Debuff: ", 10, newY, 15, colors.white, ctx);
-        x += text("-" + (+((1 - petal.enemySpeedDebuff.speedMultiplier) * 100).toFixed(2)) + "% for " + (petal.enemySpeedDebuff.duration / 22.5).toFixed(2) + "s", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.poison !== undefined) {
-        let x = 10 + text("Poison: ", 10, newY, 15, colors.irisPurple, ctx);
-        x += text(formatLargeNumber(+tier.poison.damage.toFixed(2)) + "/s for " + tier.poison.duration.toFixed(2) + "s", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.extraRange > 0 || tier.extraRange < 0) {
-        let x = 10 + text("Range: ", 10, newY, 15, colors.orange, ctx);
-        x += text(formatNegativeOrPositive(+tier.extraRange.toFixed(2), 2), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.spawnable !== undefined) {
-        let x = 10 + text("Spawns: ", 10, newY, 15, colors.bubbleGrey, ctx);
-        x += text(state.mobConfigs[tier.spawnable.index].name, x, newY, 15, colors.peaGreen, ctx);
-        x += text(" (", x, newY, 15, colors.bubbleGrey, ctx);
-        x += text(state.tiers[tier.spawnable.rarity].name, x, newY, 15, state.tiers[tier.spawnable.rarity].color, ctx);
-        text(")", x, newY, 15, colors.bubbleGrey, ctx);
-
-        newY += 17.5;
-    }
-
-    if (tier.extraVision > 0 || tier.extraVision < 0) {
-        let x = 10 + text("Vision: ", 10, newY, 15, colors.orange, ctx);
-        x += text(formatNegativeOrPositive(+tier.extraVision.toFixed(2), 2), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.pentagramAbility !== undefined) {
-        text("Spell: " + +(tier.pentagramAbility.cooldown / 22.5).toFixed(2) + "s ⚡︎, " + formatLargeNumber(+tier.pentagramAbility.range.toFixed(2)) + " range", 10, newY, 15, colors.evilLadybugRed, ctx);
-        newY += 17.5;
-
-        text("- Damage: " + formatLargeNumber(+tier.pentagramAbility.damage.toFixed(2)), 20, newY, 15, mixColors(colors.legendary, "#FFFFFF", .2), ctx);
-        newY += 17.5;
-
-        text("- Poison Inflicted: " + formatLargeNumber(+tier.pentagramAbility.poison.damage.toFixed(2)) + "/s for " + +tier.pentagramAbility.poison.duration.toFixed(2) + "s", 20, newY, 15, colors.irisPurple, ctx);
-        newY += 17.5;
-
-        text("- Speed Debuff: " + +((1 - tier.pentagramAbility.speedDebuff.multiplier) * 100).toFixed(2) + "% for " + +tier.pentagramAbility.speedDebuff.duration.toFixed(2) + "s", 20, newY, 15, colors.jellyfish, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.lightning !== undefined) {
-        let x = 10 + text("Lightning: ", 10, newY, 15, colors.lightningTeal, ctx);
-        x += text(formatLargeNumber(+tier.lightning.damage.toFixed(2)), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.lightning?.charges > 1) {
-        let x = 10 + text("Charges: ", 10, newY, 15, mixColors(colors.lightningTeal, "#FFFFFF", .4), ctx);
-        x += text(formatLargeNumber(+tier.lightning.charges), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.extraPickupRange > 0) {
-        let x = 10 + text("Pickup Range: ", 10, newY, 15, mixColors(colors.rare, "#FFFFFF", .35), ctx);
-        x += text(formatNegativeOrPositive(+tier.extraPickupRange.toFixed(2), 2), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.healSpit > 0) {
-        let x = 10 + text("Team Heal: ", 10, newY, 15, colors.rosePink, ctx);
-        x += text(formatNegativeOrPositive(+tier.healSpit.toFixed(2), 2) + "/nearby teammate", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.damageReflection !== undefined) {
-        let x = 10 + text("Damage Reflection: ", 10, newY, 15, mixColors(colors.legendary, "#FFFFFF", .2), ctx);
-        x += text(formatLargeNumber(+(tier.damageReflection.reflection * 100).toFixed(2)) + "%", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-
-        if (tier.damageReflection.cap > 0) {
-            let y = 10 + text("Reflection Cap: ", 10, newY, 15, mixColors(colors.legendary, "#FFFFFF", .35), ctx);
-            y += text(+ +(tier.damageReflection.cap * 100).toFixed(2) + "%", y, newY, 15, colors.white, ctx);
-            newY += 17.5;
-        }
-    }
-
-    if (tier.density !== 1) {
-        let x = 10 + text("Density: ", 10, newY, 15, mixColors(colors.epic, "#FFFFFF", .2), ctx);
-        x += text(formatLargeNumber(+tier.density.toFixed(2)), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.deathDefying !== undefined) {
-        let x = 10 + text("Resurrection Health: ", 10, newY, 15, mixColors(colors.mythic, "#FFFFFF", .2), ctx);
-        x += text(+(tier.deathDefying.health * 100).toFixed(2) + "%", x, newY, 15, colors.white, ctx);
-        let y = 10 + text("Resurrection Immunity: ", 10, newY + 17.5, 15, mixColors(colors.super, "#FFFFFF", .2), ctx);
-        y += text(+(tier.deathDefying.duration).toFixed(2) + "s", y, newY + 17.5, 15, colors.white, ctx);
-        newY += 17.5 * 2;
-    }
-
-    if (tier.absorbsDamage !== undefined) {
-        let x = 10 + text("Absorption: ", 10, newY, 15, mixColors(colors.peaGreen, "#FFFFFF", .2), ctx);
-        x += text(formatLargeNumber(+tier.absorbsDamage.maxDamage.toFixed(2)) + " dmg over " + +tier.absorbsDamage.period.toFixed(2) + "s", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.shield > 0) {
-        let x = 10 + text("Shield: ", 10, newY, 15, mixColors(colors.mythic, "#FFFFFF", .2), ctx);
-        x += text(formatLargeNumber(+tier.shield.toFixed(2)), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.boost !== undefined) {
-        let x = 10 + text("Boost: ", 10, newY, 15, mixColors(colors.rare, "#FFFFFF", .2), ctx);
-        x += text(formatLargeNumber(+tier.boost.length.toFixed(2)), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.healBack > 0 || tier.healBack < 0) {
-        if (tier.healBack > 0) {
-            let x = 10 + text("Heal Back: ", 10, newY, 15, colors.inventory, ctx);
-            x += text(formatLargeNumber(+(tier.damage * tier.healBack).toFixed(2)), x, newY, 15, colors.white, ctx);
-        } else {
-            let x = 10 + text("Self Damage: ", 10, newY, 15, "#A44343", ctx);
-            x += text(formatNegativeOrPositive(+(tier.damage * tier.healBack).toFixed(2), 3), x, newY, 15, colors.white, ctx);
-        }
-        newY += 17.5;
-    }
-
-    if (petal.extraLighting > 0) {
-        let x = 10 + text("Lighting: ", 10, newY, 15, colors.beeYellow, ctx);
-        x += text(formatNegativeOrPositive(+petal.extraLighting.toFixed(2), 2), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (petal.extraDamage !== undefined) {
-        text("If target is between " + petal.extraDamage.minHp.toFixed(2) * 100 + "% and " + petal.extraDamage.maxHp.toFixed(2) * 100 + "%:", 10, newY, 15, colors.legendary, ctx);
-        text("Extra Damage: " + formatLargeNumber(tier.damage.toFixed(2) * petal.extraDamage.multiplier.toFixed(2)), 10, newY + 17.5, 15, colors.legendary, ctx);
-        newY += 17.5 * 2;
-    }
-
-    if (tier.armor !== 0) {
-        let x = 10 + text("Armor: ", 10, newY, 15, mixColors(colors.lighterBlack, "#FFFFFF", .2), ctx);
-        x += text(formatNegativeOrPositive(+tier.armor.toFixed(2)), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    return canvas;
+  return canvas;
 }
 
 function createMobTooltip(index, rarityIndex) {
-    /** @type {MobConfig} */
-    const mob = state.mobConfigs[index];
-    const tier = mob?.tiers[rarityIndex];
+  /** @type {MobConfig} */
+  const mob = state.mobConfigs[index];
+  const tier = mob?.tiers[rarityIndex];
 
-    let width = 350,
-        height = 60 + 20;
+  let width = 350,
+    height = 60 + 20;
 
-    if (!tier) {
-        height -= 15
-
-        const canvas = new OffscreenCanvas(width * 2, height * 2);
-        const ctx = canvas.getContext("2d");
-
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-    
-        ctx.scale(2, 2);
-    
-        ctx.beginPath();
-        ctx.roundRect(0, 0, width, height, width / 20);
-        ctx.globalAlpha = .334;
-        ctx.fillStyle = "#000000";
-        ctx.fill();
-        ctx.globalAlpha = 1;
-    
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
-        text("Bot", 10, 10, 22.5, "#FFFFFF", ctx);
-        text(state.tiers[rarityIndex].name, 10, 35, 15, state.tiers[rarityIndex].color, ctx);
-
-        return canvas;
-    }
-
-    let projectileConfig = state.petalConfigs[tier.projectile?.index];
-    let projectileConfigTier = projectileConfig?.tiers[rarityIndex];
-
-    height += 17.5 * (
-        (tier.health > 0) +
-        (tier.damage > 0) +
-        (mob.healing > 0) +
-        (mob.drops.length) +
-        (mob.drops.length > 0) +
-        (tier.damageReduction > 0 || tier.damageReduction < 0) +
-        (tier.poison !== null) +
-        (tier.lightning > 0) +
-        (mob.damageReflection.reflection > 0) +
-        (mob.damageReflection?.cap > 0) +
-        (tier.armor !== 0) +
-        ((tier.projectile !== null) * 3) +
-        (tier.projectile?.damage > 0) +
-        (Number.isFinite(tier.projectile?.health)) +
-        (projectileConfig?.enemySpeedDebuff !== undefined) +
-        (projectileConfigTier?.poison !== undefined)
-    );
+  if (!tier) {
+    height -= 15;
 
     const canvas = new OffscreenCanvas(width * 2, height * 2);
     const ctx = canvas.getContext("2d");
@@ -6272,141 +7118,480 @@ function createMobTooltip(index, rarityIndex) {
 
     ctx.beginPath();
     ctx.roundRect(0, 0, width, height, width / 20);
-    ctx.globalAlpha = .334;
+    ctx.globalAlpha = 0.334;
     ctx.fillStyle = "#000000";
     ctx.fill();
     ctx.globalAlpha = 1;
 
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    text(mob.name, 10, 10, 22.5, "#FFFFFF", ctx);
-    text(state.tiers[rarityIndex].name, 10, 35, 15, state.tiers[rarityIndex].color, ctx);
-
-    let newY = 70;
-
-    if (tier.health > 0) {
-        let x = 10 + text("Health: ", 10, newY, 15, colors.common, ctx);
-        x += text(formatLargeNumber(+tier.health.toFixed(2)), x, newY, 15, colors.white, ctx);
-        if (tier.count > 1) {
-            x += text(" (" + formatLargeNumber(+(tier.health).toFixed(2)) + " x " + tier.count + ")", x, newY, 15, colors.white, ctx);
-        }
-        newY += 17.5;
-    }
-
-    if (tier.damage > 0) {
-        let x = 10 + text("Damage: ", 10, newY, 15, mixColors(colors.legendary, "#FFFFFF", .2), ctx);
-        x += text(formatLargeNumber(+tier.damage.toFixed(2)), x, newY, 15, colors.white, ctx);
-        if (tier.count > 1) {
-            x += text(" (" + formatLargeNumber(+(tier.damage).toFixed(2)) + " x " + tier.count + ")", x, newY, 15, colors.white, ctx);
-        }
-        newY += 17.5;
-    }
-
-    if (mob.healing > 0) {
-        let x = 10 + text("Constant Heal: ", 10, newY, 15, mixColors(colors.common, "#FFFFFF", .2), ctx);
-        x += text(formatNegativeOrPositive(+((tier.health * mob.healing) * 22.5).toFixed(2)) + "/s", x, newY, 15, colors.white, ctx);
-
-        newY += 17.5;
-    }
-
-    if (tier.damageReduction !== 0) {
-        if (tier.damageReduction > 0) {
-            let x = 10 + text("Damage Reduction: ", 10, newY, 15, mixColors(colors.ultra, "#FFFFFF", .2), ctx);
-            x += text("-" + formatNegativeOrPositive(+(tier.damageReduction * 100).toFixed(2)) + "%", x, newY, 15, colors.white, ctx);
-        } else {
-            let x = 10 + text("Extra Damage Taken: ", 10, newY, 15, mixColors(colors.ultra, "#FFFFFF", .2), ctx);
-            x += text("+" + formatNegativeOrPositive(+(tier.damageReduction * 100).toFixed(2), 3) + "%", x, newY, 15, colors.white, ctx);
-        }
-        newY += 17.5;
-    }
-
-    if (tier.poison) {
-        let x = 10 + text("Poison: ", 10, newY, 15, colors.irisPurple, ctx);
-        x += text(formatLargeNumber(+tier.poison.damage.toFixed(2)) + "/s for " + tier.poison.duration.toFixed(2) + "s", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.lightning) {
-        let x = 10 + text("Lightning: ", 10, newY, 15, colors.lightningTeal, ctx);
-        x += text(formatLargeNumber(+tier.lightning.toFixed(2)), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (mob.damageReflection.reflection > 0) {
-        let x = 10 + text("Damage Reflection: ", 10, newY, 15, mixColors(colors.legendary, "#FFFFFF", .2), ctx);
-        x += text(formatLargeNumber(+(mob.damageReflection.reflection * 100).toFixed(2)) + "%", x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-
-        if (mob.damageReflection.cap > 0) {
-            let y = 10 + text("Reflection Cap: ", 10, newY, 15, mixColors(colors.legendary, "#FFFFFF", .35), ctx);
-            y += text(+ +(mob.damageReflection.cap * 100).toFixed(2) + "%", y, newY, 15, colors.white, ctx);
-            newY += 17.5;
-        }
-    }
-
-    if (tier.armor) {
-        let x = 10 + text("Armor: ", 10, newY, 15, mixColors(colors.lighterBlack, "#FFFFFF", .2), ctx);
-        x += text(formatNegativeOrPositive(+tier.armor.toFixed(2)), x, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (tier.projectile !== null) {
-        let projectileName = state.petalConfigs[tier.projectile.index].name;
-        if (projectileName.includes(".")) {
-            projectileName = projectileName.split(".")[0];
-        }
-
-        text("Projectile: ", 10, newY, 15, mixColors(colors.lighterBlack, "#FFFFFF", .5), ctx);
-        newY += 17.5;
-
-        if (Number.isFinite(tier.projectile.health)) {
-            let x = 20 + text("- Health: ", 20, newY, 15, mixColors(colors.common, "#FFFFFF", .1), ctx);
-            x += text(formatLargeNumber(+tier.projectile.health.toFixed(2)), x, newY, 15, colors.white, ctx);
-            newY += 17.5;
-        }
-
-        if (tier.projectile.damage > 0) {
-            let x = 20 + text("- Damage: ", 20, newY, 15, mixColors(colors.legendary, "#FFFFFF", .2), ctx);
-            x += text(formatLargeNumber(+tier.projectile.damage.toFixed(2)), x, newY, 15, colors.white, ctx);
-            newY += 17.5;
-        }
-
-        if (projectileConfigTier.poison !== undefined) {
-            let x = 20 + text("- Poison: ", 20, newY, 15, mixColors(colors.irisPurple, "#FFFFFF", .1), ctx);
-            x += text(formatLargeNumber(+projectileConfigTier.poison.damage.toFixed(2)) + "/s for " + projectileConfigTier.poison.duration.toFixed(2) + "s", x, newY, 15, colors.white, ctx);
-            newY += 17.5;
-        }
-
-        if (projectileConfig.enemySpeedDebuff !== undefined) {
-            let x = 20 + text("- Speed Debuff: ", 20, newY, 15, colors.white, ctx);
-            x += text("-" + (+((1 - projectileConfig.enemySpeedDebuff.speedMultiplier) * 100).toFixed(2)) + "% for " + (projectileConfig.enemySpeedDebuff.duration / 22.5).toFixed(2) + "s", x, newY, 15, colors.white, ctx);
-            newY += 17.5;
-        }
-        
-        let y = 20 + text("- Type: ", 20, newY, 15, mixColors(colors.playerYellow, "#FFFFFF", .1), ctx);
-        y += text(projectileName, y, newY, 15, colors.white, ctx);
-        newY += 17.5;
-
-        let z = 20 + text("- Range: ", 20, newY, 15, mixColors(colors.rare, "#FFFFFF", .1), ctx);
-        z += text(+(tier.projectile.range / 22.5).toFixed(2) + "s", z, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    }
-
-    if (mob.drops.length > 0) {
-        text("Drops: ", 10, newY, 15, colors.white, ctx);
-        newY += 17.5;
-    
-        mob.drops.forEach(drop => {
-            let x = 20 + text("- " + state.petalConfigs[drop.index].name + ": ", 20, newY, 15, colors.white, ctx);
-            x += text(+(drop.chance * 100) + "%", x, newY, 15, colors.white, ctx);
-            if (drop.minRarity > 0) {
-                x += text(", Minimum rarity: " + state.tiers[drop.minRarity].name, x, newY, 15, colors.white, ctx);
-            }
-            newY += 17.5;
-        });
-    }
+    text("Bot", 10, 10, 22.5, "#FFFFFF", ctx);
+    text(
+      state.tiers[rarityIndex].name,
+      10,
+      35,
+      15,
+      state.tiers[rarityIndex].color,
+      ctx,
+    );
 
     return canvas;
+  }
+
+  let projectileConfig = state.petalConfigs[tier.projectile?.index];
+  let projectileConfigTier = projectileConfig?.tiers[rarityIndex];
+
+  height +=
+    17.5 *
+    ((tier.health > 0) +
+      (tier.damage > 0) +
+      (mob.healing > 0) +
+      mob.drops.length +
+      (mob.drops.length > 0) +
+      (tier.damageReduction > 0 || tier.damageReduction < 0) +
+      (tier.poison !== null) +
+      (tier.lightning > 0) +
+      (mob.damageReflection.reflection > 0) +
+      (mob.damageReflection?.cap > 0) +
+      (tier.armor !== 0) +
+      (tier.projectile !== null) * 3 +
+      (tier.projectile?.damage > 0) +
+      Number.isFinite(tier.projectile?.health) +
+      (projectileConfig?.enemySpeedDebuff !== undefined) +
+      (projectileConfigTier?.poison !== undefined));
+
+  const canvas = new OffscreenCanvas(width * 2, height * 2);
+  const ctx = canvas.getContext("2d");
+
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.scale(2, 2);
+
+  ctx.beginPath();
+  ctx.roundRect(0, 0, width, height, width / 20);
+  ctx.globalAlpha = 0.334;
+  ctx.fillStyle = "#000000";
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  text(mob.name, 10, 10, 22.5, "#FFFFFF", ctx);
+  text(
+    state.tiers[rarityIndex].name,
+    10,
+    35,
+    15,
+    state.tiers[rarityIndex].color,
+    ctx,
+  );
+
+  let newY = 70;
+
+  if (tier.health > 0) {
+    let x = 10 + text("Health: ", 10, newY, 15, colors.common, ctx);
+    x += text(
+      formatLargeNumber(+tier.health.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    if (tier.count > 1) {
+      x += text(
+        " (" +
+          formatLargeNumber(+tier.health.toFixed(2)) +
+          " x " +
+          tier.count +
+          ")",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+    }
+    newY += 17.5;
+  }
+
+  if (tier.damage > 0) {
+    let x =
+      10 +
+      text(
+        "Damage: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.legendary, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+tier.damage.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    if (tier.count > 1) {
+      x += text(
+        " (" +
+          formatLargeNumber(+tier.damage.toFixed(2)) +
+          " x " +
+          tier.count +
+          ")",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+    }
+    newY += 17.5;
+  }
+
+  if (mob.healing > 0) {
+    let x =
+      10 +
+      text(
+        "Constant Heal: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.common, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive(+(tier.health * mob.healing * 22.5).toFixed(2)) +
+        "/s",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+
+    newY += 17.5;
+  }
+
+  if (tier.damageReduction !== 0) {
+    if (tier.damageReduction > 0) {
+      let x =
+        10 +
+        text(
+          "Damage Reduction: ",
+          10,
+          newY,
+          15,
+          mixColors(colors.ultra, "#FFFFFF", 0.2),
+          ctx,
+        );
+      x += text(
+        "-" +
+          formatNegativeOrPositive(+(tier.damageReduction * 100).toFixed(2)) +
+          "%",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+    } else {
+      let x =
+        10 +
+        text(
+          "Extra Damage Taken: ",
+          10,
+          newY,
+          15,
+          mixColors(colors.ultra, "#FFFFFF", 0.2),
+          ctx,
+        );
+      x += text(
+        "+" +
+          formatNegativeOrPositive(
+            +(tier.damageReduction * 100).toFixed(2),
+            3,
+          ) +
+          "%",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+    }
+    newY += 17.5;
+  }
+
+  if (tier.poison) {
+    let x = 10 + text("Poison: ", 10, newY, 15, colors.irisPurple, ctx);
+    x += text(
+      formatLargeNumber(+tier.poison.damage.toFixed(2)) +
+        "/s for " +
+        tier.poison.duration.toFixed(2) +
+        "s",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.lightning) {
+    let x = 10 + text("Lightning: ", 10, newY, 15, colors.lightningTeal, ctx);
+    x += text(
+      formatLargeNumber(+tier.lightning.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (mob.damageReflection.reflection > 0) {
+    let x =
+      10 +
+      text(
+        "Damage Reflection: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.legendary, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatLargeNumber(+(mob.damageReflection.reflection * 100).toFixed(2)) +
+        "%",
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+
+    if (mob.damageReflection.cap > 0) {
+      let y =
+        10 +
+        text(
+          "Reflection Cap: ",
+          10,
+          newY,
+          15,
+          mixColors(colors.legendary, "#FFFFFF", 0.35),
+          ctx,
+        );
+      y += text(
+        +(+(mob.damageReflection.cap * 100).toFixed(2)) + "%",
+        y,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+      newY += 17.5;
+    }
+  }
+
+  if (tier.armor) {
+    let x =
+      10 +
+      text(
+        "Armor: ",
+        10,
+        newY,
+        15,
+        mixColors(colors.lighterBlack, "#FFFFFF", 0.2),
+        ctx,
+      );
+    x += text(
+      formatNegativeOrPositive(+tier.armor.toFixed(2)),
+      x,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (tier.projectile !== null) {
+    let projectileName = state.petalConfigs[tier.projectile.index].name;
+    if (projectileName.includes(".")) {
+      projectileName = projectileName.split(".")[0];
+    }
+
+    text(
+      "Projectile: ",
+      10,
+      newY,
+      15,
+      mixColors(colors.lighterBlack, "#FFFFFF", 0.5),
+      ctx,
+    );
+    newY += 17.5;
+
+    if (Number.isFinite(tier.projectile.health)) {
+      let x =
+        20 +
+        text(
+          "- Health: ",
+          20,
+          newY,
+          15,
+          mixColors(colors.common, "#FFFFFF", 0.1),
+          ctx,
+        );
+      x += text(
+        formatLargeNumber(+tier.projectile.health.toFixed(2)),
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+      newY += 17.5;
+    }
+
+    if (tier.projectile.damage > 0) {
+      let x =
+        20 +
+        text(
+          "- Damage: ",
+          20,
+          newY,
+          15,
+          mixColors(colors.legendary, "#FFFFFF", 0.2),
+          ctx,
+        );
+      x += text(
+        formatLargeNumber(+tier.projectile.damage.toFixed(2)),
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+      newY += 17.5;
+    }
+
+    if (projectileConfigTier.poison !== undefined) {
+      let x =
+        20 +
+        text(
+          "- Poison: ",
+          20,
+          newY,
+          15,
+          mixColors(colors.irisPurple, "#FFFFFF", 0.1),
+          ctx,
+        );
+      x += text(
+        formatLargeNumber(+projectileConfigTier.poison.damage.toFixed(2)) +
+          "/s for " +
+          projectileConfigTier.poison.duration.toFixed(2) +
+          "s",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+      newY += 17.5;
+    }
+
+    if (projectileConfig.enemySpeedDebuff !== undefined) {
+      let x = 20 + text("- Speed Debuff: ", 20, newY, 15, colors.white, ctx);
+      x += text(
+        "-" +
+          +(
+            (1 - projectileConfig.enemySpeedDebuff.speedMultiplier) *
+            100
+          ).toFixed(2) +
+          "% for " +
+          (projectileConfig.enemySpeedDebuff.duration / 22.5).toFixed(2) +
+          "s",
+        x,
+        newY,
+        15,
+        colors.white,
+        ctx,
+      );
+      newY += 17.5;
+    }
+
+    let y =
+      20 +
+      text(
+        "- Type: ",
+        20,
+        newY,
+        15,
+        mixColors(colors.playerYellow, "#FFFFFF", 0.1),
+        ctx,
+      );
+    y += text(projectileName, y, newY, 15, colors.white, ctx);
+    newY += 17.5;
+
+    let z =
+      20 +
+      text(
+        "- Range: ",
+        20,
+        newY,
+        15,
+        mixColors(colors.rare, "#FFFFFF", 0.1),
+        ctx,
+      );
+    z += text(
+      +(tier.projectile.range / 22.5).toFixed(2) + "s",
+      z,
+      newY,
+      15,
+      colors.white,
+      ctx,
+    );
+    newY += 17.5;
+  }
+
+  if (mob.drops.length > 0) {
+    text("Drops: ", 10, newY, 15, colors.white, ctx);
+    newY += 17.5;
+
+    mob.drops.forEach((drop) => {
+      let x =
+        20 +
+        text(
+          "- " + state.petalConfigs[drop.index].name + ": ",
+          20,
+          newY,
+          15,
+          colors.white,
+          ctx,
+        );
+      x += text(+(drop.chance * 100) + "%", x, newY, 15, colors.white, ctx);
+      if (drop.minRarity > 0) {
+        x += text(
+          ", Minimum rarity: " + state.tiers[drop.minRarity].name,
+          x,
+          newY,
+          15,
+          colors.white,
+          ctx,
+        );
+      }
+      newY += 17.5;
+    });
+  }
+
+  return canvas;
 }
 
 const cache = [];
