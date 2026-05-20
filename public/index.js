@@ -692,10 +692,91 @@ function drawInventory() {
         return;
     }
 
-    let inventoryEmpty = true;
-    Object.values(net.state.inventory).forEach(tier => {
-        if (Object.values(tier).some(count => count > 0)) {
-            inventoryEmpty = false;
+  if (inventoryEmpty) {
+    menu.textContent = "Your inventory is empty :(";
+    return;
+  }
+
+  const petal = document.createElement("div");
+  petal.style.display = "flex";
+  petal.style.flexWrap = "wrap";
+  petal.style.padding = "0px";
+  petal.style.gap = "5px";
+  menu.appendChild(petal);
+
+  const petalSize = 56;
+
+  let sortedTiers = Object.entries(net.state.inventory).sort(([a], [b]) => {
+    const aIndex = net.state.tiers.findIndex((t) => t.name === a);
+    const bIndex = net.state.tiers.findIndex((t) => t.name === b);
+    return bIndex - aIndex;
+  });
+
+  sortedTiers.forEach(([tierName, petals]) => {
+    const rarityIndex = net.state.tiers.findIndex((t) => t.name === tierName);
+
+    Object.entries(petals)
+      .sort(([a], [b]) => {
+        const aName = net.state.petalConfigs[Number(a)].name;
+        const bName = net.state.petalConfigs[Number(b)].name;
+        return aName.localeCompare(bName);
+      })
+      .forEach(([petalIndex, count]) => {
+        if (count <= 0) return;
+
+        const petalCanvas = getPetalIcon(
+        Number(petalIndex),
+        rarityIndex,
+        "oneshot"
+        );
+
+        const icon = document.createElement("canvas");
+
+        icon.addEventListener("pointerenter", (ev) => {
+          const r = ev.currentTarget.getBoundingClientRect();
+          net.state.inventoryPetalHover = [
+            Number(petalIndex),
+            rarityIndex,
+            r.left + r.width / 2,
+            r.top + r.height / 2,
+          ];
+        });
+
+        icon.addEventListener("pointermove", (ev) => {
+          const r = ev.currentTarget.getBoundingClientRect();
+          net.state.inventoryPetalHover = [
+            Number(petalIndex),
+            rarityIndex,
+            r.left + r.width / 2,
+            r.top + r.height / 2,
+          ];
+        });
+
+        icon.addEventListener("pointerleave", () => {
+          net.state.inventoryPetalHover = null;
+        });
+
+        icon.width = petalSize;
+        icon.height = petalSize;
+
+        icon.style.width = petalSize + "px";
+        icon.style.height = petalSize + "px";
+        icon.style.flex = "0 0 auto";
+
+        const c = icon.getContext("2d");
+        c.drawImage(petalCanvas, 0, 0, petalSize, petalSize);
+
+        if (count > 1) {
+          c.fillStyle = colors.white;
+          c.strokeStyle = "#000000";
+          c.lineWidth = 2;
+          c.font = `bold ${petalSize * 0.25}px Ubuntu`;
+          c.textAlign = "right";
+          c.textBaseline = "top";
+
+          const text = `x${formatAmount(count)}`;
+          c.strokeText(text, petalSize - 4, 4);
+          c.fillText(text, petalSize - 4, 4);
         }
     });
 
@@ -2293,9 +2374,182 @@ function draw() {
             drawFace(7, -Math.PI / 4, 1.7, 1.7, 1);
             ctx.translate(-x, -y)
 
-            y += spacing + 15;
-            x += 45
-        });
+    const maxXp = playersSorted[0].xp;
+
+    playersSorted.forEach((player) => {
+      const barWidth =
+        maxXp > 0 ? (player.xp / maxXp) * barMaxWidth : barMaxWidth;
+      const barSize = 35;
+      const color =
+        [colors.playerYellow, colors.team1, colors.team2][player.team] ??
+        colors.crafting;
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+
+      drawBar(x, x + barMaxWidth, y, barSize, colors.lighterBlack);
+      drawBar(x, x + barWidth, y, barSize * 0.75, color);
+
+      let w =
+        x +
+        text(
+          `${player.username} - ${formatLargeNumber(player.xp.toFixed(2))}`,
+          x,
+          y,
+          barSize * 0.5,
+          colors.white,
+        );
+      w += text(
+        ` (${net.state.tiers[player.highestRarity].name.charAt(0)}.)`,
+        w,
+        y,
+        barSize * 0.5,
+        net.state.tiers[player.highestRarity].color,
+      );
+
+      x -= 45;
+      setStyle(color, 4);
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.translate(x, y);
+      drawFace(7, -Math.PI / 4, 1.7, 1.7, 1);
+      ctx.translate(-x, -y);
+
+      y += spacing + 15;
+      x += 45;
+    });
+  }
+
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  if (
+    JSON.stringify(net.state.inventory2) !== JSON.stringify(net.state.inventory)
+  ) {
+    if (menu.classList.contains("active")) {
+      drawInventory();
+    }
+    net.state.inventory2 = JSON.parse(JSON.stringify(net.state.inventory));
+  }
+
+  net.state._foundHover = false;
+
+  if (menu.classList.contains("active") && net.state.petalElements) {
+    net.state.petalElements.forEach((petal) => {
+      const rect = petal.icon.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const mouseX = mouse.x / window.devicePixelRatio;
+      const mouseY = mouse.y / window.devicePixelRatio;
+
+      const visible =
+        rect.top >= menuRect.top &&
+        rect.bottom <= menuRect.bottom &&
+        rect.left >= menuRect.left &&
+        rect.right <= menuRect.right;
+
+      const hovered =
+        visible &&
+        mouseX >= rect.left &&
+        mouseX <= rect.right &&
+        mouseY >= rect.top &&
+        mouseY <= rect.bottom;
+
+      if (hovered) {
+        net.state._foundHover = true;
+
+        net.state.inventoryPetalHover = [
+          petal.index,
+          petal.rarity,
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2 - 22,
+        ];
+
+        if (
+          !inventoryDragConfig.enabled &&
+          !dragConfig.enabled &&
+          !joystick.on &&
+          mouse.left &&
+          rect.y > menuRect.top
+        ) {
+          beginInventoryDragDrop(
+            (rect.x * 1.1) / uScale,
+            (rect.y * 1.1) / uScale,
+            rect.width,
+            petal.index,
+            petal.rarity,
+          );
+
+          menu.classList.toggle("active");
+
+          inventoryDragConfig.index = petal.index;
+          inventoryDragConfig.rarity = petal.rarity;
+          inventoryDragConfig.item.stableSize = rect.width;
+
+          inventoryDragConfig.onDrop = () => {
+            processInventoryDrop();
+            menu.classList.toggle("active");
+          };
+        }
+      }
+    });
+  }
+
+  if (!net.state._foundHover) {
+    net.state.inventoryPetalHover = null;
+  }
+
+  ctx.restore();
+
+  {
+    // Hovers
+
+    net.state.petalHoverAlpha ??= 0;
+    net.state.lastPetalHover ??= null;
+
+    const inventoryHover = Array.isArray(net.state.inventoryPetalHover)
+      ? net.state.inventoryPetalHover
+      : null;
+
+    if (inventoryHover) {
+      const img = petalTooltip(...inventoryHover);
+
+      const maxW = 300;
+      const minW = 180;
+
+      let w = Math.min(maxW, Math.max(minW, window.innerWidth * 0.22));
+      let h = (w * img.height) / img.width;
+
+      const box = document.createElement("div");
+      box.style.position = "fixed";
+
+      let left = inventoryHover[2] - w / 2;
+      let top = inventoryHover[3] - h - 12;
+
+      left = Math.max(0, Math.min(left, window.innerWidth - w));
+      top = Math.max(0, Math.min(top, window.innerHeight - h));
+
+      box.style.left = `${left}px`;
+      box.style.top = `${top}px`;
+
+      const cv = document.createElement("canvas");
+      cv.width = w;
+      cv.height = h;
+
+      const cx = cv.getContext("2d");
+      cx.imageSmoothingEnabled = true;
+      cx.imageSmoothingQuality = "high";
+      cx.drawImage(img, 0, 0, w, h);
+
+      box.appendChild(cv);
+
+      inventoryTooltipLayer.replaceChildren(box);
+      inventoryTooltipLayer.style.display = "block";
+    } else {
+      inventoryTooltipLayer.replaceChildren();
+      inventoryTooltipLayer.style.display = "none";
     }
 
     ctx.save();
