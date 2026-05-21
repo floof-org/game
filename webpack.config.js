@@ -83,8 +83,9 @@ const config = {
                             } else if (path.extname(file) === ".js") {
                                 if (ignoreFiles.some(f => sourcePath.replace(/\\/g, "/").includes(f))) {
                                     console.log("Ignoring", sourcePath);
-                                } else {
                                     fs.copyFileSync(sourcePath, destPath.replace("index.js", "bundle.js"));
+                                } else {
+                                    fs.copyFileSync(sourcePath, destPath);
                                 }
                             } else if (path.extname(file) === ".html" || path.extname(file) === ".css") {
                                 // If it's an HTML or CSS file, minimize it and then copy
