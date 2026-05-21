@@ -951,7 +951,8 @@ export class ClientSocket extends WebSocket {
     }
 
     onMessage(event) {
-        const reader = new Reader(new DataView(new Uint8Array(event.data).buffer), 0, true);
+        state.pendingDropAmounts ??= new Map();
+        const reader = new Reader(new DataView(new Uint8Array(event.data).buffer), 0,  true);
         this._dataIn += event.data.byteLength;
 
         switch (reader.getUint8()) {
@@ -961,6 +962,7 @@ export class ClientSocket extends WebSocket {
             case CLIENT_BOUND.READY:
                 console.log("Ready");
                 this.spawn();
+                state.usesNewInventory = false;
                 break;
             case CLIENT_BOUND.WORLD_UPDATE:
                 state.updatesCounter++;
@@ -1216,16 +1218,25 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
-                while (id = reader.getUint32(), id > 0) {
-                    state.drops.set(id, {
+                while (((id = reader.getUint32()), id > 0)) {
+                    const drop = {
                         id: id,
                         x: reader.getFloat32(),
                         y: reader.getFloat32(),
                         size: reader.getFloat32(),
                         index: reader.getUint8(),
                         rarity: reader.getUint8(),
-                        duration: reader.getUint16()
-                    });
+                        duration: reader.getUint16(),
+                        amount: 1,
+                    };
+
+                    const pending = state.pendingDropAmounts.get(id);
+                    if (pending !== undefined) {
+                        drop.amount = pending;
+                        state.pendingDropAmounts.delete(id);
+                    }
+
+                    state.drops.set(id, drop);
                 }
 
                 while (id = reader.getUint32(), id > 0) {
@@ -1356,20 +1367,206 @@ export class ClientSocket extends WebSocket {
                     state.alivePlayers = alivePlayers
                 }
 
+                state.playerCount = reader.getUint8();
+
                 state.level = reader.getUint16();
                 state.levelProgressTarget = reader.getFloat32();
                 
-                state.tiers.forEach(tier => {
+                const TIER_COUNT = state.tiers?.length ?? 29;
+
+                for (let ti = 0; ti < TIER_COUNT; ti++) {
+                    const tier = state.tiers?.[ti];
+                    if (!tier?.name) continue;
                     const petalCount = reader.getUint16();
-                    state.inventory ??= {}
-                    state.inventory[tier.name] = {};
+
+                    if (!state.usesNewInventory) {
+                        state.inventory ??= {};
+                        state.inventory[tier.name] ??= {};
+                    }
                     for (let i = 0; i < petalCount; i++) {
                         const petalId = reader.getUint16();
-                        const count = reader.getUint16();
-                        state.inventory[tier.name][petalId] = count;
+                        const amount = reader.getUint16();
+
+                        if (!state.usesNewInventory) {
+                            state.inventory[tier.name][petalId] = amount;
+                        }
                     }
-                });
+                }
                 break;
+            case 250: {
+                const count = reader.getUint16();
+
+                for (let i = 0; i < count; i++) {
+                    const dropId = reader.getUint32();
+                    const amount = reader.getUint32();
+                    reader.getUint16();
+
+                    const drop = state.drops.get(dropId);
+
+                    if (!drop) {
+                        state.pendingDropAmounts.set(dropId, amount);
+                        continue;
+                    }
+
+                    drop.amount = amount;
+                }
+
+                break;
+            }
+            case 110: {
+                if (!state.usesNewInventory) {
+                    state.usesNewInventory = true;
+                    state.inventory = {};
+                }
+                
+                        const count = reader.getUint16();
+                const tiers = state.tiers ?? [];
+
+                for (let i = 0; i < count; i++) {
+                    const tierIndex = reader.getUint8();
+                    const petalId = reader.getUint16();
+                    const amount = reader.getFloat64();
+
+                    const tierName = tiers[tierIndex]?.name;
+                    if (!tierName) continue;
+
+                    state.inventory ??= {};
+                    state.inventory[tierName] ??= {};
+
+                    if (amount <= 0) {
+                        delete state.inventory[tierName][petalId];
+                    } else {
+                        state.inventory[tierName][petalId] = amount;
+                    }
+                }
+
+                break;
+            }
+            case 111: {
+                const count = reader.getUint8();
+
+                globalThis.__CUSTOM_GRADIENTS = {};
+
+                for (let i = 0; i < count; i++) {
+                    const rarity = reader.getUint8();
+                    const has = reader.getUint8();
+                    if (!has) continue;
+
+                    const type = reader.getUint8();
+                    let data;
+
+                    if (type === 1) {
+                        data = {
+                            type: 1,
+                            soft: reader.getStringUTF8(),
+                            base: reader.getStringUTF8(),
+                            mid: reader.getStringUTF8(),
+                            glow: reader.getStringUTF8(),
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    } else if (type === 2) {
+                        data = {
+                            type: 2,
+
+                            lines: reader.getUint8(),
+                            size: reader.getFloat32(),
+
+                            delay: reader.getUint32(),
+                            cycleDelay: reader.getUint32(),
+
+                            speed: reader.getFloat32(),
+
+                            reversed_animation: !!reader.getUint8(),
+
+                            linecolor: reader.getStringUTF8(),
+                            lineglow: reader.getStringUTF8(),
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    } else if (type === 3) {
+                        const ringCount = reader.getUint8();
+                        const rings = new Array(ringCount);
+
+                        for (let r = 0; r < ringCount; r++) {
+                            const color = reader.getStringUTF8();
+                            const glow = reader.getStringUTF8();
+
+                            rings[r] = {
+                                color,
+                                glow: glow || color,
+                            };
+                        }
+
+                        data = {
+                            type: 3,
+                            rings,
+                            delay: reader.getUint32(),
+                            cycleDelay: reader.getUint32(),
+                            speed: reader.getFloat32(),
+                            reversed_animation: !!reader.getUint8(),
+
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    }
+
+                    globalThis.__CUSTOM_GRADIENTS[rarity] = data;
+                }
+
+                if (typeof __ANIMATED_ICONS__ !== "undefined") {
+                    __ANIMATED_ICONS__.clear();
+                }
+
+                if (typeof __PETAL_CACHE__ !== "undefined") {
+                    __PETAL_CACHE__.length = 0;
+                }
+
+                if (typeof __PETAL_INTERVALS__ !== "undefined") {
+                    __PETAL_INTERVALS__.length = 0;
+                }
+
+                if (typeof __RAF_RUNNING__ !== "undefined") {
+                    __RAF_RUNNING__ = false;
+                }
+
+                console.log(
+                    "Client: Gradient cache cleared. Special Gradients received.",
+                );
+
+                break;
+            }
+            case 112: {
+                state.minimapPlayers ??= new Map();
+                state.minimapPlayers.clear();
+
+                const count = reader.getUint16();
+
+                for (let i = 0; i < count; i++) {
+                    const id = reader.getUint32();
+                    const x = reader.getFloat32();
+                    const y = reader.getFloat32();
+
+                    state.minimapPlayers.set(id, { id, x, y });
+                }
+
+                break;
+            }
             case CLIENT_BOUND.ROOM_UPDATE:
                 state.room.width = reader.getFloat32();
                 state.room.height = reader.getFloat32();
