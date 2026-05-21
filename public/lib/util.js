@@ -209,7 +209,11 @@ export const options = {
     useTileBackground: false,
     fancyGraphics: false,
     showHitboxes: false,
-    cacheMobAssets: false
+    cacheMobAssets: false,
+    cachePetalAssets: false,
+
+    disableGradients: false,
+    minimumGradientRarity: 6
 };
 
 export function applyArticle(word, capitalize = false) {

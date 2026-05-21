@@ -35,30 +35,30 @@ function getOSInfo() {
     const platform = navigator.platform;
 
     const platformRegex = {
-        "Windows": /Win/i,
+        Windows: /Win/i,
         "Mac OS": /Mac/i,
-        "iOS": /iPhone|iPad|iPod/i,
-        "Android": /Android/i,
-        "Linux": /Linux/i,
-        "Unix": /X11/i
+        iOS: /iPhone|iPad|iPod/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /X11/i,
     };
 
     const agentRegex = {
-        "Windows": /Windows/i,
+        Windows: /Windows/i,
         "Mac OS": /Mac OS/i,
-        "iOS": /like Mac OS/i,
-        "Android": /Android/i,
-        "Linux": /Linux/i,
-        "Unix": /Unix/i
+        iOS: /like Mac OS/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /Unix/i,
     };
 
     const userAgentDataRegex = {
-        "Windows": /Windows/i,
+        Windows: /Windows/i,
         "Mac OS": /Mac OS/i,
-        "iOS": /like Mac OS/i,
-        "Android": /Android/i,
-        "Linux": /Linux/i,
-        "Unix": /Unix/i
+        iOS: /like Mac OS/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /Unix/i,
     };
 
     let os = "Unknown";
@@ -145,23 +145,23 @@ async function getAnalyticsData() {
             minMem: navigator.deviceMemory ?? 0,
             gpu: extractImportantGPUInfo(debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "unknown"),
             os: getOSInfo(),
-            bench: await benchmarkTest()
+            bench: await benchmarkTest(),
         },
         browser: {
             name: browserInfo.name,
-            version: browserInfo.version
+            version: browserInfo.version,
         },
         locale: navigator.language,
         tzOff: -(new Date().getTimezoneOffset() / 60),
         dst: +(new Date().getTimezoneOffset() < Math.max(new Date(new Date().getFullYear(), 0, 1).getTimezoneOffset(), new Date(new Date().getFullYear(), 6, 1).getTimezoneOffset())),
-        isMobile: +(/Android|webOS|iPhone|iPad|iPod|BlackBerry|android|mobi/i.test(navigator.userAgent))
+        isMobile: +/Android|webOS|iPhone|iPad|iPod|BlackBerry|android|mobi/i.test(navigator.userAgent),
     };
 
     const userAgentData = navigator.userAgentData;
 
     if (userAgentData) {
         if (userAgentData.brands.length > 0) {
-            const brand = userAgentData.brands.find(b => b.version == output.browser.version)?.brand;
+            const brand = userAgentData.brands.find((b) => b.version == output.browser.version)?.brand;
 
             if (brand) {
                 output.browser.name = brand;
@@ -192,9 +192,9 @@ export async function loadUUID() {
         }
     }
 
-    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then(r => r.json());
+    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then((r) => r.json());
     if (!data.ok) throw new Error("Failed to get UUID data");
-    localStorage.setItem("uuid", data.uuid + ":" + (Date.now() + 1E3 * 60 * 60 * 24));
+    localStorage.setItem("uuid", data.uuid + ":" + (Date.now() + 1e3 * 60 * 60 * 24));
     return data.uuid;
 }
 
@@ -216,7 +216,7 @@ class ModdingAPI {
 
     constructor() {
         this.#channel = new BroadcastChannel("floofModdingAPI");
-        this.#channel.onmessage = e => this.#handleFloofModdingAPI(e.data);
+        this.#channel.onmessage = (e) => this.#handleFloofModdingAPI(e.data);
 
         console.log("Modding API initialized");
 
@@ -230,7 +230,8 @@ class ModdingAPI {
             throw new Error("Invalid job ID");
         }
 
-        if (data[2] !== null) { // transferrable type
+        if (data[2] !== null) {
+            // transferrable type
             let obj = new PetalConfig("", 0, 0, 0);
 
             switch (data[2]) {
@@ -261,7 +262,7 @@ class ModdingAPI {
     }
 
     #askModdingAPI(...args) {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const id = this.#jobID++;
             this.#jobs.set(id, resolve);
             this.#channel.postMessage([id, ...args]);
@@ -269,15 +270,15 @@ class ModdingAPI {
     }
 
     syncPetalIndex(name) {
-        return state.petalConfigs.findIndex(p => p.name === name);
+        return state.petalConfigs.findIndex((p) => p.name === name);
     }
 
     syncMobIndex(name) {
-        return state.mobConfigs.findIndex(m => m.name === name);
+        return state.mobConfigs.findIndex((m) => m.name === name);
     }
 
     syncRarityIndex(name) {
-        return state.tiers.findIndex(t => t.name === name);
+        return state.tiers.findIndex((t) => t.name === name);
     }
 
     syncNextAvailablePetalIndex() {
@@ -312,7 +313,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid mob name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -324,7 +325,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid rarity name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -356,7 +357,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid petal name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -365,7 +366,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Index must be a number pointing to an existing petal",
-                data: null
+                data: null,
             };
         }
 
@@ -377,7 +378,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Options must be a PetalConfig object",
-                data: null
+                data: null,
             };
         }
 
@@ -387,7 +388,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Drawing is a required option",
-                data: null
+                data: null,
             };
         }
 
@@ -399,7 +400,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Options must be a PetalConfig object",
-                data: null
+                data: null,
             };
         }
 
@@ -418,7 +419,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid petal name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -427,7 +428,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Index must be a number pointing to an existing petal",
-                data: null
+                data: null,
             };
         }
 
@@ -442,7 +443,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid petal name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -454,7 +455,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid rarity name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -467,7 +468,6 @@ class ModdingAPI {
     }
 
     async spawnAIPlayer(rarity, level) {
-
         if (typeof rarity === "string") {
             rarity = this.syncRarityIndex(rarity);
 
@@ -475,7 +475,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid rarity name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -514,83 +514,93 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
                 biomeInt = BIOME_TYPES.HALLOWEEN;
                 break;
             } else {
-                return new Promise(resolve => resolve({
-                    ok: false,
-                    error: "Halloween biome is not available"
-                }));
+                return new Promise((resolve) =>
+                    resolve({
+                        ok: false,
+                        error: "Halloween biome is not available",
+                    }),
+                );
             }
         case "dark_forest":
-            biomeInt = BIOME_TYPES.DARK_FOREST
+            biomeInt = BIOME_TYPES.DARK_FOREST;
             break;
         default:
-            return new Promise(resolve => resolve({
-                ok: false,
-                error: "Invalid biome"
-            }));
+            return new Promise((resolve) =>
+                resolve({
+                    ok: false,
+                    error: "Invalid biome",
+                }),
+            );
     }
 
-    return new Promise(resolve => {
-        const timeout = setTimeout(() => resolve({
-            ok: false,
-            error: "Timeout error"
-        }), 10000);
+    return new Promise((resolve) => {
+        const timeout = setTimeout(
+            () =>
+                resolve({
+                    ok: false,
+                    error: "Timeout error",
+                }),
+            10000,
+        );
 
         const socket = new WebSocket(`${util.SERVER_URL.replace("http", "ws")}/ws/lobby?gameName=${name}&isModded=${modded ? "yes" : "no"}&isPrivate=${isPrivate ? "yes" : "no"}&gamemode=${gamemode}&biome=${biomeInt}&analytics=${analyticalData}`);
         socket.binaryType = "arraybuffer";
 
         socket.onopen = () => {
             console.log("Connected to server");
-            
+
             // Setup ping
             const PING_INTERVAL = 30000; // 30 seconds
-            const ping = () => {if (socket.readyState === WebSocket.OPEN) socket.ping()};
+            const ping = () => {
+                if (socket.readyState === WebSocket.OPEN) socket.ping();
+            };
             const intervalId = setInterval(ping, PING_INTERVAL);
 
             const worker = new Worker("./server/index.js", { type: "module" });
             worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
-            
-            socket.onmessage = event => {
+
+            socket.onmessage = (event) => {
                 const data = new Uint8Array(event.data);
-                
+
                 if (data[0] === 255) {
                     clearTimeout(timeout);
-                    
+
                     const ok = data[1] === 1;
-                    
+
                     if (!ok) {
                         resolve({
                             ok: false,
-                            error: "Request rejected by server: " + new TextDecoder().decode(data.slice(2, -1))
+                            error: "Request rejected by server: " + new TextDecoder().decode(data.slice(2, -1)),
                         });
                     }
-                    
+
                     resolve({
                         ok: true,
                         party: new TextDecoder().decode(data.slice(2, -1)),
                         worker: worker,
-                        socket: socket
+                        socket: socket,
                     });
                     return;
                 }
-                
+
                 worker.postMessage(data);
-            }
-            
+            };
+
             worker.onmessage = ({ data }) => {
                 if (socket.readyState !== WebSocket.OPEN) return;
                 socket.send(data);
-            }
-            
+            };
+
             socket.onclose = () => {
                 clearInterval(intervalId);
                 console.log("Disconnected from server");
                 worker.terminate();
-            }
+            };
 
             if (modded) {
                 new ModdingAPI();
             }
-        }
+        };
     });
 }
 
@@ -648,14 +658,14 @@ export class ClientPlayer extends ClientEntity {
     interpolate() {
         super.interpolate();
 
-        if (Math.abs(this.realHealthRatio - this.healthRatio) > .01 && this.healthRatio > this.realHealthRatio) {
+        if (Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 && this.healthRatio > this.realHealthRatio) {
             this.lastHealthLoweredAt = performance.now();
         }
 
         this.secondaryHealthBar = Math.max(this.healthRatio, this.secondaryHealthBar);
 
         if (performance.now() - this.lastHealthLoweredAt > 256) {
-            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * .75);
+            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * 0.75);
         }
 
         this.healthRatio = util.lerp(this.healthRatio, this.realHealthRatio, state.interpolationFactor);
@@ -691,14 +701,14 @@ export class ClientMob extends ClientEntity {
     interpolate() {
         super.interpolate();
 
-        if (Math.abs(this.realHealthRatio - this.healthRatio) > .01 && this.healthRatio > this.realHealthRatio) {
+        if (Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 && this.healthRatio > this.realHealthRatio) {
             this.lastHealthLoweredAt = performance.now();
         }
 
         this.secondaryHealthBar = Math.max(this.healthRatio, this.secondaryHealthBar);
 
         if (performance.now() - this.lastHealthLoweredAt > 256) {
-            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * .75);
+            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * 0.75);
         }
 
         this.healthRatio = util.lerp(this.healthRatio, this.realHealthRatio, state.interpolationFactor);
@@ -732,7 +742,7 @@ export class ClientMarker {
 }
 
 export class ClientLightning {
-    static TIME_ALIVE = 1E3;
+    static TIME_ALIVE = 1e3;
 
     constructor(id) {
         this.id = id;
@@ -755,8 +765,8 @@ export class ClientLightning {
 
             for (let j = 1; j < pointsBetweenPoints; j++) {
                 // Add some jaggedness
-                const x = util.lerp(p1.x, p2.x, j / pointsBetweenPoints) + (Math.random() - .5) * 50;
-                const y = util.lerp(p1.y, p2.y, j / pointsBetweenPoints) + (Math.random() - .5) * 50;
+                const x = util.lerp(p1.x, p2.x, j / pointsBetweenPoints) + (Math.random() - 0.5) * 50;
+                const y = util.lerp(p1.y, p2.y, j / pointsBetweenPoints) + (Math.random() - 0.5) * 50;
                 points.push({ x, y });
             }
         }
@@ -832,7 +842,7 @@ export class ClientSocket extends WebSocket {
         }
 
         wait(data) {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 const id = this.jobID++;
                 this.socket.talk(SERVER_BOUND.DEV_CHEAT, { promiseID: id, ...data });
                 this.jobs.set(id, resolve);
@@ -848,7 +858,7 @@ export class ClientSocket extends WebSocket {
             this.jobs.delete(id);
             return true;
         }
-    }
+    };
 
     constructor(url, username) {
         super(url);
@@ -866,59 +876,82 @@ export class ClientSocket extends WebSocket {
             this.devCheatListener = new ClientSocket.Listener(this);
 
             window.floof_dev = {
-                spawnMob:  (index, rarity) => {
+                spawnMob: (index, rarity) => {
                     if (typeof index === "string") {
-                        index = state.mobConfigs.findIndex(m => m.name === index);
+                        index = state.mobConfigs.findIndex((m) => m.name === index);
 
                         if (index === -1) {
-                            return new Promise(resolve => resolve({
-                                ok: false,
-                                message: "Invalid mob name"
-                            }));
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid mob name",
+                                }),
+                            );
                         }
                     }
 
                     if (typeof rarity === "string") {
-                        rarity = state.tiers.findIndex(t => t.name === rarity);
+                        rarity = state.tiers.findIndex((t) => t.name === rarity);
 
                         if (rarity === -1) {
-                            return new Promise(resolve => resolve({
-                                ok: false,
-                                message: "Invalid rarity name"
-                            }));
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid rarity name",
+                                }),
+                            );
                         }
                     }
 
-                    return this.devCheatListener.wait({ id: DEV_CHEAT_IDS.SPAWN_MOB, index, rarity });
+                    return this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SPAWN_MOB,
+                        index,
+                        rarity,
+                    });
                 },
                 setPetal: (clientID, slotID, index, rarity) => {
                     if (typeof index === "string") {
-                        index = state.petalConfigs.findIndex(p => p.name === index);
+                        index = state.petalConfigs.findIndex((p) => p.name === index);
 
                         if (index === -1) {
-                            return new Promise(resolve => resolve({
-                                ok: false,
-                                message: "Invalid petal name"
-                            }));
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid petal name",
+                                }),
+                            );
                         }
                     }
 
                     if (typeof rarity === "string") {
-                        rarity = state.tiers.findIndex(t => t.name === rarity);
+                        rarity = state.tiers.findIndex((t) => t.name === rarity);
 
                         if (rarity === -1) {
-                            return new Promise(resolve => resolve({
-                                ok: false,
-                                message: "Invalid rarity name"
-                            }));
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid rarity name",
+                                }),
+                            );
                         }
                     }
 
                     console.log(clientID, slotID, index, rarity);
 
-                    return this.devCheatListener.wait({ id: DEV_CHEAT_IDS.SET_PETAL, clientID, slotID, index, rarity });
+                    return this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SET_PETAL,
+                        clientID,
+                        slotID,
+                        index,
+                        rarity,
+                    });
                 },
-                setXP: (clientID, xp) => this.devCheatListener.wait({ id: DEV_CHEAT_IDS.SET_XP, clientID, xp }),
+                setXP: (clientID, xp) =>
+                    this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SET_XP,
+                        clientID,
+                        xp,
+                    }),
                 infoDump: () => this.devCheatListener.wait({ id: DEV_CHEAT_IDS.INFO_DUMP }),
             };
         }
@@ -928,7 +961,7 @@ export class ClientSocket extends WebSocket {
 
         this.bandWidth = {
             in: 0,
-            out: 0
+            out: 0,
         };
 
         this.bandwidthTracker = setInterval(() => {
@@ -936,13 +969,15 @@ export class ClientSocket extends WebSocket {
             this.bandWidth.out = (this._dataOut / 1024).toFixed(2);
             this._dataIn = 0;
             this._dataOut = 0;
-        }, 1E3);
+        }, 1e3);
     }
 
     onOpen() {
         console.log("Connected to lobby.");
         this.verify(this.username);
-        setTimeout(() => {this.ping(), console.log("Pinging websocket server.")}, 1E3);
+        setTimeout(() => {
+            (this.ping(), console.log("Pinging websocket server."));
+        }, 1e3);
     }
 
     onClose() {
@@ -951,6 +986,7 @@ export class ClientSocket extends WebSocket {
     }
 
     onMessage(event) {
+        state.pendingDropAmounts ??= new Map();
         const reader = new Reader(new DataView(new Uint8Array(event.data).buffer), 0, true);
         this._dataIn += event.data.byteLength;
 
@@ -961,6 +997,7 @@ export class ClientSocket extends WebSocket {
             case CLIENT_BOUND.READY:
                 console.log("Ready");
                 this.spawn();
+                state.usesNewInventory = false;
                 break;
             case CLIENT_BOUND.WORLD_UPDATE:
                 state.updatesCounter++;
@@ -971,7 +1008,7 @@ export class ClientSocket extends WebSocket {
                 state.playerID = reader.getUint32();
 
                 let id;
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const flags = reader.getUint8();
                     let player = state.players.get(id);
 
@@ -1064,7 +1101,7 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const flags = reader.getUint8();
                     let petal = state.petals.get(id);
 
@@ -1115,7 +1152,7 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const flags = reader.getUint8();
                     let mob = state.mobs.get(id);
 
@@ -1151,12 +1188,14 @@ export class ClientSocket extends WebSocket {
                                 mob.extraData = new StarfishData();
                                 break;
                             case "Leech":
-                                mob.extraData = [{
-                                    x: 0,
-                                    y: 0,
-                                    realX: 0,
-                                    realY: 0
-                                }];
+                                mob.extraData = [
+                                    {
+                                        x: 0,
+                                        y: 0,
+                                        realX: 0,
+                                        realY: 0,
+                                    },
+                                ];
                                 break;
                         }
                         continue;
@@ -1201,7 +1240,7 @@ export class ClientSocket extends WebSocket {
                             for (let i = 0; i < count; i++) {
                                 mob.extraData.push({
                                     x: reader.getFloat32(),
-                                    y: reader.getFloat32()
+                                    y: reader.getFloat32(),
                                 });
 
                                 mob.extraData[i].realX = mob.extraData[i].x;
@@ -1216,23 +1255,32 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
-                while (id = reader.getUint32(), id > 0) {
-                    state.drops.set(id, {
+                while (((id = reader.getUint32()), id > 0)) {
+                    const drop = {
                         id: id,
                         x: reader.getFloat32(),
                         y: reader.getFloat32(),
                         size: reader.getFloat32(),
                         index: reader.getUint8(),
                         rarity: reader.getUint8(),
-                        duration: reader.getUint16()
-                    });
+                        duration: reader.getUint16(),
+                        amount: 1,
+                    };
+
+                    const pending = state.pendingDropAmounts.get(id);
+                    if (pending !== undefined) {
+                        drop.amount = pending;
+                        state.pendingDropAmounts.delete(id);
+                    }
+
+                    state.drops.set(id, drop);
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     state.drops.delete(id);
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const flags = reader.getUint8();
                     let marker = state.markers.get(id);
 
@@ -1256,14 +1304,14 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const lightning = new ClientLightning(id);
                     const count = reader.getUint16();
 
                     for (let i = 0; i < count; i++) {
                         lightning.points.push({
                             x: reader.getFloat32(),
-                            y: reader.getFloat32()
+                            y: reader.getFloat32(),
                         });
                     }
 
@@ -1272,7 +1320,8 @@ export class ClientSocket extends WebSocket {
                     state.lightning.set(id, lightning);
                 }
 
-                { // Main slots
+                {
+                    // Main slots
                     const count = reader.getUint8();
 
                     if (count !== state.slots.length) {
@@ -1295,8 +1344,9 @@ export class ClientSocket extends WebSocket {
                         }
                     }
                 }
-                
-                { // Secondary slots
+
+                {
+                    // Secondary slots
                     const count = reader.getUint8();
 
                     if (count !== state.secondarySlots.length) {
@@ -1321,27 +1371,28 @@ export class ClientSocket extends WebSocket {
                     const wave = reader.getUint16();
                     const livingMobs = reader.getUint16();
                     const maxMobs = reader.getUint16();
-                
+
                     const mobCount = reader.getUint16();
                     const aliveMobs = [];
-                
+
                     for (let i = 0; i < mobCount; i++) {
                         const index = reader.getUint8();
                         const rarity = reader.getUint8();
-                        aliveMobs.push({index, rarity});
+                        aliveMobs.push({ index, rarity });
                     }
-                
+
                     state.waveInfo = {
                         wave,
                         livingMobs,
                         maxMobs,
-                        aliveMobs
+                        aliveMobs,
                     };
                 } else {
                     state.waveInfo = null;
                 }
 
-                { // Players
+                {
+                    // Players
                     const count = reader.getUint8();
                     const alivePlayers = [];
 
@@ -1350,26 +1401,212 @@ export class ClientSocket extends WebSocket {
                         const highestRarity = reader.getUint8();
                         const xp = reader.getFloat32() * 10000;
                         const username = reader.getStringUTF8();
-                        alivePlayers.push({xp, username, team, highestRarity});
+                        alivePlayers.push({ xp, username, team, highestRarity });
                     }
-                    
-                    state.alivePlayers = alivePlayers
+
+                    state.alivePlayers = alivePlayers;
                 }
+
+                state.playerCount = reader.getUint8();
 
                 state.level = reader.getUint16();
                 state.levelProgressTarget = reader.getFloat32();
-                
-                state.tiers.forEach(tier => {
+
+                const TIER_COUNT = state.tiers?.length ?? 29;
+
+                for (let ti = 0; ti < TIER_COUNT; ti++) {
+                    const tier = state.tiers?.[ti];
+                    if (!tier?.name) continue;
+
                     const petalCount = reader.getUint16();
-                    state.inventory ??= {}
-                    state.inventory[tier.name] = {};
+
+                    if (!state.usesNewInventory) {
+                        state.inventory ??= {};
+                        state.inventory[tier.name] ??= {};
+                    }
+
                     for (let i = 0; i < petalCount; i++) {
                         const petalId = reader.getUint16();
-                        const count = reader.getUint16();
-                        state.inventory[tier.name][petalId] = count;
+                        const amount = reader.getUint16();
+
+                        if (!state.usesNewInventory) {
+                            state.inventory[tier.name][petalId] = amount;
+                        }
                     }
-                });
+                }
                 break;
+            case 250: {
+                const count = reader.getUint16();
+
+                for (let i = 0; i < count; i++) {
+                    const dropId = reader.getUint32();
+                    const amount = reader.getUint32();
+                    reader.getUint16();
+
+                    const drop = state.drops.get(dropId);
+
+                    if (!drop) {
+                        state.pendingDropAmounts.set(dropId, amount);
+                        continue;
+                    }
+
+                    drop.amount = amount;
+                }
+
+                break;
+            }
+            case 110: {
+                if (!state.usesNewInventory) {
+                    state.usesNewInventory = true;
+                    state.inventory = {};
+                }
+
+                const count = reader.getUint16();
+                const tiers = state.tiers ?? [];
+
+                for (let i = 0; i < count; i++) {
+                    const tierIndex = reader.getUint8();
+                    const petalId = reader.getUint16();
+                    const amount = reader.getFloat64();
+
+                    const tierName = tiers[tierIndex]?.name;
+                    if (!tierName) continue;
+
+                    state.inventory ??= {};
+                    state.inventory[tierName] ??= {};
+
+                    if (amount <= 0) {
+                        delete state.inventory[tierName][petalId];
+                    } else {
+                        state.inventory[tierName][petalId] = amount;
+                    }
+                }
+
+                break;
+            }
+            case 111: {
+                const count = reader.getUint8();
+
+                globalThis.__CUSTOM_GRADIENTS = {};
+
+                for (let i = 0; i < count; i++) {
+                    const rarity = reader.getUint8();
+                    const has = reader.getUint8();
+                    if (!has) continue;
+
+                    const type = reader.getUint8();
+                    let data;
+
+                    if (type === 1) {
+                        data = {
+                            type: 1,
+                            soft: reader.getStringUTF8(),
+                            base: reader.getStringUTF8(),
+                            mid: reader.getStringUTF8(),
+                            glow: reader.getStringUTF8(),
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    } else if (type === 2) {
+                        data = {
+                            type: 2,
+
+                            lines: reader.getUint8(),
+                            size: reader.getFloat32(),
+
+                            delay: reader.getUint32(),
+                            cycleDelay: reader.getUint32(),
+
+                            speed: reader.getFloat32(),
+
+                            reversed_animation: !!reader.getUint8(),
+
+                            linecolor: reader.getStringUTF8(),
+                            lineglow: reader.getStringUTF8(),
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    } else if (type === 3) {
+                        const ringCount = reader.getUint8();
+                        const rings = new Array(ringCount);
+
+                        for (let r = 0; r < ringCount; r++) {
+                            const color = reader.getStringUTF8();
+                            const glow = reader.getStringUTF8();
+
+                            rings[r] = {
+                                color,
+                                glow: glow || color,
+                            };
+                        }
+
+                        data = {
+                            type: 3,
+                            rings,
+                            delay: reader.getUint32(),
+                            cycleDelay: reader.getUint32(),
+                            speed: reader.getFloat32(),
+                            reversed_animation: !!reader.getUint8(),
+
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    }
+
+                    globalThis.__CUSTOM_GRADIENTS[rarity] = data;
+                }
+
+                if (typeof __ANIMATED_ICONS__ !== "undefined") {
+                    __ANIMATED_ICONS__.clear();
+                }
+
+                if (typeof __PETAL_CACHE__ !== "undefined") {
+                    __PETAL_CACHE__.length = 0;
+                }
+
+                if (typeof __PETAL_INTERVALS__ !== "undefined") {
+                    __PETAL_INTERVALS__.length = 0;
+                }
+
+                if (typeof __RAF_RUNNING__ !== "undefined") {
+                    __RAF_RUNNING__ = false;
+                }
+
+                console.log("Client: Gradient cache cleared. Special Gradients received.");
+
+                break;
+            }
+            case 112: {
+                state.minimapPlayers ??= new Map();
+                state.minimapPlayers.clear();
+
+                const count = reader.getUint16();
+
+                for (let i = 0; i < count; i++) {
+                    const id = reader.getUint32();
+                    const x = reader.getFloat32();
+                    const y = reader.getFloat32();
+
+                    state.minimapPlayers.set(id, { id, x, y });
+                }
+
+                break;
+            }
             case CLIENT_BOUND.ROOM_UPDATE:
                 state.room.width = reader.getFloat32();
                 state.room.height = reader.getFloat32();
@@ -1387,10 +1624,15 @@ export class ClientSocket extends WebSocket {
             case CLIENT_BOUND.JSON_MESSAGE:
                 if (this.devCheatListener) {
                     const data = JSON.parse(reader.getStringUTF8());
-                    if (!this.devCheatListener.handle(data.promiseID, (() => {
-                        delete data.promiseID;
-                        return data;
-                    })())) {
+                    if (
+                        !this.devCheatListener.handle(
+                            data.promiseID,
+                            (() => {
+                                delete data.promiseID;
+                                return data;
+                            })(),
+                        )
+                    ) {
                         console.warn("Unhandled JSON message", data);
                     }
                 } else {
@@ -1399,7 +1641,7 @@ export class ClientSocket extends WebSocket {
                 break;
             case CLIENT_BOUND.PONG:
                 state.ping = performance.now() - this.pingStart;
-                setTimeout(() => this.ping(), 1E3);
+                setTimeout(() => this.ping(), 1e3);
                 break;
             case CLIENT_BOUND.TERRAIN:
                 state.terrain = {
@@ -1411,7 +1653,7 @@ export class ClientSocket extends WebSocket {
                                 x: reader.getInt16(),
                                 y: reader.getInt16(),
                                 type: [reader.getUint8(), reader.getUint8()],
-                                terrain: []
+                                terrain: [],
                             });
 
                             blocks[blocks.length - 1].terrain = terrains[blocks[blocks.length - 1].type[0]][blocks[blocks.length - 1].type[1]];
@@ -1419,10 +1661,10 @@ export class ClientSocket extends WebSocket {
 
                         return blocks;
                     })(),
-                    overlay: null
+                    overlay: null,
                 };
 
-                state.terrainImg = renderTerrain(state.room.width * .5, state.room.height * .5, state.terrain.width, state.terrain.blocks, state.room.biome);
+                state.terrainImg = renderTerrain(state.room.width * 0.5, state.room.height * 0.5, state.terrain.width, state.terrain.blocks, state.room.biome);
                 state.minimapImg = renderTerrainForMap(state.terrain.width, state.terrain.blocks);
                 console.log(state.terrain.blocks);
                 if (util.isHalloween && state.terrain.blocks.length >= 8) {
@@ -1431,18 +1673,20 @@ export class ClientSocket extends WebSocket {
                     state.terrain.overlay = null;
                 }
                 break;
-            case CLIENT_BOUND.CHAT_MESSAGE: {
-                const type = reader.getUint8();
+            case CLIENT_BOUND.CHAT_MESSAGE:
+                {
+                    const type = reader.getUint8();
 
-                switch (type) {
-                    case 0: // Chat Message
-                        new ChatMessage(0, reader.getStringUTF8(), reader.getStringUTF8(), reader.getStringUTF8());
-                        break;
-                    case 1: // System Message
-                        new ChatMessage(1, reader.getStringUTF8(), reader.getStringUTF8());
-                        break;
+                    switch (type) {
+                        case 0: // Chat Message
+                            new ChatMessage(0, reader.getStringUTF8(), reader.getStringUTF8(), reader.getStringUTF8());
+                            break;
+                        case 1: // System Message
+                            new ChatMessage(1, reader.getStringUTF8(), reader.getStringUTF8());
+                            break;
+                    }
                 }
-            } break;
+                break;
         }
     }
 
@@ -1480,100 +1724,104 @@ export class ClientSocket extends WebSocket {
                     const x = mouse.x - canvas.width / 2;
                     const y = mouse.y - canvas.height / 2;
                     const angle = Math.atan2(y, x);
-                    const dist = util.quickDiff({ x: 0, y: 0, }, { x, y });
-                    const deadzone = .1
+                    const dist = util.quickDiff({ x: 0, y: 0 }, { x, y });
+                    const deadzone = 0.1;
 
                     writer.setFloat32(angle);
-                    writer.setFloat32(Math.max(0, (dist / (canvas.width / 2)) - deadzone) / (1 - deadzone));
+                    writer.setFloat32(Math.max(0, dist / (canvas.width / 2) - deadzone) / (1 - deadzone));
                 }
                 if (data & 0x80) {
                     writer.setFloat32(joystick.angle);
                     writer.setFloat32(joystick.distance);
                 }
                 break;
-            case SERVER_BOUND.CHANGE_LOADOUT: {
-                const { drag, drop } = data; // { type, index }
-                writer.setUint8(drag.type);
-                writer.setUint8(drag.index);
-                writer.setUint8(drop.type);
-                writer.setUint8(drop.index);
-            }
-            break;
-            case SERVER_BOUND.DEV_CHEAT: {
-                const type = Number.isInteger(data) ? data : data.id;
-                writer.setUint8(type);
-
-                switch (type) {
-                    case DEV_CHEAT_IDS.TELEPORT:
-                        const tpUScale = gameScale(state.camera.fov);
-                        writer.setFloat32((mouse.x - canvas.width / 2) / tpUScale);
-                        writer.setFloat32((mouse.y - canvas.height / 2) / tpUScale);
-                        break;
-                    case DEV_CHEAT_IDS.CHANGE_TEAM:
-                        let id = 0,
-                            sc = gameScale(state.camera.fov),
-                            x = state.camera.x + (mouse.x - canvas.width / 2) / sc,
-                            y = state.camera.y + (mouse.y - canvas.height / 2) / sc;
-
-                        for (const mob of state.mobs.values()) {
-                            let dx = mob.x - x,
-                                dy = mob.y - y,
-                                dist = Math.sqrt(dx * dx + dy * dy);
-
-                            if (dist < mob.size) {
-                                id = mob.id;
-                                break;
-                            }
-                        }
-
-                        for (const player of state.players.values()) {
-                            let dx = player.x - x,
-                                dy = player.y - y,
-                                dist = Math.sqrt(dx * dx + dy * dy);
-
-                            if (dist < player.size) {
-                                id = player.id;
-                                break;
-                            }
-                        }
-
-                        writer.setUint32(id);
-                        break;
-                    case DEV_CHEAT_IDS.SPAWN_MOB:
-                        writer.setUint32(data.promiseID);
-                        writer.setUint8(data.index);
-                        writer.setUint8(data.rarity);
-                        break;
-                    case DEV_CHEAT_IDS.SET_PETAL:
-                        writer.setUint32(data.promiseID);
-                        writer.setUint32(data.clientID);
-                        writer.setUint8(data.slotID);
-                        writer.setUint8(data.index);
-                        writer.setUint8(data.rarity);
-                        break;
-                    case DEV_CHEAT_IDS.SET_XP:
-                        writer.setUint32(data.promiseID);
-                        writer.setUint32(data.clientID);
-                        writer.setUint32(data.xp);
-                        break;
-                    case DEV_CHEAT_IDS.INFO_DUMP:
-                        writer.setUint32(data.promiseID);
-                        break;
+            case SERVER_BOUND.CHANGE_LOADOUT:
+                {
+                    const { drag, drop } = data; // { type, index }
+                    writer.setUint8(drag.type);
+                    writer.setUint8(drag.index);
+                    writer.setUint8(drop.type);
+                    writer.setUint8(drop.index);
                 }
-            } break;
+                break;
+            case SERVER_BOUND.DEV_CHEAT:
+                {
+                    const type = Number.isInteger(data) ? data : data.id;
+                    writer.setUint8(type);
+
+                    switch (type) {
+                        case DEV_CHEAT_IDS.TELEPORT:
+                            const tpUScale = gameScale(state.camera.fov);
+                            writer.setFloat32((mouse.x - canvas.width / 2) / tpUScale);
+                            writer.setFloat32((mouse.y - canvas.height / 2) / tpUScale);
+                            break;
+                        case DEV_CHEAT_IDS.CHANGE_TEAM:
+                            let id = 0,
+                                sc = gameScale(state.camera.fov),
+                                x = state.camera.x + (mouse.x - canvas.width / 2) / sc,
+                                y = state.camera.y + (mouse.y - canvas.height / 2) / sc;
+
+                            for (const mob of state.mobs.values()) {
+                                let dx = mob.x - x,
+                                    dy = mob.y - y,
+                                    dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < mob.size) {
+                                    id = mob.id;
+                                    break;
+                                }
+                            }
+
+                            for (const player of state.players.values()) {
+                                let dx = player.x - x,
+                                    dy = player.y - y,
+                                    dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < player.size) {
+                                    id = player.id;
+                                    break;
+                                }
+                            }
+
+                            writer.setUint32(id);
+                            break;
+                        case DEV_CHEAT_IDS.SPAWN_MOB:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint8(data.index);
+                            writer.setUint8(data.rarity);
+                            break;
+                        case DEV_CHEAT_IDS.SET_PETAL:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint32(data.clientID);
+                            writer.setUint8(data.slotID);
+                            writer.setUint8(data.index);
+                            writer.setUint8(data.rarity);
+                            break;
+                        case DEV_CHEAT_IDS.SET_XP:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint32(data.clientID);
+                            writer.setUint32(data.xp);
+                            break;
+                        case DEV_CHEAT_IDS.INFO_DUMP:
+                            writer.setUint32(data.promiseID);
+                            break;
+                    }
+                }
+                break;
             case SERVER_BOUND.CHAT_MESSAGE:
                 writer.setStringUTF8(data);
                 break;
-            case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT: {
-                const { drag, drop } = data; // { type, index }
-                writer.setUint8(drag.index);
-                writer.setUint8(drag.rarity);
-                writer.setUint8(drop.type);
-                writer.setUint8(drop.index);
-                writer.setUint8(drop.rarity);
-                writer.setUint8(drop.petalIndex);
-            }
-            break;
+            case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT:
+                {
+                    const { drag, drop } = data; // { type, index }
+                    writer.setUint8(drag.index);
+                    writer.setUint8(drag.rarity);
+                    writer.setUint8(drop.type);
+                    writer.setUint8(drop.index);
+                    writer.setUint8(drop.rarity);
+                    writer.setUint8(drop.petalIndex);
+                }
+                break;
         }
 
         const output = writer.build();
@@ -1593,14 +1841,14 @@ export class IconItem {
     realSize = 0;
 
     interpolate() {
-        this.x = util.lerp(this.x, this.realX, .2);
-        this.y = util.lerp(this.y, this.realY, .2);
-        this.size = util.lerp(this.size, this.realSize, .2);
+        this.x = util.lerp(this.x, this.realX, 0.2);
+        this.y = util.lerp(this.y, this.realY, 0.2);
+        this.size = util.lerp(this.size, this.realSize, 0.2);
     }
 }
 
 export const state = {
-    interpolationFactor: .2,
+    interpolationFactor: 0.2,
     username: "",
 
     camera: {
@@ -1617,7 +1865,7 @@ export const state = {
             state.camera.x = util.lerp(state.camera.x, state.camera.realX, state.interpolationFactor);
             state.camera.y = util.lerp(state.camera.y, state.camera.realY, state.interpolationFactor);
             state.camera.fov = util.lerp(state.camera.fov, state.camera.realFov, state.interpolationFactor);
-        }
+        },
     },
 
     room: {
@@ -1647,11 +1895,11 @@ export const state = {
                         return BIOME_TYPES.DEFAULT;
                     }
                 case "dark_forest":
-                    return BIOME_TYPES.DARK_FOREST
+                    return BIOME_TYPES.DARK_FOREST;
                 default:
                     return BIOME_TYPES.DEFAULT;
             }
-        })()
+        })(),
     },
 
     playerID: 0,
@@ -1717,7 +1965,7 @@ export const state = {
     /** @type {OffscreenCanvas|null} */
     terrainImg: null,
     /** @type {OffscreenCanvas|null} */
-    minimapImg: null
+    minimapImg: null,
 };
 
 export const keyMap = new Set();
@@ -1725,7 +1973,7 @@ export const mouse = {
     x: 0,
     y: 0,
     left: false,
-    right: false
+    right: false,
 };
 
 export async function loadAssets(lobbyID) {

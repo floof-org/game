@@ -889,6 +889,7 @@ export default class Client {
 
                     console.log(`Client ${this.id} reconnected as ${this.username}`);
                 }
+                state.playerCount++;
                 break;
             case SERVER_BOUND.SPAWN:
                 if (!this.verified) {
@@ -1393,6 +1394,7 @@ export default class Client {
         }
 
         state.alivePlayers = state.alivePlayers.filter(m => m.id !== this.id);
+        state.playerCount = Math.max(0, state.playerCount - 1);
         state.clients.delete(this.id);
     }
 
@@ -1482,6 +1484,8 @@ export default class Client {
             writer.setFloat32(entity.xp / 10000);
             writer.setStringUTF8(entity.username);
         }
+
+        writer.setUint8(state.playerCount);
 
         writer.setUint16(this.level);
         writer.setFloat32(this.levelProgress);
