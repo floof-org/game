@@ -83,6 +83,7 @@ const config = {
                             } else if (path.extname(file) === ".js") {
                                 if (ignoreFiles.some(f => sourcePath.replace(/\\/g, "/").includes(f))) {
                                     console.log("Ignoring", sourcePath);
+                                } else {
                                     fs.copyFileSync(sourcePath, destPath.replace("index.js", "bundle.js"));
                                 }
                             } else if (path.extname(file) === ".html" || path.extname(file) === ".css") {
