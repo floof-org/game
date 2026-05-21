@@ -1407,6 +1407,8 @@ export class ClientSocket extends WebSocket {
                     state.alivePlayers = alivePlayers;
                 }
 
+                state.playerCount = reader.getUint8();
+
                 state.level = reader.getUint16();
                 state.levelProgressTarget = reader.getFloat32();
 

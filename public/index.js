@@ -2724,7 +2724,7 @@ function draw() {
 
     if (net.state.alivePlayers && net.state.alivePlayers.length > 0) {
         // Leaderboard
-        const spacing = 35;
+        const spacing = 30;
         const barMaxWidth = 180;
         let x = width - barMaxWidth - 30;
         let y = 175;
@@ -2735,7 +2735,7 @@ function draw() {
 
         playersSorted.forEach((player) => {
             const barWidth = maxXp > 0 ? (player.xp / maxXp) * barMaxWidth : barMaxWidth;
-            const barSize = 35;
+            const barSize = 32.5;
             const color = [colors.playerYellow, colors.team1, colors.team2][player.team] ?? colors.crafting;
 
             ctx.textAlign = "left";
@@ -2744,8 +2744,8 @@ function draw() {
             drawBar(x, x + barMaxWidth, y, barSize, colors.lighterBlack);
             drawBar(x, x + barWidth, y, barSize * 0.75, color);
 
-            let w = x + text(`${player.username} - ${formatLargeNumber(player.xp.toFixed(2))}`, x, y, barSize * 0.5, colors.white);
-            w += text(` (${net.state.tiers[player.highestRarity].name.charAt(0)}.)`, w, y, barSize * 0.5, net.state.tiers[player.highestRarity].color);
+            let w = x + text(`${player.username} - ${formatLargeNumber(player.xp.toFixed(2))}`, x, y, barSize * 0.45, colors.white);
+            w += text(` [${net.state.tiers[player.highestRarity].name.charAt(0)}]`, w, y, barSize * 0.45, net.state.tiers[player.highestRarity].color);
 
             x -= 45;
             setStyle(color, 4);
@@ -2761,7 +2761,11 @@ function draw() {
             y += spacing + 15;
             x += 45;
         });
+        ctx.textAlign = "right";
+        text(`${net.state.playerCount} Players`, x + 190, y - 10, 17.5, colors.white);
     }
+
+    ctx.textAlign = "center";
 
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
