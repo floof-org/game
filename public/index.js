@@ -2734,9 +2734,11 @@ function draw() {
         const maxXp = playersSorted[0].xp;
 
         playersSorted.forEach((player) => {
-            const barWidth = maxXp > 0 ? (player.xp / maxXp) * barMaxWidth : barMaxWidth;
             const barSize = 32.5;
             const color = [colors.playerYellow, colors.team1, colors.team2][player.team] ?? colors.crafting;
+            player.xpDisplay ??= player.xp;
+            player.xpDisplay = lerp(player.xpDisplay, player.xp, 0.1);
+            let barWidth = maxXp > 0 ? (player.xpDisplay / maxXp) * barMaxWidth : barMaxWidth;
 
             ctx.textAlign = "left";
             ctx.textBaseline = "middle";
@@ -2744,7 +2746,7 @@ function draw() {
             drawBar(x, x + barMaxWidth, y, barSize, colors.lighterBlack);
             drawBar(x, x + barWidth, y, barSize * 0.75, color);
 
-            let w = x + text(`${player.username} - ${formatLargeNumber(player.xp.toFixed(2))}`, x, y, barSize * 0.45, colors.white);
+            let w = x + text(`${player.username} - ${formatLargeNumber(player.xpDisplay.toFixed(2))}`, x, y, barSize * 0.45, colors.white);
             w += text(` [${net.state.tiers[player.highestRarity].name.charAt(0)}]`, w, y, barSize * 0.45, net.state.tiers[player.highestRarity].color);
 
             x -= 45;
@@ -2762,7 +2764,7 @@ function draw() {
             x += 45;
         });
         ctx.textAlign = "right";
-        text(`${net.state.playerCount} Players`, x + 190, y - 10, 17.5, colors.white);
+        text(`${net.state.alivePlayers.length}/${net.state.playerCount} Players`, x + 190, y - 10, 17.5, colors.white);
     }
 
     ctx.textAlign = "center";
