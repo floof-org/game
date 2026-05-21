@@ -311,6 +311,7 @@ const state = {
     livingMobCount: 0,
     aliveMobs: [],
     alivePlayers: [],
+    playerCount: 0,
     inventory: Object.fromEntries(tiers.map(tier => [tier.name, {}])),
     secretKey: crypto.getRandomValues(new Uint8Array(32)).join(""),
 
