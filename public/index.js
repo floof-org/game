@@ -721,10 +721,91 @@ function drawInventory() {
         return;
     }
 
-    let inventoryEmpty = true;
-    Object.values(net.state.inventory).forEach((tier) => {
-        if (Object.values(tier).some((count) => count > 0)) {
-            inventoryEmpty = false;
+  if (inventoryEmpty) {
+    menu.textContent = "Your inventory is empty :(";
+    return;
+  }
+
+  const petal = document.createElement("div");
+  petal.style.display = "flex";
+  petal.style.flexWrap = "wrap";
+  petal.style.padding = "0px";
+  petal.style.gap = "5px";
+  menu.appendChild(petal);
+
+  const petalSize = 56;
+
+  let sortedTiers = Object.entries(net.state.inventory).sort(([a], [b]) => {
+    const aIndex = net.state.tiers.findIndex((t) => t.name === a);
+    const bIndex = net.state.tiers.findIndex((t) => t.name === b);
+    return bIndex - aIndex;
+  });
+
+  sortedTiers.forEach(([tierName, petals]) => {
+    const rarityIndex = net.state.tiers.findIndex((t) => t.name === tierName);
+
+    Object.entries(petals)
+      .sort(([a], [b]) => {
+        const aName = net.state.petalConfigs[Number(a)].name;
+        const bName = net.state.petalConfigs[Number(b)].name;
+        return aName.localeCompare(bName);
+      })
+      .forEach(([petalIndex, count]) => {
+        if (count <= 0) return;
+
+        const petalCanvas = getPetalIcon(
+        Number(petalIndex),
+        rarityIndex,
+        "oneshot"
+        );
+
+        const icon = document.createElement("canvas");
+
+        icon.addEventListener("pointerenter", (ev) => {
+          const r = ev.currentTarget.getBoundingClientRect();
+          net.state.inventoryPetalHover = [
+            Number(petalIndex),
+            rarityIndex,
+            r.left + r.width / 2,
+            r.top + r.height / 2,
+          ];
+        });
+
+        icon.addEventListener("pointermove", (ev) => {
+          const r = ev.currentTarget.getBoundingClientRect();
+          net.state.inventoryPetalHover = [
+            Number(petalIndex),
+            rarityIndex,
+            r.left + r.width / 2,
+            r.top + r.height / 2,
+          ];
+        });
+
+        icon.addEventListener("pointerleave", () => {
+          net.state.inventoryPetalHover = null;
+        });
+
+        icon.width = petalSize;
+        icon.height = petalSize;
+
+        icon.style.width = petalSize + "px";
+        icon.style.height = petalSize + "px";
+        icon.style.flex = "0 0 auto";
+
+        const c = icon.getContext("2d");
+        c.drawImage(petalCanvas, 0, 0, petalSize, petalSize);
+
+        if (count > 1) {
+          c.fillStyle = colors.white;
+          c.strokeStyle = "#000000";
+          c.lineWidth = 2;
+          c.font = `bold ${petalSize * 0.25}px Ubuntu`;
+          c.textAlign = "right";
+          c.textBaseline = "top";
+
+          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + " million" : `x${formatAmount(count)}`;
+          c.strokeText(text, petalSize - 4, 4);
+          c.fillText(text, petalSize - 4, 4);
         }
     });
 
@@ -2849,9 +2930,22 @@ function draw() {
             const mouseX = mouse.x / window.devicePixelRatio;
             const mouseY = mouse.y / window.devicePixelRatio;
 
-            const visible = rect.top >= menuRect.top && rect.bottom <= menuRect.bottom && rect.left >= menuRect.left && rect.right <= menuRect.right;
+    if (net.ChatMessage.showInput) {
+      const element = net.ChatMessage.element;
+      element.style.display = "block";
+      element.style.left = `75px`;
+      element.style.bottom = `12px`;
+      element.style.width = `202px`;
+      element.style.height = `7px`;
+      element.style.fontSize = `14px`;
+      element.style.padding = `10px`;
+      element.style.backgroundColor = `white`;
+      element.style.border = "4px solid black";
 
-            const hovered = visible && mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom;
+      const overlayX = 81;
+      const overlayY = canvas.height - 455;
+      const overlayWidth = 250;
+      const overlayHeight = 400;
 
             if (hovered) {
                 net.state._foundHover = true;
@@ -2863,21 +2957,145 @@ function draw() {
 
                     menu.classList.toggle("active");
 
-                    inventoryDragConfig.index = petal.index;
-                    inventoryDragConfig.rarity = petal.rarity;
-                    inventoryDragConfig.item.stableSize = rect.width;
+        switch (msg.type) {
+          case 0: // Chat
+            const nameWidth = text(
+              msg.username,
+              overlayX + 7,
+              50000,
+              14,
+              msg.color,
+            );
+            msgHeight = drawWrappedText(
+              ": " + msg.message,
+              overlayX + 7 + nameWidth,
+              50000,
+              14,
+              overlayWidth - 20 - nameWidth,
+              "#FFFFFF",
+              ctx,
+              88,
+            );
+            msgHeight = Math.max(msgHeight, 14);
+            break;
+          case 1: // System
+            msgHeight = drawWrappedText(
+              msg.message,
+              overlayX + 7,
+              50000,
+              14,
+              overlayWidth - 20,
+              msg.color,
+              ctx,
+              88,
+            );
+            break;
+        }
 
-                    inventoryDragConfig.onDrop = () => {
-                        processInventoryDrop();
-                        menu.classList.toggle("active");
-                    };
-                }
-            }
-        });
+        y -= msgHeight + 3;
+
+        if (y < overlayY + 7) {
+          net.ChatMessage.allMessages.splice(i, 1);
+          continue;
+        }
+
+        switch (msg.type) {
+          case 0:
+            const nameWidth2 = text(
+              msg.username,
+              overlayX + 7,
+              y,
+              14,
+              msg.color,
+            );
+            drawWrappedText(
+              ": " + msg.message,
+              overlayX + 7 + nameWidth2,
+              y,
+              14,
+              overlayWidth - 20 - nameWidth2,
+              "#FFFFFF",
+              ctx,
+              88,
+            );
+            break;
+          case 1:
+            drawWrappedText(
+              msg.message,
+              overlayX + 7,
+              y,
+              14,
+              overlayWidth - 20,
+              msg.color,
+              ctx,
+              88,
+            );
+            break;
+        }
+      }
+    } else {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.beginPath();
+      ctx.roundRect(81, canvas.height - 51, 252, 38, 5);
+      ctx.fill();
+      net.ChatMessage.element.style.display = "none";
+      text("Press Enter to open chat", 96, canvas.height - 31, 14);
     }
 
-    if (!net.state._foundHover) {
-        net.state.inventoryPetalHover = null;
+    ctx.textBaseline = "top";
+    y -= heights[heights.length - 1];
+
+    if (!net.ChatMessage.showInput) {
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const message = messages[i];
+
+        message.y = lerp(message.y, y, 0.2);
+        message.ticker++;
+
+        if (message.ticker > clientDebug.fps * 15 - messages.length * 2) {
+          net.ChatMessage.messages.splice(i, 1);
+          continue;
+        }
+
+        switch (message.type) {
+          case 0: // Chat
+            const nameWidth = text(
+              message.username,
+              81,
+              message.y,
+              15,
+              message.color,
+            );
+            drawWrappedText(
+              ": " + message.message,
+              nameWidth + 81,
+              message.y,
+              15,
+              235,
+              "#FFFFFF",
+              ctx,
+              81,
+            );
+            break;
+          case 1: // System
+            drawWrappedText(
+              message.message,
+              81,
+              message.y,
+              15,
+              235,
+              message.color,
+              ctx,
+              81,
+            );
+            break;
+        }
+
+        if (i > 0) {
+          y -= heights[i - 1];
+          y -= 2.5;
+        }
+      }
     }
 
     ctx.restore();
