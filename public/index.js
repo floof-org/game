@@ -58,6 +58,7 @@ import {
   updateAndDrawInventoryDragDrop,
 } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
+import "./lib/craftMenu.js";
 
 if (location.hash) {
   fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1))
@@ -977,7 +978,7 @@ function drawInventory() {
           c.textAlign = "right";
           c.textBaseline = "top";
 
-          const text = `x${formatAmount(count)}`;
+          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + " million" : `x${formatAmount(count)}`;
           c.strokeText(text, petalSize - 4, 4);
           c.fillText(text, petalSize - 4, 4);
         }
@@ -3667,7 +3668,7 @@ function draw() {
     if (net.ChatMessage.showInput) {
       const element = net.ChatMessage.element;
       element.style.display = "block";
-      element.style.left = `60px`;
+      element.style.left = `75px`;
       element.style.bottom = `12px`;
       element.style.width = `202px`;
       element.style.height = `7px`;
@@ -3676,7 +3677,7 @@ function draw() {
       element.style.backgroundColor = `white`;
       element.style.border = "4px solid black";
 
-      const overlayX = 66;
+      const overlayX = 81;
       const overlayY = canvas.height - 455;
       const overlayWidth = 250;
       const overlayHeight = 400;
@@ -3712,7 +3713,7 @@ function draw() {
               overlayWidth - 20 - nameWidth,
               "#FFFFFF",
               ctx,
-              73,
+              88,
             );
             msgHeight = Math.max(msgHeight, 14);
             break;
@@ -3725,7 +3726,7 @@ function draw() {
               overlayWidth - 20,
               msg.color,
               ctx,
-              73,
+              88,
             );
             break;
         }
@@ -3754,7 +3755,7 @@ function draw() {
               overlayWidth - 20 - nameWidth2,
               "#FFFFFF",
               ctx,
-              73,
+              88,
             );
             break;
           case 1:
@@ -3766,7 +3767,7 @@ function draw() {
               overlayWidth - 20,
               msg.color,
               ctx,
-              73,
+              88,
             );
             break;
         }
@@ -3774,10 +3775,10 @@ function draw() {
     } else {
       ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
       ctx.beginPath();
-      ctx.roundRect(66, canvas.height - 51, 252, 38, 5);
+      ctx.roundRect(81, canvas.height - 51, 252, 38, 5);
       ctx.fill();
       net.ChatMessage.element.style.display = "none";
-      text("Press Enter to open chat", 81, canvas.height - 31, 14);
+      text("Press Enter to open chat", 96, canvas.height - 31, 14);
     }
 
     ctx.textBaseline = "top";
@@ -3799,32 +3800,32 @@ function draw() {
           case 0: // Chat
             const nameWidth = text(
               message.username,
-              66,
+              81,
               message.y,
               15,
               message.color,
             );
             drawWrappedText(
               ": " + message.message,
-              nameWidth + 66,
+              nameWidth + 81,
               message.y,
               15,
               235,
               "#FFFFFF",
               ctx,
-              66,
+              81,
             );
             break;
           case 1: // System
             drawWrappedText(
               message.message,
-              66,
+              81,
               message.y,
               15,
               235,
               message.color,
               ctx,
-              66,
+              81,
             );
             break;
         }
