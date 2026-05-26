@@ -831,23 +831,31 @@ export class ChatMessage {
 
 new ChatMessage(1, "Welcome to the game!", "#FFFFFF");
 
+const _chatListeners = new Set();
+const _captureQueue = [];
+
 export function sendChatMessage(m) {
     if (typeof m !== "string") return false;
     m = m.trim();
     if (!m.length) return false;
     if (!state.socket || state.socket.readyState !== WebSocket.OPEN) return false;
     state.socket.talk(SERVER_BOUND.CHAT_MESSAGE, m);
+    for (let i = 0; i < _captureQueue.length; i++) {
+        const entry = _captureQueue[i];
+        if (typeof entry.idleMs === "number" && entry.idleTimer) {
+            clearTimeout(entry.idleTimer);
+            entry.idleTimer = setTimeout(entry.finalize, Math.max(entry.idleMs, 1500));
+        }
+    }
     return true;
 }
 
-const _chatListeners = new Set();
 export function onChatMessage(cb) {
     if (typeof cb !== "function") return function () {};
     _chatListeners.add(cb);
     return function () { _chatListeners.delete(cb); };
 }
 
-const _captureQueue = [];
 export function captureChatMessage(predicate, opts) {
     if (typeof opts === "number") opts = { timeoutMs: opts };
     opts = opts || {};

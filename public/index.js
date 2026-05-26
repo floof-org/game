@@ -808,10 +808,10 @@ function drawInventory() {
                     c.textAlign = "right";
                     c.textBaseline = "top";
 
-                    const text = `x${formatAmount(count)}`;
-                    c.strokeText(text, petalSize - 4, 4);
-                    c.fillText(text, petalSize - 4, 4);
-                }
+          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + " million" : `x${formatAmount(count)}`;
+          c.strokeText(text, petalSize - 4, 4);
+          c.fillText(text, petalSize - 4, 4);
+        }
 
                 petal.appendChild(icon);
 
@@ -3065,22 +3065,22 @@ function draw() {
         ctx.beginPath();
         ctx.roundRect(-12, -cuteLittleAnimations.chatBGSize - 10, maxWidth + 22, cuteLittleAnimations.chatBGSize + 22, 5);
 
-        if (net.ChatMessage.showInput) {
-            const element = net.ChatMessage.element;
-            element.style.display = "block";
-            element.style.left = `110px`;
-            element.style.bottom = `12px`;
-            element.style.width = `202px`;
-            element.style.height = `7px`;
-            element.style.fontSize = `14px`;
-            element.style.padding = `10px`;
-            element.style.backgroundColor = `white`;
-            element.style.border = "4px solid black";
+    if (net.ChatMessage.showInput) {
+      const element = net.ChatMessage.element;
+      element.style.display = "block";
+      element.style.left = `75px`;
+      element.style.bottom = `12px`;
+      element.style.width = `202px`;
+      element.style.height = `7px`;
+      element.style.fontSize = `14px`;
+      element.style.padding = `10px`;
+      element.style.backgroundColor = `white`;
+      element.style.border = "4px solid black";
 
-            const overlayX = 116;
-            const overlayY = canvas.height - 455;
-            const overlayWidth = 250;
-            const overlayHeight = 400;
+      const overlayX = 81;
+      const overlayY = canvas.height - 455;
+      const overlayWidth = 250;
+      const overlayHeight = 400;
 
             ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
             ctx.beginPath();
@@ -3099,11 +3099,11 @@ function draw() {
                 switch (msg.type) {
                     case 0: // Chat
                         const nameWidth = text(msg.username, overlayX + 7, 50000, 14, msg.color);
-                        msgHeight = drawWrappedText(": " + msg.message, overlayX + 7 + nameWidth, 50000, 14, overlayWidth - 20 - nameWidth, "#FFFFFF", ctx, 73);
+                        msgHeight = drawWrappedText(": " + msg.message, overlayX + 7 + nameWidth, 50000, 14, overlayWidth - 20 - nameWidth, "#FFFFFF", ctx, 88);
                         msgHeight = Math.max(msgHeight, 14);
                         break;
                     case 1: // System
-                        msgHeight = drawWrappedText(msg.message, overlayX + 7, 50000, 14, overlayWidth - 20, msg.color, ctx, 73);
+                        msgHeight = drawWrappedText(msg.message, overlayX + 7, 50000, 14, overlayWidth - 20, msg.color, ctx, 88);
                         break;
                 }
 
