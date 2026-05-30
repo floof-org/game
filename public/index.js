@@ -3723,7 +3723,7 @@ function draw() {
     if (net.ChatMessage.showInput) {
       const element = net.ChatMessage.element;
       element.style.display = "block";
-      element.style.left = `75px`;
+      element.style.left = `60px`;
       element.style.bottom = `12px`;
       element.style.width = `202px`;
       element.style.height = `7px`;
@@ -3732,7 +3732,7 @@ function draw() {
       element.style.backgroundColor = `white`;
       element.style.border = "4px solid black";
 
-      const overlayX = 81;
+      const overlayX = 66;
       const overlayY = canvas.height - 455;
       const overlayWidth = 250;
       const overlayHeight = 400;
@@ -3768,7 +3768,7 @@ function draw() {
               overlayWidth - 20 - nameWidth,
               "#FFFFFF",
               ctx,
-              88,
+              overlayX + 7 + nameWidth,
             );
             msgHeight = Math.max(msgHeight, 14);
             break;
@@ -3781,7 +3781,7 @@ function draw() {
               overlayWidth - 20,
               msg.color,
               ctx,
-              88,
+              73,
             );
             break;
         }
@@ -3810,7 +3810,7 @@ function draw() {
               overlayWidth - 20 - nameWidth2,
               "#FFFFFF",
               ctx,
-              88,
+              overlayX + 7 + nameWidth2,
             );
             break;
           case 1:
@@ -3822,7 +3822,7 @@ function draw() {
               overlayWidth - 20,
               msg.color,
               ctx,
-              88,
+              73,
             );
             break;
         }
@@ -3830,10 +3830,10 @@ function draw() {
     } else {
       ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
       ctx.beginPath();
-      ctx.roundRect(81, canvas.height - 51, 252, 38, 5);
+      ctx.roundRect(66, canvas.height - 51, 252, 38, 5);
       ctx.fill();
       net.ChatMessage.element.style.display = "none";
-      text("Press Enter to open chat", 96, canvas.height - 31, 14);
+      text("Press Enter to open chat", 81, canvas.height - 31, 14);
     }
 
     ctx.textBaseline = "top";
@@ -3855,32 +3855,32 @@ function draw() {
           case 0: // Chat
             const nameWidth = text(
               message.username,
-              81,
+              66,
               message.y,
               15,
               message.color,
             );
             drawWrappedText(
               ": " + message.message,
-              nameWidth + 81,
+              nameWidth + 66,
               message.y,
               15,
-              235,
+              235 - nameWidth,
               "#FFFFFF",
               ctx,
-              81,
+              nameWidth + 66,
             );
             break;
           case 1: // System
             drawWrappedText(
               message.message,
-              81,
+              66,
               message.y,
               15,
               235,
               message.color,
               ctx,
-              81,
+              66,
             );
             break;
         }
