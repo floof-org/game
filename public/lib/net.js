@@ -1,140 +1,116 @@
-import {
-  canvas,
-  gameScale,
-  renderTerrain,
-  renderTerrainForMap,
-  SpookyOverlay,
-} from "./canvas.js";
-import {
-  Reader,
-  Writer,
-  SERVER_BOUND,
-  CLIENT_BOUND,
-  ENTITY_FLAGS,
-  ENTITY_MODIFIER_FLAGS,
-  decodeEverything,
-  Drawing,
-  DEV_CHEAT_IDS,
-  PetalConfig,
-  MobConfig,
-  PetalTier,
-  getTerrain,
-  terrains,
-  BIOME_TYPES,
-  loadTerrains,
-  tiers,
-} from "./protocol.js";
+import { canvas, gameScale, renderTerrain, renderTerrainForMap, SpookyOverlay } from "./canvas.js";
+import { Reader, Writer, SERVER_BOUND, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, decodeEverything, Drawing, DEV_CHEAT_IDS, PetalConfig, MobConfig, PetalTier, getTerrain, terrains, BIOME_TYPES, loadTerrains, tiers } from "./protocol.js";
 import { StarfishData } from "./renders.js";
 import { joystick } from ".././index.js";
 import * as util from "./util.js";
 
 function getBrowserInfo() {
-  const userAgent = navigator.userAgent;
-  let browserName = "unknown";
-  let browserVersion = "unknown";
+    const userAgent = navigator.userAgent;
+    let browserName = "unknown";
+    let browserVersion = "unknown";
 
-  if (userAgent.includes("Firefox")) {
-    browserName = "Firefox";
-    browserVersion = parseInt(userAgent.match(/Firefox\/([\d]+)/)?.[1]);
-  } else if (userAgent.includes("Edg")) {
-    browserName = "Edge";
-    browserVersion = parseInt(userAgent.match(/Edg\/([\d]+)/)?.[1]);
-  } else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
-    browserName = "Chrome";
-    browserVersion = parseInt(userAgent.match(/Chrome\/([\d]+)/)?.[1]);
-  } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
-    browserName = "Safari";
-    browserVersion = parseInt(userAgent.match(/Version\/([\d]+)/)?.[1]);
-  } else if (userAgent.includes("OPR")) {
-    browserName = "Opera";
-    browserVersion = parseInt(userAgent.match(/OPR\/([\d]+)/)?.[1]);
-  }
+    if (userAgent.includes("Firefox")) {
+        browserName = "Firefox";
+        browserVersion = parseInt(userAgent.match(/Firefox\/([\d]+)/)?.[1]);
+    } else if (userAgent.includes("Edg")) {
+        browserName = "Edge";
+        browserVersion = parseInt(userAgent.match(/Edg\/([\d]+)/)?.[1]);
+    } else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+        browserName = "Chrome";
+        browserVersion = parseInt(userAgent.match(/Chrome\/([\d]+)/)?.[1]);
+    } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+        browserName = "Safari";
+        browserVersion = parseInt(userAgent.match(/Version\/([\d]+)/)?.[1]);
+    } else if (userAgent.includes("OPR")) {
+        browserName = "Opera";
+        browserVersion = parseInt(userAgent.match(/OPR\/([\d]+)/)?.[1]);
+    }
 
-  return { name: browserName, version: browserVersion };
+    return { name: browserName, version: browserVersion };
 }
 
 function getOSInfo() {
-  const agent = navigator.userAgent;
-  const data = navigator.userAgentData;
-  const platform = navigator.platform;
+    const agent = navigator.userAgent;
+    const data = navigator.userAgentData;
+    const platform = navigator.platform;
 
-  const platformRegex = {
-    Windows: /Win/i,
-    "Mac OS": /Mac/i,
-    iOS: /iPhone|iPad|iPod/i,
-    Android: /Android/i,
-    Linux: /Linux/i,
-    Unix: /X11/i,
-  };
+    const platformRegex = {
+        Windows: /Win/i,
+        "Mac OS": /Mac/i,
+        iOS: /iPhone|iPad|iPod/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /X11/i,
+    };
 
-  const agentRegex = {
-    Windows: /Windows/i,
-    "Mac OS": /Mac OS/i,
-    iOS: /like Mac OS/i,
-    Android: /Android/i,
-    Linux: /Linux/i,
-    Unix: /Unix/i,
-  };
+    const agentRegex = {
+        Windows: /Windows/i,
+        "Mac OS": /Mac OS/i,
+        iOS: /like Mac OS/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /Unix/i,
+    };
 
-  const userAgentDataRegex = {
-    Windows: /Windows/i,
-    "Mac OS": /Mac OS/i,
-    iOS: /like Mac OS/i,
-    Android: /Android/i,
-    Linux: /Linux/i,
-    Unix: /Unix/i,
-  };
+    const userAgentDataRegex = {
+        Windows: /Windows/i,
+        "Mac OS": /Mac OS/i,
+        iOS: /like Mac OS/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /Unix/i,
+    };
 
-  let os = "Unknown";
+    let os = "Unknown";
 
-  for (const [name, regex] of Object.entries(platformRegex)) {
-    if (regex.test(platform)) {
-      os = name;
-      break;
+    for (const [name, regex] of Object.entries(platformRegex)) {
+        if (regex.test(platform)) {
+            os = name;
+            break;
+        }
     }
-  }
 
-  for (const [name, regex] of Object.entries(agentRegex)) {
-    if (regex.test(agent)) {
-      os = name;
-      break;
+    for (const [name, regex] of Object.entries(agentRegex)) {
+        if (regex.test(agent)) {
+            os = name;
+            break;
+        }
     }
-  }
 
-  if (data) {
-    for (const [name, regex] of Object.entries(userAgentDataRegex)) {
-      if (regex.test(data.platform)) {
-        os = name;
-        break;
-      }
+    if (data) {
+        for (const [name, regex] of Object.entries(userAgentDataRegex)) {
+            if (regex.test(data.platform)) {
+                os = name;
+                break;
+            }
+        }
     }
-  }
 
-  return os;
+    return os;
 }
 
 function extractImportantGPUInfo(gpuName) {
-  const nvidiaPattern = /NVIDIA\s+(GeForce|Quadro|RTX|GTX)\s+([A-Za-z0-9\s]+)/i;
-  const amdPattern = /AMD\s+(Radeon|RX)\s+([A-Za-z0-9\s]+)/i;
-  const intelPattern = /Intel\s+(Iris|UHD|Xe)\s+([A-Za-z0-9\s]+)/i;
+    const nvidiaPattern = /NVIDIA\s+(GeForce|Quadro|RTX|GTX)\s+([A-Za-z0-9\s]+)/i;
+    const amdPattern = /AMD\s+(Radeon|RX)\s+([A-Za-z0-9\s]+)/i;
+    const intelPattern = /Intel\s+(Iris|UHD|Xe)\s+([A-Za-z0-9\s]+)/i;
 
-  if (nvidiaPattern.test(gpuName)) {
-    const [, series, model] = gpuName.match(nvidiaPattern);
-    return `NVIDIA ${series} ${model.trim()}`;
-  } else if (amdPattern.test(gpuName)) {
-    const [, series, model] = gpuName.match(amdPattern);
-    return `AMD ${series} ${model.trim()}`;
-  } else if (intelPattern.test(gpuName)) {
-    const [, series, model] = gpuName.match(intelPattern);
-    return `Intel ${series} ${model.trim()}`;
-  }
+    if (nvidiaPattern.test(gpuName)) {
+        const [, series, model] = gpuName.match(nvidiaPattern);
+        return `NVIDIA ${series} ${model.trim()}`;
+    } else if (amdPattern.test(gpuName)) {
+        const [, series, model] = gpuName.match(amdPattern);
+        return `AMD ${series} ${model.trim()}`;
+    } else if (intelPattern.test(gpuName)) {
+        const [, series, model] = gpuName.match(intelPattern);
+        return `Intel ${series} ${model.trim()}`;
+    }
 
-  return "Other";
+    return "Other";
 }
 
 async function benchmarkTest() {
-  return new Promise((resolve) => {
-    const workerCode = `
+    return new Promise((resolve) => {
+        const workerCode = `
             onmessage = function() {
                 let startTime = performance.now();
                 for (let i = 0; i < 1e7; i++) {}
@@ -143,2069 +119,1908 @@ async function benchmarkTest() {
             };
         `;
 
-    const blob = new Blob([workerCode], { type: "application/javascript" });
-    const worker = new Worker(URL.createObjectURL(blob));
+        const blob = new Blob([workerCode], { type: "application/javascript" });
+        const worker = new Worker(URL.createObjectURL(blob));
 
-    worker.onmessage = (e) => {
-      resolve(e.data);
-      worker.terminate();
-    };
+        worker.onmessage = (e) => {
+            resolve(e.data);
+            worker.terminate();
+        };
 
-    worker.postMessage(null);
-  });
+        worker.postMessage(null);
+    });
 }
 
 async function getAnalyticsData() {
-  const gl =
-    document.createElement("canvas").getContext("webgl") ||
-    document.createElement("canvas").getContext("experimental-webgl");
-  const debugInfo = gl?.getExtension("WEBGL_debug_renderer_info");
-  const browserInfo = getBrowserInfo();
+    const gl = document.createElement("canvas").getContext("webgl") || document.createElement("canvas").getContext("experimental-webgl");
+    const debugInfo = gl?.getExtension("WEBGL_debug_renderer_info");
+    const browserInfo = getBrowserInfo();
 
-  const output = {
-    screen: `${screen.width}x${screen.height}`,
-    hardware: {
-      gl: +!!window.WebGLRenderingContext,
-      gl2: +!!window.WebGL2RenderingContext,
-      minCores: navigator.hardwareConcurrency,
-      minMem: navigator.deviceMemory ?? 0,
-      gpu: extractImportantGPUInfo(
-        debugInfo
-          ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
-          : "unknown",
-      ),
-      os: getOSInfo(),
-      bench: await benchmarkTest(),
-    },
-    browser: {
-      name: browserInfo.name,
-      version: browserInfo.version,
-    },
-    locale: navigator.language,
-    tzOff: -(new Date().getTimezoneOffset() / 60),
-    dst: +(
-      new Date().getTimezoneOffset() <
-      Math.max(
-        new Date(new Date().getFullYear(), 0, 1).getTimezoneOffset(),
-        new Date(new Date().getFullYear(), 6, 1).getTimezoneOffset(),
-      )
-    ),
-    isMobile: +/Android|webOS|iPhone|iPad|iPod|BlackBerry|android|mobi/i.test(
-      navigator.userAgent,
-    ),
-  };
+    const output = {
+        screen: `${screen.width}x${screen.height}`,
+        hardware: {
+            gl: +!!window.WebGLRenderingContext,
+            gl2: +!!window.WebGL2RenderingContext,
+            minCores: navigator.hardwareConcurrency,
+            minMem: navigator.deviceMemory ?? 0,
+            gpu: extractImportantGPUInfo(debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "unknown"),
+            os: getOSInfo(),
+            bench: await benchmarkTest(),
+        },
+        browser: {
+            name: browserInfo.name,
+            version: browserInfo.version,
+        },
+        locale: navigator.language,
+        tzOff: -(new Date().getTimezoneOffset() / 60),
+        dst: +(new Date().getTimezoneOffset() < Math.max(new Date(new Date().getFullYear(), 0, 1).getTimezoneOffset(), new Date(new Date().getFullYear(), 6, 1).getTimezoneOffset())),
+        isMobile: +/Android|webOS|iPhone|iPad|iPod|BlackBerry|android|mobi/i.test(navigator.userAgent),
+    };
 
-  const userAgentData = navigator.userAgentData;
+    const userAgentData = navigator.userAgentData;
 
-  if (userAgentData) {
-    if (userAgentData.brands.length > 0) {
-      const brand = userAgentData.brands.find(
-        (b) => b.version == output.browser.version,
-      )?.brand;
+    if (userAgentData) {
+        if (userAgentData.brands.length > 0) {
+            const brand = userAgentData.brands.find((b) => b.version == output.browser.version)?.brand;
 
-      if (brand) {
-        output.browser.name = brand;
-      }
+            if (brand) {
+                output.browser.name = brand;
+            }
+        }
+
+        output.isMobile = +userAgentData.mobile;
     }
 
-    output.isMobile = +userAgentData.mobile;
-  }
-
-  return output;
+    return output;
 }
 
 async function encodeAnalytics() {
-  const data = await getAnalyticsData();
-  return btoa(JSON.stringify(data));
+    const data = await getAnalyticsData();
+    return btoa(JSON.stringify(data));
 }
 
 const analyticalData = encodeURIComponent(await encodeAnalytics());
 
 export async function loadUUID() {
-  const storageID = localStorage.getItem("uuid");
-  let existing = false;
+    const storageID = localStorage.getItem("uuid");
+    let existing = false;
 
-  if (storageID) {
-    const [id, expiresAt] = storageID.split(":");
-    if (Date.now() < Number(expiresAt)) {
-      existing = id;
+    if (storageID) {
+        const [id, expiresAt] = storageID.split(":");
+        if (Date.now() < Number(expiresAt)) {
+            existing = id;
+        }
     }
-  }
 
-  const data = await fetch(
-    util.SERVER_URL + "/uuid/get?existing=" + existing,
-  ).then((r) => r.json());
-  if (!data.ok) throw new Error("Failed to get UUID data");
-  localStorage.setItem(
-    "uuid",
-    data.uuid + ":" + (Date.now() + 1e3 * 60 * 60 * 24),
-  );
-  return data.uuid;
+    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then((r) => r.json());
+    if (!data.ok) throw new Error("Failed to get UUID data");
+    localStorage.setItem("uuid", data.uuid + ":" + (Date.now() + 1e3 * 60 * 60 * 24));
+    return data.uuid;
 }
 
 export const UUID = await loadUUID();
 console.log("UUID", UUID);
 
 export async function findLobbies() {
-  const response = await fetch(util.SERVER_URL + "/lobby/list");
-  const lobbies = await response.json();
-  return lobbies;
+    const response = await fetch(util.SERVER_URL + "/lobby/list");
+    const lobbies = await response.json();
+    return lobbies;
 }
 
 class ModdingAPI {
-  #jobs = new Map();
-  #jobID = 0;
+    #jobs = new Map();
+    #jobID = 0;
 
-  /** @type {BroadcastChannel|null} */
-  #channel = null;
+    /** @type {BroadcastChannel|null} */
+    #channel = null;
 
-  constructor() {
-    this.#channel = new BroadcastChannel("floofModdingAPI");
-    this.#channel.onmessage = (e) => this.#handleFloofModdingAPI(e.data);
+    constructor() {
+        this.#channel = new BroadcastChannel("floofModdingAPI");
+        this.#channel.onmessage = (e) => this.#handleFloofModdingAPI(e.data);
 
-    console.log("Modding API initialized");
+        console.log("Modding API initialized");
 
-    window.floof = this;
-  }
-
-  #handleFloofModdingAPI(data) {
-    const job = this.#jobs.get(data[0]);
-
-    if (!job) {
-      throw new Error("Invalid job ID");
+        window.floof = this;
     }
 
-    if (data[2] !== null) {
-      // transferrable type
-      let obj = new PetalConfig("", 0, 0, 0);
+    #handleFloofModdingAPI(data) {
+        const job = this.#jobs.get(data[0]);
 
-      switch (data[2]) {
-        case 0: // PetalConfig
-          obj = Object.assign(obj, structuredClone(data[1].data));
+        if (!job) {
+            throw new Error("Invalid job ID");
+        }
 
-          for (const key in data[1].data) {
-            const value = structuredClone(data[1].data[key]);
+        if (data[2] !== null) {
+            // transferrable type
+            let obj = new PetalConfig("", 0, 0, 0);
 
-            switch (key) {
-              case "drawing":
-                obj[key] = Object.assign(new Drawing(), value);
-                break;
-              case "tiers":
-                for (let i = 0; i < value.length; i++) {
-                  obj[key][i] = Object.assign(new PetalTier(0, 0, 0), value[i]);
-                }
-                break;
+            switch (data[2]) {
+                case 0: // PetalConfig
+                    obj = Object.assign(obj, structuredClone(data[1].data));
+
+                    for (const key in data[1].data) {
+                        const value = structuredClone(data[1].data[key]);
+
+                        switch (key) {
+                            case "drawing":
+                                obj[key] = Object.assign(new Drawing(), value);
+                                break;
+                            case "tiers":
+                                for (let i = 0; i < value.length; i++) {
+                                    obj[key][i] = Object.assign(new PetalTier(0, 0, 0), value[i]);
+                                }
+                                break;
+                        }
+                    }
+                    break;
             }
-          }
-          break;
-      }
 
-      data[1].data = obj;
+            data[1].data = obj;
+        }
+
+        job(data[1]);
     }
 
-    job(data[1]);
-  }
-
-  #askModdingAPI(...args) {
-    return new Promise((resolve) => {
-      const id = this.#jobID++;
-      this.#jobs.set(id, resolve);
-      this.#channel.postMessage([id, ...args]);
-    });
-  }
-
-  syncPetalIndex(name) {
-    return state.petalConfigs.findIndex((p) => p.name === name);
-  }
-
-  syncMobIndex(name) {
-    return state.mobConfigs.findIndex((m) => m.name === name);
-  }
-
-  syncRarityIndex(name) {
-    return state.tiers.findIndex((t) => t.name === name);
-  }
-
-  syncNextAvailablePetalIndex() {
-    return state.petalConfigs.length;
-  }
-
-  syncNextAvailableMobIndex() {
-    return state.mobConfigs.length;
-  }
-
-  help() {
-    window.open("/moddingAPI/index.html", "_blank");
-  }
-
-  get Drawing() {
-    return Drawing;
-  }
-
-  get PetalConfig() {
-    return PetalConfig;
-  }
-
-  get MobConfig() {
-    return MobConfig;
-  }
-
-  async spawnMob(index, rarity) {
-    if (typeof index === "string") {
-      index = this.syncMobIndex(index);
-
-      if (index === -1) {
-        return {
-          ok: false,
-          message: "Invalid mob name",
-          data: null,
-        };
-      }
+    #askModdingAPI(...args) {
+        return new Promise((resolve) => {
+            const id = this.#jobID++;
+            this.#jobs.set(id, resolve);
+            this.#channel.postMessage([id, ...args]);
+        });
     }
 
-    if (typeof rarity === "string") {
-      rarity = this.syncRarityIndex(rarity);
-
-      if (rarity === -1) {
-        return {
-          ok: false,
-          message: "Invalid rarity name",
-          data: null,
-        };
-      }
+    syncPetalIndex(name) {
+        return state.petalConfigs.findIndex((p) => p.name === name);
     }
 
-    return await this.#askModdingAPI("spawnMob", index, rarity);
-  }
-
-  async setRoomInfo(dynamic, width, height, mobCount, currentWave) {
-    return await this.#askModdingAPI(
-      "setRoomInfo",
-      dynamic,
-      width,
-      height,
-      mobCount,
-      currentWave,
-    );
-  }
-
-  async getRoomInfo() {
-    return await this.#askModdingAPI("getRoomInfo");
-  }
-
-  async getPlayers() {
-    return await this.#askModdingAPI("getPlayers");
-  }
-
-  async getMobs() {
-    return await this.#askModdingAPI("getMobs");
-  }
-
-  async getPetalInfo(index) {
-    if (typeof index === "string") {
-      index = this.syncPetalIndex(index);
-
-      if (index === -1) {
-        return {
-          ok: false,
-          message: "Invalid petal name",
-          data: null,
-        };
-      }
+    syncMobIndex(name) {
+        return state.mobConfigs.findIndex((m) => m.name === name);
     }
 
-    if (typeof index !== "number" || state.petalConfigs[index] === undefined) {
-      return {
-        ok: false,
-        message: "Index must be a number pointing to an existing petal",
-        data: null,
-      };
+    syncRarityIndex(name) {
+        return state.tiers.findIndex((t) => t.name === name);
     }
 
-    return await this.#askModdingAPI("getPetalInfo", index);
-  }
-
-  async createCustomPetal(options) {
-    if (!(options instanceof PetalConfig)) {
-      return {
-        ok: false,
-        message: "Options must be a PetalConfig object",
-        data: null,
-      };
+    syncNextAvailablePetalIndex() {
+        return state.petalConfigs.length;
     }
 
-    if (options.drawing) {
-      options.drawing = options.drawing.toString();
-    } else {
-      return {
-        ok: false,
-        message: "Drawing is a required option",
-        data: null,
-      };
+    syncNextAvailableMobIndex() {
+        return state.mobConfigs.length;
     }
 
-    return await this.#askModdingAPI("createCustomPetal", options);
-  }
-
-  async editPetal(options) {
-    if (!(options instanceof PetalConfig)) {
-      return {
-        ok: false,
-        message: "Options must be a PetalConfig object",
-        data: null,
-      };
+    help() {
+        window.open("/moddingAPI/index.html", "_blank");
     }
 
-    if (options.drawing) {
-      options.drawing = options.drawing.toString();
+    get Drawing() {
+        return Drawing;
     }
 
-    return await this.#askModdingAPI("editPetal", options);
-  }
-
-  async deletePetal(index) {
-    if (typeof index === "string") {
-      index = this.syncPetalIndex(index);
-
-      if (index === -1) {
-        return {
-          ok: false,
-          message: "Invalid petal name",
-          data: null,
-        };
-      }
+    get PetalConfig() {
+        return PetalConfig;
     }
 
-    if (typeof index !== "number" || state.petalConfigs[index] === undefined) {
-      return {
-        ok: false,
-        message: "Index must be a number pointing to an existing petal",
-        data: null,
-      };
+    get MobConfig() {
+        return MobConfig;
     }
 
-    return await this.#askModdingAPI("deletePetal", index);
-  }
+    async spawnMob(index, rarity) {
+        if (typeof index === "string") {
+            index = this.syncMobIndex(index);
 
-  async setSlot(clientID, slotID, index, rarity) {
-    if (typeof index === "string") {
-      index = this.syncPetalIndex(index);
+            if (index === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid mob name",
+                    data: null,
+                };
+            }
+        }
 
-      if (index === -1) {
-        return {
-          ok: false,
-          message: "Invalid petal name",
-          data: null,
-        };
-      }
+        if (typeof rarity === "string") {
+            rarity = this.syncRarityIndex(rarity);
+
+            if (rarity === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid rarity name",
+                    data: null,
+                };
+            }
+        }
+
+        return await this.#askModdingAPI("spawnMob", index, rarity);
     }
 
-    if (typeof rarity === "string") {
-      rarity = this.syncRarityIndex(rarity);
-
-      if (rarity === -1) {
-        return {
-          ok: false,
-          message: "Invalid rarity name",
-          data: null,
-        };
-      }
+    async setRoomInfo(dynamic, width, height, mobCount, currentWave) {
+        return await this.#askModdingAPI("setRoomInfo", dynamic, width, height, mobCount, currentWave);
     }
 
-    return await this.#askModdingAPI(
-      "setSlot",
-      clientID,
-      slotID,
-      index,
-      rarity,
-    );
-  }
-
-  async setSlotAmount(clientID, amount) {
-    return await this.#askModdingAPI("setSlotAmount", clientID, amount);
-  }
-
-  async spawnAIPlayer(rarity, level) {
-    if (typeof rarity === "string") {
-      rarity = this.syncRarityIndex(rarity);
-
-      if (rarity === -1) {
-        return {
-          ok: false,
-          message: "Invalid rarity name",
-          data: null,
-        };
-      }
+    async getRoomInfo() {
+        return await this.#askModdingAPI("getRoomInfo");
     }
 
-    return await this.#askModdingAPI("spawnAIPlayer", rarity, level);
-  }
+    async getPlayers() {
+        return await this.#askModdingAPI("getPlayers");
+    }
+
+    async getMobs() {
+        return await this.#askModdingAPI("getMobs");
+    }
+
+    async getPetalInfo(index) {
+        if (typeof index === "string") {
+            index = this.syncPetalIndex(index);
+
+            if (index === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid petal name",
+                    data: null,
+                };
+            }
+        }
+
+        if (typeof index !== "number" || state.petalConfigs[index] === undefined) {
+            return {
+                ok: false,
+                message: "Index must be a number pointing to an existing petal",
+                data: null,
+            };
+        }
+
+        return await this.#askModdingAPI("getPetalInfo", index);
+    }
+
+    async createCustomPetal(options) {
+        if (!(options instanceof PetalConfig)) {
+            return {
+                ok: false,
+                message: "Options must be a PetalConfig object",
+                data: null,
+            };
+        }
+
+        if (options.drawing) {
+            options.drawing = options.drawing.toString();
+        } else {
+            return {
+                ok: false,
+                message: "Drawing is a required option",
+                data: null,
+            };
+        }
+
+        return await this.#askModdingAPI("createCustomPetal", options);
+    }
+
+    async editPetal(options) {
+        if (!(options instanceof PetalConfig)) {
+            return {
+                ok: false,
+                message: "Options must be a PetalConfig object",
+                data: null,
+            };
+        }
+
+        if (options.drawing) {
+            options.drawing = options.drawing.toString();
+        }
+
+        return await this.#askModdingAPI("editPetal", options);
+    }
+
+    async deletePetal(index) {
+        if (typeof index === "string") {
+            index = this.syncPetalIndex(index);
+
+            if (index === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid petal name",
+                    data: null,
+                };
+            }
+        }
+
+        if (typeof index !== "number" || state.petalConfigs[index] === undefined) {
+            return {
+                ok: false,
+                message: "Index must be a number pointing to an existing petal",
+                data: null,
+            };
+        }
+
+        return await this.#askModdingAPI("deletePetal", index);
+    }
+
+    async setSlot(clientID, slotID, index, rarity) {
+        if (typeof index === "string") {
+            index = this.syncPetalIndex(index);
+
+            if (index === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid petal name",
+                    data: null,
+                };
+            }
+        }
+
+        if (typeof rarity === "string") {
+            rarity = this.syncRarityIndex(rarity);
+
+            if (rarity === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid rarity name",
+                    data: null,
+                };
+            }
+        }
+
+        return await this.#askModdingAPI("setSlot", clientID, slotID, index, rarity);
+    }
+
+    async setSlotAmount(clientID, amount) {
+        return await this.#askModdingAPI("setSlotAmount", clientID, amount);
+    }
+
+    async spawnAIPlayer(rarity, level) {
+        if (typeof rarity === "string") {
+            rarity = this.syncRarityIndex(rarity);
+
+            if (rarity === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid rarity name",
+                    data: null,
+                };
+            }
+        }
+
+        return await this.#askModdingAPI("spawnAIPlayer", rarity, level);
+    }
 }
 
 export function createServer(name, gamemode, modded, isPrivate, biome) {
-  let biomeInt = 0;
+    let biomeInt = 0;
 
-  switch (biome) {
-    case "default":
-      biomeInt = BIOME_TYPES.DEFAULT;
-      break;
-    case "garden":
-      biomeInt = BIOME_TYPES.GARDEN;
-      break;
-    case "desert":
-      biomeInt = BIOME_TYPES.DESERT;
-      break;
-    case "ocean":
-      biomeInt = BIOME_TYPES.OCEAN;
-      break;
-    case "antHell":
-      biomeInt = BIOME_TYPES.ANT_HELL;
-      break;
-    case "sewers":
-      biomeInt = BIOME_TYPES.SEWERS;
-      break;
-    case "hell":
-      biomeInt = BIOME_TYPES.HELL;
-      break;
-    case "halloween":
-      if (util.isHalloween) {
-        biomeInt = BIOME_TYPES.HALLOWEEN;
-        break;
-      } else {
-        return new Promise((resolve) =>
-          resolve({
-            ok: false,
-            error: "Halloween biome is not available",
-          }),
+    switch (biome) {
+        case "default":
+            biomeInt = BIOME_TYPES.DEFAULT;
+            break;
+        case "garden":
+            biomeInt = BIOME_TYPES.GARDEN;
+            break;
+        case "desert":
+            biomeInt = BIOME_TYPES.DESERT;
+            break;
+        case "ocean":
+            biomeInt = BIOME_TYPES.OCEAN;
+            break;
+        case "antHell":
+            biomeInt = BIOME_TYPES.ANT_HELL;
+            break;
+        case "sewers":
+            biomeInt = BIOME_TYPES.SEWERS;
+            break;
+        case "hell":
+            biomeInt = BIOME_TYPES.HELL;
+            break;
+        case "halloween":
+            if (util.isHalloween) {
+                biomeInt = BIOME_TYPES.HALLOWEEN;
+                break;
+            } else {
+                return new Promise((resolve) =>
+                    resolve({
+                        ok: false,
+                        error: "Halloween biome is not available",
+                    }),
+                );
+            }
+        case "dark_forest":
+            biomeInt = BIOME_TYPES.DARK_FOREST;
+            break;
+        default:
+            return new Promise((resolve) =>
+                resolve({
+                    ok: false,
+                    error: "Invalid biome",
+                }),
+            );
+    }
+
+    return new Promise((resolve) => {
+        const timeout = setTimeout(
+            () =>
+                resolve({
+                    ok: false,
+                    error: "Timeout error",
+                }),
+            10000,
         );
-      }
-    case "dark_forest":
-      biomeInt = BIOME_TYPES.DARK_FOREST;
-      break;
-    default:
-      return new Promise((resolve) =>
-        resolve({
-          ok: false,
-          error: "Invalid biome",
-        }),
-      );
-  }
 
-  return new Promise((resolve) => {
-    const timeout = setTimeout(
-      () =>
-        resolve({
-          ok: false,
-          error: "Timeout error",
-        }),
-      10000,
-    );
+        const socket = new WebSocket(`${util.SERVER_URL.replace("http", "ws")}/ws/lobby?gameName=${name}&isModded=${modded ? "yes" : "no"}&isPrivate=${isPrivate ? "yes" : "no"}&gamemode=${gamemode}&biome=${biomeInt}&analytics=${analyticalData}`);
+        socket.binaryType = "arraybuffer";
 
-    const socket = new WebSocket(
-      `${util.SERVER_URL.replace("http", "ws")}/ws/lobby?gameName=${name}&isModded=${modded ? "yes" : "no"}&isPrivate=${isPrivate ? "yes" : "no"}&gamemode=${gamemode}&biome=${biomeInt}&analytics=${analyticalData}`,
-    );
-    socket.binaryType = "arraybuffer";
+        socket.onopen = () => {
+            console.log("Connected to server");
 
-    socket.onopen = () => {
-      console.log("Connected to server");
+            // Setup ping
+            const PING_INTERVAL = 30000; // 30 seconds
+            const ping = () => {
+                if (socket.readyState === WebSocket.OPEN) socket.ping();
+            };
+            const intervalId = setInterval(ping, PING_INTERVAL);
 
-      // Setup ping
-      const PING_INTERVAL = 30000; // 30 seconds
-      const ping = () => {
-        if (socket.readyState === WebSocket.OPEN) socket.ping();
-      };
-      const intervalId = setInterval(ping, PING_INTERVAL);
+            const worker = new Worker("./server/index.js", { type: "module" });
+            worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
 
-      const worker = new Worker("./server/index.js", { type: "module" });
-      worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
+            socket.onmessage = (event) => {
+                const data = new Uint8Array(event.data);
 
-      socket.onmessage = (event) => {
-        const data = new Uint8Array(event.data);
+                if (data[0] === 255) {
+                    clearTimeout(timeout);
 
-        if (data[0] === 255) {
-          clearTimeout(timeout);
+                    const ok = data[1] === 1;
 
-          const ok = data[1] === 1;
+                    if (!ok) {
+                        resolve({
+                            ok: false,
+                            error: "Request rejected by server: " + new TextDecoder().decode(data.slice(2, -1)),
+                        });
+                    }
 
-          if (!ok) {
-            resolve({
-              ok: false,
-              error:
-                "Request rejected by server: " +
-                new TextDecoder().decode(data.slice(2, -1)),
-            });
-          }
+                    resolve({
+                        ok: true,
+                        party: new TextDecoder().decode(data.slice(2, -1)),
+                        worker: worker,
+                        socket: socket,
+                    });
+                    return;
+                }
 
-          resolve({
-            ok: true,
-            party: new TextDecoder().decode(data.slice(2, -1)),
-            worker: worker,
-            socket: socket,
-          });
-          return;
-        }
+                worker.postMessage(data);
+            };
 
-        worker.postMessage(data);
-      };
+            worker.onmessage = ({ data }) => {
+                if (socket.readyState !== WebSocket.OPEN) return;
+                socket.send(data);
+            };
 
-      worker.onmessage = ({ data }) => {
-        if (socket.readyState !== WebSocket.OPEN) return;
-        socket.send(data);
-      };
+            socket.onclose = () => {
+                clearInterval(intervalId);
+                console.log("Disconnected from server");
+                worker.terminate();
+            };
 
-      socket.onclose = () => {
-        clearInterval(intervalId);
-        console.log("Disconnected from server");
-        worker.terminate();
-      };
-
-      if (modded) {
-        new ModdingAPI();
-      }
-    };
-  });
+            if (modded) {
+                new ModdingAPI();
+            }
+        };
+    });
 }
 
 export class ClientEntity {
-  constructor(id) {
-    this.id = id;
+    constructor(id) {
+        this.id = id;
 
-    // Display data
-    this.x = 0;
-    this.y = 0;
-    this.size = 1;
-    this.facing = 0;
-    this.hit = false;
+        // Display data
+        this.x = 0;
+        this.y = 0;
+        this.size = 1;
+        this.facing = 0;
+        this.hit = false;
 
-    // Real data to be interpolated
-    this.realX = 0;
-    this.realY = 0;
-    this.realSize = 1;
-    this.realFacing = 0;
-  }
+        // Real data to be interpolated
+        this.realX = 0;
+        this.realY = 0;
+        this.realSize = 1;
+        this.realFacing = 0;
+    }
 
-  interpolate() {
-    this.x = util.lerp(this.x, this.realX, state.interpolationFactor);
-    this.y = util.lerp(this.y, this.realY, state.interpolationFactor);
-    this.size = util.lerp(this.size, this.realSize, state.interpolationFactor);
-    this.facing = util.lerpAngle(
-      this.facing,
-      this.realFacing,
-      state.interpolationFactor,
-    );
-  }
+    interpolate() {
+        this.x = util.lerp(this.x, this.realX, state.interpolationFactor);
+        this.y = util.lerp(this.y, this.realY, state.interpolationFactor);
+        this.size = util.lerp(this.size, this.realSize, state.interpolationFactor);
+        this.facing = util.lerpAngle(this.facing, this.realFacing, state.interpolationFactor);
+    }
 }
 
 export class ClientPlayer extends ClientEntity {
-  constructor(id) {
-    super(id);
-    this.name = "";
-    this.nameColor = "#FFFFFF";
-    this.healthRatio = 1;
-    this.shieldRatio = 0;
-    this.realHealthRatio = 1;
-    this.realShieldRatio = 0;
-    this.rarity = 0;
-    this.level = 0;
+    constructor(id) {
+        super(id);
+        this.name = "";
+        this.nameColor = "#FFFFFF";
+        this.healthRatio = 1;
+        this.shieldRatio = 0;
+        this.realHealthRatio = 1;
+        this.realShieldRatio = 0;
+        this.rarity = 0;
+        this.level = 0;
 
-    this.mood = 0;
-    this.mouthDip = 0;
-    this.attack = false;
-    this.defend = false;
-    this.poisoned = false;
-    this.wearing = 0;
+        this.mood = 0;
+        this.mouthDip = 0;
+        this.attack = false;
+        this.defend = false;
+        this.poisoned = false;
+        this.wearing = 0;
 
-    this.team = 0;
+        this.team = 0;
 
-    this.lastHealthLoweredAt = 0;
-    this.secondaryHealthBar = 0;
-  }
-
-  interpolate() {
-    super.interpolate();
-
-    if (
-      Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 &&
-      this.healthRatio > this.realHealthRatio
-    ) {
-      this.lastHealthLoweredAt = performance.now();
+        this.lastHealthLoweredAt = 0;
+        this.secondaryHealthBar = 0;
     }
 
-    this.secondaryHealthBar = Math.max(
-      this.healthRatio,
-      this.secondaryHealthBar,
-    );
+    interpolate() {
+        super.interpolate();
 
-    if (performance.now() - this.lastHealthLoweredAt > 256) {
-      this.secondaryHealthBar = util.lerp(
-        this.secondaryHealthBar,
-        this.healthRatio,
-        state.interpolationFactor * 0.75,
-      );
+        if (Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 && this.healthRatio > this.realHealthRatio) {
+            this.lastHealthLoweredAt = performance.now();
+        }
+
+        this.secondaryHealthBar = Math.max(this.healthRatio, this.secondaryHealthBar);
+
+        if (performance.now() - this.lastHealthLoweredAt > 256) {
+            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * 0.75);
+        }
+
+        this.healthRatio = util.lerp(this.healthRatio, this.realHealthRatio, state.interpolationFactor);
+        this.shieldRatio = util.lerp(this.shieldRatio, this.realShieldRatio, state.interpolationFactor);
     }
-
-    this.healthRatio = util.lerp(
-      this.healthRatio,
-      this.realHealthRatio,
-      state.interpolationFactor,
-    );
-    this.shieldRatio = util.lerp(
-      this.shieldRatio,
-      this.realShieldRatio,
-      state.interpolationFactor,
-    );
-  }
 }
 
 export class ClientPetal extends ClientEntity {
-  constructor(id) {
-    super(id);
-    this.index = 0;
-  }
+    constructor(id) {
+        super(id);
+        this.index = 0;
+    }
 }
 
 export class ClientMob extends ClientEntity {
-  constructor(id) {
-    super(id);
-    this.index = 0;
-    this.rarity = 0;
-    this.attack = false;
-    this.poisoned = false;
-    this.friendly = false;
-    this.healthRatio = 1;
-    this.realHealthRatio = 1;
+    constructor(id) {
+        super(id);
+        this.index = 0;
+        this.rarity = 0;
+        this.attack = false;
+        this.poisoned = false;
+        this.friendly = false;
+        this.healthRatio = 1;
+        this.realHealthRatio = 1;
 
-    /** @type {StarfishData|undefined} */
-    this.extraData = undefined;
+        /** @type {StarfishData|undefined} */
+        this.extraData = undefined;
 
-    this.lastHealthLoweredAt = 0;
-    this.secondaryHealthBar = 0;
-  }
-
-  interpolate() {
-    super.interpolate();
-
-    if (
-      Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 &&
-      this.healthRatio > this.realHealthRatio
-    ) {
-      this.lastHealthLoweredAt = performance.now();
+        this.lastHealthLoweredAt = 0;
+        this.secondaryHealthBar = 0;
     }
 
-    this.secondaryHealthBar = Math.max(
-      this.healthRatio,
-      this.secondaryHealthBar,
-    );
+    interpolate() {
+        super.interpolate();
 
-    if (performance.now() - this.lastHealthLoweredAt > 256) {
-      this.secondaryHealthBar = util.lerp(
-        this.secondaryHealthBar,
-        this.healthRatio,
-        state.interpolationFactor * 0.75,
-      );
+        if (Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 && this.healthRatio > this.realHealthRatio) {
+            this.lastHealthLoweredAt = performance.now();
+        }
+
+        this.secondaryHealthBar = Math.max(this.healthRatio, this.secondaryHealthBar);
+
+        if (performance.now() - this.lastHealthLoweredAt > 256) {
+            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * 0.75);
+        }
+
+        this.healthRatio = util.lerp(this.healthRatio, this.realHealthRatio, state.interpolationFactor);
+
+        if (this.extraData instanceof StarfishData) {
+            this.extraData.update(this.healthRatio);
+        }
+
+        if (this.extraData instanceof Array) {
+            for (const body of this.extraData) {
+                body.x = util.lerp(body.x, body.realX, state.interpolationFactor);
+                body.y = util.lerp(body.y, body.realY, state.interpolationFactor);
+            }
+        }
     }
-
-    this.healthRatio = util.lerp(
-      this.healthRatio,
-      this.realHealthRatio,
-      state.interpolationFactor,
-    );
-
-    if (this.extraData instanceof StarfishData) {
-      this.extraData.update(this.healthRatio);
-    }
-
-    if (this.extraData instanceof Array) {
-      for (const body of this.extraData) {
-        body.x = util.lerp(body.x, body.realX, state.interpolationFactor);
-        body.y = util.lerp(body.y, body.realY, state.interpolationFactor);
-      }
-    }
-  }
 }
 
 export class ClientMarker {
-  constructor(id) {
-    this.id = id;
-    this.x = 0;
-    this.y = 0;
-    this.size = 1;
-    this.creation = 0;
-    this.timer = 0;
-  }
+    constructor(id) {
+        this.id = id;
+        this.x = 0;
+        this.y = 0;
+        this.size = 1;
+        this.creation = 0;
+        this.timer = 0;
+    }
 
-  get tick() {
-    return (Date.now() - this.creation) / this.timer;
-  }
+    get tick() {
+        return (Date.now() - this.creation) / this.timer;
+    }
 }
 
 export class ClientLightning {
-  static TIME_ALIVE = 1e3;
+    static TIME_ALIVE = 1e3;
 
-  constructor(id) {
-    this.id = id;
-    /** @type {{x:number,y:number}[]} */
-    this.points = [];
+    constructor(id) {
+        this.id = id;
+        /** @type {{x:number,y:number}[]} */
+        this.points = [];
 
-    this.tick = performance.now();
-  }
-
-  improvePoints() {
-    const oldPoints = structuredClone(this.points);
-    const points = [];
-    const pointsBetweenPoints = 6;
-
-    for (let i = 0; i < oldPoints.length - 1; i++) {
-      const p1 = oldPoints[i];
-      const p2 = oldPoints[i + 1];
-
-      points.push(p1);
-
-      for (let j = 1; j < pointsBetweenPoints; j++) {
-        // Add some jaggedness
-        const x =
-          util.lerp(p1.x, p2.x, j / pointsBetweenPoints) +
-          (Math.random() - 0.5) * 50;
-        const y =
-          util.lerp(p1.y, p2.y, j / pointsBetweenPoints) +
-          (Math.random() - 0.5) * 50;
-        points.push({ x, y });
-      }
+        this.tick = performance.now();
     }
 
-    points.push(oldPoints[oldPoints.length - 1]);
+    improvePoints() {
+        const oldPoints = structuredClone(this.points);
+        const points = [];
+        const pointsBetweenPoints = 6;
 
-    this.points = points;
-  }
+        for (let i = 0; i < oldPoints.length - 1; i++) {
+            const p1 = oldPoints[i];
+            const p2 = oldPoints[i + 1];
 
-  get alpha() {
-    const n = performance.now();
-    return n - this.tick > ClientLightning.TIME_ALIVE
-      ? 0
-      : 1 - (n - this.tick) / ClientLightning.TIME_ALIVE;
-  }
+            points.push(p1);
+
+            for (let j = 1; j < pointsBetweenPoints; j++) {
+                // Add some jaggedness
+                const x = util.lerp(p1.x, p2.x, j / pointsBetweenPoints) + (Math.random() - 0.5) * 50;
+                const y = util.lerp(p1.y, p2.y, j / pointsBetweenPoints) + (Math.random() - 0.5) * 50;
+                points.push({ x, y });
+            }
+        }
+
+        points.push(oldPoints[oldPoints.length - 1]);
+
+        this.points = points;
+    }
+
+    get alpha() {
+        const n = performance.now();
+        return n - this.tick > ClientLightning.TIME_ALIVE ? 0 : 1 - (n - this.tick) / ClientLightning.TIME_ALIVE;
+    }
 }
 
 export class ChatMessage {
-  constructor(type, ...args) {
-    this.type = type;
+    constructor(type, ...args) {
+        this.type = type;
 
-    switch (type) {
-      case 0: // Chat
-        this.username = args[0];
-        this.message = args[1];
-        this.color = args[2];
+        switch (type) {
+            case 0: // Chat
+                this.username = args[0];
+                this.message = args[1];
+                this.color = args[2];
 
-        this.completeMessage = this.username + ": " + this.message;
-        break;
-      case 1: // System
-        this.message = args[0];
-        this.color = args[1];
-        this.completeMessage = this.message;
-        break;
+                this.completeMessage = this.username + ": " + this.message;
+                break;
+            case 1: // System
+                this.message = args[0];
+                this.color = args[1];
+                this.completeMessage = this.message;
+                break;
+        }
+
+        this.y = canvas.height;
+        this.ticker = 0;
+
+        ChatMessage.messages.push(this);
+        ChatMessage.allMessages.push(this);
     }
 
-    this.y = canvas.height;
-    this.ticker = 0;
+    /**
+     * @type {ChatMessage[]}
+     */
+    static messages = [];
+    static allMessages = [];
 
-    ChatMessage.messages.push(this);
-    ChatMessage.allMessages.push(this);
-  }
+    static showInput = false;
+    static element = document.getElementById("chatInput");
 
-  /**
-   * @type {ChatMessage[]}
-   */
-  static messages = [];
-  static allMessages = [];
+    static send() {
+        const message = ChatMessage.element.value.trim();
 
-  static showInput = false;
-  static element = document.getElementById("chatInput");
+        if (message.length > 0) {
+            state.socket?.talk(SERVER_BOUND.CHAT_MESSAGE, message);
+            ChatMessage.element.value = "";
+        }
 
-  static send() {
-    const message = ChatMessage.element.value.trim();
-
-    if (message.length > 0) {
-      state.socket?.talk(SERVER_BOUND.CHAT_MESSAGE, message);
-      ChatMessage.element.value = "";
+        ChatMessage.showInput = false;
     }
-
-    ChatMessage.showInput = false;
-  }
 }
 
 new ChatMessage(1, "Welcome to the game!", "#FFFFFF");
 
 export class ClientSocket extends WebSocket {
-  static Listener = class Listener {
-    /** @param {ClientSocket} socket */
-    constructor(socket) {
-      this.jobID = 0;
-      this.socket = socket;
+    static Listener = class Listener {
+        /** @param {ClientSocket} socket */
+        constructor(socket) {
+            this.jobID = 0;
+            this.socket = socket;
 
-      this.jobs = new Map();
-    }
+            this.jobs = new Map();
+        }
 
-    wait(data) {
-      return new Promise((resolve) => {
-        const id = this.jobID++;
-        this.socket.talk(SERVER_BOUND.DEV_CHEAT, { promiseID: id, ...data });
-        this.jobs.set(id, resolve);
-      });
-    }
+        wait(data) {
+            return new Promise((resolve) => {
+                const id = this.jobID++;
+                this.socket.talk(SERVER_BOUND.DEV_CHEAT, { promiseID: id, ...data });
+                this.jobs.set(id, resolve);
+            });
+        }
 
-    handle(id, data) {
-      if (!this.jobs.has(id)) {
-        return false;
-      }
-
-      this.jobs.get(id)(data);
-      this.jobs.delete(id);
-      return true;
-    }
-  };
-
-  constructor(url, username) {
-    super(url);
-
-    this.binaryType = "arraybuffer";
-    this.username = username;
-
-    this.addEventListener("open", this.onOpen.bind(this));
-    this.addEventListener("close", this.onClose.bind(this));
-    this.addEventListener("message", this.onMessage.bind(this));
-
-    this.lobbyID = "";
-
-    if (localStorage.token?.length > 4) {
-      this.devCheatListener = new ClientSocket.Listener(this);
-
-      window.floof_dev = {
-        spawnMob: (index, rarity) => {
-          if (typeof index === "string") {
-            index = state.mobConfigs.findIndex((m) => m.name === index);
-
-            if (index === -1) {
-              return new Promise((resolve) =>
-                resolve({
-                  ok: false,
-                  message: "Invalid mob name",
-                }),
-              );
+        handle(id, data) {
+            if (!this.jobs.has(id)) {
+                return false;
             }
-          }
 
-          if (typeof rarity === "string") {
-            rarity = state.tiers.findIndex((t) => t.name === rarity);
-
-            if (rarity === -1) {
-              return new Promise((resolve) =>
-                resolve({
-                  ok: false,
-                  message: "Invalid rarity name",
-                }),
-              );
-            }
-          }
-
-          return this.devCheatListener.wait({
-            id: DEV_CHEAT_IDS.SPAWN_MOB,
-            index,
-            rarity,
-          });
-        },
-        setPetal: (clientID, slotID, index, rarity) => {
-          if (typeof index === "string") {
-            index = state.petalConfigs.findIndex((p) => p.name === index);
-
-            if (index === -1) {
-              return new Promise((resolve) =>
-                resolve({
-                  ok: false,
-                  message: "Invalid petal name",
-                }),
-              );
-            }
-          }
-
-          if (typeof rarity === "string") {
-            rarity = state.tiers.findIndex((t) => t.name === rarity);
-
-            if (rarity === -1) {
-              return new Promise((resolve) =>
-                resolve({
-                  ok: false,
-                  message: "Invalid rarity name",
-                }),
-              );
-            }
-          }
-
-          console.log(clientID, slotID, index, rarity);
-
-          return this.devCheatListener.wait({
-            id: DEV_CHEAT_IDS.SET_PETAL,
-            clientID,
-            slotID,
-            index,
-            rarity,
-          });
-        },
-        setXP: (clientID, xp) =>
-          this.devCheatListener.wait({
-            id: DEV_CHEAT_IDS.SET_XP,
-            clientID,
-            xp,
-          }),
-        infoDump: () =>
-          this.devCheatListener.wait({ id: DEV_CHEAT_IDS.INFO_DUMP }),
-      };
-    }
-
-    this._dataIn = 0;
-    this._dataOut = 0;
-
-    this.bandWidth = {
-      in: 0,
-      out: 0,
+            this.jobs.get(id)(data);
+            this.jobs.delete(id);
+            return true;
+        }
     };
 
-    this.bandwidthTracker = setInterval(() => {
-      this.bandWidth.in = (this._dataIn / 1024).toFixed(2);
-      this.bandWidth.out = (this._dataOut / 1024).toFixed(2);
-      this._dataIn = 0;
-      this._dataOut = 0;
-    }, 1e3);
-  }
-
-  onOpen() {
-    console.log("Connected to lobby.");
-    this.verify(this.username);
-    setTimeout(() => {
-      (this.ping(), console.log("Pinging websocket server."));
-    }, 1e3);
-  }
-
-  onClose() {
-    console.log("Disconnected from lobby");
-    state.disconnected = true;
-  }
-
-  onMessage(event) {
-    state.pendingDropAmounts ??= new Map();
-    const reader = new Reader(
-      new DataView(new Uint8Array(event.data).buffer),
-      0,
-      true,
-    );
-    this._dataIn += event.data.byteLength;
-
-    switch (reader.getUint8()) {
-      case CLIENT_BOUND.KICK:
-        state.disconnectMessage = "Kicked: " + reader.getStringUTF8();
-        break;
-      case CLIENT_BOUND.READY:
-        console.log("Ready");
-        this.spawn();
-        state.usesNewInventory = false;
-        break;
-      case CLIENT_BOUND.WORLD_UPDATE:
-        state.updatesCounter++;
-        state.camera.realX = reader.getFloat32();
-        state.camera.realY = reader.getFloat32();
-        state.camera.realFov = reader.getFloat32();
-        state.camera.lightingBoost = reader.getUint8();
-        state.playerID = reader.getUint32();
-
-        let id;
-        while (((id = reader.getUint32()), id > 0)) {
-          const flags = reader.getUint8();
-          let player = state.players.get(id);
-
-          if (!player) {
-            player = new ClientPlayer(id);
-            state.players.set(id, player);
-          }
-
-          if (flags === ENTITY_FLAGS.NEW) {
-            player.name = reader.getStringUTF8();
-            player.nameColor = reader.getStringUTF8();
-            player.rarity = reader.getUint8();
-            player.level = reader.getUint16();
-            player.realX = reader.getFloat32();
-            player.realY = reader.getFloat32();
-            player.realSize = reader.getFloat32();
-            player.realFacing = reader.getFloat32();
-
-            const eflags = reader.getUint8();
-            player.hit = eflags & ENTITY_MODIFIER_FLAGS.HIT;
-            player.attack =
-              (eflags & ENTITY_MODIFIER_FLAGS.ATTACK) ===
-              ENTITY_MODIFIER_FLAGS.ATTACK;
-            player.defend =
-              (eflags & ENTITY_MODIFIER_FLAGS.DEFEND) ===
-              ENTITY_MODIFIER_FLAGS.DEFEND;
-            player.poisoned =
-              (eflags & ENTITY_MODIFIER_FLAGS.POISON) ===
-              ENTITY_MODIFIER_FLAGS.POISON;
-
-            if (eflags & ENTITY_MODIFIER_FLAGS.TDM) {
-              player.team = reader.getUint8();
-            }
-
-            if (eflags & ENTITY_MODIFIER_FLAGS.WEARABLES) {
-              player.wearing = reader.getUint8();
-            }
-
-            player.realHealthRatio = reader.getUint8() / 255;
-            player.healthRatio = player.realHealthRatio;
-
-            player.realShieldRatio = reader.getUint8() / 255;
-            player.shieldRatio = player.realShieldRatio;
-
-            player.x = player.realX;
-            player.y = player.realY;
-            player.size = player.realSize;
-            player.facing = player.realFacing;
-            continue;
-          }
-
-          if (flags === ENTITY_FLAGS.DIE) {
-            state.players.delete(id);
-            continue;
-          }
-
-          if (flags & ENTITY_FLAGS.POSITION) {
-            player.realX = reader.getFloat32();
-            player.realY = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.SIZE) {
-            player.realSize = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.FACING) {
-            player.realFacing = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.FLAGS) {
-            const eflags = reader.getUint8();
-            player.hit = eflags & ENTITY_MODIFIER_FLAGS.HIT;
-            player.attack =
-              (eflags & ENTITY_MODIFIER_FLAGS.ATTACK) ===
-              ENTITY_MODIFIER_FLAGS.ATTACK;
-            player.defend =
-              (eflags & ENTITY_MODIFIER_FLAGS.DEFEND) ===
-              ENTITY_MODIFIER_FLAGS.DEFEND;
-            player.poisoned =
-              (eflags & ENTITY_MODIFIER_FLAGS.POISON) ===
-              ENTITY_MODIFIER_FLAGS.POISON;
-
-            if (eflags & ENTITY_MODIFIER_FLAGS.TDM) {
-              player.team = reader.getUint8();
-            }
-
-            if (eflags & ENTITY_MODIFIER_FLAGS.WEARABLES) {
-              player.wearing = reader.getUint8();
-            }
-          }
-
-          if (flags & ENTITY_FLAGS.HEALTH) {
-            player.realHealthRatio = reader.getUint8() / 255;
-            player.realShieldRatio = reader.getUint8() / 255;
-          }
-
-          if (flags & ENTITY_FLAGS.DISPLAY) {
-            player.name = reader.getStringUTF8();
-            player.nameColor = reader.getStringUTF8();
-            player.rarity = reader.getUint8();
-            player.level = reader.getUint16();
-          }
-        }
-
-        while (((id = reader.getUint32()), id > 0)) {
-          const flags = reader.getUint8();
-          let petal = state.petals.get(id);
-
-          if (!petal) {
-            petal = new ClientPetal(id);
-            state.petals.set(id, petal);
-          }
-
-          if (flags === ENTITY_FLAGS.NEW) {
-            petal.index = reader.getUint8();
-            petal.rarity = reader.getUint8();
-            petal.realX = reader.getFloat32();
-            petal.realY = reader.getFloat32();
-            petal.realSize = reader.getFloat32();
-            petal.realFacing = reader.getFloat32();
-
-            const eFlags = reader.getUint8();
-            petal.hit = eFlags & ENTITY_MODIFIER_FLAGS.HIT;
-
-            petal.x = petal.realX;
-            petal.y = petal.realY;
-            petal.size = petal.realSize;
-            petal.facing = petal.realFacing;
-            continue;
-          }
-
-          if (flags === ENTITY_FLAGS.DIE) {
-            state.petals.delete(id);
-            continue;
-          }
-
-          if (flags & ENTITY_FLAGS.POSITION) {
-            petal.realX = reader.getFloat32();
-            petal.realY = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.SIZE) {
-            petal.realSize = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.FACING) {
-            petal.realFacing = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.FLAGS) {
-            const eFlags = reader.getUint8();
-            petal.hit = eFlags & ENTITY_MODIFIER_FLAGS.HIT;
-          }
-        }
-
-        while (((id = reader.getUint32()), id > 0)) {
-          const flags = reader.getUint8();
-          let mob = state.mobs.get(id);
-
-          if (!mob) {
-            mob = new ClientMob(id);
-            state.mobs.set(id, mob);
-          }
-
-          if (flags === ENTITY_FLAGS.NEW) {
-            mob.index = reader.getUint8();
-            mob.rarity = reader.getUint8();
-            mob.realX = reader.getFloat32();
-            mob.realY = reader.getFloat32();
-            mob.realSize = reader.getFloat32();
-            mob.realFacing = reader.getFloat32();
-
-            const eFlags = reader.getUint8();
-            mob.hit =
-              (eFlags & ENTITY_MODIFIER_FLAGS.HIT) ===
-              ENTITY_MODIFIER_FLAGS.HIT;
-            mob.attack =
-              (eFlags & ENTITY_MODIFIER_FLAGS.ATTACK) ===
-              ENTITY_MODIFIER_FLAGS.ATTACK;
-            mob.poisoned =
-              (eFlags & ENTITY_MODIFIER_FLAGS.POISON) ===
-              ENTITY_MODIFIER_FLAGS.POISON;
-            mob.friendly =
-              (eFlags & ENTITY_MODIFIER_FLAGS.FRIEND) ===
-              ENTITY_MODIFIER_FLAGS.FRIEND;
-
-            mob.realHealthRatio = reader.getUint8() / 255;
-            mob.healthRatio = mob.realHealthRatio;
-
-            mob.x = mob.realX;
-            mob.y = mob.realY;
-            mob.size = mob.realSize;
-            mob.facing = mob.realFacing;
-
-            switch (state.mobConfigs[mob.index].name) {
-              case "Starfish":
-                mob.extraData = new StarfishData();
-                break;
-              case "Leech":
-                mob.extraData = [
-                  {
-                    x: 0,
-                    y: 0,
-                    realX: 0,
-                    realY: 0,
-                  },
-                ];
-                break;
-            }
-            continue;
-          }
-
-          if (flags === ENTITY_FLAGS.DIE) {
-            state.mobs.delete(id);
-            continue;
-          }
-
-          if (flags & ENTITY_FLAGS.POSITION) {
-            mob.realX = reader.getFloat32();
-            mob.realY = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.SIZE) {
-            mob.realSize = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.FACING) {
-            mob.realFacing = reader.getFloat32();
-          }
-
-          if (flags & ENTITY_FLAGS.FLAGS) {
-            const eFlags = reader.getUint8();
-            mob.hit = eFlags & ENTITY_MODIFIER_FLAGS.HIT;
-            mob.attack =
-              (eFlags & ENTITY_MODIFIER_FLAGS.ATTACK) ===
-              ENTITY_MODIFIER_FLAGS.ATTACK;
-            mob.poisoned =
-              (eFlags & ENTITY_MODIFIER_FLAGS.POISON) ===
-              ENTITY_MODIFIER_FLAGS.POISON;
-            mob.friendly =
-              (eFlags & ENTITY_MODIFIER_FLAGS.FRIEND) ===
-              ENTITY_MODIFIER_FLAGS.FRIEND;
-          }
-
-          if (flags & ENTITY_FLAGS.HEALTH) {
-            mob.realHealthRatio = reader.getUint8() / 255;
-          }
-
-          if (flags & ENTITY_FLAGS.ROPE_BODIES) {
-            const count = reader.getUint8();
-
-            if (count !== mob.extraData?.length) {
-              mob.extraData = [];
-
-              for (let i = 0; i < count; i++) {
-                mob.extraData.push({
-                  x: reader.getFloat32(),
-                  y: reader.getFloat32(),
-                });
-
-                mob.extraData[i].realX = mob.extraData[i].x;
-                mob.extraData[i].realY = mob.extraData[i].y;
-              }
-            } else {
-              for (let i = 0; i < count; i++) {
-                mob.extraData[i].realX = reader.getFloat32();
-                mob.extraData[i].realY = reader.getFloat32();
-              }
-            }
-          }
-        }
-
-        while (((id = reader.getUint32()), id > 0)) {
-          const drop = {
-            id: id,
-            x: reader.getFloat32(),
-            y: reader.getFloat32(),
-            size: reader.getFloat32(),
-            index: reader.getUint8(),
-            rarity: reader.getUint8(),
-            duration: reader.getUint16(),
-            amount: 1,
-          };
-
-          const pending = state.pendingDropAmounts.get(id);
-          if (pending !== undefined) {
-            drop.amount = pending;
-            state.pendingDropAmounts.delete(id);
-          }
-
-          state.drops.set(id, drop);
-        }
-
-        while (((id = reader.getUint32()), id > 0)) {
-          state.drops.delete(id);
-        }
-
-        while (((id = reader.getUint32()), id > 0)) {
-          const flags = reader.getUint8();
-          let marker = state.markers.get(id);
-
-          if (!marker) {
-            marker = new ClientMarker(id);
-            state.markers.set(id, marker);
-          }
-
-          if (flags === ENTITY_FLAGS.NEW) {
-            marker.x = reader.getFloat32();
-            marker.y = reader.getFloat32();
-            marker.size = reader.getFloat32();
-            marker.creation = +reader.getStringUTF8();
-            marker.timer = reader.getUint32();
-            continue;
-          }
-
-          if (flags === ENTITY_FLAGS.DIE) {
-            state.markers.delete(id);
-            continue;
-          }
-        }
-
-        while (((id = reader.getUint32()), id > 0)) {
-          const lightning = new ClientLightning(id);
-          const count = reader.getUint16();
-
-          for (let i = 0; i < count; i++) {
-            lightning.points.push({
-              x: reader.getFloat32(),
-              y: reader.getFloat32(),
-            });
-          }
-
-          lightning.improvePoints();
-
-          state.lightning.set(id, lightning);
-        }
-
-        {
-          // Main slots
-          const count = reader.getUint8();
-
-          if (count !== state.slots.length) {
-            state.slots = [];
-          }
-
-          for (let i = 0; i < count; i++) {
-            const isNotNull = reader.getUint8() === 1;
-
-            if (isNotNull) {
-              state.slots[i] ??= { ratio: 1 };
-              state.slots[i] ??= {};
-              state.slots[i].index = reader.getUint8();
-              state.slots[i].rarity = reader.getUint8();
-              state.slots[i].realRatio = reader.getFloat32();
-            } else {
-              state.slots[i] ??= { ratio: 0 };
-              state.slots[i] ??= {};
-              state.slots[i].index = -1;
-            }
-          }
-        }
-
-        {
-          // Secondary slots
-          const count = reader.getUint8();
-
-          if (count !== state.secondarySlots.length) {
-            state.secondarySlots = [];
-          }
-
-          for (let i = 0; i < count; i++) {
-            const isNotNull = reader.getUint8() === 1;
-
-            if (isNotNull) {
-              state.secondarySlots[i] ??= {};
-              state.secondarySlots[i].index = reader.getUint8();
-              state.secondarySlots[i].rarity = reader.getUint8();
-            } else {
-              state.secondarySlots[i] ??= {};
-              state.secondarySlots[i].index = -1;
-            }
-          }
-        }
-
-        if (reader.getUint8() === 1) {
-          const wave = reader.getUint16();
-          const livingMobs = reader.getUint16();
-          const maxMobs = reader.getUint16();
-
-          const mobCount = reader.getUint16();
-          const aliveMobs = [];
-
-          for (let i = 0; i < mobCount; i++) {
-            const index = reader.getUint8();
-            const rarity = reader.getUint8();
-            aliveMobs.push({ index, rarity });
-          }
-
-          state.waveInfo = {
-            wave,
-            livingMobs,
-            maxMobs,
-            aliveMobs,
-          };
-        } else {
-          state.waveInfo = null;
-        }
-
-        {
-          // Players
-          const count = reader.getUint8();
-          const alivePlayers = [];
-
-          for (let i = 0; i < count; i++) {
-            const team = reader.getUint8();
-            const highestRarity = reader.getUint8();
-            const xp = reader.getFloat32() * 10000;
-            const username = reader.getStringUTF8();
-            alivePlayers.push({ xp, username, team, highestRarity });
-          }
-
-          state.alivePlayers = alivePlayers;
-        }
-
-        state.level = reader.getUint16();
-        state.levelProgressTarget = reader.getFloat32();
-
-        const TIER_COUNT = state.tiers?.length ?? 29;
-
-        for (let ti = 0; ti < TIER_COUNT; ti++) {
-          const tier = state.tiers?.[ti];
-          if (!tier?.name) continue;
-
-          const petalCount = reader.getUint16();
-
-          if (!state.usesNewInventory) {
-            state.inventory ??= {};
-            state.inventory[tier.name] ??= {};
-          }
-
-          for (let i = 0; i < petalCount; i++) {
-            const petalId = reader.getUint16();
-            const amount = reader.getUint16();
-
-            if (!state.usesNewInventory) {
-              state.inventory[tier.name][petalId] = amount;
-            }
-          }
-        }
-        break;
-      case 250: {
-        const count = reader.getUint16();
-
-        for (let i = 0; i < count; i++) {
-          const dropId = reader.getUint32();
-          const amount = reader.getUint32();
-          reader.getUint16();
-
-          const drop = state.drops.get(dropId);
-
-          if (!drop) {
-            state.pendingDropAmounts.set(dropId, amount);
-            continue;
-          }
-
-          drop.amount = amount;
-        }
-
-        break;
-      }
-      case 110: {
-        if (!state.usesNewInventory) {
-          state.usesNewInventory = true;
-          state.inventory = {};
-        }
-
-        const count = reader.getUint16();
-        const tiers = state.tiers ?? [];
-
-        for (let i = 0; i < count; i++) {
-          const tierIndex = reader.getUint8();
-          const petalId = reader.getUint16();
-          const amount = reader.getFloat64();
-
-          const tierName = tiers[tierIndex]?.name;
-          if (!tierName) continue;
-
-          state.inventory ??= {};
-          state.inventory[tierName] ??= {};
-
-          if (amount <= 0) {
-            delete state.inventory[tierName][petalId];
-          } else {
-            state.inventory[tierName][petalId] = amount;
-          }
-        }
-
-        break;
-      }
-      case 111: {
-        const count = reader.getUint8();
-
-        globalThis.__CUSTOM_GRADIENTS = {};
-
-        for (let i = 0; i < count; i++) {
-          const rarity = reader.getUint8();
-          const has = reader.getUint8();
-          if (!has) continue;
-
-          const type = reader.getUint8();
-          let data;
-
-          if (type === 1) {
-            data = {
-              type: 1,
-              soft: reader.getStringUTF8(),
-              base: reader.getStringUTF8(),
-              mid: reader.getStringUTF8(),
-              glow: reader.getStringUTF8(),
-              border: reader.getStringUTF8(),
-              back: reader.getStringUTF8(),
-
-              particlecount: reader.getUint8(),
-              particleglowcolor: reader.getStringUTF8(),
-              particledotcolor: reader.getStringUTF8(),
-              particleshadowcolor: reader.getStringUTF8(),
+    constructor(url, username) {
+        super(url);
+
+        this.binaryType = "arraybuffer";
+        this.username = username;
+
+        this.addEventListener("open", this.onOpen.bind(this));
+        this.addEventListener("close", this.onClose.bind(this));
+        this.addEventListener("message", this.onMessage.bind(this));
+
+        this.lobbyID = "";
+
+        if (localStorage.token?.length > 4) {
+            this.devCheatListener = new ClientSocket.Listener(this);
+
+            window.floof_dev = {
+                spawnMob: (index, rarity) => {
+                    if (typeof index === "string") {
+                        index = state.mobConfigs.findIndex((m) => m.name === index);
+
+                        if (index === -1) {
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid mob name",
+                                }),
+                            );
+                        }
+                    }
+
+                    if (typeof rarity === "string") {
+                        rarity = state.tiers.findIndex((t) => t.name === rarity);
+
+                        if (rarity === -1) {
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid rarity name",
+                                }),
+                            );
+                        }
+                    }
+
+                    return this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SPAWN_MOB,
+                        index,
+                        rarity,
+                    });
+                },
+                setPetal: (clientID, slotID, index, rarity) => {
+                    if (typeof index === "string") {
+                        index = state.petalConfigs.findIndex((p) => p.name === index);
+
+                        if (index === -1) {
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid petal name",
+                                }),
+                            );
+                        }
+                    }
+
+                    if (typeof rarity === "string") {
+                        rarity = state.tiers.findIndex((t) => t.name === rarity);
+
+                        if (rarity === -1) {
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid rarity name",
+                                }),
+                            );
+                        }
+                    }
+
+                    console.log(clientID, slotID, index, rarity);
+
+                    return this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SET_PETAL,
+                        clientID,
+                        slotID,
+                        index,
+                        rarity,
+                    });
+                },
+                setXP: (clientID, xp) =>
+                    this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SET_XP,
+                        clientID,
+                        xp,
+                    }),
+                infoDump: () => this.devCheatListener.wait({ id: DEV_CHEAT_IDS.INFO_DUMP }),
             };
-          } else if (type === 2) {
-            data = {
-              type: 2,
-
-              lines: reader.getUint8(),
-              size: reader.getFloat32(),
-
-              delay: reader.getUint32(),
-              cycleDelay: reader.getUint32(),
-
-              speed: reader.getFloat32(),
-
-              reversed_animation: !!reader.getUint8(),
-
-              linecolor: reader.getStringUTF8(),
-              lineglow: reader.getStringUTF8(),
-              border: reader.getStringUTF8(),
-              back: reader.getStringUTF8(),
-
-              particlecount: reader.getUint8(),
-              particleglowcolor: reader.getStringUTF8(),
-              particledotcolor: reader.getStringUTF8(),
-              particleshadowcolor: reader.getStringUTF8(),
-            };
-          } else if (type === 3) {
-            const ringCount = reader.getUint8();
-            const rings = new Array(ringCount);
-
-            for (let r = 0; r < ringCount; r++) {
-              const color = reader.getStringUTF8();
-              const glow = reader.getStringUTF8();
-
-              rings[r] = {
-                color,
-                glow: glow || color,
-              };
-            }
-
-            data = {
-              type: 3,
-              rings,
-              delay: reader.getUint32(),
-              cycleDelay: reader.getUint32(),
-              speed: reader.getFloat32(),
-              reversed_animation: !!reader.getUint8(),
-
-              border: reader.getStringUTF8(),
-              back: reader.getStringUTF8(),
-
-              particlecount: reader.getUint8(),
-              particleglowcolor: reader.getStringUTF8(),
-              particledotcolor: reader.getStringUTF8(),
-              particleshadowcolor: reader.getStringUTF8(),
-            };
-          }
-
-          globalThis.__CUSTOM_GRADIENTS[rarity] = data;
         }
 
-        if (typeof __ANIMATED_ICONS__ !== "undefined") {
-          __ANIMATED_ICONS__.clear();
-        }
+        this._dataIn = 0;
+        this._dataOut = 0;
 
-        if (typeof __PETAL_CACHE__ !== "undefined") {
-          __PETAL_CACHE__.length = 0;
-        }
-
-        if (typeof __PETAL_INTERVALS__ !== "undefined") {
-          __PETAL_INTERVALS__.length = 0;
-        }
-
-        if (typeof __RAF_RUNNING__ !== "undefined") {
-          __RAF_RUNNING__ = false;
-        }
-
-        console.log(
-          "Client: Gradient cache cleared. Special Gradients received.",
-        );
-
-        break;
-      }
-      case 112: {
-        state.minimapPlayers ??= new Map();
-        state.minimapPlayers.clear();
-
-        const count = reader.getUint16();
-
-        for (let i = 0; i < count; i++) {
-          const id = reader.getUint32();
-          const x = reader.getFloat32();
-          const y = reader.getFloat32();
-
-          state.minimapPlayers.set(id, { id, x, y });
-        }
-
-        break;
-      }
-      case CLIENT_BOUND.ROOM_UPDATE:
-        state.room.width = reader.getFloat32();
-        state.room.height = reader.getFloat32();
-        state.room.isRadial = reader.getUint8() === 1;
-        state.room.biome = reader.getUint8();
-        break;
-      case CLIENT_BOUND.DEATH:
-        state.isDead = true;
-        state.killMessage = reader.getStringUTF8();
-        break;
-      case CLIENT_BOUND.UPDATE_ASSETS:
-        console.warn("Server is asking us to update assets");
-        loadAssets(this.lobbyID);
-        break;
-      case CLIENT_BOUND.JSON_MESSAGE:
-        if (this.devCheatListener) {
-          const data = JSON.parse(reader.getStringUTF8());
-          if (
-            !this.devCheatListener.handle(
-              data.promiseID,
-              (() => {
-                delete data.promiseID;
-                return data;
-              })(),
-            )
-          ) {
-            console.warn("Unhandled JSON message", data);
-          }
-        } else {
-          console.warn(
-            "Received JSON message without a listener:",
-            reader.getStringUTF8(),
-          );
-        }
-        break;
-      case CLIENT_BOUND.PONG:
-        state.ping = performance.now() - this.pingStart;
-        setTimeout(() => this.ping(), 1e3);
-        break;
-      case CLIENT_BOUND.TERRAIN:
-        state.terrain = {
-          width: reader.getUint16(),
-          height: reader.getUint16(),
-          blocks: ((blocks = []) => {
-            for (let i = reader.getUint16(); i > 0; i--) {
-              blocks.push({
-                x: reader.getInt16(),
-                y: reader.getInt16(),
-                type: [reader.getUint8(), reader.getUint8()],
-                terrain: [],
-              });
-
-              blocks[blocks.length - 1].terrain =
-                terrains[blocks[blocks.length - 1].type[0]][
-                  blocks[blocks.length - 1].type[1]
-                ];
-            }
-
-            return blocks;
-          })(),
-          overlay: null,
+        this.bandWidth = {
+            in: 0,
+            out: 0,
         };
 
-        state.terrainImg = renderTerrain(
-          state.room.width * 0.5,
-          state.room.height * 0.5,
-          state.terrain.width,
-          state.terrain.blocks,
-          state.room.biome,
-        );
-        state.minimapImg = renderTerrainForMap(
-          state.terrain.width,
-          state.terrain.blocks,
-        );
-        console.log(state.terrain.blocks);
-        if (util.isHalloween && state.terrain.blocks.length >= 8) {
-          state.terrain.overlay = new SpookyOverlay(
-            state.terrain.blocks,
-            state.terrain.width,
-            state.terrain.height,
-          );
-        } else {
-          state.terrain.overlay = null;
-        }
-        break;
-      case CLIENT_BOUND.CHAT_MESSAGE:
-        {
-          const type = reader.getUint8();
-
-          switch (type) {
-            case 0: // Chat Message
-              new ChatMessage(
-                0,
-                reader.getStringUTF8(),
-                reader.getStringUTF8(),
-                reader.getStringUTF8(),
-              );
-              break;
-            case 1: // System Message
-              new ChatMessage(
-                1,
-                reader.getStringUTF8(),
-                reader.getStringUTF8(),
-              );
-              break;
-          }
-        }
-        break;
-    }
-  }
-
-  ping() {
-    this.pingStart = performance.now();
-    this.talk(SERVER_BOUND.PING);
-  }
-
-  verify(username) {
-    this.talk(SERVER_BOUND.VERIFY, username);
-  }
-
-  spawn() {
-    this.talk(SERVER_BOUND.SPAWN);
-  }
-
-  talk(type, data) {
-    if (this.readyState !== WebSocket.OPEN) {
-      return;
+        this.bandwidthTracker = setInterval(() => {
+            this.bandWidth.in = (this._dataIn / 1024).toFixed(2);
+            this.bandWidth.out = (this._dataOut / 1024).toFixed(2);
+            this._dataIn = 0;
+            this._dataOut = 0;
+        }, 1e3);
     }
 
-    const writer = new Writer(true);
-    writer.setUint8(type);
+    onOpen() {
+        console.log("Connected to lobby.");
+        this.verify(this.username);
+        setTimeout(() => {
+            (this.ping(), console.log("Pinging websocket server."));
+        }, 1e3);
+    }
 
-    switch (type) {
-      case SERVER_BOUND.VERIFY:
-        writer.setStringUTF8(data);
-        break;
-      case SERVER_BOUND.SPAWN: // nada atm
-        break;
-      case SERVER_BOUND.INPUTS:
-        writer.setUint8(data);
+    onClose() {
+        console.log("Disconnected from lobby");
+        state.disconnected = true;
+    }
 
-        if (util.options.mouseMovement) {
-          const x = mouse.x - canvas.width / 2;
-          const y = mouse.y - canvas.height / 2;
-          const angle = Math.atan2(y, x);
-          const dist = util.quickDiff({ x: 0, y: 0 }, { x, y });
-          const deadzone = 0.1;
+    onMessage(event) {
+        state.pendingDropAmounts ??= new Map();
+        const reader = new Reader(new DataView(new Uint8Array(event.data).buffer), 0, true);
+        this._dataIn += event.data.byteLength;
 
-          writer.setFloat32(angle);
-          writer.setFloat32(
-            Math.max(0, dist / (canvas.width / 2) - deadzone) / (1 - deadzone),
-          );
-        }
-        if (data & 0x80) {
-          writer.setFloat32(joystick.angle);
-          writer.setFloat32(joystick.distance);
-        }
-        break;
-      case SERVER_BOUND.CHANGE_LOADOUT:
-        {
-          const { drag, drop } = data; // { type, index }
-          writer.setUint8(drag.type);
-          writer.setUint8(drag.index);
-          writer.setUint8(drop.type);
-          writer.setUint8(drop.index);
-        }
-        break;
-      case SERVER_BOUND.DEV_CHEAT:
-        {
-          const type = Number.isInteger(data) ? data : data.id;
-          writer.setUint8(type);
+        switch (reader.getUint8()) {
+            case CLIENT_BOUND.KICK:
+                state.disconnectMessage = "Kicked: " + reader.getStringUTF8();
+                break;
+            case CLIENT_BOUND.READY:
+                console.log("Ready");
+                this.spawn();
+                state.usesNewInventory = false;
+                break;
+            case CLIENT_BOUND.WORLD_UPDATE:
+                state.updatesCounter++;
+                state.camera.realX = reader.getFloat32();
+                state.camera.realY = reader.getFloat32();
+                state.camera.realFov = reader.getFloat32();
+                state.camera.lightingBoost = reader.getUint8();
+                state.playerID = reader.getUint32();
 
-          switch (type) {
-            case DEV_CHEAT_IDS.TELEPORT:
-              const tpUScale = gameScale(state.camera.fov);
-              writer.setFloat32((mouse.x - canvas.width / 2) / tpUScale);
-              writer.setFloat32((mouse.y - canvas.height / 2) / tpUScale);
-              break;
-            case DEV_CHEAT_IDS.CHANGE_TEAM:
-              let id = 0,
-                sc = gameScale(state.camera.fov),
-                x = state.camera.x + (mouse.x - canvas.width / 2) / sc,
-                y = state.camera.y + (mouse.y - canvas.height / 2) / sc;
+                let id;
+                while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let player = state.players.get(id);
 
-              for (const mob of state.mobs.values()) {
-                let dx = mob.x - x,
-                  dy = mob.y - y,
-                  dist = Math.sqrt(dx * dx + dy * dy);
+                    if (!player) {
+                        player = new ClientPlayer(id);
+                        state.players.set(id, player);
+                    }
 
-                if (dist < mob.size) {
-                  id = mob.id;
-                  break;
+                    if (flags === ENTITY_FLAGS.NEW) {
+                        player.name = reader.getStringUTF8();
+                        player.nameColor = reader.getStringUTF8();
+                        player.rarity = reader.getUint8();
+                        player.level = reader.getUint16();
+                        player.realX = reader.getFloat32();
+                        player.realY = reader.getFloat32();
+                        player.realSize = reader.getFloat32();
+                        player.realFacing = reader.getFloat32();
+
+                        const eflags = reader.getUint8();
+                        player.hit = eflags & ENTITY_MODIFIER_FLAGS.HIT;
+                        player.attack = (eflags & ENTITY_MODIFIER_FLAGS.ATTACK) === ENTITY_MODIFIER_FLAGS.ATTACK;
+                        player.defend = (eflags & ENTITY_MODIFIER_FLAGS.DEFEND) === ENTITY_MODIFIER_FLAGS.DEFEND;
+                        player.poisoned = (eflags & ENTITY_MODIFIER_FLAGS.POISON) === ENTITY_MODIFIER_FLAGS.POISON;
+
+                        if (eflags & ENTITY_MODIFIER_FLAGS.TDM) {
+                            player.team = reader.getUint8();
+                        }
+
+                        if (eflags & ENTITY_MODIFIER_FLAGS.WEARABLES) {
+                            player.wearing = reader.getUint8();
+                        }
+
+                        player.realHealthRatio = reader.getUint8() / 255;
+                        player.healthRatio = player.realHealthRatio;
+
+                        player.realShieldRatio = reader.getUint8() / 255;
+                        player.shieldRatio = player.realShieldRatio;
+
+                        player.x = player.realX;
+                        player.y = player.realY;
+                        player.size = player.realSize;
+                        player.facing = player.realFacing;
+                        continue;
+                    }
+
+                    if (flags === ENTITY_FLAGS.DIE) {
+                        state.players.delete(id);
+                        continue;
+                    }
+
+                    if (flags & ENTITY_FLAGS.POSITION) {
+                        player.realX = reader.getFloat32();
+                        player.realY = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.SIZE) {
+                        player.realSize = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.FACING) {
+                        player.realFacing = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.FLAGS) {
+                        const eflags = reader.getUint8();
+                        player.hit = eflags & ENTITY_MODIFIER_FLAGS.HIT;
+                        player.attack = (eflags & ENTITY_MODIFIER_FLAGS.ATTACK) === ENTITY_MODIFIER_FLAGS.ATTACK;
+                        player.defend = (eflags & ENTITY_MODIFIER_FLAGS.DEFEND) === ENTITY_MODIFIER_FLAGS.DEFEND;
+                        player.poisoned = (eflags & ENTITY_MODIFIER_FLAGS.POISON) === ENTITY_MODIFIER_FLAGS.POISON;
+
+                        if (eflags & ENTITY_MODIFIER_FLAGS.TDM) {
+                            player.team = reader.getUint8();
+                        }
+
+                        if (eflags & ENTITY_MODIFIER_FLAGS.WEARABLES) {
+                            player.wearing = reader.getUint8();
+                        }
+                    }
+
+                    if (flags & ENTITY_FLAGS.HEALTH) {
+                        player.realHealthRatio = reader.getUint8() / 255;
+                        player.realShieldRatio = reader.getUint8() / 255;
+                    }
+
+                    if (flags & ENTITY_FLAGS.DISPLAY) {
+                        player.name = reader.getStringUTF8();
+                        player.nameColor = reader.getStringUTF8();
+                        player.rarity = reader.getUint8();
+                        player.level = reader.getUint16();
+                    }
                 }
-              }
 
-              for (const player of state.players.values()) {
-                let dx = player.x - x,
-                  dy = player.y - y,
-                  dist = Math.sqrt(dx * dx + dy * dy);
+                while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let petal = state.petals.get(id);
 
-                if (dist < player.size) {
-                  id = player.id;
-                  break;
+                    if (!petal) {
+                        petal = new ClientPetal(id);
+                        state.petals.set(id, petal);
+                    }
+
+                    if (flags === ENTITY_FLAGS.NEW) {
+                        petal.index = reader.getUint8();
+                        petal.rarity = reader.getUint8();
+                        petal.realX = reader.getFloat32();
+                        petal.realY = reader.getFloat32();
+                        petal.realSize = reader.getFloat32();
+                        petal.realFacing = reader.getFloat32();
+
+                        const eFlags = reader.getUint8();
+                        petal.hit = eFlags & ENTITY_MODIFIER_FLAGS.HIT;
+
+                        petal.x = petal.realX;
+                        petal.y = petal.realY;
+                        petal.size = petal.realSize;
+                        petal.facing = petal.realFacing;
+                        continue;
+                    }
+
+                    if (flags === ENTITY_FLAGS.DIE) {
+                        state.petals.delete(id);
+                        continue;
+                    }
+
+                    if (flags & ENTITY_FLAGS.POSITION) {
+                        petal.realX = reader.getFloat32();
+                        petal.realY = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.SIZE) {
+                        petal.realSize = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.FACING) {
+                        petal.realFacing = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.FLAGS) {
+                        const eFlags = reader.getUint8();
+                        petal.hit = eFlags & ENTITY_MODIFIER_FLAGS.HIT;
+                    }
                 }
-              }
 
-              writer.setUint32(id);
-              break;
-            case DEV_CHEAT_IDS.SPAWN_MOB:
-              writer.setUint32(data.promiseID);
-              writer.setUint8(data.index);
-              writer.setUint8(data.rarity);
-              break;
-            case DEV_CHEAT_IDS.SET_PETAL:
-              writer.setUint32(data.promiseID);
-              writer.setUint32(data.clientID);
-              writer.setUint8(data.slotID);
-              writer.setUint8(data.index);
-              writer.setUint8(data.rarity);
-              break;
-            case DEV_CHEAT_IDS.SET_XP:
-              writer.setUint32(data.promiseID);
-              writer.setUint32(data.clientID);
-              writer.setUint32(data.xp);
-              break;
-            case DEV_CHEAT_IDS.INFO_DUMP:
-              writer.setUint32(data.promiseID);
-              break;
-          }
+                while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let mob = state.mobs.get(id);
+
+                    if (!mob) {
+                        mob = new ClientMob(id);
+                        state.mobs.set(id, mob);
+                    }
+
+                    if (flags === ENTITY_FLAGS.NEW) {
+                        mob.index = reader.getUint8();
+                        mob.rarity = reader.getUint8();
+                        mob.realX = reader.getFloat32();
+                        mob.realY = reader.getFloat32();
+                        mob.realSize = reader.getFloat32();
+                        mob.realFacing = reader.getFloat32();
+
+                        const eFlags = reader.getUint8();
+                        mob.hit = (eFlags & ENTITY_MODIFIER_FLAGS.HIT) === ENTITY_MODIFIER_FLAGS.HIT;
+                        mob.attack = (eFlags & ENTITY_MODIFIER_FLAGS.ATTACK) === ENTITY_MODIFIER_FLAGS.ATTACK;
+                        mob.poisoned = (eFlags & ENTITY_MODIFIER_FLAGS.POISON) === ENTITY_MODIFIER_FLAGS.POISON;
+                        mob.friendly = (eFlags & ENTITY_MODIFIER_FLAGS.FRIEND) === ENTITY_MODIFIER_FLAGS.FRIEND;
+
+                        mob.realHealthRatio = reader.getUint8() / 255;
+                        mob.healthRatio = mob.realHealthRatio;
+
+                        mob.x = mob.realX;
+                        mob.y = mob.realY;
+                        mob.size = mob.realSize;
+                        mob.facing = mob.realFacing;
+
+                        switch (state.mobConfigs[mob.index].name) {
+                            case "Starfish":
+                                mob.extraData = new StarfishData();
+                                break;
+                            case "Leech":
+                                mob.extraData = [
+                                    {
+                                        x: 0,
+                                        y: 0,
+                                        realX: 0,
+                                        realY: 0,
+                                    },
+                                ];
+                                break;
+                        }
+                        continue;
+                    }
+
+                    if (flags === ENTITY_FLAGS.DIE) {
+                        state.mobs.delete(id);
+                        continue;
+                    }
+
+                    if (flags & ENTITY_FLAGS.POSITION) {
+                        mob.realX = reader.getFloat32();
+                        mob.realY = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.SIZE) {
+                        mob.realSize = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.FACING) {
+                        mob.realFacing = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.FLAGS) {
+                        const eFlags = reader.getUint8();
+                        mob.hit = eFlags & ENTITY_MODIFIER_FLAGS.HIT;
+                        mob.attack = (eFlags & ENTITY_MODIFIER_FLAGS.ATTACK) === ENTITY_MODIFIER_FLAGS.ATTACK;
+                        mob.poisoned = (eFlags & ENTITY_MODIFIER_FLAGS.POISON) === ENTITY_MODIFIER_FLAGS.POISON;
+                        mob.friendly = (eFlags & ENTITY_MODIFIER_FLAGS.FRIEND) === ENTITY_MODIFIER_FLAGS.FRIEND;
+                    }
+
+                    if (flags & ENTITY_FLAGS.HEALTH) {
+                        mob.realHealthRatio = reader.getUint8() / 255;
+                    }
+
+                    if (flags & ENTITY_FLAGS.ROPE_BODIES) {
+                        const count = reader.getUint8();
+
+                        if (count !== mob.extraData?.length) {
+                            mob.extraData = [];
+
+                            for (let i = 0; i < count; i++) {
+                                mob.extraData.push({
+                                    x: reader.getFloat32(),
+                                    y: reader.getFloat32(),
+                                });
+
+                                mob.extraData[i].realX = mob.extraData[i].x;
+                                mob.extraData[i].realY = mob.extraData[i].y;
+                            }
+                        } else {
+                            for (let i = 0; i < count; i++) {
+                                mob.extraData[i].realX = reader.getFloat32();
+                                mob.extraData[i].realY = reader.getFloat32();
+                            }
+                        }
+                    }
+                }
+
+                while (((id = reader.getUint32()), id > 0)) {
+                    const drop = {
+                        id: id,
+                        x: reader.getFloat32(),
+                        y: reader.getFloat32(),
+                        size: reader.getFloat32(),
+                        index: reader.getUint8(),
+                        rarity: reader.getUint8(),
+                        duration: reader.getUint16(),
+                        amount: 1,
+                    };
+
+                    const pending = state.pendingDropAmounts.get(id);
+                    if (pending !== undefined) {
+                        drop.amount = pending;
+                        state.pendingDropAmounts.delete(id);
+                    }
+
+                    state.drops.set(id, drop);
+                }
+
+                while (((id = reader.getUint32()), id > 0)) {
+                    state.drops.delete(id);
+                }
+
+                while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let marker = state.markers.get(id);
+
+                    if (!marker) {
+                        marker = new ClientMarker(id);
+                        state.markers.set(id, marker);
+                    }
+
+                    if (flags === ENTITY_FLAGS.NEW) {
+                        marker.x = reader.getFloat32();
+                        marker.y = reader.getFloat32();
+                        marker.size = reader.getFloat32();
+                        marker.creation = +reader.getStringUTF8();
+                        marker.timer = reader.getUint32();
+                        continue;
+                    }
+
+                    if (flags === ENTITY_FLAGS.DIE) {
+                        state.markers.delete(id);
+                        continue;
+                    }
+                }
+
+                while (((id = reader.getUint32()), id > 0)) {
+                    const lightning = new ClientLightning(id);
+                    const count = reader.getUint16();
+
+                    for (let i = 0; i < count; i++) {
+                        lightning.points.push({
+                            x: reader.getFloat32(),
+                            y: reader.getFloat32(),
+                        });
+                    }
+
+                    lightning.improvePoints();
+
+                    state.lightning.set(id, lightning);
+                }
+
+                {
+                    // Main slots
+                    const count = reader.getUint8();
+
+                    if (count !== state.slots.length) {
+                        state.slots = [];
+                    }
+
+                    for (let i = 0; i < count; i++) {
+                        const isNotNull = reader.getUint8() === 1;
+
+                        if (isNotNull) {
+                            state.slots[i] ??= { ratio: 1 };
+                            state.slots[i] ??= {};
+                            state.slots[i].index = reader.getUint8();
+                            state.slots[i].rarity = reader.getUint8();
+                            state.slots[i].realRatio = reader.getFloat32();
+                        } else {
+                            state.slots[i] ??= { ratio: 0 };
+                            state.slots[i] ??= {};
+                            state.slots[i].index = -1;
+                        }
+                    }
+                }
+
+                {
+                    // Secondary slots
+                    const count = reader.getUint8();
+
+                    if (count !== state.secondarySlots.length) {
+                        state.secondarySlots = [];
+                    }
+
+                    for (let i = 0; i < count; i++) {
+                        const isNotNull = reader.getUint8() === 1;
+
+                        if (isNotNull) {
+                            state.secondarySlots[i] ??= {};
+                            state.secondarySlots[i].index = reader.getUint8();
+                            state.secondarySlots[i].rarity = reader.getUint8();
+                        } else {
+                            state.secondarySlots[i] ??= {};
+                            state.secondarySlots[i].index = -1;
+                        }
+                    }
+                }
+
+                if (reader.getUint8() === 1) {
+                    const wave = reader.getUint16();
+                    const livingMobs = reader.getUint16();
+                    const maxMobs = reader.getUint16();
+
+                    const mobCount = reader.getUint16();
+                    const aliveMobs = [];
+
+                    for (let i = 0; i < mobCount; i++) {
+                        const index = reader.getUint8();
+                        const rarity = reader.getUint8();
+                        aliveMobs.push({ index, rarity });
+                    }
+
+                    state.waveInfo = {
+                        wave,
+                        livingMobs,
+                        maxMobs,
+                        aliveMobs,
+                    };
+                } else {
+                    state.waveInfo = null;
+                }
+
+                {
+                    // Players
+                    const count = reader.getUint8();
+                    const alivePlayers = [];
+
+                    for (let i = 0; i < count; i++) {
+                        const team = reader.getUint8();
+                        const highestRarity = reader.getUint8();
+                        const xp = reader.getFloat32() * 10000;
+                        const username = reader.getStringUTF8();
+                        alivePlayers.push({ xp, username, team, highestRarity });
+                    }
+
+                    state.alivePlayers = alivePlayers;
+                }
+
+                state.level = reader.getUint16();
+                state.levelProgressTarget = reader.getFloat32();
+
+                const TIER_COUNT = state.tiers?.length ?? 29;
+
+                for (let ti = 0; ti < TIER_COUNT; ti++) {
+                    const tier = state.tiers?.[ti];
+                    if (!tier?.name) continue;
+
+                    const petalCount = reader.getUint16();
+
+                    if (!state.usesNewInventory) {
+                        state.inventory ??= {};
+                        state.inventory[tier.name] ??= {};
+                    }
+
+                    for (let i = 0; i < petalCount; i++) {
+                        const petalId = reader.getUint16();
+                        const amount = reader.getUint16();
+
+                        if (!state.usesNewInventory) {
+                            state.inventory[tier.name][petalId] = amount;
+                        }
+                    }
+
+                    state._inventoryVersion = (state._inventoryVersion || 0) + 1;
+                }
+                break;
+            case 250: {
+                const count = reader.getUint16();
+
+                for (let i = 0; i < count; i++) {
+                    const dropId = reader.getUint32();
+                    const amount = reader.getUint32();
+                    reader.getUint16();
+
+                    const drop = state.drops.get(dropId);
+
+                    if (!drop) {
+                        state.pendingDropAmounts.set(dropId, amount);
+                        continue;
+                    }
+
+                    drop.amount = amount;
+                }
+
+                break;
+            }
+            case 110: {
+                if (!state.usesNewInventory) {
+                    state.usesNewInventory = true;
+                    state.inventory = {};
+                }
+
+                const count = reader.getUint16();
+                const tiers = state.tiers ?? [];
+
+                for (let i = 0; i < count; i++) {
+                    const tierIndex = reader.getUint8();
+                    const petalId = reader.getUint16();
+                    const amount = reader.getFloat64();
+
+                    const tierName = tiers[tierIndex]?.name;
+                    if (!tierName) continue;
+
+                    state.inventory ??= {};
+                    state.inventory[tierName] ??= {};
+
+                    if (amount <= 0) {
+                        delete state.inventory[tierName][petalId];
+                    } else {
+                        state.inventory[tierName][petalId] = amount;
+                    }
+                }
+
+                state._inventoryVersion = (state._inventoryVersion || 0) + 1;
+                break;
+            }
+            case 111: {
+                const count = reader.getUint8();
+
+                globalThis.__CUSTOM_GRADIENTS = {};
+
+                for (let i = 0; i < count; i++) {
+                    const rarity = reader.getUint8();
+                    const has = reader.getUint8();
+                    if (!has) continue;
+
+                    const type = reader.getUint8();
+                    let data;
+
+                    if (type === 1) {
+                        data = {
+                            type: 1,
+                            soft: reader.getStringUTF8(),
+                            base: reader.getStringUTF8(),
+                            mid: reader.getStringUTF8(),
+                            glow: reader.getStringUTF8(),
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    } else if (type === 2) {
+                        data = {
+                            type: 2,
+
+                            lines: reader.getUint8(),
+                            size: reader.getFloat32(),
+
+                            delay: reader.getUint32(),
+                            cycleDelay: reader.getUint32(),
+
+                            speed: reader.getFloat32(),
+
+                            reversed_animation: !!reader.getUint8(),
+
+                            linecolor: reader.getStringUTF8(),
+                            lineglow: reader.getStringUTF8(),
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    } else if (type === 3) {
+                        const ringCount = reader.getUint8();
+                        const rings = new Array(ringCount);
+
+                        for (let r = 0; r < ringCount; r++) {
+                            const color = reader.getStringUTF8();
+                            const glow = reader.getStringUTF8();
+
+                            rings[r] = {
+                                color,
+                                glow: glow || color,
+                            };
+                        }
+
+                        data = {
+                            type: 3,
+                            rings,
+                            delay: reader.getUint32(),
+                            cycleDelay: reader.getUint32(),
+                            speed: reader.getFloat32(),
+                            reversed_animation: !!reader.getUint8(),
+
+                            border: reader.getStringUTF8(),
+                            back: reader.getStringUTF8(),
+
+                            particlecount: reader.getUint8(),
+                            particleglowcolor: reader.getStringUTF8(),
+                            particledotcolor: reader.getStringUTF8(),
+                            particleshadowcolor: reader.getStringUTF8(),
+                        };
+                    }
+
+                    globalThis.__CUSTOM_GRADIENTS[rarity] = data;
+                }
+
+                if (typeof __ANIMATED_ICONS__ !== "undefined") {
+                    __ANIMATED_ICONS__.clear();
+                }
+
+                if (typeof __PETAL_CACHE__ !== "undefined") {
+                    __PETAL_CACHE__.length = 0;
+                }
+
+                if (typeof __PETAL_INTERVALS__ !== "undefined") {
+                    __PETAL_INTERVALS__.length = 0;
+                }
+
+                if (typeof __RAF_RUNNING__ !== "undefined") {
+                    __RAF_RUNNING__ = false;
+                }
+
+                console.log("Client: Gradient cache cleared. Special Gradients received.");
+
+                break;
+            }
+            case 112: {
+                state.minimapPlayers ??= new Map();
+                state.minimapPlayers.clear();
+
+                const count = reader.getUint16();
+
+                for (let i = 0; i < count; i++) {
+                    const id = reader.getUint32();
+                    const x = reader.getFloat32();
+                    const y = reader.getFloat32();
+
+                    state.minimapPlayers.set(id, { id, x, y });
+                }
+
+                break;
+            }
+            case CLIENT_BOUND.ROOM_UPDATE:
+                state.room.width = reader.getFloat32();
+                state.room.height = reader.getFloat32();
+                state.room.isRadial = reader.getUint8() === 1;
+                state.room.biome = reader.getUint8();
+                break;
+            case CLIENT_BOUND.DEATH:
+                state.isDead = true;
+                state.killMessage = reader.getStringUTF8();
+                break;
+            case CLIENT_BOUND.UPDATE_ASSETS:
+                console.warn("Server is asking us to update assets");
+                loadAssets(this.lobbyID);
+                break;
+            case CLIENT_BOUND.JSON_MESSAGE:
+                if (this.devCheatListener) {
+                    const data = JSON.parse(reader.getStringUTF8());
+                    if (
+                        !this.devCheatListener.handle(
+                            data.promiseID,
+                            (() => {
+                                delete data.promiseID;
+                                return data;
+                            })(),
+                        )
+                    ) {
+                        console.warn("Unhandled JSON message", data);
+                    }
+                } else {
+                    console.warn("Received JSON message without a listener:", reader.getStringUTF8());
+                }
+                break;
+            case CLIENT_BOUND.PONG:
+                state.ping = performance.now() - this.pingStart;
+                setTimeout(() => this.ping(), 1e3);
+                break;
+            case CLIENT_BOUND.TERRAIN:
+                state.terrain = {
+                    width: reader.getUint16(),
+                    height: reader.getUint16(),
+                    blocks: ((blocks = []) => {
+                        for (let i = reader.getUint16(); i > 0; i--) {
+                            blocks.push({
+                                x: reader.getInt16(),
+                                y: reader.getInt16(),
+                                type: [reader.getUint8(), reader.getUint8()],
+                                terrain: [],
+                            });
+
+                            blocks[blocks.length - 1].terrain = terrains[blocks[blocks.length - 1].type[0]][blocks[blocks.length - 1].type[1]];
+                        }
+
+                        return blocks;
+                    })(),
+                    overlay: null,
+                };
+
+                state.terrainImg = renderTerrain(state.room.width * 0.5, state.room.height * 0.5, state.terrain.width, state.terrain.blocks, state.room.biome);
+                state.minimapImg = renderTerrainForMap(state.terrain.width, state.terrain.blocks);
+                console.log(state.terrain.blocks);
+                if (util.isHalloween && state.terrain.blocks.length >= 8) {
+                    state.terrain.overlay = new SpookyOverlay(state.terrain.blocks, state.terrain.width, state.terrain.height);
+                } else {
+                    state.terrain.overlay = null;
+                }
+                break;
+            case CLIENT_BOUND.CHAT_MESSAGE:
+                {
+                    const type = reader.getUint8();
+
+                    switch (type) {
+                        case 0: // Chat Message
+                            new ChatMessage(0, reader.getStringUTF8(), reader.getStringUTF8(), reader.getStringUTF8());
+                            break;
+                        case 1: // System Message
+                            new ChatMessage(1, reader.getStringUTF8(), reader.getStringUTF8());
+                            break;
+                    }
+                }
+                break;
         }
-        break;
-      case SERVER_BOUND.CHAT_MESSAGE:
-        writer.setStringUTF8(data);
-        break;
-      case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT:
-        {
-          const { drag, drop } = data; // { type, index }
-          writer.setUint8(drag.index);
-          writer.setUint8(drag.rarity);
-          writer.setUint8(drop.type);
-          writer.setUint8(drop.index);
-          writer.setUint8(drop.rarity);
-          writer.setUint8(drop.petalIndex);
-        }
-        break;
     }
 
-    const output = writer.build();
-    this._dataOut += output.byteLength;
+    ping() {
+        this.pingStart = performance.now();
+        this.talk(SERVER_BOUND.PING);
+    }
 
-    this.send(output);
-  }
+    verify(username) {
+        this.talk(SERVER_BOUND.VERIFY, username);
+    }
+
+    spawn() {
+        this.talk(SERVER_BOUND.SPAWN);
+    }
+
+    talk(type, data) {
+        if (this.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
+        const writer = new Writer(true);
+        writer.setUint8(type);
+
+        switch (type) {
+            case SERVER_BOUND.VERIFY:
+                writer.setStringUTF8(data);
+                break;
+            case SERVER_BOUND.SPAWN: // nada atm
+                break;
+            case SERVER_BOUND.INPUTS:
+                writer.setUint8(data);
+
+                if (util.options.mouseMovement) {
+                    const x = mouse.x - canvas.width / 2;
+                    const y = mouse.y - canvas.height / 2;
+                    const angle = Math.atan2(y, x);
+                    const dist = util.quickDiff({ x: 0, y: 0 }, { x, y });
+                    const deadzone = 0.1;
+
+                    writer.setFloat32(angle);
+                    writer.setFloat32(Math.max(0, dist / (canvas.width / 2) - deadzone) / (1 - deadzone));
+                }
+                if (data & 0x80) {
+                    writer.setFloat32(joystick.angle);
+                    writer.setFloat32(joystick.distance);
+                }
+                break;
+            case SERVER_BOUND.CHANGE_LOADOUT:
+                {
+                    const { drag, drop } = data; // { type, index }
+                    writer.setUint8(drag.type);
+                    writer.setUint8(drag.index);
+                    writer.setUint8(drop.type);
+                    writer.setUint8(drop.index);
+                }
+                break;
+            case SERVER_BOUND.DEV_CHEAT:
+                {
+                    const type = Number.isInteger(data) ? data : data.id;
+                    writer.setUint8(type);
+
+                    switch (type) {
+                        case DEV_CHEAT_IDS.TELEPORT:
+                            const tpUScale = gameScale(state.camera.fov);
+                            writer.setFloat32((mouse.x - canvas.width / 2) / tpUScale);
+                            writer.setFloat32((mouse.y - canvas.height / 2) / tpUScale);
+                            break;
+                        case DEV_CHEAT_IDS.CHANGE_TEAM:
+                            let id = 0,
+                                sc = gameScale(state.camera.fov),
+                                x = state.camera.x + (mouse.x - canvas.width / 2) / sc,
+                                y = state.camera.y + (mouse.y - canvas.height / 2) / sc;
+
+                            for (const mob of state.mobs.values()) {
+                                let dx = mob.x - x,
+                                    dy = mob.y - y,
+                                    dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < mob.size) {
+                                    id = mob.id;
+                                    break;
+                                }
+                            }
+
+                            for (const player of state.players.values()) {
+                                let dx = player.x - x,
+                                    dy = player.y - y,
+                                    dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < player.size) {
+                                    id = player.id;
+                                    break;
+                                }
+                            }
+
+                            writer.setUint32(id);
+                            break;
+                        case DEV_CHEAT_IDS.SPAWN_MOB:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint8(data.index);
+                            writer.setUint8(data.rarity);
+                            break;
+                        case DEV_CHEAT_IDS.SET_PETAL:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint32(data.clientID);
+                            writer.setUint8(data.slotID);
+                            writer.setUint8(data.index);
+                            writer.setUint8(data.rarity);
+                            break;
+                        case DEV_CHEAT_IDS.SET_XP:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint32(data.clientID);
+                            writer.setUint32(data.xp);
+                            break;
+                        case DEV_CHEAT_IDS.INFO_DUMP:
+                            writer.setUint32(data.promiseID);
+                            break;
+                    }
+                }
+                break;
+            case SERVER_BOUND.CHAT_MESSAGE:
+                writer.setStringUTF8(data);
+                break;
+            case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT:
+                {
+                    const { drag, drop } = data; // { type, index }
+                    writer.setUint8(drag.index);
+                    writer.setUint8(drag.rarity);
+                    writer.setUint8(drop.type);
+                    writer.setUint8(drop.index);
+                    writer.setUint8(drop.rarity);
+                    writer.setUint8(drop.petalIndex);
+                }
+                break;
+        }
+
+        const output = writer.build();
+        this._dataOut += output.byteLength;
+
+        this.send(output);
+    }
 }
 
 export class IconItem {
-  x = 0;
-  y = 0;
-  size = 0;
+    x = 0;
+    y = 0;
+    size = 0;
 
-  realX = 0;
-  realY = 0;
-  realSize = 0;
+    realX = 0;
+    realY = 0;
+    realSize = 0;
 
-  interpolate() {
-    this.x = util.lerp(this.x, this.realX, 0.2);
-    this.y = util.lerp(this.y, this.realY, 0.2);
-    this.size = util.lerp(this.size, this.realSize, 0.2);
-  }
+    interpolate() {
+        this.x = util.lerp(this.x, this.realX, 0.2);
+        this.y = util.lerp(this.y, this.realY, 0.2);
+        this.size = util.lerp(this.size, this.realSize, 0.2);
+    }
 }
 
 export const state = {
-  interpolationFactor: 0.2,
-  username: "",
+    interpolationFactor: 0.2,
+    username: "",
 
-  camera: {
-    x: 0,
-    y: 0,
-    fov: 512,
-    lightingBoost: 0,
+    camera: {
+        x: 0,
+        y: 0,
+        fov: 512,
+        lightingBoost: 0,
 
-    realX: 0,
-    realY: 0,
-    realFov: 1025 + 256,
+        realX: 0,
+        realY: 0,
+        realFov: 1025 + 256,
 
-    interpolate: () => {
-      state.camera.x = util.lerp(
-        state.camera.x,
-        state.camera.realX,
-        state.interpolationFactor,
-      );
-      state.camera.y = util.lerp(
-        state.camera.y,
-        state.camera.realY,
-        state.interpolationFactor,
-      );
-      state.camera.fov = util.lerp(
-        state.camera.fov,
-        state.camera.realFov,
-        state.interpolationFactor,
-      );
+        interpolate: () => {
+            state.camera.x = util.lerp(state.camera.x, state.camera.realX, state.interpolationFactor);
+            state.camera.y = util.lerp(state.camera.y, state.camera.realY, state.interpolationFactor);
+            state.camera.fov = util.lerp(state.camera.fov, state.camera.realFov, state.interpolationFactor);
+        },
     },
-  },
 
-  room: {
-    width: 100,
-    height: 100,
-    isRadial: false,
-    biome: (() => {
-      switch (localStorage.biome) {
-        case "default":
-          return BIOME_TYPES.DEFAULT;
-        case "garden":
-          return BIOME_TYPES.GARDEN;
-        case "desert":
-          return BIOME_TYPES.DESERT;
-        case "ocean":
-          return BIOME_TYPES.OCEAN;
-        case "antHell":
-          return BIOME_TYPES.ANT_HELL;
-        case "sewers":
-          return BIOME_TYPES.SEWERS;
-        case "hell":
-          return BIOME_TYPES.HELL;
-        case "halloween":
-          if (util.isHalloween) {
-            return BIOME_TYPES.HALLOWEEN;
-          } else {
-            return BIOME_TYPES.DEFAULT;
-          }
-        case "dark_forest":
-          return BIOME_TYPES.DARK_FOREST;
-        default:
-          return BIOME_TYPES.DEFAULT;
-      }
-    })(),
-  },
+    room: {
+        width: 100,
+        height: 100,
+        isRadial: false,
+        biome: (() => {
+            switch (localStorage.biome) {
+                case "default":
+                    return BIOME_TYPES.DEFAULT;
+                case "garden":
+                    return BIOME_TYPES.GARDEN;
+                case "desert":
+                    return BIOME_TYPES.DESERT;
+                case "ocean":
+                    return BIOME_TYPES.OCEAN;
+                case "antHell":
+                    return BIOME_TYPES.ANT_HELL;
+                case "sewers":
+                    return BIOME_TYPES.SEWERS;
+                case "hell":
+                    return BIOME_TYPES.HELL;
+                case "halloween":
+                    if (util.isHalloween) {
+                        return BIOME_TYPES.HALLOWEEN;
+                    } else {
+                        return BIOME_TYPES.DEFAULT;
+                    }
+                case "dark_forest":
+                    return BIOME_TYPES.DARK_FOREST;
+                default:
+                    return BIOME_TYPES.DEFAULT;
+            }
+        })(),
+    },
 
-  playerID: 0,
+    playerID: 0,
 
-  /** @type {Map<number, ClientPlayer>} */
-  players: new Map(),
+    /** @type {Map<number, ClientPlayer>} */
+    players: new Map(),
 
-  /** @type {Map<number, ClientPetal>} */
-  petals: new Map(),
+    /** @type {Map<number, ClientPetal>} */
+    petals: new Map(),
 
-  /** @type {Map<number, ClientMob>} */
-  mobs: new Map(),
+    /** @type {Map<number, ClientMob>} */
+    mobs: new Map(),
 
-  /** @type {Map<number, {id:number,x:number,y:number,size:number,index:number,rarity:number}>} */
-  drops: new Map(),
+    /** @type {Map<number, {id:number,x:number,y:number,size:number,index:number,rarity:number}>} */
+    drops: new Map(),
 
-  /** @type {Map<number, ClientMarker>} */
-  markers: new Map(),
+    /** @type {Map<number, ClientMarker>} */
+    markers: new Map(),
 
-  /** @type {Map<number, ClientLightning>} */
-  lightning: new Map(),
+    /** @type {Map<number, ClientLightning>} */
+    lightning: new Map(),
 
-  /** @type {ClientSocket|null} */
-  socket: null,
+    /** @type {ClientSocket|null} */
+    socket: null,
 
-  /** @type {{name:string,color:string}[]} */
-  tiers: [],
+    /** @type {{name:string,color:string}[]} */
+    tiers: [],
 
-  petalConfigs: [],
-  mobConfigs: [],
+    petalConfigs: [],
+    mobConfigs: [],
 
-  disconnected: false,
-  disconnectMessage: "Connection lost",
-  isDead: false,
-  killMessage: "",
+    disconnected: false,
+    disconnectMessage: "Connection lost",
+    isDead: false,
+    killMessage: "",
 
-  /** @type {{index:number,rarity:number,icon:IconItem}[]} */
-  slots: [],
+    /** @type {{index:number,rarity:number,icon:IconItem}[]} */
+    slots: [],
 
-  /** @type {{index:number,rarity:number,icon:IconItem}[]} */
-  secondarySlots: [],
+    /** @type {{index:number,rarity:number,icon:IconItem}[]} */
+    secondarySlots: [],
 
-  destroyIcon: new IconItem(),
+    destroyIcon: new IconItem(),
 
-  petalHover: null,
+    petalHover: null,
 
-  /** @type {{wave:number,livingMobs:number,maxMobs:number}|null} */
-  waveInfo: null,
+    /** @type {{wave:number,livingMobs:number,maxMobs:number}|null} */
+    waveInfo: null,
 
-  level: 1,
-  levelProgress: 0,
-  levelProgressTarget: 0,
+    level: 1,
+    levelProgress: 0,
+    levelProgressTarget: 0,
 
-  isInDestroy: false,
+    isInDestroy: false,
 
-  updatesCounter: 0,
-  updateRate: 0,
-  ping: 0,
-  lastPingTime: 0,
+    updatesCounter: 0,
+    updateRate: 0,
+    ping: 0,
+    lastPingTime: 0,
 
-  /** @type {{width:number,height:number,blocks:{x:number,y:number,type:number}[],overlay:SpookyOverlay}|null} */
-  terrain: null,
-  /** @type {OffscreenCanvas|null} */
-  terrainImg: null,
-  /** @type {OffscreenCanvas|null} */
-  minimapImg: null,
+    /** @type {{width:number,height:number,blocks:{x:number,y:number,type:number}[],overlay:SpookyOverlay}|null} */
+    terrain: null,
+    /** @type {OffscreenCanvas|null} */
+    terrainImg: null,
+    /** @type {OffscreenCanvas|null} */
+    minimapImg: null,
 };
 
 export const keyMap = new Set();
 export const mouse = {
-  x: 0,
-  y: 0,
-  left: false,
-  right: false,
+    x: 0,
+    y: 0,
+    left: false,
+    right: false,
 };
 
 export async function loadAssets(lobbyID) {
-  const response = await fetch(
-    `${util.SERVER_URL}/lobby/resources?partyURL=${lobbyID}`,
-  );
-  const text = await response.text();
+    const response = await fetch(`${util.SERVER_URL}/lobby/resources?partyURL=${lobbyID}`);
+    const text = await response.text();
 
-  if (text === "null") {
-    return false;
-  }
+    if (text === "null") {
+        return false;
+    }
 
-  const decoded = decodeEverything(JSON.parse(text));
+    const decoded = decodeEverything(JSON.parse(text));
 
-  location.hash = lobbyID;
-  state.tiers = decoded.tiers;
-  state.petalConfigs = decoded.petalConfigs;
-  state.mobConfigs = decoded.mobConfigs;
+    location.hash = lobbyID;
+    state.tiers = decoded.tiers;
+    state.petalConfigs = decoded.petalConfigs;
+    state.mobConfigs = decoded.mobConfigs;
 
-  await loadTerrains();
+    await loadTerrains();
 
-  return true;
+    return true;
 }
 
 let clientSocketDone = false;
-export async function beginState(
-  lobbyID,
-  username,
-  serverURL = util.SERVER_URL.replace("http", "ws"),
-) {
-  if (clientSocketDone) {
-    return;
-  }
-
-  clientSocketDone = true;
-
-  state.username = username;
-
-  // Load resources
-  try {
-    if (!(await loadAssets(lobbyID))) {
-      alert("Failed to load assets");
-      clientSocketDone = false;
-      return;
+export async function beginState(lobbyID, username, serverURL = util.SERVER_URL.replace("http", "ws")) {
+    if (clientSocketDone) {
+        return;
     }
 
-    location.hash = lobbyID;
-    state.socket = new ClientSocket(
-      `${serverURL}/ws/client?partyURL=${lobbyID}&clientKey=${localStorage.getItem("token") ?? ""}&uuid=${UUID}&analytics=${analyticalData}`,
-      username,
-    );
-    state.socket.lobbyID = lobbyID;
-  } catch (error) {
-    console.error(error);
-    alert("Couldn't connect");
-    clientSocketDone = false;
-  }
+    clientSocketDone = true;
+
+    state.username = username;
+
+    // Load resources
+    try {
+        if (!(await loadAssets(lobbyID))) {
+            alert("Failed to load assets");
+            clientSocketDone = false;
+            return;
+        }
+
+        location.hash = lobbyID;
+        state.socket = new ClientSocket(`${serverURL}/ws/client?partyURL=${lobbyID}&clientKey=${localStorage.getItem("token") ?? ""}&uuid=${UUID}&analytics=${analyticalData}`, username);
+        state.socket.lobbyID = lobbyID;
+    } catch (error) {
+        console.error(error);
+        alert("Couldn't connect");
+        clientSocketDone = false;
+    }
 }
