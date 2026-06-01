@@ -58,6 +58,7 @@ import {
   updateAndDrawInventoryDragDrop,
 } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
+import "./lib/craftMenu.js";
 
 if (location.hash) {
   fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1))
@@ -977,7 +978,7 @@ function drawInventory() {
           c.textAlign = "right";
           c.textBaseline = "top";
 
-          const text = `x${formatAmount(count)}`;
+          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + " million" : `x${formatAmount(count)}`;
           c.strokeText(text, petalSize - 4, 4);
           c.fillText(text, petalSize - 4, 4);
         }
@@ -3712,7 +3713,7 @@ function draw() {
               overlayWidth - 20 - nameWidth,
               "#FFFFFF",
               ctx,
-              73,
+              overlayX + 7 + nameWidth,
             );
             msgHeight = Math.max(msgHeight, 14);
             break;
@@ -3754,7 +3755,7 @@ function draw() {
               overlayWidth - 20 - nameWidth2,
               "#FFFFFF",
               ctx,
-              73,
+              overlayX + 7 + nameWidth2,
             );
             break;
           case 1:
@@ -3809,10 +3810,10 @@ function draw() {
               nameWidth + 66,
               message.y,
               15,
-              235,
+              235 - nameWidth,
               "#FFFFFF",
               ctx,
-              66,
+              nameWidth + 66,
             );
             break;
           case 1: // System
