@@ -84,6 +84,7 @@ var craftRef = null;
   };
 
   craft.CRAFT_RATE_LINE_RE = /^([^:]+?):\s*([\d.]+)%(?:\s*$|\s*\|\s*PRNG\s+starts\s+at\s+attempt:\s*(\d+))/;
+  craft.CRAFT_USAGE_LINE_RE = /^(?:Usage:\s*\/craft\b|To view pity:\s*\/pity\b)/i;
   craft.PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
   craft.PITY_SINGLE_HEADER_RE = /^(.+?)\s+pity:\s*(?:([\d.]+)%\s*\(\+([\d.]+)\s*pity\))?\s*$/i;
   craft.PITY_RATE_ONLY_RE = /^([\d.]+)%\s*\(\+([\d.]+)\s*pity\)\s*$/i;
@@ -95,7 +96,7 @@ var craftRef = null;
       short: 'Line',
       tiers: [
         'Common', 'Unusual', 'Rare', 'Epic', 'Legendary', 'Mythic',
-        'Ultra', 'Super', 'Eternal',
+        'Ultra', 'Super', 'Unique', 'Eternal',
       ],
       rates: {
         'Unusual': 64,
@@ -105,7 +106,7 @@ var craftRef = null;
         'Mythic': 4,
         'Ultra': 2,
         'Super': 1,
-        'Eternal': 0.5,
+        'Eternal': 0.1,
       },
     },
     {
@@ -211,10 +212,13 @@ var craftRef = null;
     craft.craftRatesFetching = true;
     var p = captureChatMessage(
       function (e) {
-        return e.type === 1 && craft.CRAFT_RATE_LINE_RE.test(e.message);
+        return e.type === 1 && (
+          craft.CRAFT_RATE_LINE_RE.test(e.message) ||
+          craft.CRAFT_USAGE_LINE_RE.test(e.message)
+        );
       },
 
-      { count: 32, idleMs: 800, timeoutMs: 20000 }
+      { count: 34, idleMs: 800, timeoutMs: 20000 }
     );
     if (!sendChatMessage('/craft')) {
       craft.craftRatesFetching = false;
@@ -576,7 +580,8 @@ var craftRef = null;
       craft.panel.style.width = '632px';
       craft.panel.style.maxWidth = '632px';
       craft.panel.style.height = 'auto';
-      craft.panel.style.maxHeight = '45vh';
+      craft.panel.style.maxHeight =
+        window.innerHeight < 900 ? 'calc(100vh - 130px)' : '45vh';
       craft.panel.style.left = '5px';
       craft.panel.style.right = 'auto';
       craft.panel.style.bottom = '65px';
