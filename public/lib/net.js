@@ -1510,8 +1510,6 @@ export class ClientSocket extends WebSocket {
                     state.alivePlayers = alivePlayers;
                 }
 
-                state.playerCount = reader.getUint8();
-
                 state.level = reader.getUint16();
                 state.levelProgressTarget = reader.getFloat32();
 
@@ -1536,6 +1534,8 @@ export class ClientSocket extends WebSocket {
                             state.inventory[tier.name][petalId] = amount;
                         }
                     }
+
+                    state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 }
                 break;
             case 250: {
@@ -1585,6 +1585,7 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
+                state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 break;
             }
             case 111: {
