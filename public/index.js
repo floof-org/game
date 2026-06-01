@@ -2974,7 +2974,7 @@ function draw() {
               overlayWidth - 20 - nameWidth,
               "#FFFFFF",
               ctx,
-              overlayX + 7 + nameWidth,
+              73,
             );
             msgHeight = Math.max(msgHeight, 14);
             break;
@@ -3016,7 +3016,7 @@ function draw() {
               overlayWidth - 20 - nameWidth2,
               "#FFFFFF",
               ctx,
-              overlayX + 7 + nameWidth2,
+              73,
             );
             break;
           case 1:
@@ -3071,10 +3071,10 @@ function draw() {
               nameWidth + 66,
               message.y,
               15,
-              235 - nameWidth,
+              235,
               "#FFFFFF",
               ctx,
-              nameWidth + 66,
+              66,
             );
             break;
           case 1: // System
