@@ -2,6 +2,7 @@
 - Added gradients for both Petal icons and Mob icons
 - Inventory can now be hovered
 - You can now view everyone in minimap in certain lobbies
+
 # Update (5/9/2026)
 - Updated Pumpkin and Jack O' Lantern Drawings (Thanks to @Fubuki and @Dwajl)
 
