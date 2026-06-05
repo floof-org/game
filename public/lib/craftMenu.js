@@ -25,9 +25,6 @@ var craftRef = null;
   craft.fastCraft = false;
   try { craft.fastCraft = localStorage.getItem('craftMenuFastCraft') === 'true'; } catch (_) {}
 
-  craft.liveCraftRates = null;
-  craft.craftRatesFetching = false;
-
   craft.pityRates = {};
   craft.pityInitialized = false;
   craft._pendingBotPitySends = [];
@@ -42,6 +39,7 @@ var craftRef = null;
   craft._lastTiersSig = null;
 
   craft.fastCraftInjectAttempts = 0;
+  craft.injectAttempts = 0;
 
   craft.orbitRAF = null;
   craft.orbitLastPositions = [];
@@ -83,8 +81,6 @@ var craftRef = null;
     'Cheese Moon': 'Cmoon',
   };
 
-  craft.CRAFT_RATE_LINE_RE = /^([^:]+?):\s*([\d.]+)%(?:\s*$|\s*\|\s*PRNG\s+starts\s+at\s+attempt:\s*(\d+))/;
-  craft.CRAFT_USAGE_LINE_RE = /^(?:Usage:\s*\/craft\b|To view pity:\s*\/pity\b)/i;
   craft.PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
   craft.PITY_SINGLE_HEADER_RE = /^(.+?)\s+pity:\s*(?:([\d.]+)%\s*\(\+([\d.]+)\s*pity\))?\s*$/i;
   craft.PITY_RATE_ONLY_RE = /^([\d.]+)%\s*\(\+([\d.]+)\s*pity\)\s*$/i;
@@ -106,6 +102,26 @@ var craftRef = null;
         'Mythic': 4,
         'Ultra': 2,
         'Super': 1,
+        'Unique': 0.1,
+        'Eternal': 0.1,
+      },
+    },
+    {
+      name: 'MMO',
+      short: 'MMO',
+      tiers: [
+        'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic',
+        'Ultra', 'Super', 'Unique', 'Eternal',
+      ],
+      rates: {
+        'Uncommon': 64,
+        'Rare': 32,
+        'Epic': 16,
+        'Legendary': 8,
+        'Mythic': 4,
+        'Ultra': 2,
+        'Super': 1,
+        'Unique': 0.1,
         'Eternal': 0.1,
       },
     },
@@ -200,51 +216,7 @@ var craftRef = null;
     return (s && s.petalConfigs && s.petalConfigs[petalIdx] && s.petalConfigs[petalIdx].name) || '';
   };
 
-  craft.fetchCraftRates = function () {
-    if (craft.liveCraftRates || craft.craftRatesFetching) return;
-    if (typeof captureChatMessage !== 'function') return;
-    if (typeof sendChatMessage !== 'function') return;
-    var s = state;
-    if (!s || !s.socket || s.socket.readyState !== WebSocket.OPEN) return;
-
-    var lobby = craft.detectLobby(s);
-    if (!lobby || lobby.name !== 'Desert Maze') return;
-    craft.craftRatesFetching = true;
-    var p = captureChatMessage(
-      function (e) {
-        return e.type === 1 && (
-          craft.CRAFT_RATE_LINE_RE.test(e.message) ||
-          craft.CRAFT_USAGE_LINE_RE.test(e.message)
-        );
-      },
-
-      { count: 34, idleMs: 800, timeoutMs: 20000 }
-    );
-    if (!sendChatMessage('/craft')) {
-      craft.craftRatesFetching = false;
-      return;
-    }
-    p.then(function (lines) {
-      var rates = {};
-      for (var i = 0; i < lines.length; i++) {
-        var m = craft.CRAFT_RATE_LINE_RE.exec(lines[i].message);
-        if (m) rates[m[1].trim()] = parseFloat(m[2]);
-      }
-      if (Object.keys(rates).length) {
-        craft.liveCraftRates = rates;
-        if (craft.panel && craft.panel.style.display !== 'none') craft.render();
-      } else {
-        craft.dwarn('/craft response empty; using hardcoded rates');
-      }
-    }).catch(function (err) {
-      craft.derror('craft rate fetch failed', err);
-    }).finally(function () {
-      craft.craftRatesFetching = false;
-    });
-  };
-
   craft.getCraftRate = function (tierName) {
-    if (craft.liveCraftRates && craft.liveCraftRates[tierName] != null) return craft.liveCraftRates[tierName];
     var preset = craft.detectLobby(state);
     if (preset && preset.rates && preset.rates[tierName] != null) return preset.rates[tierName];
     return undefined;
@@ -337,7 +309,7 @@ var craftRef = null;
         return craft._pitySuppressingCurrent;
       }
 
-      if (/^(?:Current\s+Attempt|Attempts\s+for\s+PRNG):/i.test(msg)) {
+      if (/^(?:Current\s+Attempt|Attempts\s+for\s+PRNG|Total\s+attempts):/i.test(msg)) {
         craft._pityLastMessageAt = now;
         return craft._pitySuppressingCurrent;
       }
@@ -459,9 +431,11 @@ var craftRef = null;
       octx.font = 'bold ' + Math.round(SIZE * 0.25) + 'px Ubuntu';
       octx.textAlign = 'right';
       octx.textBaseline = 'top';
-      var txt = displayed > 1000
-        ? 'x' + (displayed / 1000).toFixed(1) + 'k'
-        : 'x' + displayed;
+      var txt = displayed >= 1e6
+        ? 'x' + (displayed / 1e6).toFixed(1).replace(/\.0$/, '') + 'm'
+        : displayed > 1000
+          ? 'x' + (displayed / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+          : 'x' + displayed;
       octx.strokeText(txt, SIZE - 4, 4);
       octx.fillText(txt, SIZE - 4, 4);
     }
@@ -640,7 +614,10 @@ var craftRef = null;
     try {
       craft.injectStyles();
       var c = document.getElementById('bottomButtons');
-      if (!c) return;
+      if (!c) {
+        if (craft.injectAttempts++ < 100) setTimeout(craft.inject, 200);
+        return;
+      }
       if (document.getElementById('craftMenuButton')) return;
 
       craft.btn = document.createElement('button');
@@ -648,8 +625,8 @@ var craftRef = null;
       craft.btn.tabIndex = -1;
       craft.btn.style.width = '40px';
       craft.btn.style.height = '40px';
-      craft.btn.style.backgroundColor = 'rgba(219,157,90,0.5)';
-      craft.btn.style.border = '3px solid #6e4924';
+      craft.btn.style.backgroundColor = '#db9d5a';
+      craft.btn.style.border = '4px solid #a47040';
       craft.btn.style.display = 'none';
 
       craft.panel = document.createElement('div');
@@ -853,8 +830,9 @@ var craftRef = null;
   craft.togglePanel = function () {
     if (!craft.panel) return;
     if (craft.panel.style.display === 'none') {
-      craft.render();
       craft.panel.style.display = 'flex';
+      craft.applyPanelSize();
+      craft.render();
     } else {
       craft.panel.style.display = 'none';
       craft.hoverEntry = null;
@@ -943,11 +921,16 @@ var craftRef = null;
 
     var lobbyForCraft = craft.detectLobby(s);
     var craftPetalToken = petalName;
-    if (lobbyForCraft && lobbyForCraft.name === 'Line Maze' &&
-        craft.PETAL_NAME_SHORTHAND[petalName]) {
-      craftPetalToken = craft.PETAL_NAME_SHORTHAND[petalName];
+    var craftAmount = total;
+    if (lobbyForCraft &&
+        (lobbyForCraft.name === 'Line Maze' || lobbyForCraft.name === 'MMO')) {
+      if (lobbyForCraft.name === 'Line Maze' &&
+          craft.PETAL_NAME_SHORTHAND[petalName]) {
+        craftPetalToken = craft.PETAL_NAME_SHORTHAND[petalName];
+      }
+      craftAmount = Math.floor(total / 5);
     }
-    sendChatMessage('/craft ' + tierName + ' ' + craftPetalToken + ' ' + total);
+    sendChatMessage('/craft ' + tierName + ' ' + craftPetalToken + ' ' + craftAmount);
 
     craft.orbitLastPositions = [];
     craft.setCraftResult({
@@ -1217,7 +1200,7 @@ var craftRef = null;
           sctx.font = 'bold 12px Ubuntu';
           sctx.textAlign = 'right';
           sctx.textBaseline = 'top';
-          var t = snapSlots[i] >= 1e6 ? 'x' + (snapSlots[i] / 1e6).toFixed(1).replace(/\.0$/, '') + ' million' : 'x' + snapSlots[i];
+          var t = snapSlots[i] >= 1e6 ? 'x' + (snapSlots[i] / 1e6).toFixed(1).replace(/\.0$/, '') + 'm' : 'x' + snapSlots[i];
           sctx.strokeText(t, SLOT - 4, 4);
           sctx.fillText(t, SLOT - 4, 4);
           slot.appendChild(sc);
@@ -1458,8 +1441,6 @@ var craftRef = null;
         return;
       }
 
-      craft.fetchCraftRates();
-
       craft.panel.appendChild(craft.renderCraftArea(getIcon));
 
       var petalIdxSet = new Set();
@@ -1610,13 +1591,15 @@ var craftRef = null;
       if (!craft.hoverEntry) return;
       var img = craft.getTooltipBitmap(craft.hoverEntry.index, craft.hoverEntry.rarity);
       if (!img) return;
-      var bw = 320;
-      var bh = Math.round(bw * img.height / img.width);
-      craft.tipCanvas.width = img.width;
-      craft.tipCanvas.height = img.height;
+      var bw = 350;
+      var bh = 350 * img.height / img.width;
+      craft.tipCanvas.width = bw;
+      craft.tipCanvas.height = bh;
       var tctx = craft.tipCanvas.getContext('2d');
-      tctx.clearRect(0, 0, img.width, img.height);
-      tctx.drawImage(img, 0, 0);
+      tctx.clearRect(0, 0, bw, bh);
+      tctx.imageSmoothingEnabled = true;
+      tctx.imageSmoothingQuality = 'high';
+      tctx.drawImage(img, 0, 0, bw, bh);
       craft.tipCanvas.style.width = bw + 'px';
       craft.tipCanvas.style.height = bh + 'px';
       craft.tip.style.display = 'block';
@@ -1629,14 +1612,10 @@ var craftRef = null;
         if (wrapper) rect = wrapper.getBoundingClientRect();
       }
       if (rect) {
-        var tw = craft.tip.offsetWidth || bw;
-        var th = craft.tip.offsetHeight || bh;
-        var x = rect.right + 8;
-        if (x + tw > window.innerWidth - 2) x = rect.left - tw - 8;
-        if (x < 2) x = 2;
-        var y = rect.top;
-        if (y + th > window.innerHeight - 2) y = window.innerHeight - th - 2;
-        if (y < 2) y = 2;
+        var x = rect.left + rect.width / 2 - 150;
+        var y = rect.top - bh - 10;
+        x = Math.max(0, Math.min(x, window.innerWidth - bw));
+        y = Math.max(0, Math.min(y, window.innerHeight - bh));
         craft.tip.style.left = x + 'px';
         craft.tip.style.top = y + 'px';
       }

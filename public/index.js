@@ -880,6 +880,16 @@ inventoryTooltipLayer.style.display = "none";
 
 document.body.appendChild(inventoryTooltipLayer);
 
+function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
+  const bw = 350;
+  const bh = (350 * img.height) / img.width;
+  let x = anchorX - 150;
+  let y = anchorY - bh - 10;
+  x = Math.max(0, Math.min(x, boundW - bw));
+  y = Math.max(0, Math.min(y, boundH - bh));
+  return { x, y, bw, bh };
+}
+
 function drawInventory() {
   net.state.petalElements = [];
   menu.innerHTML = "";
@@ -978,7 +988,7 @@ function drawInventory() {
           c.textAlign = "right";
           c.textBaseline = "top";
 
-          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + " million" : `x${formatAmount(count)}`;
+          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + "m" : `x${formatAmount(count)}`;
           c.strokeText(text, petalSize - 4, 4);
           c.fillText(text, petalSize - 4, 4);
         }
@@ -3505,32 +3515,27 @@ function draw() {
     if (inventoryHover) {
       const img = petalTooltip(...inventoryHover);
 
-      const maxW = 300;
-      const minW = 180;
-
-      let w = Math.min(maxW, Math.max(minW, window.innerWidth * 0.22));
-      let h = (w * img.height) / img.width;
+      const { x, y, bw, bh } = petalTooltipBox(
+        img,
+        inventoryHover[2],
+        inventoryHover[3],
+        window.innerWidth,
+        window.innerHeight,
+      );
 
       const box = document.createElement("div");
       box.style.position = "fixed";
-
-      let left = inventoryHover[2] - w / 2;
-      let top = inventoryHover[3] - h - 12;
-
-      left = Math.max(0, Math.min(left, window.innerWidth - w));
-      top = Math.max(0, Math.min(top, window.innerHeight - h));
-
-      box.style.left = `${left}px`;
-      box.style.top = `${top}px`;
+      box.style.left = `${x}px`;
+      box.style.top = `${y}px`;
 
       const cv = document.createElement("canvas");
-      cv.width = w;
-      cv.height = h;
+      cv.width = bw;
+      cv.height = bh;
 
       const cx = cv.getContext("2d");
       cx.imageSmoothingEnabled = true;
       cx.imageSmoothingQuality = "high";
-      cx.drawImage(img, 0, 0, w, h);
+      cx.drawImage(img, 0, 0, bw, bh);
 
       box.appendChild(cv);
 
@@ -3565,13 +3570,13 @@ function draw() {
 
       if (net.state.petalHoverAlpha > 0) {
         ctx.globalAlpha = net.state.petalHoverAlpha;
-        let bw = 350;
-        let bh = (350 * img.height) / img.width;
-
-        let x = net.state.lastPetalHover[2] - 150;
-        let y = net.state.lastPetalHover[3] - bh - 10;
-
-        x = Math.max(0, Math.min(x, width - bw));
+        const { x, y, bw, bh } = petalTooltipBox(
+          img,
+          net.state.lastPetalHover[2],
+          net.state.lastPetalHover[3],
+          width,
+          height,
+        );
 
         ctx.drawImage(img, x, y, bw, bh);
       }
