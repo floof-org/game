@@ -712,6 +712,29 @@ let cuteLittleAnimations = {
 const buttonsContainer = document.getElementById("menus2");
 const menu = buttonsContainer.children.item("inventory");
 
+const inventoryTooltipLayer = document.createElement("div");
+inventoryTooltipLayer.style.position = "fixed";
+inventoryTooltipLayer.style.left = "0";
+inventoryTooltipLayer.style.top = "0";
+inventoryTooltipLayer.style.width = "100vw";
+inventoryTooltipLayer.style.height = "100vh";
+inventoryTooltipLayer.style.pointerEvents = "none";
+inventoryTooltipLayer.style.zIndex = "999999";
+inventoryTooltipLayer.style.overflow = "visible";
+inventoryTooltipLayer.style.display = "none";
+
+document.body.appendChild(inventoryTooltipLayer);
+
+function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
+  const bw = 350;
+  const bh = (350 * img.height) / img.width;
+  let x = anchorX - 150;
+  let y = anchorY - bh - 10;
+  x = Math.max(0, Math.min(x, boundW - bw));
+  y = Math.max(0, Math.min(y, boundH - bh));
+  return { x, y, bw, bh };
+}
+
 function drawInventory() {
     net.state.petalElements = [];
     menu.innerHTML = "";
@@ -803,7 +826,7 @@ function drawInventory() {
           c.textAlign = "right";
           c.textBaseline = "top";
 
-          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + " million" : `x${formatAmount(count)}`;
+          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + "m" : `x${formatAmount(count)}`;
           c.strokeText(text, petalSize - 4, 4);
           c.fillText(text, petalSize - 4, 4);
         }
@@ -2908,6 +2931,487 @@ function draw() {
         ctx.textAlign = "right";
         text(`${net.state.alivePlayers.length}/${net.state.playerCount} Players`, x + 190, y - 10, 17.5, colors.white);
     }
+  }
+
+  if (net.state.socket?.readyState === WebSocket.OPEN) {
+    if (!isHalloween || net.state.room.biome !== BIOME_TYPES.HALLOWEEN) {
+      // Minimap
+      const doTerrain = net.state.terrain?.blocks?.length > 0;
+
+      const biggestSize = doTerrain
+        ? 275
+        : Math.abs(1 - net.state.room.width / net.state.room.height) < 0.1
+          ? 150
+          : 200;
+
+      const bigger = Math.max(net.state.room.width, net.state.room.height);
+
+      const mapWidth = (net.state.room.width / bigger) * biggestSize;
+      const mapHeight = (net.state.room.height / bigger) * biggestSize;
+
+      const x = width - mapWidth - 10;
+      const y = height - mapHeight - 10;
+
+      if (doTerrain) {
+        ctx.drawImage(net.state.minimapImg, x, y, mapWidth, mapHeight);
+      } else {
+        ctx.fillStyle = BIOME_BACKGROUNDS[net.state.room.biome].color;
+        ctx.strokeStyle = "#444444";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+
+        if (net.state.room.isRadial) {
+          ctx.arc(
+            x + mapWidth / 2,
+            y + mapHeight / 2,
+            mapWidth / 2,
+            0,
+            Math.PI * 2,
+          );
+        } else {
+          ctx.roundRect(x, y, mapWidth, mapHeight, 10);
+        }
+
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      const radius = biggestSize * (doTerrain ? 0.0225 : 0.025);
+      const blueDot = "#2F80FF";
+
+      const selfX =
+        (net.state.camera.x / net.state.room.width) * mapWidth +
+        x +
+        mapWidth / 2;
+
+      const selfY =
+        (net.state.camera.y / net.state.room.height) * mapHeight +
+        y +
+        mapHeight / 2;
+
+      ctx.fillStyle = doTerrain ? colors.peaGreen : colors.playerYellow;
+      ctx.beginPath();
+      ctx.arc(selfX, selfY, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (net.state.minimapPlayers) {
+        for (const player of net.state.minimapPlayers.values()) {
+          if (!player) continue;
+          if (player.id === net.state.playerID) continue;
+
+          const px =
+            (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
+
+          const py =
+            (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
+
+          ctx.fillStyle = blueDot;
+          ctx.beginPath();
+          ctx.arc(px, py, radius * 0.85, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    {
+      // Level
+      net.state.levelProgress = lerp(
+        net.state.levelProgress,
+        net.state.levelProgressTarget,
+        0.1,
+      );
+
+      if (
+        net.state.levelProgressTarget < net.state.levelProgress ||
+        isNaN(net.state.levelProgress)
+      ) {
+        net.state.levelProgress = 0;
+      }
+
+      const player = net.state.players.get(net.state.playerID);
+      drawBar(50, 275, 175, 37.5, colors["???"]);
+
+      ctx.save();
+      ctx.translate(50, 175);
+      ctx.beginPath();
+      ctx.arc(0, 0, 35, 0, Math.PI * 2);
+      setStyle(colors.playerYellow, 4, 0.2, ctx);
+      ctx.fill();
+      ctx.stroke();
+
+      if (player) {
+        drawFace(
+          13,
+          player.facing,
+          player.mood,
+          player.mouthDip,
+          player.attack ? 2 : player.defend ? 3 : 1,
+        );
+        drawBar(
+          70,
+          70 + 155 * player.secondaryHealthBar,
+          0,
+          25,
+          colors.legendary,
+        );
+        drawBar(
+          70,
+          70 + 155 * player.healthRatio,
+          0,
+          27.5,
+          player.poisoned
+            ? mixColors(
+                colors.common,
+                colors.irisPurple,
+                0.5 + Math.sin(performance.now() / 333 + player.id * 3) * 0.5,
+              )
+            : colors.common,
+        );
+        drawBar(70, 70 + 155 * player.shieldRatio, 0, 22.5, colors.white);
+        cuteLittleAnimations.nameText = lerp(
+          cuteLittleAnimations.nameText,
+          197.5,
+          0.1,
+        );
+      } else {
+        drawFace(13, 0, 1, 0.6, 1, true);
+        cuteLittleAnimations.nameText = lerp(
+          cuteLittleAnimations.nameText,
+          180,
+          0.1,
+        );
+      }
+
+      ctx.restore();
+
+      text(net.state.username, cuteLittleAnimations.nameText, 175, 20);
+
+      drawBar(175, 275, 210, 22.5, colors["???"]);
+      drawBar(
+        175,
+        175 + 100 * net.state.levelProgress,
+        210,
+        15,
+        colors.playerYellow,
+      );
+      text("Level " + net.state.level, 225, 210, 12);
+    }
+  }
+
+  if (net.state.alivePlayers && net.state.alivePlayers.length > 0) {
+    // Leaderboard
+    const spacing = 35;
+    const barMaxWidth = 180;
+    let x = width - barMaxWidth - 30;
+    let y = 175;
+
+    const playersSorted = [...net.state.alivePlayers]
+      .sort((a, b) => b.xp - a.xp)
+      .slice(0, 10);
+
+    const maxXp = playersSorted[0].xp;
+
+    playersSorted.forEach((player) => {
+      const barWidth =
+        maxXp > 0 ? (player.xp / maxXp) * barMaxWidth : barMaxWidth;
+      const barSize = 35;
+      const color =
+        [colors.playerYellow, colors.team1, colors.team2][player.team] ??
+        colors.crafting;
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+
+      drawBar(x, x + barMaxWidth, y, barSize, colors.lighterBlack);
+      drawBar(x, x + barWidth, y, barSize * 0.75, color);
+
+      let w =
+        x +
+        text(
+          `${player.username} - ${formatLargeNumber(player.xp.toFixed(2))}`,
+          x,
+          y,
+          barSize * 0.5,
+          colors.white,
+        );
+      w += text(
+        ` (${net.state.tiers[player.highestRarity].name.charAt(0)}.)`,
+        w,
+        y,
+        barSize * 0.5,
+        net.state.tiers[player.highestRarity].color,
+      );
+
+      x -= 45;
+      setStyle(color, 4);
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.translate(x, y);
+      drawFace(7, -Math.PI / 4, 1.7, 1.7, 1);
+      ctx.translate(-x, -y);
+
+      y += spacing + 15;
+      x += 45;
+    });
+  }
+
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  if (
+    JSON.stringify(net.state.inventory2) !== JSON.stringify(net.state.inventory)
+  ) {
+    if (menu.classList.contains("active")) {
+      drawInventory();
+    }
+    net.state.inventory2 = JSON.parse(JSON.stringify(net.state.inventory));
+  }
+
+  net.state._foundHover = false;
+
+  if (menu.classList.contains("active") && net.state.petalElements) {
+    net.state.petalElements.forEach((petal) => {
+      const rect = petal.icon.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const mouseX = mouse.x / window.devicePixelRatio;
+      const mouseY = mouse.y / window.devicePixelRatio;
+
+      const visible =
+        rect.top >= menuRect.top &&
+        rect.bottom <= menuRect.bottom &&
+        rect.left >= menuRect.left &&
+        rect.right <= menuRect.right;
+
+      const hovered =
+        visible &&
+        mouseX >= rect.left &&
+        mouseX <= rect.right &&
+        mouseY >= rect.top &&
+        mouseY <= rect.bottom;
+
+      if (hovered) {
+        net.state._foundHover = true;
+
+        net.state.inventoryPetalHover = [
+          petal.index,
+          petal.rarity,
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2 - 22,
+        ];
+
+        if (
+          !inventoryDragConfig.enabled &&
+          !dragConfig.enabled &&
+          !joystick.on &&
+          mouse.left &&
+          rect.y > menuRect.top
+        ) {
+          beginInventoryDragDrop(
+            (rect.x * 1.1) / uScale,
+            (rect.y * 1.1) / uScale,
+            rect.width,
+            petal.index,
+            petal.rarity,
+          );
+
+          menu.classList.toggle("active");
+
+          inventoryDragConfig.index = petal.index;
+          inventoryDragConfig.rarity = petal.rarity;
+          inventoryDragConfig.item.stableSize = rect.width;
+
+          inventoryDragConfig.onDrop = () => {
+            processInventoryDrop();
+            menu.classList.toggle("active");
+          };
+        }
+      }
+    });
+  }
+
+  if (!net.state._foundHover) {
+    net.state.inventoryPetalHover = null;
+  }
+
+  ctx.restore();
+
+  {
+    // Hovers
+
+    net.state.petalHoverAlpha ??= 0;
+    net.state.lastPetalHover ??= null;
+
+    const inventoryHover = Array.isArray(net.state.inventoryPetalHover)
+      ? net.state.inventoryPetalHover
+      : null;
+
+    if (inventoryHover) {
+      const img = petalTooltip(...inventoryHover);
+
+      const { x, y, bw, bh } = petalTooltipBox(
+        img,
+        inventoryHover[2],
+        inventoryHover[3],
+        window.innerWidth,
+        window.innerHeight,
+      );
+
+      const box = document.createElement("div");
+      box.style.position = "fixed";
+      box.style.left = `${x}px`;
+      box.style.top = `${y}px`;
+
+      const cv = document.createElement("canvas");
+      cv.width = bw;
+      cv.height = bh;
+
+      const cx = cv.getContext("2d");
+      cx.imageSmoothingEnabled = true;
+      cx.imageSmoothingQuality = "high";
+      cx.drawImage(img, 0, 0, bw, bh);
+
+      box.appendChild(cv);
+
+      inventoryTooltipLayer.replaceChildren(box);
+      inventoryTooltipLayer.style.display = "block";
+    } else {
+      inventoryTooltipLayer.replaceChildren();
+      inventoryTooltipLayer.style.display = "none";
+    }
+
+    if (Array.isArray(net.state.petalHover)) {
+      net.state.lastPetalHover = [...net.state.petalHover];
+      net.state.petalHoverAlpha += 0.25;
+    } else {
+      net.state.petalHoverAlpha -= 0.25;
+    }
+    net.state.petalHoverAlpha = Math.max(
+      0,
+      Math.min(1, net.state.petalHoverAlpha),
+    );
+
+    if (
+      Array.isArray(net.state.lastPetalHover) &&
+      net.state.lastPetalHover.length === 4 &&
+      net.state.lastPetalHover.every((v) => v !== undefined && v !== null) &&
+      !Array.isArray(net.state.inventoryPetalHover)
+    ) {
+      ctx.save();
+      const img = petalTooltip(...net.state.lastPetalHover);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      if (net.state.petalHoverAlpha > 0) {
+        ctx.globalAlpha = net.state.petalHoverAlpha;
+        const { x, y, bw, bh } = petalTooltipBox(
+          img,
+          net.state.lastPetalHover[2],
+          net.state.lastPetalHover[3],
+          width,
+          height,
+        );
+
+        ctx.drawImage(img, x, y, bw, bh);
+      }
+
+      ctx.restore();
+
+      if (net.state.petalHoverAlpha === 0) {
+        net.state.lastPetalHover = null;
+      }
+    }
+
+    net.state.mobHoverAlpha ??= 0;
+    net.state.lastMobHover ??= null;
+
+    if (net.state.mobHover !== null) {
+      net.state.lastMobHover = [...net.state.mobHover];
+      net.state.mobHoverAlpha += 0.25;
+    } else {
+      net.state.mobHoverAlpha -= 0.25;
+    }
+
+    net.state.mobHoverAlpha = Math.max(0, Math.min(1, net.state.mobHoverAlpha));
+
+    if (net.state.lastMobHover) {
+      ctx.save();
+      const img = mobTooltip(...net.state.lastMobHover);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      if (net.state.mobHoverAlpha > 0) {
+        ctx.globalAlpha = net.state.mobHoverAlpha;
+        let bw = 350;
+        let bh = (-350 * img.height) / img.width;
+
+        let x = net.state.lastMobHover[2];
+        let y = net.state.lastMobHover[3] - bh;
+
+        x = Math.max(0, Math.min(x, width - bw));
+
+        ctx.drawImage(img, x, y, bw, bh);
+      }
+
+      ctx.restore();
+
+      if (net.state.mobHoverAlpha === 0) {
+        net.state.lastMobHover = null;
+      }
+    }
+  }
+
+  updateAndDrawDragDrop(mX, mY);
+  updateAndDrawInventoryDragDrop(mX, mY);
+
+  if (net.state.isDead) {
+    ctx.fillStyle = "rgba(0, 0, 0, .2)";
+    ctx.fillRect(0, 0, width, height);
+    text("You died", width / 2, height / 2, 30);
+    text(net.state.killMessage, width / 2, height / 2 + 30, 15);
+    if (isMobile) {
+      text("(Tap anywhere to respawn)", width / 2, height / 2 + 60, 15);
+    } else {
+      text("(Press Enter to respawn)", width / 2, height / 2 + 60, 15);
+    }
+  }
+
+  if (options.showDebug) {
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+
+    text(
+      `C: ${clientDebug.fps} FPS | ${clientDebug.mspt.toFixed(2)} mspt`,
+      width - 10,
+      10,
+      15,
+    );
+    text(
+      `S: ${net.state.updateRate} UPS | ${+net.state.ping.toFixed(2)} ms ping`,
+      width - 10,
+      25,
+      15,
+    );
+
+    if (net.state.socket) {
+      text(
+        `B(I/O): ${net.state.socket.bandWidth.in}/${net.state.socket.bandWidth.out} KB/s`,
+        width - 10,
+        40,
+        15,
+      );
+    } else {
+      text("Not connected", width - 10, 40, 15);
+    }
+
+    text(
+      `X: ${net.state.camera?.x?.toFixed(0) ?? 0} | Y: ${net.state.camera?.y?.toFixed(0) ?? 0}`,
+      width - 10,
+      55,
+      15,
+    );
 
     ctx.textAlign = "center";
 
