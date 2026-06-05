@@ -1,12 +1,7 @@
-# Update (6/1/2026)
-- Added crafting menu in the Desert Maze lobby.
-- Will be added to more lobbies in the future.
-- We are aware of the bugs and we are actively working to fix them.
 # Update (5/18/2026)
 - Added gradients for both Petal icons and Mob icons
 - Inventory can now be hovered
 - You can now view everyone in minimap in certain lobbies
-
 # Update (5/9/2026)
 - Updated Pumpkin and Jack O' Lantern Drawings (Thanks to @Fubuki and @Dwajl)
 
