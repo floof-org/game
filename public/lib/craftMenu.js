@@ -22,9 +22,6 @@ var craftRef = null;
   craft.craftResult = null;
   craft.craftResultToken = 0;
 
-  craft.fastCraft = false;
-  try { craft.fastCraft = localStorage.getItem('craftMenuFastCraft') === 'true'; } catch (_) {}
-
   craft.pityRates = {};
   craft.pityInitialized = false;
   craft._pendingBotPitySends = [];
@@ -38,7 +35,6 @@ var craftRef = null;
   craft._lastUsername = null;
   craft._lastTiersSig = null;
 
-  craft.fastCraftInjectAttempts = 0;
   craft.injectAttempts = 0;
 
   craft.orbitRAF = null;
@@ -196,11 +192,6 @@ var craftRef = null;
       y: craft.STAR_CENTER.y + _sr * Math.sin(_sa),
     });
   }
-
-  craft.setFastCraft = function (val) {
-    craft.fastCraft = !!val;
-    try { localStorage.setItem('craftMenuFastCraft', String(craft.fastCraft)); } catch (_) {}
-  };
 
   craft.dlog = function () {
     if (craft._debugMode) console.log.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments)));
@@ -666,7 +657,6 @@ var craftRef = null;
       });
 
       craft.setupCraftChatLogger();
-      craft.injectFastCraftToggle();
 
       craft.updateButtonVisibility();
       setInterval(craft.updateButtonVisibility, 500);
@@ -675,27 +665,6 @@ var craftRef = null;
     } catch (err) {
       craft.derror('inject failed', err);
     }
-  };
-
-  craft.injectFastCraftToggle = function () {
-    if (document.getElementById('fastCraftCheckbox')) return;
-    var menu = document.querySelector('#menus #optionsMenu');
-    if (!menu) {
-      if (craft.fastCraftInjectAttempts++ < 50) setTimeout(craft.injectFastCraftToggle, 200);
-      return;
-    }
-    var label = document.createElement('label');
-    label.setAttribute('for', 'fastCraftCheckbox');
-    label.textContent = 'Fast Craft:';
-    var cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.id = 'fastCraftCheckbox';
-    cb.name = 'fastCraftCheckbox';
-    cb.checked = craft.fastCraft;
-    cb.addEventListener('change', function () { craft.setFastCraft(cb.checked); });
-    menu.appendChild(label);
-    menu.appendChild(cb);
-    menu.appendChild(document.createElement('br'));
   };
 
   craft.setupCraftChatLogger = function () {
@@ -708,10 +677,6 @@ var craftRef = null;
       function scheduleResult(prev, build) {
         if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
         var result = build();
-        if (craft.fastCraft) {
-          craft.setCraftResult(result);
-          return;
-        }
         var tokenAtSchedule = craft.craftResultToken;
         setTimeout(function () {
           if (craft.craftResultToken !== tokenAtSchedule) return;
@@ -986,8 +951,6 @@ var craftRef = null;
   craft.startOrbitAnimation = function (container) {
     craft.stopOrbitAnimation();
 
-    if (craft.fastCraft) { craft.orbitRAF = null; return; }
-
     var slots = container.querySelectorAll('[data-craft-orbit]');
     if (!slots.length) {
       craft.orbitRAF = null;
@@ -1154,13 +1117,7 @@ var craftRef = null;
     var failed = craft.craftResult && craft.craftResult.type === 'fail';
 
     var easeComplete = (merging || failed) && craft.craftResult._easeComplete;
-    var easing = (merging || failed) && !easeComplete && !craft.fastCraft;
-    if ((merging || failed) && craft.fastCraft && !craft.craftResult._easeComplete) {
-
-      craft.craftResult._easeComplete = true;
-      easeComplete = true;
-      easing = false;
-    }
+    var easing = (merging || failed) && !easeComplete;
     var firstFinalFrame = merging && easeComplete && !craft.craftResult._mergeStarted;
     if (firstFinalFrame) craft.craftResult._mergeStarted = true;
 
