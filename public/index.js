@@ -988,7 +988,7 @@ function drawInventory() {
           c.textAlign = "right";
           c.textBaseline = "top";
 
-          const text = count >= 1e6 ? "x" + (count / 1e6).toFixed(1).replace(/\.0$/, "") + "m" : `x${formatAmount(count)}`;
+          const text = `x${formatAmount(count)}`;
           c.strokeText(text, petalSize - 4, 4);
           c.fillText(text, petalSize - 4, 4);
         }
