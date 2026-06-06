@@ -615,9 +615,9 @@ function processDrop() {
     return true;
 }
 
-function formatAmount(v) {
-    if (!isFinite(v)) return "∞";
-    if (isNaN(v)) return "0";
+export function formatAmount(v) {
+  if (!isFinite(v)) return "∞";
+  if (isNaN(v)) return "0";
 
     const f = (num, div, suffix) => {
         const val = num / div;
