@@ -759,7 +759,7 @@ function processDrop() {
   return true;
 }
 
-function formatAmount(v) {
+export function formatAmount(v) {
   if (!isFinite(v)) return "∞";
   if (isNaN(v)) return "0";
 

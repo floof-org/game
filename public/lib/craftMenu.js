@@ -1,5 +1,6 @@
 ﻿import { getPetalIcon, petalTooltip } from "./renders.js";
 import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net.js";
+import { formatAmount } from "../index.js";
 
 var craftRef = null;
 
@@ -78,6 +79,7 @@ var craftRef = null;
   };
 
   craft.PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
+  craft.PITY_NONE_RE = /^No\s+active\s+pity\s+for\s+.+?\.?\s*$/i;
   craft.PITY_SINGLE_HEADER_RE = /^(.+?)\s+pity:\s*(?:([\d.]+)%\s*\(\+([\d.]+)\s*pity\))?\s*$/i;
   craft.PITY_RATE_ONLY_RE = /^([\d.]+)%\s*\(\+([\d.]+)\s*pity\)\s*$/i;
   craft.PITY_LINE_RE = /^([^:]+?):\s*([\d.]+)%\s*\(\+([\d.]+)\s*pity\)/i;
@@ -242,6 +244,19 @@ var craftRef = null;
         if (craft._pendingBotPitySends.length > 0) {
           craft._pendingBotPitySends.shift();
           craft._pitySuppressingCurrent = true;
+          return true;
+        }
+        craft._pitySuppressingCurrent = false;
+        return false;
+      }
+
+      if (craft.PITY_NONE_RE.test(msg)) {
+        craft._pityLastMessageAt = now;
+        craft._pityCurrentTier = null;
+        craft._pityCurrentSinglePetal = null;
+        if (craft._pendingBotPitySends.length > 0) {
+          craft._pendingBotPitySends.shift();
+          craft._pitySuppressingCurrent = false;
           return true;
         }
         craft._pitySuppressingCurrent = false;
@@ -422,11 +437,7 @@ var craftRef = null;
       octx.font = 'bold ' + Math.round(SIZE * 0.25) + 'px Ubuntu';
       octx.textAlign = 'right';
       octx.textBaseline = 'top';
-      var txt = displayed >= 1e6
-        ? 'x' + (displayed / 1e6).toFixed(1).replace(/\.0$/, '') + 'm'
-        : displayed > 1000
-          ? 'x' + (displayed / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
-          : 'x' + displayed;
+      var txt = 'x' + formatAmount(displayed);
       octx.strokeText(txt, SIZE - 4, 4);
       octx.fillText(txt, SIZE - 4, 4);
     }
@@ -1157,7 +1168,7 @@ var craftRef = null;
           sctx.font = 'bold 12px Ubuntu';
           sctx.textAlign = 'right';
           sctx.textBaseline = 'top';
-          var t = snapSlots[i] >= 1e6 ? 'x' + (snapSlots[i] / 1e6).toFixed(1).replace(/\.0$/, '') + 'm' : 'x' + snapSlots[i];
+          var t = 'x' + formatAmount(snapSlots[i]);
           sctx.strokeText(t, SLOT - 4, 4);
           sctx.fillText(t, SLOT - 4, 4);
           slot.appendChild(sc);
