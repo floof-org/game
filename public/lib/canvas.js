@@ -340,53 +340,60 @@ export function drawWrappedText(text, x, y, size, maxWidth, fill = "#FFFFFF", _c
     _ctx.fillStyle = fill;
 
     const lines = [];
-    const words = text.split(" ");
 
-    // Handle single-word case early
-    if (words.length === 1) {
-        _ctx.strokeText(text, x, y);
-        _ctx.fillText(text, x, y);
-        return _ctx.measureText(text).width;
-    }
+    const lineBreaks = text.split("\n");
 
-    let line = "";
-    for (let i = 0; i < words.length; i++) {
-        // Handle words that are too long to fit in maxWidth by splitting them
-        while (_ctx.measureText(words[i]).width > maxWidth) {
-            const oldWord = words[i];
-            const newWords = [];
-            let wordSegment = "";
+    for (let p = 0; p < lineBreaks.length; p++) {
+        const words = lineBreaks[p].split(" ");
 
-            for (let j = 0; j < oldWord.length; j++) {
-                const testSegment = wordSegment + oldWord[j];
-                if (_ctx.measureText(testSegment).width > maxWidth) {
-                    newWords.push(wordSegment);
-                    wordSegment = "";
-                }
-                wordSegment += oldWord[j];
-            }
-            newWords.push(wordSegment); // Push last remaining segment
-
-            // Replace the current word with the new segments
-            words.splice(i, 1, ...newWords);
-
-            // If the word was split into one piece, stop splitting
-            if (newWords.length === 1) break;
-        }
-
-        const testLine = line + words[i] + " ";
-        const testWidth = _ctx.measureText(testLine).width;
-
-        if (testWidth > maxWidth && line) {
-            lines.push(line.trim());
-            line = words[i] + " ";
+        if (words.length === 1) {
+            lines.push(words[0]);
         } else {
-            line = testLine;
+            let line = "";
+
+            for (let i = 0; i < words.length; i++) {
+                // Handle words that are too long to fit in maxWidth by splitting them
+                while (_ctx.measureText(words[i]).width > maxWidth) {
+                    const oldWord = words[i];
+                    const newWords = [];
+                    let wordSegment = "";
+
+                    for (let j = 0; j < oldWord.length; j++) {
+                        const testSegment = wordSegment + oldWord[j];
+                        if (_ctx.measureText(testSegment).width > maxWidth) {
+                            newWords.push(wordSegment);
+                            wordSegment = "";
+                        }
+                        wordSegment += oldWord[j];
+                    }
+                    newWords.push(wordSegment); // Push last remaining segment
+
+                    // Replace the current word with the new segments
+                    words.splice(i, 1, ...newWords);
+
+                    // If the word was split into one piece, stop splitting
+                    if (newWords.length === 1) break;
+                }
+
+                const testLine = line + words[i] + " ";
+                const testWidth = _ctx.measureText(testLine).width;
+
+                if (testWidth > maxWidth && line) {
+                    lines.push(line.trim());
+                    line = words[i] + " ";
+                } else {
+                    line = testLine;
+                }
+            }
+
+            lines.push(line.trim());
+        }
+
+        // spacing
+        if (p !== lineBreaks.length - 1) {
+            lines.push("");
         }
     }
-
-    // Push the final line
-    lines.push(line.trim());
 
     // Render each line with wrapping applied
     for (let i = 0; i < lines.length; i++) {

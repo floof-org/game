@@ -115,6 +115,74 @@ export function hideMenus() {
     }
 }
 
+function bindCheckbox(option, elementID) {
+    const element = document.getElementById(elementID);
+
+    if (!element) {
+        console.warn("Missing checkbox:", elementID);
+        return;
+    }
+
+    const saved = localStorage.getItem("options-" + option);
+
+    if (saved !== null) {
+        options[option] = saved === "true";
+    }
+
+    element.checked = options[option];
+
+    element.onchange = function () {
+        options[option] = element.checked;
+
+        localStorage.setItem(
+            "options-" + option,
+            String(element.checked)
+        );
+    };
+}
+
+function bindNumber(option, elementID, {
+    min = -Infinity,
+    max = Infinity
+} = {}) {
+
+    const element = document.getElementById(elementID);
+
+    if (!element) {
+        console.warn("Missing number input:", elementID);
+        return;
+    }
+
+    const saved = localStorage.getItem("options-" + option);
+
+    if (saved !== null) {
+        const value = Number(saved);
+
+        if (!Number.isNaN(value)) {
+            options[option] = value;
+        }
+    }
+
+    element.value = options[option];
+
+    element.oninput = function () {
+        let value = Number(element.value);
+
+        if (Number.isNaN(value)) {
+            value = 0;
+        }
+
+        value = Math.max(min, Math.min(max, value));
+
+        options[option] = value;
+
+        localStorage.setItem(
+            "options-" + option,
+            String(value)
+        );
+    };
+}
+
 function bindOptionToggle(option, elementID) {
     const element = document.getElementById(elementID); // checkbox
 
@@ -130,16 +198,27 @@ function bindOptionToggle(option, elementID) {
     }
 }
 
-bindOptionToggle("showDebug", "show-debug");
-bindOptionToggle("hideGrid", "hide-grid");
-bindOptionToggle("rigidInterpolation", "rigid-interpolation");
-bindOptionToggle("mouseMovement", "mouse-movement");
-bindOptionToggle("hideEntityUI", "hide-entity-ui");
-bindOptionToggle("disableTiledBackground", "disable-tiled-background");
-bindOptionToggle("fancyGraphics", "extra-graphics");
-bindOptionToggle("showHitboxes", "show-hitboxes");
-bindOptionToggle("cacheMobAssets", "cache-mob-assets");
-bindOptionToggle("cachePetalAssets", "cache-petal-assets");
+bindCheckbox("showDebug", "show-debug");
+bindCheckbox("hideGrid", "hide-grid");
+bindCheckbox("rigidInterpolation", "rigid-interpolation");
+bindCheckbox("mouseMovement", "mouse-movement");
+bindCheckbox("hideEntityUI", "hide-entity-ui");
+bindCheckbox("disableTiledBackground", "disable-tiled-background");
+bindCheckbox("fancyGraphics", "extra-graphics");
+bindCheckbox("showHitboxes", "show-hitboxes");
+bindCheckbox("cacheMobAssets", "cache-mob-assets");
+bindCheckbox("cachePetalAssets", "cache-petal-assets");
+
+bindCheckbox("disableGradients", "disable-gradients");
+
+bindNumber(
+    "minimumGradientRarity",
+    "minimum-gradient-rarity",
+    {
+        min: 0,
+        max: 999
+    }
+);
 
 export async function loadAndRenderChangelogs() {
     const changelogs = [];

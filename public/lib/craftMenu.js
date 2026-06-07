@@ -1,12 +1,11 @@
 import { getPetalIcon, petalTooltip } from "./renders.js";
 import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net.js";
+import { formatAmount } from "../index.js";
 
 var craftRef = null;
 
 (function () {
   var craft = {};
-
-  // State
 
   craft.btn = null;
   craft.panel = null;
@@ -24,12 +23,6 @@ var craftRef = null;
   craft.craftResult = null;
   craft.craftResultToken = 0;
 
-  craft.fastCraft = false;
-  try { craft.fastCraft = localStorage.getItem('craftMenuFastCraft') === 'true'; } catch (_) {}
-
-  craft.liveCraftRates = null;
-  craft.craftRatesFetching = false;
-
   craft.pityRates = {};
   craft.pityInitialized = false;
   craft._pendingBotPitySends = [];
@@ -43,7 +36,7 @@ var craftRef = null;
   craft._lastUsername = null;
   craft._lastTiersSig = null;
 
-  craft.fastCraftInjectAttempts = 0;
+  craft.injectAttempts = 0;
 
   craft.orbitRAF = null;
   craft.orbitLastPositions = [];
@@ -53,8 +46,6 @@ var craftRef = null;
   craft._debugMode = false;
   craft._simNextOutcome = null;
 
-
-  // Constants
 
   craft.CRAFT_RESULT_TTL_MS = 5000;
   craft.PITY_SEND_TIMEOUT_MS = 10000;
@@ -73,7 +64,7 @@ var craftRef = null;
     'Beetle Egg': 'Begg',
     'Ant Egg': 'Aegg',
     'Yin Yang': 'Yyang',
-    'Magic Leaf': 'Mleaf',
+    'Magic Orb': 'Morb',
     'Golden Leaf': 'Gleaf',
     'Blood Stinger': 'Bstinger',
     'Venomous Stinger': 'Vstinger',
@@ -84,13 +75,11 @@ var craftRef = null;
     'Tesla Coil': 'Tcoil',
     'Red Coral': 'Rcoral',
     'Blue Coral': 'Bcoral',
-    'Pillbug Egg': 'Pegg',
-    'Shiny Wing': 'Swing',
-    'Fire Spellbook': 'Fspell',
+    'Cheese Moon': 'Cmoon',
   };
 
-  craft.CRAFT_RATE_LINE_RE = /^([^:]+?):\s*([\d.]+)%(?:\s*$|\s*\|\s*PRNG\s+starts\s+at\s+attempt:\s*(\d+))/;
   craft.PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
+  craft.PITY_NONE_RE = /^No\s+active\s+pity\s+for\s+.+?\.?\s*$/i;
   craft.PITY_SINGLE_HEADER_RE = /^(.+?)\s+pity:\s*(?:([\d.]+)%\s*\(\+([\d.]+)\s*pity\))?\s*$/i;
   craft.PITY_RATE_ONLY_RE = /^([\d.]+)%\s*\(\+([\d.]+)\s*pity\)\s*$/i;
   craft.PITY_LINE_RE = /^([^:]+?):\s*([\d.]+)%\s*\(\+([\d.]+)\s*pity\)/i;
@@ -101,24 +90,37 @@ var craftRef = null;
       short: 'Line',
       tiers: [
         'Common', 'Unusual', 'Rare', 'Epic', 'Legendary', 'Mythic',
-        'Ultra', 'Super', 'Omega', 'Eternal', 'Unique',
-        'Devastating', 'Dreadful', 'Enigmatic', 'Cataclysmic',
+        'Ultra', 'Super', 'Unique', 'Eternal',
       ],
       rates: {
-        'Unusual': 100,
-        'Rare': 64,
-        'Epic': 48,
-        'Legendary': 32,
-        'Mythic': 24,
-        'Ultra': 16,
-        'Super': 12,
-        'Omega': 8,
-        'Eternal': 6,
-        'Unique': 4,
-        'Devastating': 2,
-        'Dreadful': 1,
-        'Enigmatic': 0.5,
-        'Cataclysmic': 0.1,
+        'Unusual': 64,
+        'Rare': 32,
+        'Epic': 16,
+        'Legendary': 8,
+        'Mythic': 4,
+        'Ultra': 2,
+        'Super': 1,
+        'Unique': 0.1,
+        'Eternal': 0.1,
+      },
+    },
+    {
+      name: 'MMO',
+      short: 'MMO',
+      tiers: [
+        'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic',
+        'Ultra', 'Super', 'Unique', 'Eternal',
+      ],
+      rates: {
+        'Uncommon': 64,
+        'Rare': 32,
+        'Epic': 16,
+        'Legendary': 8,
+        'Mythic': 4,
+        'Ultra': 2,
+        'Super': 1,
+        'Unique': 0.1,
+        'Eternal': 0.1,
       },
     },
     {
@@ -193,13 +195,6 @@ var craftRef = null;
     });
   }
 
-  // Functions
-
-  craft.setFastCraft = function (val) {
-    craft.fastCraft = !!val;
-    try { localStorage.setItem('craftMenuFastCraft', String(craft.fastCraft)); } catch (_) {}
-  };
-
   craft.dlog = function () {
     if (craft._debugMode) console.log.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments)));
   };
@@ -214,48 +209,7 @@ var craftRef = null;
     return (s && s.petalConfigs && s.petalConfigs[petalIdx] && s.petalConfigs[petalIdx].name) || '';
   };
 
-  craft.fetchCraftRates = function () {
-    if (craft.liveCraftRates || craft.craftRatesFetching) return;
-    if (typeof captureChatMessage !== 'function') return;
-    if (typeof sendChatMessage !== 'function') return;
-    var s = state;
-    if (!s || !s.socket || s.socket.readyState !== WebSocket.OPEN) return;
-
-    var lobby = craft.detectLobby(s);
-    if (!lobby || lobby.name !== 'Desert Maze') return;
-    craft.craftRatesFetching = true;
-    var p = captureChatMessage(
-      function (e) {
-        return e.type === 1 && craft.CRAFT_RATE_LINE_RE.test(e.message);
-      },
-
-      { count: 32, idleMs: 800, timeoutMs: 20000 }
-    );
-    if (!sendChatMessage('/craft')) {
-      craft.craftRatesFetching = false;
-      return;
-    }
-    p.then(function (lines) {
-      var rates = {};
-      for (var i = 0; i < lines.length; i++) {
-        var m = craft.CRAFT_RATE_LINE_RE.exec(lines[i].message);
-        if (m) rates[m[1].trim()] = parseFloat(m[2]);
-      }
-      if (Object.keys(rates).length) {
-        craft.liveCraftRates = rates;
-        if (craft.panel && craft.panel.style.display !== 'none') craft.render();
-      } else {
-        craft.dwarn('/craft response empty; using hardcoded rates');
-      }
-    }).catch(function (err) {
-      craft.derror('craft rate fetch failed', err);
-    }).finally(function () {
-      craft.craftRatesFetching = false;
-    });
-  };
-
   craft.getCraftRate = function (tierName) {
-    if (craft.liveCraftRates && craft.liveCraftRates[tierName] != null) return craft.liveCraftRates[tierName];
     var preset = craft.detectLobby(state);
     if (preset && preset.rates && preset.rates[tierName] != null) return preset.rates[tierName];
     return undefined;
@@ -290,6 +244,19 @@ var craftRef = null;
         if (craft._pendingBotPitySends.length > 0) {
           craft._pendingBotPitySends.shift();
           craft._pitySuppressingCurrent = true;
+          return true;
+        }
+        craft._pitySuppressingCurrent = false;
+        return false;
+      }
+
+      if (craft.PITY_NONE_RE.test(msg)) {
+        craft._pityLastMessageAt = now;
+        craft._pityCurrentTier = null;
+        craft._pityCurrentSinglePetal = null;
+        if (craft._pendingBotPitySends.length > 0) {
+          craft._pendingBotPitySends.shift();
+          craft._pitySuppressingCurrent = false;
           return true;
         }
         craft._pitySuppressingCurrent = false;
@@ -348,7 +315,7 @@ var craftRef = null;
         return craft._pitySuppressingCurrent;
       }
 
-      if (/^(?:Current\s+Attempt|Attempts\s+for\s+PRNG):/i.test(msg)) {
+      if (/^(?:Current\s+Attempt|Attempts\s+for\s+PRNG|Total\s+attempts):/i.test(msg)) {
         craft._pityLastMessageAt = now;
         return craft._pitySuppressingCurrent;
       }
@@ -447,6 +414,115 @@ var craftRef = null;
     return null;
   };
 
+  craft._cellCache = new Map();
+  craft._cellCacheKeys = [];
+  craft._CELL_CACHE_MAX = 2000;
+  craft.getCellBitmap = function (petalIdx, rarIdx, displayed, SIZE) {
+    var key = petalIdx + '|' + rarIdx + '|' + displayed + '|' + SIZE;
+    var hit = craft._cellCache.get(key);
+    if (hit) return hit;
+    var off = (typeof OffscreenCanvas !== 'undefined')
+      ? new OffscreenCanvas(SIZE, SIZE)
+      : document.createElement('canvas');
+    off.width = SIZE; off.height = SIZE;
+    var octx = off.getContext('2d');
+    try {
+      var src = getPetalIcon(petalIdx, rarIdx);
+      if (src) octx.drawImage(src, 0, 0, SIZE, SIZE);
+    } catch (_) {}
+    if (displayed > 1) {
+      octx.fillStyle = '#fff';
+      octx.strokeStyle = '#000';
+      octx.lineWidth = 2;
+      octx.font = 'bold ' + Math.round(SIZE * 0.25) + 'px Ubuntu';
+      octx.textAlign = 'right';
+      octx.textBaseline = 'top';
+      var txt = 'x' + formatAmount(displayed);
+      octx.strokeText(txt, SIZE - 4, 4);
+      octx.fillText(txt, SIZE - 4, 4);
+    }
+    craft._cellCache.set(key, off);
+    craft._cellCacheKeys.push(key);
+    if (craft._cellCacheKeys.length > craft._CELL_CACHE_MAX) {
+      craft._cellCache.delete(craft._cellCacheKeys.shift());
+    }
+    return off;
+  };
+
+  craft._tooltipCache = new Map();
+  craft._tooltipCacheKeys = [];
+  craft._TOOLTIP_CACHE_MAX = 200;
+  craft.getTooltipBitmap = function (petalIdx, rarity) {
+    var key = petalIdx + '|' + rarity;
+    var hit = craft._tooltipCache.get(key);
+    if (hit) return hit;
+    if (typeof petalTooltip !== 'function') return null;
+    var src = petalTooltip(petalIdx, rarity);
+    if (!src || !src.width || !src.height) return null;
+    var off = (typeof OffscreenCanvas !== 'undefined')
+      ? new OffscreenCanvas(src.width, src.height)
+      : document.createElement('canvas');
+    off.width = src.width; off.height = src.height;
+    try { off.getContext('2d').drawImage(src, 0, 0); } catch (_) { return null; }
+    craft._tooltipCache.set(key, off);
+    craft._tooltipCacheKeys.push(key);
+    if (craft._tooltipCacheKeys.length > craft._TOOLTIP_CACHE_MAX) {
+      craft._tooltipCache.delete(craft._tooltipCacheKeys.shift());
+    }
+    return off;
+  };
+
+  craft._cellObserver = null;
+  craft.makeCellObserver = function (root) {
+    if (typeof IntersectionObserver === 'undefined') return null;
+    var obs = new IntersectionObserver(function (entries) {
+      for (var i = 0; i < entries.length; i++) {
+        var entry = entries[i];
+        if (!entry.isIntersecting) continue;
+        var el = entry.target;
+        if (el._craftInflated) { obs.unobserve(el); continue; }
+        var ds = el.dataset;
+        var pidx = +ds.fcPidx, ridx = +ds.fcRidx;
+        var disp = +ds.fcDisp, sz = +ds.fcSize;
+        var bitmap = craft.getCellBitmap(pidx, ridx, disp, sz);
+        if (!bitmap) { obs.unobserve(el); continue; }
+        var cv = document.createElement('canvas');
+        cv.width = sz; cv.height = sz;
+        cv.style.cssText =
+          'width:' + sz + 'px;height:' + sz + 'px;display:block;pointer-events:none;';
+        try { cv.getContext('2d').drawImage(bitmap, 0, 0); } catch (_) {}
+        el.appendChild(cv);
+        el._craftInflated = true;
+        obs.unobserve(el);
+      }
+    }, { root: root, rootMargin: '400px 0px 400px 0px', threshold: 0 });
+    return obs;
+  };
+
+  craft._searchDebounceTimer = null;
+  craft._SEARCH_DEBOUNCE_MS = 80;
+
+  craft.clearCellCaches = function () {
+    craft._cellCache.clear();
+    craft._cellCacheKeys.length = 0;
+    craft._tooltipCache.clear();
+    craft._tooltipCacheKeys.length = 0;
+  };
+
+  craft._pageActive = true;
+  (function () {
+    if (typeof document === 'undefined') return;
+    function update() {
+      craft._pageActive = !document.hidden &&
+        (typeof document.hasFocus !== 'function' || document.hasFocus());
+    }
+    update();
+    document.addEventListener('visibilitychange', update, { passive: true });
+    window.addEventListener('focus', update, { passive: true });
+    window.addEventListener('blur', update, { passive: true });
+    window.addEventListener('pageshow', update, { passive: true });
+  })();
+
   craft.injectStyles = function () {
     if (document.getElementById('craftMenuStyles')) return;
     var st = document.createElement('style');
@@ -457,6 +533,8 @@ var craftRef = null;
       '#craftMenuPanel ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.35);border-radius:4px;}' +
       '#craftMenuPanel ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.55);}' +
       '#craftMenuPanel ::-webkit-scrollbar-corner{background:transparent;}' +
+      '#craftMenuSearch::placeholder{color:rgba(255,255,255,0.75);}' +
+      '#craftMenuSearch::-webkit-input-placeholder{color:rgba(255,255,255,0.75);}' +
 
       '@keyframes craftMenuSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}' +
       '.craftMenuSpinning{animation:craftMenuSpin 0.5s linear infinite;transform-origin:center center;}';
@@ -478,7 +556,8 @@ var craftRef = null;
       craft.panel.style.width = '632px';
       craft.panel.style.maxWidth = '632px';
       craft.panel.style.height = 'auto';
-      craft.panel.style.maxHeight = '45vh';
+      craft.panel.style.maxHeight =
+        window.innerHeight < 900 ? 'calc(100vh - 130px)' : '45vh';
       craft.panel.style.left = '5px';
       craft.panel.style.right = 'auto';
       craft.panel.style.bottom = '65px';
@@ -487,10 +566,10 @@ var craftRef = null;
   };
 
   craft.computeIconSize = function (nRarities) {
-    if (!craft.isFullscreen) return 56;
+    if (!craft.isFullscreen) return 50;
     var available = window.innerWidth * 0.95 - 32;
     var maxPerCol = Math.floor((available - (nRarities - 1) * 5) / nRarities);
-    return Math.max(24, Math.min(56, maxPerCol));
+    return Math.max(24, Math.min(50, maxPerCol));
   };
 
   craft.toggleFullscreen = function () {
@@ -519,6 +598,7 @@ var craftRef = null;
       craft.dlog('tiers update; matched preset=' + (lobby && lobby.name) + '; tiers=', names);
 
       craft.pityInitialized = false;
+      craft.clearCellCaches();
     }
     var shouldShow = !!lobby;
     var newDisplay = shouldShow ? '' : 'none';
@@ -536,7 +616,10 @@ var craftRef = null;
     try {
       craft.injectStyles();
       var c = document.getElementById('bottomButtons');
-      if (!c) return;
+      if (!c) {
+        if (craft.injectAttempts++ < 100) setTimeout(craft.inject, 200);
+        return;
+      }
       if (document.getElementById('craftMenuButton')) return;
 
       craft.btn = document.createElement('button');
@@ -544,8 +627,8 @@ var craftRef = null;
       craft.btn.tabIndex = -1;
       craft.btn.style.width = '40px';
       craft.btn.style.height = '40px';
-      craft.btn.style.backgroundColor = 'rgba(219,157,90,0.5)';
-      craft.btn.style.border = '3px solid #6e4924';
+      craft.btn.style.backgroundColor = '#db9d5a';
+      craft.btn.style.border = '4px solid #a47040';
       craft.btn.style.display = 'none';
 
       craft.panel = document.createElement('div');
@@ -553,7 +636,7 @@ var craftRef = null;
 
       craft.panel.style.cssText =
         'position:fixed;display:none;flex-direction:column;' +
-        'background:#db9d5a;border-radius:8px;border:4px solid #6e4924;' +
+        'background:#db9d5a;border-radius:8px;border:4px solid #a47040;' +
         'padding:8px;z-index:9999;font-family:Ubuntu,sans-serif;color:#fff;' +
         'overflow:hidden;box-sizing:border-box;';
       craft.applyPanelSize();
@@ -585,7 +668,6 @@ var craftRef = null;
       });
 
       craft.setupCraftChatLogger();
-      craft.injectFastCraftToggle();
 
       craft.updateButtonVisibility();
       setInterval(craft.updateButtonVisibility, 500);
@@ -594,27 +676,6 @@ var craftRef = null;
     } catch (err) {
       craft.derror('inject failed', err);
     }
-  };
-
-  craft.injectFastCraftToggle = function () {
-    if (document.getElementById('fastCraftCheckbox')) return;
-    var menu = document.querySelector('#menus #optionsMenu');
-    if (!menu) {
-      if (craft.fastCraftInjectAttempts++ < 50) setTimeout(craft.injectFastCraftToggle, 200);
-      return;
-    }
-    var label = document.createElement('label');
-    label.setAttribute('for', 'fastCraftCheckbox');
-    label.textContent = 'Fast Craft:';
-    var cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.id = 'fastCraftCheckbox';
-    cb.name = 'fastCraftCheckbox';
-    cb.checked = craft.fastCraft;
-    cb.addEventListener('change', function () { craft.setFastCraft(cb.checked); });
-    menu.appendChild(label);
-    menu.appendChild(cb);
-    menu.appendChild(document.createElement('br'));
   };
 
   craft.setupCraftChatLogger = function () {
@@ -627,10 +688,6 @@ var craftRef = null;
       function scheduleResult(prev, build) {
         if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
         var result = build();
-        if (craft.fastCraft) {
-          craft.setCraftResult(result);
-          return;
-        }
         var tokenAtSchedule = craft.craftResultToken;
         setTimeout(function () {
           if (craft.craftResultToken !== tokenAtSchedule) return;
@@ -749,8 +806,9 @@ var craftRef = null;
   craft.togglePanel = function () {
     if (!craft.panel) return;
     if (craft.panel.style.display === 'none') {
-      craft.render();
       craft.panel.style.display = 'flex';
+      craft.applyPanelSize();
+      craft.render();
     } else {
       craft.panel.style.display = 'none';
       craft.hoverEntry = null;
@@ -839,11 +897,16 @@ var craftRef = null;
 
     var lobbyForCraft = craft.detectLobby(s);
     var craftPetalToken = petalName;
-    if (lobbyForCraft && lobbyForCraft.name === 'Line Maze' &&
-        craft.PETAL_NAME_SHORTHAND[petalName]) {
-      craftPetalToken = craft.PETAL_NAME_SHORTHAND[petalName];
+    var craftAmount = total;
+    if (lobbyForCraft &&
+        (lobbyForCraft.name === 'Line Maze' || lobbyForCraft.name === 'MMO')) {
+      if (lobbyForCraft.name === 'Line Maze' &&
+          craft.PETAL_NAME_SHORTHAND[petalName]) {
+        craftPetalToken = craft.PETAL_NAME_SHORTHAND[petalName];
+      }
+      craftAmount = Math.floor(total / 5);
     }
-    sendChatMessage('/craft ' + tierName + ' ' + craftPetalToken + ' ' + total);
+    sendChatMessage('/craft ' + tierName + ' ' + craftPetalToken + ' ' + craftAmount);
 
     craft.orbitLastPositions = [];
     craft.setCraftResult({
@@ -899,8 +962,6 @@ var craftRef = null;
   craft.startOrbitAnimation = function (container) {
     craft.stopOrbitAnimation();
 
-    if (craft.fastCraft) { craft.orbitRAF = null; return; }
-
     var slots = container.querySelectorAll('[data-craft-orbit]');
     if (!slots.length) {
       craft.orbitRAF = null;
@@ -910,6 +971,10 @@ var craftRef = null;
     function tick(now) {
       if (!craft.craftResult || craft.craftResult.type !== 'pending') {
         craft.orbitRAF = null;
+        return;
+      }
+      if (!craft._pageActive) {
+        craft.orbitRAF = requestAnimationFrame(tick);
         return;
       }
       var progress = ((now - start) / craft.ORBIT_DURATION_MS) % 1;
@@ -1041,20 +1106,7 @@ var craftRef = null;
 
     box.style.cssText =
       'position:relative;height:200px;background:transparent;' +
-      'margin-bottom:8px;flex:0 0 auto;overflow:hidden;' +
-      'border-bottom:1px solid #000;';
-
-    var detected = craft.detectLobby(state);
-    if (detected && detected.short) {
-      var chip = document.createElement('div');
-      chip.textContent = 'Current rarity set: ' + detected.short;
-      chip.style.cssText =
-        'position:absolute;top:6px;right:8px;' +
-        'background:rgba(0,0,0,0.28);color:rgba(255,255,255,0.92);' +
-        'font:bold 11px Ubuntu,sans-serif;' +
-        'padding:2px 7px;border-radius:4px;pointer-events:none;';
-      box.appendChild(chip);
-    }
+      'margin-bottom:8px;flex:0 0 auto;overflow:hidden;';
 
     var SLOT = 50;
     var slotPositions = [
@@ -1076,13 +1128,7 @@ var craftRef = null;
     var failed = craft.craftResult && craft.craftResult.type === 'fail';
 
     var easeComplete = (merging || failed) && craft.craftResult._easeComplete;
-    var easing = (merging || failed) && !easeComplete && !craft.fastCraft;
-    if ((merging || failed) && craft.fastCraft && !craft.craftResult._easeComplete) {
-
-      craft.craftResult._easeComplete = true;
-      easeComplete = true;
-      easing = false;
-    }
+    var easing = (merging || failed) && !easeComplete;
     var firstFinalFrame = merging && easeComplete && !craft.craftResult._mergeStarted;
     if (firstFinalFrame) craft.craftResult._mergeStarted = true;
 
@@ -1122,7 +1168,7 @@ var craftRef = null;
           sctx.font = 'bold 12px Ubuntu';
           sctx.textAlign = 'right';
           sctx.textBaseline = 'top';
-          var t = 'x' + snapSlots[i];
+          var t = 'x' + formatAmount(snapSlots[i]);
           sctx.strokeText(t, SLOT - 4, 4);
           sctx.fillText(t, SLOT - 4, 4);
           slot.appendChild(sc);
@@ -1228,7 +1274,7 @@ var craftRef = null;
     craftBtn.textContent = 'Craft';
     craftBtn.style.cssText =
       'position:absolute;left:260px;top:80px;background:#cfcfcf;' +
-      'border:2px solid #000;border-radius:6px;padding:4px 18px;' +
+      'border:2px solid #aaa;border-radius:6px;padding:4px 18px;' +
       'font-family:Ubuntu,sans-serif;font-weight:bold;font-size:14px;' +
       'cursor:pointer;color:#000;';
     craftBtn.addEventListener('click', craft.doCraft);
@@ -1310,21 +1356,25 @@ var craftRef = null;
       searchInput.value = craft.searchQuery;
       searchInput.id = 'craftMenuSearch';
       searchInput.style.cssText =
-        'flex:1 1 auto;max-width:240px;background:#222;color:#fff;' +
-        'border:1px solid #555;border-radius:4px;padding:3px 6px;' +
+        'flex:1 1 auto;max-width:240px;background:#8a5e35;color:#fff;' +
+        'border:1px solid rgba(0,0,0,0.25);border-radius:4px;padding:3px 6px;' +
         'font-family:Ubuntu,sans-serif;font-size:12px;outline:none;';
       searchInput.addEventListener('input', function () {
         craft.searchQuery = searchInput.value;
 
         var pos = searchInput.selectionStart;
-        craft.render();
-        var fresh = document.getElementById('craftMenuSearch');
-        if (fresh) {
-          fresh.focus();
-          if (typeof pos === 'number') {
-            try { fresh.setSelectionRange(pos, pos); } catch (_) {}
+        if (craft._searchDebounceTimer) clearTimeout(craft._searchDebounceTimer);
+        craft._searchDebounceTimer = setTimeout(function () {
+          craft._searchDebounceTimer = null;
+          craft.render();
+          var fresh = document.getElementById('craftMenuSearch');
+          if (fresh) {
+            fresh.focus();
+            if (typeof pos === 'number') {
+              try { fresh.setSelectionRange(pos, pos); } catch (_) {}
+            }
           }
-        }
+        }, craft._SEARCH_DEBOUNCE_MS);
       });
 
       searchInput.addEventListener('keydown', function (e) { e.stopPropagation(); });
@@ -1358,8 +1408,6 @@ var craftRef = null;
         craft.panel.appendChild(e);
         return;
       }
-
-      craft.fetchCraftRates();
 
       craft.panel.appendChild(craft.renderCraftArea(getIcon));
 
@@ -1412,6 +1460,8 @@ var craftRef = null;
         'gap:5px;align-items:center;width:max-content;';
       gridWrapper.appendChild(grid);
 
+      craft._cellObserver = craft.makeCellObserver(gridWrapper);
+
       s.tiers.forEach(function (tier) {
         var th = document.createElement('div');
         th.textContent = tier.name || '';
@@ -1432,59 +1482,55 @@ var craftRef = null;
           var staged = (petalIdx === craft.craftPetalIdx && rarIdx === craft.craftRarity) ? stagedTotal : 0;
           var displayed = owned - staged;
           if (displayed > 0) {
-            var icon = document.createElement('canvas');
-            icon.width = SIZE;
-            icon.height = SIZE;
-
             var canCraft = displayed >= 5;
-            icon.style.cssText =
+            var host = document.createElement('div');
+            host.style.cssText =
+              'box-sizing:border-box;' +
               'width:' + SIZE + 'px;height:' + SIZE + 'px;' +
+              'background:#a87545;border-radius:6px;' +
               'cursor:' + (canCraft ? 'pointer' : 'default') + ';' +
               (canCraft ? '' : 'filter:grayscale(1);opacity:0.55;');
-            var ctx = icon.getContext('2d');
-            try {
-              var src = getIcon(petalIdx, rarIdx);
-              ctx.drawImage(src, 0, 0, SIZE, SIZE);
-            } catch (_) {}
-            if (displayed > 1) {
-              ctx.fillStyle = '#fff';
-              ctx.strokeStyle = '#000';
-              ctx.lineWidth = 2;
-              ctx.font = 'bold ' + Math.round(SIZE * 0.25) + 'px Ubuntu';
-              ctx.textAlign = 'right';
-              ctx.textBaseline = 'top';
-              var txt = displayed > 1000
-                ? 'x' + (displayed / 1000).toFixed(1) + 'k'
-                : 'x' + displayed;
-              ctx.strokeText(txt, SIZE - 4, 4);
-              ctx.fillText(txt, SIZE - 4, 4);
-            }
-            (function (pi, ri, ownedCount, canClick) {
-              icon.addEventListener('mouseenter', function () {
+            host.dataset.fcPidx = petalIdx;
+            host.dataset.fcRidx = rarIdx;
+            host.dataset.fcDisp = displayed;
+            host.dataset.fcSize = SIZE;
+            (function (pi, ri, ownedCount, canClick, el) {
+              el.addEventListener('mouseenter', function () {
                 craft.hoverEntry = { index: pi, rarity: ri };
-                craft.showTooltip(icon);
+                craft.showTooltip(el);
               });
-              icon.addEventListener('mouseleave', function () {
+              el.addEventListener('mouseleave', function () {
                 if (craft.hoverEntry && craft.hoverEntry.index === pi && craft.hoverEntry.rarity === ri) {
                   craft.hoverEntry = null;
                   craft.tip.style.display = 'none';
                 }
               });
               if (canClick) {
-                icon.addEventListener('click', function (ev) {
-
+                el.addEventListener('click', function (ev) {
                   craft.loadCraft(pi, ri, ownedCount, !!ev.shiftKey);
                   craft.render();
                 });
               }
-            })(petalIdx, rarIdx, owned, canCraft);
-            grid.appendChild(icon);
+            })(petalIdx, rarIdx, owned, canCraft, host);
+            var _cellKey = petalIdx + '|' + rarIdx + '|' + displayed + '|' + SIZE;
+            if (craft._cellCache.has(_cellKey)) {
+              var _bm = craft._cellCache.get(_cellKey);
+              var _cv = document.createElement('canvas');
+              _cv.width = SIZE; _cv.height = SIZE;
+              _cv.style.cssText = 'width:' + SIZE + 'px;height:' + SIZE + 'px;display:block;pointer-events:none;';
+              try { _cv.getContext('2d').drawImage(_bm, 0, 0); } catch (_) {}
+              host.appendChild(_cv);
+              host._craftInflated = true;
+            } else if (craft._cellObserver) {
+              craft._cellObserver.observe(host);
+            }
+            grid.appendChild(host);
           } else {
             var ph = document.createElement('div');
             ph.style.cssText =
+              'box-sizing:border-box;' +
               'width:' + SIZE + 'px;height:' + SIZE + 'px;' +
-              'background:#a06d3e;border-radius:6px;' +
-              'border:1px solid rgba(0,0,0,0.1);';
+              'background:#a87545;border-radius:6px;';
             grid.appendChild(ph);
           }
         });
@@ -1511,17 +1557,17 @@ var craftRef = null;
   craft.showTooltip = function (target) {
     try {
       if (!craft.hoverEntry) return;
-      var fn = petalTooltip;
-      if (typeof fn !== 'function') return;
-      var img = fn(craft.hoverEntry.index, craft.hoverEntry.rarity);
+      var img = craft.getTooltipBitmap(craft.hoverEntry.index, craft.hoverEntry.rarity);
       if (!img) return;
-      var bw = 320;
-      var bh = Math.round(bw * img.height / img.width);
-      craft.tipCanvas.width = img.width;
-      craft.tipCanvas.height = img.height;
+      var bw = 350;
+      var bh = 350 * img.height / img.width;
+      craft.tipCanvas.width = bw;
+      craft.tipCanvas.height = bh;
       var tctx = craft.tipCanvas.getContext('2d');
-      tctx.clearRect(0, 0, img.width, img.height);
-      tctx.drawImage(img, 0, 0);
+      tctx.clearRect(0, 0, bw, bh);
+      tctx.imageSmoothingEnabled = true;
+      tctx.imageSmoothingQuality = 'high';
+      tctx.drawImage(img, 0, 0, bw, bh);
       craft.tipCanvas.style.width = bw + 'px';
       craft.tipCanvas.style.height = bh + 'px';
       craft.tip.style.display = 'block';
@@ -1534,14 +1580,10 @@ var craftRef = null;
         if (wrapper) rect = wrapper.getBoundingClientRect();
       }
       if (rect) {
-        var tw = craft.tip.offsetWidth || bw;
-        var th = craft.tip.offsetHeight || bh;
-        var x = rect.right + 8;
-        if (x + tw > window.innerWidth - 2) x = rect.left - tw - 8;
-        if (x < 2) x = 2;
-        var y = rect.top;
-        if (y + th > window.innerHeight - 2) y = window.innerHeight - th - 2;
-        if (y < 2) y = 2;
+        var x = rect.left + rect.width / 2 - 150;
+        var y = rect.top - bh - 10;
+        x = Math.max(0, Math.min(x, window.innerWidth - bw));
+        y = Math.max(0, Math.min(y, window.innerHeight - bh));
         craft.tip.style.left = x + 'px';
         craft.tip.style.top = y + 'px';
       }
@@ -1549,8 +1591,6 @@ var craftRef = null;
       craft.derror('tooltip show failed', err);
     }
   };
-
-  // simCraft() simulation
 
   craft._runSimulation = function (petalIdx, rarityIdx, count, outcome) {
     var s = state;
@@ -1605,8 +1645,6 @@ var craftRef = null;
     return { outcome: outcome, forced: forced, rate: rateUsed, successes: successes, attempts: attemptsCount, targetTier: targetTierName };
   };
 
-  // Bootstrap
-
   craftRef = craft;
 
   if (document.readyState === 'loading') {
@@ -1615,8 +1653,6 @@ var craftRef = null;
     craft.inject();
   }
 })();
-
-// Debug tools (only when player has masterPermissions = 1)
 
 function CraftDebug(on) {
   if (!craftRef) return null;
@@ -1715,7 +1751,6 @@ function SimCraft(petalName, rarityName, count) {
   };
 }
 
-// Lets user access debug only when the player has masterpermissions = 1.
 var _craftDebugExposed = false;
 function _maybeExposeCraftDebug() {
   if (_craftDebugExposed) return;
