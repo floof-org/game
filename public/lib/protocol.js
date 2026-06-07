@@ -86,6 +86,10 @@ export class PetalTier {
         this.healBack = 0;
 
         this.armor = 0;
+
+        this.icon = null;
+
+        this.description = "Not much is known about this mysterious petal.";
     }
 }
 
@@ -175,8 +179,6 @@ export class PetalConfig {
         this.huddles = false;
         this.ignoreWalls = false;
         this.extraLighting = 0;
-
-        this.description = "Not much is known about this mysterious petal.";
     }
 
     setName(name) {
@@ -297,7 +299,10 @@ export class PetalConfig {
     }
 
     setDescription(description) {
-        this.description = description;
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].description = description instanceof Array ? (description[i] ?? description[description.length - 1]) : description;
+        }
+
         return this;
     }
 
@@ -554,12 +559,17 @@ export class PetalConfig {
         return this;
     }
     setIcon(size, count, name, rotation) {
-        this.icon = {
-            size,
-            count,
-            name,
-            rotation: rotation * Math.PI / 180
+        for (let i = 0; i < this.tiers.length; i++) {
+            let c2 = count instanceof Array ? (count[i] ?? count[count.length - 1]) : count;
+
+            this.tiers[i].icon = {
+                size: size,
+                count: c2,
+                name: name,
+                rotation: rotation * Math.PI / 180
+            }
         }
+
         return this;
     }
 }
@@ -1249,7 +1259,7 @@ export class Writer {
 
 /** @param {PetalConfig} config */
 export function encodePetalConfig(config) {
-    const output = [config.id, config.name, config.description, config.cooldown, 0x00];
+    const output = [config.id, config.name, config.cooldown, 0x00];
 
     const flagsIndex = output.length - 1;
 
@@ -1353,8 +1363,12 @@ export function encodePetalConfig(config) {
         output[flagsIndex] |= 0x20000000;
     }
 
+    if (config.tiers[0].icon !== null) {
+        output[flagsIndex] |= 0x80000000;
+    }
+
     output.push(...config.tiers.flatMap((tier, tierID) => {
-        const tierOutput = [tier.health, tier.damage];
+        const tierOutput = [tier.health, tier.damage, tier.description];
 
         if (output[flagsIndex] & 0x01) {
             tierOutput.push(tier.extraHealth);
@@ -1460,6 +1474,10 @@ export function encodePetalConfig(config) {
             tierOutput.push(tier.armor);
         }
 
+        if (output[flagsIndex] & 0x80000000) {
+            tierOutput.push(tier.icon.size, tier.icon.count, tier.icon.name, tier.icon.rotation);
+        }
+
         return tierOutput;
     }));
 
@@ -1500,16 +1518,6 @@ export function encodePetalConfig(config) {
         output.push(config.splits.count);
     }
 
-    if (config.icon) {
-        output[flagsIndex] |= 0x80000000;
-        output.push(
-            config.icon.size,
-            config.icon.count,
-            config.icon.name,
-            config.icon.rotation
-        );
-    }
-
     return output.map(value => {
         if (Number.isFinite(value)) {
             return +value.toFixed(2);
@@ -1523,7 +1531,6 @@ export function decodePetalConfig(data, nTiers) {
     const output = {
         id: data.shift(),
         name: data.shift(),
-        description: data.shift(),
         cooldown: data.shift(),
         tiers: [],
         drawing: undefined,
@@ -1536,6 +1543,7 @@ export function decodePetalConfig(data, nTiers) {
         const tier = {
             health: data.shift(),
             damage: data.shift(),
+            description: data.shift(),
             extraHealth: 0,
             constantHeal: 0,
             healing: 0,
@@ -1545,7 +1553,8 @@ export function decodePetalConfig(data, nTiers) {
             extraSize: 0,
             density: 1,
             extraRadians: 0,
-            armor: 0
+            armor: 0,
+            icon: null
         };
 
         if (flags & 0x01) {
@@ -1680,6 +1689,15 @@ export function decodePetalConfig(data, nTiers) {
             tier.armor = data.shift();
         }
 
+        if (flags & 0x80000000) {
+            tier.icon = {
+                size: data.shift(),
+                count: data.shift(),
+                name: data.shift(),
+                rotation: data.shift()
+            };
+        }
+
         output.tiers.push(tier);
     }
 
@@ -1716,15 +1734,6 @@ export function decodePetalConfig(data, nTiers) {
 
     if (flags & 0x40000000) {
         output.splits = data.shift();
-    }
-
-    if (flags & 0x80000000) {
-        output.icon = {
-            size: data.shift(),
-            count: data.shift(),
-            name: data.shift(),
-            rotation: data.shift()
-        }
     }
 
     return output;
