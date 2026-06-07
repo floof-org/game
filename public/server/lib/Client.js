@@ -788,16 +788,13 @@ export default class Client {
                     this.slots.push({ id: 0, rarity: 0 });
                     this.secondarySlots.push(null);
                 }
-            } else if (slots < this.slots.length) {
-                for (let i = this.slots.length - 1; i >= slots; i--) {
-                    this.slots.pop();
-                    this.secondarySlots.pop();
-                }
-            }
+            } else if (slots < this.slots.length)
+                for (let i = this.slots.length - 1; i >= slots; i--)
+                    for (const { id, rarity } of [this.slots.pop(), this.secondarySlots.pop()].filter(({id, rarity}) => id !== null))
+                        if (this.inventory[tiers[rarity].name][id]) this.inventory[tiers[rarity].name][id]++;
+                        else this.inventory[tiers[rarity].name][id] = 1;
 
-            if (this.body && !this.body.health.isDead) {
-                this.body.initSlots(slots);
-            }
+            if (this.body && !this.body.health.isDead) this.body.initSlots(slots);
         }
 
         this.levelProgress = this.level < 2 ? this.xp / xpForLevel(this.level) : (this.xp - xpForLevel(this.level - 1)) / (xpForLevel(this.level) - xpForLevel(this.level - 1));
@@ -841,7 +838,7 @@ export default class Client {
         }
         const rarity = tiers[drop.rarity].name;
         if (!this.inventory[rarity][drop.index]) {
-          this.inventory[rarity][drop.index] = 0;
+            this.inventory[rarity][drop.index] = 0;
         }
         this.inventory[rarity][drop.index] += 1;
         return true;
@@ -919,7 +916,7 @@ export default class Client {
                 }
 
                 this.body.spawnInvincibility = true
-            
+
                 setTimeout(() => {
                     if (this.body) {
                         this.body.spawnInvincibility = false;
@@ -1052,10 +1049,10 @@ export default class Client {
                         break;
                 }
             }
-            if (this.body) {
-                this.body.initSlots(this.slots.length)
-            }
-            break;
+                if (this.body) {
+                    this.body.initSlots(this.slots.length)
+                }
+                break;
             case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT: {
                 if (!this.verified) {
                     this.kick("Not verified");
@@ -1074,7 +1071,7 @@ export default class Client {
                 let moverPetalIndex = reader.getUint8();
 
                 let inventoryRarity = tiers[moverRarity]?.name;
-                
+
                 switch (moverType) {
                     case 0: // Slots
                         if (!this.inventory[tiers[moveeRarity].name][moveeIndex] || this.slots[moverIndex].id !== moverPetalIndex || this.slots[moverIndex].rarity !== moverRarity) return;
@@ -1086,7 +1083,7 @@ export default class Client {
                         this.slots[moverIndex].id = moveeIndex;
                         this.slots[moverIndex].rarity = moveeRarity;
                         this.body.setSlot(moverIndex, this.slots[moverIndex].id, this.slots[moverIndex].rarity);
-                        
+
                         this.inventory[tiers[moveeRarity].name][moveeIndex]--;
                         break;
                     case 1: // Secondary slots
@@ -1103,26 +1100,26 @@ export default class Client {
                             this.inventory[inventoryRarity][moverPetalIndex] = 0;
                         }
                         this.inventory[inventoryRarity][moverPetalIndex] += 1;
-                        
+
                         this.secondarySlots[moverIndex].id = moveeIndex;
                         this.secondarySlots[moverIndex].rarity = moveeRarity;
-                        
+
                         this.inventory[tiers[moveeRarity].name][moveeIndex]--;
                         break;
                     case 2: // Secondary slot into inventory
                         moverPetalIndex = this.secondarySlots[moverIndex]?.id;
                         inventoryRarity = tiers[this.secondarySlots[moverIndex]?.rarity]?.name
-                        
+
                         if (!this.inventory[inventoryRarity][moverPetalIndex]) {
                             this.inventory[inventoryRarity][moverPetalIndex] = 0;
                         }
                         this.inventory[inventoryRarity][moverPetalIndex] += 1;
-                        
+
                         this.secondarySlots[moverIndex] = null;
                         break;
                 }
             }
-            break;
+                break;
             case SERVER_BOUND.DEV_CHEAT: {
                 if (!this.verified) {
                     this.kick("Not verified");
@@ -1394,7 +1391,7 @@ export default class Client {
         } else {
             console.log(`Client ${this.id} disconnected`);
         }
-        
+
         state.alivePlayers = state.alivePlayers.filter(m => m.id !== this.id);
         state.clients.delete(this.id);
     }
@@ -1469,7 +1466,7 @@ export default class Client {
             writer.setUint16(state.livingMobCount);
             writer.setUint16(state.maxMobs);
             writer.setUint16(state.aliveMobs.length);
-        
+
             for (const entity of state.aliveMobs) {
                 writer.setUint8(entity.index);
                 writer.setUint8(entity.rarity);
