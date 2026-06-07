@@ -58,32 +58,32 @@ function getOSInfo() {
   const data = navigator.userAgentData;
   const platform = navigator.platform;
 
-  const platformRegex = {
-    Windows: /Win/i,
-    "Mac OS": /Mac/i,
-    iOS: /iPhone|iPad|iPod/i,
-    Android: /Android/i,
-    Linux: /Linux/i,
-    Unix: /X11/i,
-  };
+    const platformRegex = {
+        Windows: /Win/i,
+        "Mac OS": /Mac/i,
+        iOS: /iPhone|iPad|iPod/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /X11/i,
+    };
 
-  const agentRegex = {
-    Windows: /Windows/i,
-    "Mac OS": /Mac OS/i,
-    iOS: /like Mac OS/i,
-    Android: /Android/i,
-    Linux: /Linux/i,
-    Unix: /Unix/i,
-  };
+    const agentRegex = {
+        Windows: /Windows/i,
+        "Mac OS": /Mac OS/i,
+        iOS: /like Mac OS/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /Unix/i,
+    };
 
-  const userAgentDataRegex = {
-    Windows: /Windows/i,
-    "Mac OS": /Mac OS/i,
-    iOS: /like Mac OS/i,
-    Android: /Android/i,
-    Linux: /Linux/i,
-    Unix: /Unix/i,
-  };
+    const userAgentDataRegex = {
+        Windows: /Windows/i,
+        "Mac OS": /Mac OS/i,
+        iOS: /like Mac OS/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /Unix/i,
+    };
 
   let os = "Unknown";
 
@@ -162,46 +162,32 @@ async function getAnalyticsData() {
   const debugInfo = gl?.getExtension("WEBGL_debug_renderer_info");
   const browserInfo = getBrowserInfo();
 
-  const output = {
-    screen: `${screen.width}x${screen.height}`,
-    hardware: {
-      gl: +!!window.WebGLRenderingContext,
-      gl2: +!!window.WebGL2RenderingContext,
-      minCores: navigator.hardwareConcurrency,
-      minMem: navigator.deviceMemory ?? 0,
-      gpu: extractImportantGPUInfo(
-        debugInfo
-          ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
-          : "unknown",
-      ),
-      os: getOSInfo(),
-      bench: await benchmarkTest(),
-    },
-    browser: {
-      name: browserInfo.name,
-      version: browserInfo.version,
-    },
-    locale: navigator.language,
-    tzOff: -(new Date().getTimezoneOffset() / 60),
-    dst: +(
-      new Date().getTimezoneOffset() <
-      Math.max(
-        new Date(new Date().getFullYear(), 0, 1).getTimezoneOffset(),
-        new Date(new Date().getFullYear(), 6, 1).getTimezoneOffset(),
-      )
-    ),
-    isMobile: +/Android|webOS|iPhone|iPad|iPod|BlackBerry|android|mobi/i.test(
-      navigator.userAgent,
-    ),
-  };
+    const output = {
+        screen: `${screen.width}x${screen.height}`,
+        hardware: {
+            gl: +!!window.WebGLRenderingContext,
+            gl2: +!!window.WebGL2RenderingContext,
+            minCores: navigator.hardwareConcurrency,
+            minMem: navigator.deviceMemory ?? 0,
+            gpu: extractImportantGPUInfo(debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "unknown"),
+            os: getOSInfo(),
+            bench: await benchmarkTest(),
+        },
+        browser: {
+            name: browserInfo.name,
+            version: browserInfo.version,
+        },
+        locale: navigator.language,
+        tzOff: -(new Date().getTimezoneOffset() / 60),
+        dst: +(new Date().getTimezoneOffset() < Math.max(new Date(new Date().getFullYear(), 0, 1).getTimezoneOffset(), new Date(new Date().getFullYear(), 6, 1).getTimezoneOffset())),
+        isMobile: +/Android|webOS|iPhone|iPad|iPod|BlackBerry|android|mobi/i.test(navigator.userAgent),
+    };
 
   const userAgentData = navigator.userAgentData;
 
-  if (userAgentData) {
-    if (userAgentData.brands.length > 0) {
-      const brand = userAgentData.brands.find(
-        (b) => b.version == output.browser.version,
-      )?.brand;
+    if (userAgentData) {
+        if (userAgentData.brands.length > 0) {
+            const brand = userAgentData.brands.find((b) => b.version == output.browser.version)?.brand;
 
       if (brand) {
         output.browser.name = brand;
@@ -232,15 +218,10 @@ export async function loadUUID() {
     }
   }
 
-  const data = await fetch(
-    util.SERVER_URL + "/uuid/get?existing=" + existing,
-  ).then((r) => r.json());
-  if (!data.ok) throw new Error("Failed to get UUID data");
-  localStorage.setItem(
-    "uuid",
-    data.uuid + ":" + (Date.now() + 1e3 * 60 * 60 * 24),
-  );
-  return data.uuid;
+    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then((r) => r.json());
+    if (!data.ok) throw new Error("Failed to get UUID data");
+    localStorage.setItem("uuid", data.uuid + ":" + (Date.now() + 1e3 * 60 * 60 * 24));
+    return data.uuid;
 }
 
 export const UUID = await loadUUID();
@@ -259,9 +240,9 @@ class ModdingAPI {
   /** @type {BroadcastChannel|null} */
   #channel = null;
 
-  constructor() {
-    this.#channel = new BroadcastChannel("floofModdingAPI");
-    this.#channel.onmessage = (e) => this.#handleFloofModdingAPI(e.data);
+    constructor() {
+        this.#channel = new BroadcastChannel("floofModdingAPI");
+        this.#channel.onmessage = (e) => this.#handleFloofModdingAPI(e.data);
 
     console.log("Modding API initialized");
 
@@ -275,9 +256,9 @@ class ModdingAPI {
       throw new Error("Invalid job ID");
     }
 
-    if (data[2] !== null) {
-      // transferrable type
-      let obj = new PetalConfig("", 0, 0, 0);
+        if (data[2] !== null) {
+            // transferrable type
+            let obj = new PetalConfig("", 0, 0, 0);
 
       switch (data[2]) {
         case 0: // PetalConfig
@@ -306,25 +287,25 @@ class ModdingAPI {
     job(data[1]);
   }
 
-  #askModdingAPI(...args) {
-    return new Promise((resolve) => {
-      const id = this.#jobID++;
-      this.#jobs.set(id, resolve);
-      this.#channel.postMessage([id, ...args]);
-    });
-  }
+    #askModdingAPI(...args) {
+        return new Promise((resolve) => {
+            const id = this.#jobID++;
+            this.#jobs.set(id, resolve);
+            this.#channel.postMessage([id, ...args]);
+        });
+    }
 
-  syncPetalIndex(name) {
-    return state.petalConfigs.findIndex((p) => p.name === name);
-  }
+    syncPetalIndex(name) {
+        return state.petalConfigs.findIndex((p) => p.name === name);
+    }
 
-  syncMobIndex(name) {
-    return state.mobConfigs.findIndex((m) => m.name === name);
-  }
+    syncMobIndex(name) {
+        return state.mobConfigs.findIndex((m) => m.name === name);
+    }
 
-  syncRarityIndex(name) {
-    return state.tiers.findIndex((t) => t.name === name);
-  }
+    syncRarityIndex(name) {
+        return state.tiers.findIndex((t) => t.name === name);
+    }
 
   syncNextAvailablePetalIndex() {
     return state.petalConfigs.length;
@@ -354,26 +335,26 @@ class ModdingAPI {
     if (typeof index === "string") {
       index = this.syncMobIndex(index);
 
-      if (index === -1) {
-        return {
-          ok: false,
-          message: "Invalid mob name",
-          data: null,
-        };
-      }
-    }
+            if (index === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid mob name",
+                    data: null,
+                };
+            }
+        }
 
     if (typeof rarity === "string") {
       rarity = this.syncRarityIndex(rarity);
 
-      if (rarity === -1) {
-        return {
-          ok: false,
-          message: "Invalid rarity name",
-          data: null,
-        };
-      }
-    }
+            if (rarity === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid rarity name",
+                    data: null,
+                };
+            }
+        }
 
     return await this.#askModdingAPI("spawnMob", index, rarity);
   }
@@ -405,56 +386,56 @@ class ModdingAPI {
     if (typeof index === "string") {
       index = this.syncPetalIndex(index);
 
-      if (index === -1) {
-        return {
-          ok: false,
-          message: "Invalid petal name",
-          data: null,
-        };
-      }
-    }
+            if (index === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid petal name",
+                    data: null,
+                };
+            }
+        }
 
-    if (typeof index !== "number" || state.petalConfigs[index] === undefined) {
-      return {
-        ok: false,
-        message: "Index must be a number pointing to an existing petal",
-        data: null,
-      };
-    }
+        if (typeof index !== "number" || state.petalConfigs[index] === undefined) {
+            return {
+                ok: false,
+                message: "Index must be a number pointing to an existing petal",
+                data: null,
+            };
+        }
 
     return await this.#askModdingAPI("getPetalInfo", index);
   }
 
-  async createCustomPetal(options) {
-    if (!(options instanceof PetalConfig)) {
-      return {
-        ok: false,
-        message: "Options must be a PetalConfig object",
-        data: null,
-      };
-    }
+    async createCustomPetal(options) {
+        if (!(options instanceof PetalConfig)) {
+            return {
+                ok: false,
+                message: "Options must be a PetalConfig object",
+                data: null,
+            };
+        }
 
-    if (options.drawing) {
-      options.drawing = options.drawing.toString();
-    } else {
-      return {
-        ok: false,
-        message: "Drawing is a required option",
-        data: null,
-      };
-    }
+        if (options.drawing) {
+            options.drawing = options.drawing.toString();
+        } else {
+            return {
+                ok: false,
+                message: "Drawing is a required option",
+                data: null,
+            };
+        }
 
     return await this.#askModdingAPI("createCustomPetal", options);
   }
 
-  async editPetal(options) {
-    if (!(options instanceof PetalConfig)) {
-      return {
-        ok: false,
-        message: "Options must be a PetalConfig object",
-        data: null,
-      };
-    }
+    async editPetal(options) {
+        if (!(options instanceof PetalConfig)) {
+            return {
+                ok: false,
+                message: "Options must be a PetalConfig object",
+                data: null,
+            };
+        }
 
     if (options.drawing) {
       options.drawing = options.drawing.toString();
@@ -467,22 +448,22 @@ class ModdingAPI {
     if (typeof index === "string") {
       index = this.syncPetalIndex(index);
 
-      if (index === -1) {
-        return {
-          ok: false,
-          message: "Invalid petal name",
-          data: null,
-        };
-      }
-    }
+            if (index === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid petal name",
+                    data: null,
+                };
+            }
+        }
 
-    if (typeof index !== "number" || state.petalConfigs[index] === undefined) {
-      return {
-        ok: false,
-        message: "Index must be a number pointing to an existing petal",
-        data: null,
-      };
-    }
+        if (typeof index !== "number" || state.petalConfigs[index] === undefined) {
+            return {
+                ok: false,
+                message: "Index must be a number pointing to an existing petal",
+                data: null,
+            };
+        }
 
     return await this.#askModdingAPI("deletePetal", index);
   }
@@ -491,26 +472,26 @@ class ModdingAPI {
     if (typeof index === "string") {
       index = this.syncPetalIndex(index);
 
-      if (index === -1) {
-        return {
-          ok: false,
-          message: "Invalid petal name",
-          data: null,
-        };
-      }
-    }
+            if (index === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid petal name",
+                    data: null,
+                };
+            }
+        }
 
     if (typeof rarity === "string") {
       rarity = this.syncRarityIndex(rarity);
 
-      if (rarity === -1) {
-        return {
-          ok: false,
-          message: "Invalid rarity name",
-          data: null,
-        };
-      }
-    }
+            if (rarity === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid rarity name",
+                    data: null,
+                };
+            }
+        }
 
     return await this.#askModdingAPI(
       "setSlot",
@@ -525,18 +506,18 @@ class ModdingAPI {
     return await this.#askModdingAPI("setSlotAmount", clientID, amount);
   }
 
-  async spawnAIPlayer(rarity, level) {
-    if (typeof rarity === "string") {
-      rarity = this.syncRarityIndex(rarity);
+    async spawnAIPlayer(rarity, level) {
+        if (typeof rarity === "string") {
+            rarity = this.syncRarityIndex(rarity);
 
-      if (rarity === -1) {
-        return {
-          ok: false,
-          message: "Invalid rarity name",
-          data: null,
-        };
-      }
-    }
+            if (rarity === -1) {
+                return {
+                    ok: false,
+                    message: "Invalid rarity name",
+                    data: null,
+                };
+            }
+        }
 
     return await this.#askModdingAPI("spawnAIPlayer", rarity, level);
   }
@@ -545,125 +526,121 @@ class ModdingAPI {
 export function createServer(name, gamemode, modded, isPrivate, biome) {
   let biomeInt = 0;
 
-  switch (biome) {
-    case "default":
-      biomeInt = BIOME_TYPES.DEFAULT;
-      break;
-    case "garden":
-      biomeInt = BIOME_TYPES.GARDEN;
-      break;
-    case "desert":
-      biomeInt = BIOME_TYPES.DESERT;
-      break;
-    case "ocean":
-      biomeInt = BIOME_TYPES.OCEAN;
-      break;
-    case "antHell":
-      biomeInt = BIOME_TYPES.ANT_HELL;
-      break;
-    case "sewers":
-      biomeInt = BIOME_TYPES.SEWERS;
-      break;
-    case "hell":
-      biomeInt = BIOME_TYPES.HELL;
-      break;
-    case "halloween":
-      if (util.isHalloween) {
-        biomeInt = BIOME_TYPES.HALLOWEEN;
-        break;
-      } else {
-        return new Promise((resolve) =>
-          resolve({
-            ok: false,
-            error: "Halloween biome is not available",
-          }),
+    switch (biome) {
+        case "default":
+            biomeInt = BIOME_TYPES.DEFAULT;
+            break;
+        case "garden":
+            biomeInt = BIOME_TYPES.GARDEN;
+            break;
+        case "desert":
+            biomeInt = BIOME_TYPES.DESERT;
+            break;
+        case "ocean":
+            biomeInt = BIOME_TYPES.OCEAN;
+            break;
+        case "antHell":
+            biomeInt = BIOME_TYPES.ANT_HELL;
+            break;
+        case "sewers":
+            biomeInt = BIOME_TYPES.SEWERS;
+            break;
+        case "hell":
+            biomeInt = BIOME_TYPES.HELL;
+            break;
+        case "halloween":
+            if (util.isHalloween) {
+                biomeInt = BIOME_TYPES.HALLOWEEN;
+                break;
+            } else {
+                return new Promise((resolve) =>
+                    resolve({
+                        ok: false,
+                        error: "Halloween biome is not available",
+                    }),
+                );
+            }
+        case "dark_forest":
+            biomeInt = BIOME_TYPES.DARK_FOREST;
+            break;
+        default:
+            return new Promise((resolve) =>
+                resolve({
+                    ok: false,
+                    error: "Invalid biome",
+                }),
+            );
+    }
+
+    return new Promise((resolve) => {
+        const timeout = setTimeout(
+            () =>
+                resolve({
+                    ok: false,
+                    error: "Timeout error",
+                }),
+            10000,
         );
-      }
-    case "dark_forest":
-      biomeInt = BIOME_TYPES.DARK_FOREST;
-      break;
-    default:
-      return new Promise((resolve) =>
-        resolve({
-          ok: false,
-          error: "Invalid biome",
-        }),
-      );
-  }
 
-  return new Promise((resolve) => {
-    const timeout = setTimeout(
-      () =>
-        resolve({
-          ok: false,
-          error: "Timeout error",
-        }),
-      10000,
-    );
+        const socket = new WebSocket(`${util.SERVER_URL.replace("http", "ws")}/ws/lobby?gameName=${name}&isModded=${modded ? "yes" : "no"}&isPrivate=${isPrivate ? "yes" : "no"}&gamemode=${gamemode}&biome=${biomeInt}&analytics=${analyticalData}`);
+        socket.binaryType = "arraybuffer";
 
-    const socket = new WebSocket(
-      `${util.SERVER_URL.replace("http", "ws")}/ws/lobby?gameName=${name}&isModded=${modded ? "yes" : "no"}&isPrivate=${isPrivate ? "yes" : "no"}&gamemode=${gamemode}&biome=${biomeInt}&analytics=${analyticalData}`,
-    );
-    socket.binaryType = "arraybuffer";
+        socket.onopen = () => {
+            console.log("Connected to server");
 
-    socket.onopen = () => {
-      console.log("Connected to server");
+            // Setup ping
+            const PING_INTERVAL = 30000; // 30 seconds
+            const ping = () => {
+                if (socket.readyState === WebSocket.OPEN) socket.ping();
+            };
+            const intervalId = setInterval(ping, PING_INTERVAL);
 
-      // Setup ping
-      const PING_INTERVAL = 30000; // 30 seconds
-      const ping = () => {
-        if (socket.readyState === WebSocket.OPEN) socket.ping();
-      };
-      const intervalId = setInterval(ping, PING_INTERVAL);
+            const worker = new Worker("./server/index.js", { type: "module" });
+            worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
 
-      const worker = new Worker("./server/index.js", { type: "module" });
-      worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
+            socket.onmessage = (event) => {
+                const data = new Uint8Array(event.data);
 
-      socket.onmessage = (event) => {
-        const data = new Uint8Array(event.data);
+                if (data[0] === 255) {
+                    clearTimeout(timeout);
 
-        if (data[0] === 255) {
-          clearTimeout(timeout);
+                    const ok = data[1] === 1;
 
-          const ok = data[1] === 1;
+                    if (!ok) {
+                        resolve({
+                            ok: false,
+                            error: "Request rejected by server: " + new TextDecoder().decode(data.slice(2, -1)),
+                        });
+                    }
 
-          if (!ok) {
-            resolve({
-              ok: false,
-              error:
-                "Request rejected by server: " +
-                new TextDecoder().decode(data.slice(2, -1)),
-            });
-          }
+                    resolve({
+                        ok: true,
+                        party: new TextDecoder().decode(data.slice(2, -1)),
+                        worker: worker,
+                        socket: socket,
+                    });
+                    return;
+                }
 
-          resolve({
-            ok: true,
-            party: new TextDecoder().decode(data.slice(2, -1)),
-            worker: worker,
-            socket: socket,
-          });
-          return;
-        }
+                worker.postMessage(data);
+            };
 
-        worker.postMessage(data);
-      };
+            worker.onmessage = ({ data }) => {
+                if (socket.readyState !== WebSocket.OPEN) return;
+                socket.send(data);
+            };
 
-      worker.onmessage = ({ data }) => {
-        if (socket.readyState !== WebSocket.OPEN) return;
-        socket.send(data);
-      };
+            socket.onclose = () => {
+                clearInterval(intervalId);
+                console.log("Disconnected from server");
+                worker.terminate();
+            };
 
-      socket.onclose = () => {
-        clearInterval(intervalId);
-        console.log("Disconnected from server");
-        worker.terminate();
-      };
-
-      if (modded) {
-        new ModdingAPI();
-      }
-    };
-  });
+            if (modded) {
+                new ModdingAPI();
+            }
+        };
+    });
 }
 
 export class ClientEntity {
@@ -724,25 +701,18 @@ export class ClientPlayer extends ClientEntity {
   interpolate() {
     super.interpolate();
 
-    if (
-      Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 &&
-      this.healthRatio > this.realHealthRatio
-    ) {
-      this.lastHealthLoweredAt = performance.now();
-    }
+        if (Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 && this.healthRatio > this.realHealthRatio) {
+            this.lastHealthLoweredAt = performance.now();
+        }
 
     this.secondaryHealthBar = Math.max(
       this.healthRatio,
       this.secondaryHealthBar,
     );
 
-    if (performance.now() - this.lastHealthLoweredAt > 256) {
-      this.secondaryHealthBar = util.lerp(
-        this.secondaryHealthBar,
-        this.healthRatio,
-        state.interpolationFactor * 0.75,
-      );
-    }
+        if (performance.now() - this.lastHealthLoweredAt > 256) {
+            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * 0.75);
+        }
 
     this.healthRatio = util.lerp(
       this.healthRatio,
@@ -785,25 +755,18 @@ export class ClientMob extends ClientEntity {
   interpolate() {
     super.interpolate();
 
-    if (
-      Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 &&
-      this.healthRatio > this.realHealthRatio
-    ) {
-      this.lastHealthLoweredAt = performance.now();
-    }
+        if (Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 && this.healthRatio > this.realHealthRatio) {
+            this.lastHealthLoweredAt = performance.now();
+        }
 
     this.secondaryHealthBar = Math.max(
       this.healthRatio,
       this.secondaryHealthBar,
     );
 
-    if (performance.now() - this.lastHealthLoweredAt > 256) {
-      this.secondaryHealthBar = util.lerp(
-        this.secondaryHealthBar,
-        this.healthRatio,
-        state.interpolationFactor * 0.75,
-      );
-    }
+        if (performance.now() - this.lastHealthLoweredAt > 256) {
+            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * 0.75);
+        }
 
     this.healthRatio = util.lerp(
       this.healthRatio,
@@ -840,7 +803,7 @@ export class ClientMarker {
 }
 
 export class ClientLightning {
-  static TIME_ALIVE = 1e3;
+    static TIME_ALIVE = 1e3;
 
   constructor(id) {
     this.id = id;
@@ -861,17 +824,13 @@ export class ClientLightning {
 
       points.push(p1);
 
-      for (let j = 1; j < pointsBetweenPoints; j++) {
-        // Add some jaggedness
-        const x =
-          util.lerp(p1.x, p2.x, j / pointsBetweenPoints) +
-          (Math.random() - 0.5) * 50;
-        const y =
-          util.lerp(p1.y, p2.y, j / pointsBetweenPoints) +
-          (Math.random() - 0.5) * 50;
-        points.push({ x, y });
-      }
-    }
+            for (let j = 1; j < pointsBetweenPoints; j++) {
+                // Add some jaggedness
+                const x = util.lerp(p1.x, p2.x, j / pointsBetweenPoints) + (Math.random() - 0.5) * 50;
+                const y = util.lerp(p1.y, p2.y, j / pointsBetweenPoints) + (Math.random() - 0.5) * 50;
+                points.push({ x, y });
+            }
+        }
 
     points.push(oldPoints[oldPoints.length - 1]);
 
@@ -1048,24 +1007,24 @@ export class ClientSocket extends WebSocket {
       this.jobs = new Map();
     }
 
-    wait(data) {
-      return new Promise((resolve) => {
-        const id = this.jobID++;
-        this.socket.talk(SERVER_BOUND.DEV_CHEAT, { promiseID: id, ...data });
-        this.jobs.set(id, resolve);
-      });
-    }
+        wait(data) {
+            return new Promise((resolve) => {
+                const id = this.jobID++;
+                this.socket.talk(SERVER_BOUND.DEV_CHEAT, { promiseID: id, ...data });
+                this.jobs.set(id, resolve);
+            });
+        }
 
     handle(id, data) {
       if (!this.jobs.has(id)) {
         return false;
       }
 
-      this.jobs.get(id)(data);
-      this.jobs.delete(id);
-      return true;
-    }
-  };
+            this.jobs.get(id)(data);
+            this.jobs.delete(id);
+            return true;
+        }
+    };
 
   constructor(url, username) {
     super(url);
@@ -1082,125 +1041,120 @@ export class ClientSocket extends WebSocket {
     if (localStorage.token?.length > 4) {
       this.devCheatListener = new ClientSocket.Listener(this);
 
-      window.floof_dev = {
-        spawnMob: (index, rarity) => {
-          if (typeof index === "string") {
-            index = state.mobConfigs.findIndex((m) => m.name === index);
+            window.floof_dev = {
+                spawnMob: (index, rarity) => {
+                    if (typeof index === "string") {
+                        index = state.mobConfigs.findIndex((m) => m.name === index);
 
-            if (index === -1) {
-              return new Promise((resolve) =>
-                resolve({
-                  ok: false,
-                  message: "Invalid mob name",
-                }),
-              );
-            }
-          }
+                        if (index === -1) {
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid mob name",
+                                }),
+                            );
+                        }
+                    }
 
-          if (typeof rarity === "string") {
-            rarity = state.tiers.findIndex((t) => t.name === rarity);
+                    if (typeof rarity === "string") {
+                        rarity = state.tiers.findIndex((t) => t.name === rarity);
 
-            if (rarity === -1) {
-              return new Promise((resolve) =>
-                resolve({
-                  ok: false,
-                  message: "Invalid rarity name",
-                }),
-              );
-            }
-          }
+                        if (rarity === -1) {
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid rarity name",
+                                }),
+                            );
+                        }
+                    }
 
-          return this.devCheatListener.wait({
-            id: DEV_CHEAT_IDS.SPAWN_MOB,
-            index,
-            rarity,
-          });
-        },
-        setPetal: (clientID, slotID, index, rarity) => {
-          if (typeof index === "string") {
-            index = state.petalConfigs.findIndex((p) => p.name === index);
+                    return this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SPAWN_MOB,
+                        index,
+                        rarity,
+                    });
+                },
+                setPetal: (clientID, slotID, index, rarity) => {
+                    if (typeof index === "string") {
+                        index = state.petalConfigs.findIndex((p) => p.name === index);
 
-            if (index === -1) {
-              return new Promise((resolve) =>
-                resolve({
-                  ok: false,
-                  message: "Invalid petal name",
-                }),
-              );
-            }
-          }
+                        if (index === -1) {
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid petal name",
+                                }),
+                            );
+                        }
+                    }
 
-          if (typeof rarity === "string") {
-            rarity = state.tiers.findIndex((t) => t.name === rarity);
+                    if (typeof rarity === "string") {
+                        rarity = state.tiers.findIndex((t) => t.name === rarity);
 
-            if (rarity === -1) {
-              return new Promise((resolve) =>
-                resolve({
-                  ok: false,
-                  message: "Invalid rarity name",
-                }),
-              );
-            }
-          }
+                        if (rarity === -1) {
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid rarity name",
+                                }),
+                            );
+                        }
+                    }
 
           console.log(clientID, slotID, index, rarity);
 
-          return this.devCheatListener.wait({
-            id: DEV_CHEAT_IDS.SET_PETAL,
-            clientID,
-            slotID,
-            index,
-            rarity,
-          });
-        },
-        setXP: (clientID, xp) =>
-          this.devCheatListener.wait({
-            id: DEV_CHEAT_IDS.SET_XP,
-            clientID,
-            xp,
-          }),
-        infoDump: () =>
-          this.devCheatListener.wait({ id: DEV_CHEAT_IDS.INFO_DUMP }),
-      };
-    }
+                    return this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SET_PETAL,
+                        clientID,
+                        slotID,
+                        index,
+                        rarity,
+                    });
+                },
+                setXP: (clientID, xp) =>
+                    this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SET_XP,
+                        clientID,
+                        xp,
+                    }),
+                infoDump: () => this.devCheatListener.wait({ id: DEV_CHEAT_IDS.INFO_DUMP }),
+            };
+        }
 
     this._dataIn = 0;
     this._dataOut = 0;
 
-    this.bandWidth = {
-      in: 0,
-      out: 0,
-    };
+        this.bandWidth = {
+            in: 0,
+            out: 0,
+        };
 
-    this.bandwidthTracker = setInterval(() => {
-      this.bandWidth.in = (this._dataIn / 1024).toFixed(2);
-      this.bandWidth.out = (this._dataOut / 1024).toFixed(2);
-      this._dataIn = 0;
-      this._dataOut = 0;
-    }, 1e3);
-  }
+        this.bandwidthTracker = setInterval(() => {
+            this.bandWidth.in = (this._dataIn / 1024).toFixed(2);
+            this.bandWidth.out = (this._dataOut / 1024).toFixed(2);
+            this._dataIn = 0;
+            this._dataOut = 0;
+        }, 1e3);
+    }
 
-  onOpen() {
-    console.log("Connected to lobby.");
-    this.verify(this.username);
-    setTimeout(() => {
-      (this.ping(), console.log("Pinging websocket server."));
-    }, 1e3);
-  }
+    onOpen() {
+        console.log("Connected to lobby.");
+        this.verify(this.username);
+        setTimeout(() => {
+            (this.ping(), console.log("Pinging websocket server."));
+        }, 1e3);
+    }
 
   onClose() {
     console.log("Disconnected from lobby");
     state.disconnected = true;
   }
 
-  onMessage(event) {
-    state.pendingDropAmounts ??= new Map();
-    const reader = new Reader(
-      new DataView(new Uint8Array(event.data).buffer),
-      0,
-      true,
-    );
-    this._dataIn += event.data.byteLength;
+    onMessage(event) {
+        state.pendingDropAmounts ??= new Map();
+        const reader = new Reader(new DataView(new Uint8Array(event.data).buffer), 0, true);
+        this._dataIn += event.data.byteLength;
 
     switch (reader.getUint8()) {
       case CLIENT_BOUND.KICK:
@@ -1219,10 +1173,10 @@ export class ClientSocket extends WebSocket {
         state.camera.lightingBoost = reader.getUint8();
         state.playerID = reader.getUint32();
 
-        let id;
-        while (((id = reader.getUint32()), id > 0)) {
-          const flags = reader.getUint8();
-          let player = state.players.get(id);
+                let id;
+                while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let player = state.players.get(id);
 
           if (!player) {
             player = new ClientPlayer(id);
@@ -1325,9 +1279,9 @@ export class ClientSocket extends WebSocket {
           }
         }
 
-        while (((id = reader.getUint32()), id > 0)) {
-          const flags = reader.getUint8();
-          let petal = state.petals.get(id);
+                while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let petal = state.petals.get(id);
 
           if (!petal) {
             petal = new ClientPetal(id);
@@ -1376,9 +1330,9 @@ export class ClientSocket extends WebSocket {
           }
         }
 
-        while (((id = reader.getUint32()), id > 0)) {
-          const flags = reader.getUint8();
-          let mob = state.mobs.get(id);
+                while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let mob = state.mobs.get(id);
 
           if (!mob) {
             mob = new ClientMob(id);
@@ -1415,23 +1369,23 @@ export class ClientSocket extends WebSocket {
             mob.size = mob.realSize;
             mob.facing = mob.realFacing;
 
-            switch (state.mobConfigs[mob.index].name) {
-              case "Starfish":
-                mob.extraData = new StarfishData();
-                break;
-              case "Leech":
-                mob.extraData = [
-                  {
-                    x: 0,
-                    y: 0,
-                    realX: 0,
-                    realY: 0,
-                  },
-                ];
-                break;
-            }
-            continue;
-          }
+                        switch (state.mobConfigs[mob.index].name) {
+                            case "Starfish":
+                                mob.extraData = new StarfishData();
+                                break;
+                            case "Leech":
+                                mob.extraData = [
+                                    {
+                                        x: 0,
+                                        y: 0,
+                                        realX: 0,
+                                        realY: 0,
+                                    },
+                                ];
+                                break;
+                        }
+                        continue;
+                    }
 
           if (flags === ENTITY_FLAGS.DIE) {
             state.mobs.delete(id);
@@ -1475,11 +1429,11 @@ export class ClientSocket extends WebSocket {
             if (count !== mob.extraData?.length) {
               mob.extraData = [];
 
-              for (let i = 0; i < count; i++) {
-                mob.extraData.push({
-                  x: reader.getFloat32(),
-                  y: reader.getFloat32(),
-                });
+                            for (let i = 0; i < count; i++) {
+                                mob.extraData.push({
+                                    x: reader.getFloat32(),
+                                    y: reader.getFloat32(),
+                                });
 
                 mob.extraData[i].realX = mob.extraData[i].x;
                 mob.extraData[i].realY = mob.extraData[i].y;
@@ -1514,13 +1468,13 @@ export class ClientSocket extends WebSocket {
           state.drops.set(id, drop);
         }
 
-        while (((id = reader.getUint32()), id > 0)) {
-          state.drops.delete(id);
-        }
+                while (((id = reader.getUint32()), id > 0)) {
+                    state.drops.delete(id);
+                }
 
-        while (((id = reader.getUint32()), id > 0)) {
-          const flags = reader.getUint8();
-          let marker = state.markers.get(id);
+                while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let marker = state.markers.get(id);
 
           if (!marker) {
             marker = new ClientMarker(id);
@@ -1542,25 +1496,25 @@ export class ClientSocket extends WebSocket {
           }
         }
 
-        while (((id = reader.getUint32()), id > 0)) {
-          const lightning = new ClientLightning(id);
-          const count = reader.getUint16();
+                while (((id = reader.getUint32()), id > 0)) {
+                    const lightning = new ClientLightning(id);
+                    const count = reader.getUint16();
 
-          for (let i = 0; i < count; i++) {
-            lightning.points.push({
-              x: reader.getFloat32(),
-              y: reader.getFloat32(),
-            });
-          }
+                    for (let i = 0; i < count; i++) {
+                        lightning.points.push({
+                            x: reader.getFloat32(),
+                            y: reader.getFloat32(),
+                        });
+                    }
 
           lightning.improvePoints();
 
           state.lightning.set(id, lightning);
         }
 
-        {
-          // Main slots
-          const count = reader.getUint8();
+                {
+                    // Main slots
+                    const count = reader.getUint8();
 
           if (count !== state.slots.length) {
             state.slots = [];
@@ -1569,23 +1523,23 @@ export class ClientSocket extends WebSocket {
           for (let i = 0; i < count; i++) {
             const isNotNull = reader.getUint8() === 1;
 
-            if (isNotNull) {
-              state.slots[i] ??= { ratio: 1 };
-              state.slots[i] ??= {};
-              state.slots[i].index = reader.getUint8();
-              state.slots[i].rarity = reader.getUint8();
-              state.slots[i].realRatio = reader.getFloat32();
-            } else {
-              state.slots[i] ??= { ratio: 0 };
-              state.slots[i] ??= {};
-              state.slots[i].index = -1;
-            }
-          }
-        }
+                        if (isNotNull) {
+                            state.slots[i] ??= { ratio: 1 };
+                            state.slots[i] ??= {};
+                            state.slots[i].index = reader.getUint8();
+                            state.slots[i].rarity = reader.getUint8();
+                            state.slots[i].realRatio = reader.getFloat32();
+                        } else {
+                            state.slots[i] ??= { ratio: 0 };
+                            state.slots[i] ??= {};
+                            state.slots[i].index = -1;
+                        }
+                    }
+                }
 
-        {
-          // Secondary slots
-          const count = reader.getUint8();
+                {
+                    // Secondary slots
+                    const count = reader.getUint8();
 
           if (count !== state.secondarySlots.length) {
             state.secondarySlots = [];
@@ -1605,74 +1559,76 @@ export class ClientSocket extends WebSocket {
           }
         }
 
-        if (reader.getUint8() === 1) {
-          const wave = reader.getUint16();
-          const livingMobs = reader.getUint16();
-          const maxMobs = reader.getUint16();
+                if (reader.getUint8() === 1) {
+                    const wave = reader.getUint16();
+                    const livingMobs = reader.getUint16();
+                    const maxMobs = reader.getUint16();
 
-          const mobCount = reader.getUint16();
-          const aliveMobs = [];
+                    const mobCount = reader.getUint16();
+                    const aliveMobs = [];
 
-          for (let i = 0; i < mobCount; i++) {
-            const index = reader.getUint8();
-            const rarity = reader.getUint8();
-            aliveMobs.push({ index, rarity });
-          }
+                    for (let i = 0; i < mobCount; i++) {
+                        const index = reader.getUint8();
+                        const rarity = reader.getUint8();
+                        aliveMobs.push({ index, rarity });
+                    }
 
-          state.waveInfo = {
-            wave,
-            livingMobs,
-            maxMobs,
-            aliveMobs,
-          };
-        } else {
-          state.waveInfo = null;
-        }
+                    state.waveInfo = {
+                        wave,
+                        livingMobs,
+                        maxMobs,
+                        aliveMobs,
+                    };
+                } else {
+                    state.waveInfo = null;
+                }
 
-        {
-          // Players
-          const count = reader.getUint8();
-          const alivePlayers = [];
+                {
+                    // Players
+                    const count = reader.getUint8();
+                    const alivePlayers = [];
 
-          for (let i = 0; i < count; i++) {
-            const team = reader.getUint8();
-            const highestRarity = reader.getUint8();
-            const xp = reader.getFloat32() * 10000;
-            const username = reader.getStringUTF8();
-            alivePlayers.push({ xp, username, team, highestRarity });
-          }
+                    for (let i = 0; i < count; i++) {
+                        const team = reader.getUint8();
+                        const highestRarity = reader.getUint8();
+                        const xp = reader.getFloat32() * 10000;
+                        const username = reader.getStringUTF8();
+                        alivePlayers.push({ xp, username, team, highestRarity });
+                    }
 
-          state.alivePlayers = alivePlayers;
-        }
+                    state.alivePlayers = alivePlayers;
+                }
 
-        state.level = reader.getUint16();
-        state.levelProgressTarget = reader.getFloat32();
+                state.level = reader.getUint16();
+                state.levelProgressTarget = reader.getFloat32();
 
-        const TIER_COUNT = state.tiers?.length ?? 29;
+                const TIER_COUNT = state.tiers?.length ?? 29;
 
-        for (let ti = 0; ti < TIER_COUNT; ti++) {
-          const tier = state.tiers?.[ti];
-          if (!tier?.name) continue;
+                for (let ti = 0; ti < TIER_COUNT; ti++) {
+                    const tier = state.tiers?.[ti];
+                    if (!tier?.name) continue;
 
-          const petalCount = reader.getUint16();
+                    const petalCount = reader.getUint16();
 
-          if (!state.usesNewInventory) {
-            state.inventory ??= {};
-            state.inventory[tier.name] ??= {};
-          }
+                    if (!state.usesNewInventory) {
+                        state.inventory ??= {};
+                        state.inventory[tier.name] ??= {};
+                    }
 
-          for (let i = 0; i < petalCount; i++) {
-            const petalId = reader.getUint16();
-            const amount = reader.getUint16();
+                    for (let i = 0; i < petalCount; i++) {
+                        const petalId = reader.getUint16();
+                        const amount = reader.getUint16();
 
-            if (!state.usesNewInventory) {
-              state.inventory[tier.name][petalId] = amount;
-            }
-          }
-        }
-        break;
-      case 250: {
-        const count = reader.getUint16();
+                        if (!state.usesNewInventory) {
+                            state.inventory[tier.name][petalId] = amount;
+                        }
+                    }
+
+                    state._inventoryVersion = (state._inventoryVersion || 0) + 1;
+                }
+                break;
+            case 250: {
+                const count = reader.getUint16();
 
         for (let i = 0; i < count; i++) {
           const dropId = reader.getUint32();
@@ -1689,16 +1645,16 @@ export class ClientSocket extends WebSocket {
           drop.amount = amount;
         }
 
-        break;
-      }
-      case 110: {
-        if (!state.usesNewInventory) {
-          state.usesNewInventory = true;
-          state.inventory = {};
-        }
+                break;
+            }
+            case 110: {
+                if (!state.usesNewInventory) {
+                    state.usesNewInventory = true;
+                    state.inventory = {};
+                }
 
-        const count = reader.getUint16();
-        const tiers = state.tiers ?? [];
+                const count = reader.getUint16();
+                const tiers = state.tiers ?? [];
 
         for (let i = 0; i < count; i++) {
           const tierIndex = reader.getUint8();
@@ -1718,10 +1674,11 @@ export class ClientSocket extends WebSocket {
           }
         }
 
-        break;
-      }
-      case 111: {
-        const count = reader.getUint8();
+                state._inventoryVersion = (state._inventoryVersion || 0) + 1;
+                break;
+            }
+            case 111: {
+                const count = reader.getUint8();
 
         globalThis.__CUSTOM_GRADIENTS = {};
 
@@ -1823,9 +1780,7 @@ export class ClientSocket extends WebSocket {
           __RAF_RUNNING__ = false;
         }
 
-        console.log(
-          "Client: Gradient cache cleared. Special Gradients received.",
-        );
+                console.log("Client: Gradient cache cleared. Special Gradients received.");
 
         break;
       }
@@ -1843,59 +1798,56 @@ export class ClientSocket extends WebSocket {
           state.minimapPlayers.set(id, { id, x, y });
         }
 
-        break;
-      }
-      case CLIENT_BOUND.ROOM_UPDATE:
-        state.room.width = reader.getFloat32();
-        state.room.height = reader.getFloat32();
-        state.room.isRadial = reader.getUint8() === 1;
-        state.room.biome = reader.getUint8();
-        break;
-      case CLIENT_BOUND.DEATH:
-        state.isDead = true;
-        state.killMessage = reader.getStringUTF8();
-        break;
-      case CLIENT_BOUND.UPDATE_ASSETS:
-        console.warn("Server is asking us to update assets");
-        loadAssets(this.lobbyID);
-        break;
-      case CLIENT_BOUND.JSON_MESSAGE:
-        if (this.devCheatListener) {
-          const data = JSON.parse(reader.getStringUTF8());
-          if (
-            !this.devCheatListener.handle(
-              data.promiseID,
-              (() => {
-                delete data.promiseID;
-                return data;
-              })(),
-            )
-          ) {
-            console.warn("Unhandled JSON message", data);
-          }
-        } else {
-          console.warn(
-            "Received JSON message without a listener:",
-            reader.getStringUTF8(),
-          );
-        }
-        break;
-      case CLIENT_BOUND.PONG:
-        state.ping = performance.now() - this.pingStart;
-        setTimeout(() => this.ping(), 1e3);
-        break;
-      case CLIENT_BOUND.TERRAIN:
-        state.terrain = {
-          width: reader.getUint16(),
-          height: reader.getUint16(),
-          blocks: ((blocks = []) => {
-            for (let i = reader.getUint16(); i > 0; i--) {
-              blocks.push({
-                x: reader.getInt16(),
-                y: reader.getInt16(),
-                type: [reader.getUint8(), reader.getUint8()],
-                terrain: [],
-              });
+                break;
+            }
+            case CLIENT_BOUND.ROOM_UPDATE:
+                state.room.width = reader.getFloat32();
+                state.room.height = reader.getFloat32();
+                state.room.isRadial = reader.getUint8() === 1;
+                state.room.biome = reader.getUint8();
+                break;
+            case CLIENT_BOUND.DEATH:
+                state.isDead = true;
+                state.killMessage = reader.getStringUTF8();
+                break;
+            case CLIENT_BOUND.UPDATE_ASSETS:
+                console.warn("Server is asking us to update assets");
+                loadAssets(this.lobbyID);
+                break;
+            case CLIENT_BOUND.JSON_MESSAGE:
+                if (this.devCheatListener) {
+                    const data = JSON.parse(reader.getStringUTF8());
+                    if (
+                        !this.devCheatListener.handle(
+                            data.promiseID,
+                            (() => {
+                                delete data.promiseID;
+                                return data;
+                            })(),
+                        )
+                    ) {
+                        console.warn("Unhandled JSON message", data);
+                    }
+                } else {
+                    console.warn("Received JSON message without a listener:", reader.getStringUTF8());
+                }
+                break;
+            case CLIENT_BOUND.PONG:
+                state.ping = performance.now() - this.pingStart;
+                setTimeout(() => this.ping(), 1e3);
+                break;
+            case CLIENT_BOUND.TERRAIN:
+                state.terrain = {
+                    width: reader.getUint16(),
+                    height: reader.getUint16(),
+                    blocks: ((blocks = []) => {
+                        for (let i = reader.getUint16(); i > 0; i--) {
+                            blocks.push({
+                                x: reader.getInt16(),
+                                y: reader.getInt16(),
+                                type: [reader.getUint8(), reader.getUint8()],
+                                terrain: [],
+                            });
 
               blocks[blocks.length - 1].terrain =
                 terrains[blocks[blocks.length - 1].type[0]][
@@ -1903,58 +1855,36 @@ export class ClientSocket extends WebSocket {
                 ];
             }
 
-            return blocks;
-          })(),
-          overlay: null,
-        };
+                        return blocks;
+                    })(),
+                    overlay: null,
+                };
 
-        state.terrainImg = renderTerrain(
-          state.room.width * 0.5,
-          state.room.height * 0.5,
-          state.terrain.width,
-          state.terrain.blocks,
-          state.room.biome,
-        );
-        state.minimapImg = renderTerrainForMap(
-          state.terrain.width,
-          state.terrain.blocks,
-        );
-        console.log(state.terrain.blocks);
-        if (util.isHalloween && state.terrain.blocks.length >= 8) {
-          state.terrain.overlay = new SpookyOverlay(
-            state.terrain.blocks,
-            state.terrain.width,
-            state.terrain.height,
-          );
-        } else {
-          state.terrain.overlay = null;
-        }
-        break;
-      case CLIENT_BOUND.CHAT_MESSAGE:
-        {
-          const type = reader.getUint8();
+                state.terrainImg = renderTerrain(state.room.width * 0.5, state.room.height * 0.5, state.terrain.width, state.terrain.blocks, state.room.biome);
+                state.minimapImg = renderTerrainForMap(state.terrain.width, state.terrain.blocks);
+                console.log(state.terrain.blocks);
+                if (util.isHalloween && state.terrain.blocks.length >= 8) {
+                    state.terrain.overlay = new SpookyOverlay(state.terrain.blocks, state.terrain.width, state.terrain.height);
+                } else {
+                    state.terrain.overlay = null;
+                }
+                break;
+            case CLIENT_BOUND.CHAT_MESSAGE:
+                {
+                    const type = reader.getUint8();
 
-          switch (type) {
-            case 0: // Chat Message
-              new ChatMessage(
-                0,
-                reader.getStringUTF8(),
-                reader.getStringUTF8(),
-                reader.getStringUTF8(),
-              );
-              break;
-            case 1: // System Message
-              new ChatMessage(
-                1,
-                reader.getStringUTF8(),
-                reader.getStringUTF8(),
-              );
-              break;
-          }
+                    switch (type) {
+                        case 0: // Chat Message
+                            new ChatMessage(0, reader.getStringUTF8(), reader.getStringUTF8(), reader.getStringUTF8());
+                            break;
+                        case 1: // System Message
+                            new ChatMessage(1, reader.getStringUTF8(), reader.getStringUTF8());
+                            break;
+                    }
+                }
+                break;
         }
-        break;
     }
-  }
 
   ping() {
     this.pingStart = performance.now();
@@ -1986,111 +1916,109 @@ export class ClientSocket extends WebSocket {
       case SERVER_BOUND.INPUTS:
         writer.setUint8(data);
 
-        if (util.options.mouseMovement) {
-          const x = mouse.x - canvas.width / 2;
-          const y = mouse.y - canvas.height / 2;
-          const angle = Math.atan2(y, x);
-          const dist = util.quickDiff({ x: 0, y: 0 }, { x, y });
-          const deadzone = 0.1;
+                if (util.options.mouseMovement) {
+                    const x = mouse.x - canvas.width / 2;
+                    const y = mouse.y - canvas.height / 2;
+                    const angle = Math.atan2(y, x);
+                    const dist = util.quickDiff({ x: 0, y: 0 }, { x, y });
+                    const deadzone = 0.1;
 
-          writer.setFloat32(angle);
-          writer.setFloat32(
-            Math.max(0, dist / (canvas.width / 2) - deadzone) / (1 - deadzone),
-          );
-        }
-        if (data & 0x80) {
-          writer.setFloat32(joystick.angle);
-          writer.setFloat32(joystick.distance);
-        }
-        break;
-      case SERVER_BOUND.CHANGE_LOADOUT:
-        {
-          const { drag, drop } = data; // { type, index }
-          writer.setUint8(drag.type);
-          writer.setUint8(drag.index);
-          writer.setUint8(drop.type);
-          writer.setUint8(drop.index);
-        }
-        break;
-      case SERVER_BOUND.DEV_CHEAT:
-        {
-          const type = Number.isInteger(data) ? data : data.id;
-          writer.setUint8(type);
-
-          switch (type) {
-            case DEV_CHEAT_IDS.TELEPORT:
-              const tpUScale = gameScale(state.camera.fov);
-              writer.setFloat32((mouse.x - canvas.width / 2) / tpUScale);
-              writer.setFloat32((mouse.y - canvas.height / 2) / tpUScale);
-              break;
-            case DEV_CHEAT_IDS.CHANGE_TEAM:
-              let id = 0,
-                sc = gameScale(state.camera.fov),
-                x = state.camera.x + (mouse.x - canvas.width / 2) / sc,
-                y = state.camera.y + (mouse.y - canvas.height / 2) / sc;
-
-              for (const mob of state.mobs.values()) {
-                let dx = mob.x - x,
-                  dy = mob.y - y,
-                  dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < mob.size) {
-                  id = mob.id;
-                  break;
+                    writer.setFloat32(angle);
+                    writer.setFloat32(Math.max(0, dist / (canvas.width / 2) - deadzone) / (1 - deadzone));
                 }
-              }
-
-              for (const player of state.players.values()) {
-                let dx = player.x - x,
-                  dy = player.y - y,
-                  dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < player.size) {
-                  id = player.id;
-                  break;
+                if (data & 0x80) {
+                    writer.setFloat32(joystick.angle);
+                    writer.setFloat32(joystick.distance);
                 }
-              }
+                break;
+            case SERVER_BOUND.CHANGE_LOADOUT:
+                {
+                    const { drag, drop } = data; // { type, index }
+                    writer.setUint8(drag.type);
+                    writer.setUint8(drag.index);
+                    writer.setUint8(drop.type);
+                    writer.setUint8(drop.index);
+                }
+                break;
+            case SERVER_BOUND.DEV_CHEAT:
+                {
+                    const type = Number.isInteger(data) ? data : data.id;
+                    writer.setUint8(type);
 
-              writer.setUint32(id);
-              break;
-            case DEV_CHEAT_IDS.SPAWN_MOB:
-              writer.setUint32(data.promiseID);
-              writer.setUint8(data.index);
-              writer.setUint8(data.rarity);
-              break;
-            case DEV_CHEAT_IDS.SET_PETAL:
-              writer.setUint32(data.promiseID);
-              writer.setUint32(data.clientID);
-              writer.setUint8(data.slotID);
-              writer.setUint8(data.index);
-              writer.setUint8(data.rarity);
-              break;
-            case DEV_CHEAT_IDS.SET_XP:
-              writer.setUint32(data.promiseID);
-              writer.setUint32(data.clientID);
-              writer.setUint32(data.xp);
-              break;
-            case DEV_CHEAT_IDS.INFO_DUMP:
-              writer.setUint32(data.promiseID);
-              break;
-          }
+                    switch (type) {
+                        case DEV_CHEAT_IDS.TELEPORT:
+                            const tpUScale = gameScale(state.camera.fov);
+                            writer.setFloat32((mouse.x - canvas.width / 2) / tpUScale);
+                            writer.setFloat32((mouse.y - canvas.height / 2) / tpUScale);
+                            break;
+                        case DEV_CHEAT_IDS.CHANGE_TEAM:
+                            let id = 0,
+                                sc = gameScale(state.camera.fov),
+                                x = state.camera.x + (mouse.x - canvas.width / 2) / sc,
+                                y = state.camera.y + (mouse.y - canvas.height / 2) / sc;
+
+                            for (const mob of state.mobs.values()) {
+                                let dx = mob.x - x,
+                                    dy = mob.y - y,
+                                    dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < mob.size) {
+                                    id = mob.id;
+                                    break;
+                                }
+                            }
+
+                            for (const player of state.players.values()) {
+                                let dx = player.x - x,
+                                    dy = player.y - y,
+                                    dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < player.size) {
+                                    id = player.id;
+                                    break;
+                                }
+                            }
+
+                            writer.setUint32(id);
+                            break;
+                        case DEV_CHEAT_IDS.SPAWN_MOB:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint8(data.index);
+                            writer.setUint8(data.rarity);
+                            break;
+                        case DEV_CHEAT_IDS.SET_PETAL:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint32(data.clientID);
+                            writer.setUint8(data.slotID);
+                            writer.setUint8(data.index);
+                            writer.setUint8(data.rarity);
+                            break;
+                        case DEV_CHEAT_IDS.SET_XP:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint32(data.clientID);
+                            writer.setUint32(data.xp);
+                            break;
+                        case DEV_CHEAT_IDS.INFO_DUMP:
+                            writer.setUint32(data.promiseID);
+                            break;
+                    }
+                }
+                break;
+            case SERVER_BOUND.CHAT_MESSAGE:
+                writer.setStringUTF8(data);
+                break;
+            case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT:
+                {
+                    const { drag, drop } = data; // { type, index }
+                    writer.setUint8(drag.index);
+                    writer.setUint8(drag.rarity);
+                    writer.setUint8(drop.type);
+                    writer.setUint8(drop.index);
+                    writer.setUint8(drop.rarity);
+                    writer.setUint8(drop.petalIndex);
+                }
+                break;
         }
-        break;
-      case SERVER_BOUND.CHAT_MESSAGE:
-        writer.setStringUTF8(data);
-        break;
-      case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT:
-        {
-          const { drag, drop } = data; // { type, index }
-          writer.setUint8(drag.index);
-          writer.setUint8(drag.rarity);
-          writer.setUint8(drop.type);
-          writer.setUint8(drop.index);
-          writer.setUint8(drop.rarity);
-          writer.setUint8(drop.petalIndex);
-        }
-        break;
-    }
 
     const output = writer.build();
     this._dataOut += output.byteLength;
@@ -2108,16 +2036,16 @@ export class IconItem {
   realY = 0;
   realSize = 0;
 
-  interpolate() {
-    this.x = util.lerp(this.x, this.realX, 0.2);
-    this.y = util.lerp(this.y, this.realY, 0.2);
-    this.size = util.lerp(this.size, this.realSize, 0.2);
-  }
+    interpolate() {
+        this.x = util.lerp(this.x, this.realX, 0.2);
+        this.y = util.lerp(this.y, this.realY, 0.2);
+        this.size = util.lerp(this.size, this.realSize, 0.2);
+    }
 }
 
 export const state = {
-  interpolationFactor: 0.2,
-  username: "",
+    interpolationFactor: 0.2,
+    username: "",
 
   camera: {
     x: 0,
@@ -2129,58 +2057,46 @@ export const state = {
     realY: 0,
     realFov: 1025 + 256,
 
-    interpolate: () => {
-      state.camera.x = util.lerp(
-        state.camera.x,
-        state.camera.realX,
-        state.interpolationFactor,
-      );
-      state.camera.y = util.lerp(
-        state.camera.y,
-        state.camera.realY,
-        state.interpolationFactor,
-      );
-      state.camera.fov = util.lerp(
-        state.camera.fov,
-        state.camera.realFov,
-        state.interpolationFactor,
-      );
+        interpolate: () => {
+            state.camera.x = util.lerp(state.camera.x, state.camera.realX, state.interpolationFactor);
+            state.camera.y = util.lerp(state.camera.y, state.camera.realY, state.interpolationFactor);
+            state.camera.fov = util.lerp(state.camera.fov, state.camera.realFov, state.interpolationFactor);
+        },
     },
-  },
 
-  room: {
-    width: 100,
-    height: 100,
-    isRadial: false,
-    biome: (() => {
-      switch (localStorage.biome) {
-        case "default":
-          return BIOME_TYPES.DEFAULT;
-        case "garden":
-          return BIOME_TYPES.GARDEN;
-        case "desert":
-          return BIOME_TYPES.DESERT;
-        case "ocean":
-          return BIOME_TYPES.OCEAN;
-        case "antHell":
-          return BIOME_TYPES.ANT_HELL;
-        case "sewers":
-          return BIOME_TYPES.SEWERS;
-        case "hell":
-          return BIOME_TYPES.HELL;
-        case "halloween":
-          if (util.isHalloween) {
-            return BIOME_TYPES.HALLOWEEN;
-          } else {
-            return BIOME_TYPES.DEFAULT;
-          }
-        case "dark_forest":
-          return BIOME_TYPES.DARK_FOREST;
-        default:
-          return BIOME_TYPES.DEFAULT;
-      }
-    })(),
-  },
+    room: {
+        width: 100,
+        height: 100,
+        isRadial: false,
+        biome: (() => {
+            switch (localStorage.biome) {
+                case "default":
+                    return BIOME_TYPES.DEFAULT;
+                case "garden":
+                    return BIOME_TYPES.GARDEN;
+                case "desert":
+                    return BIOME_TYPES.DESERT;
+                case "ocean":
+                    return BIOME_TYPES.OCEAN;
+                case "antHell":
+                    return BIOME_TYPES.ANT_HELL;
+                case "sewers":
+                    return BIOME_TYPES.SEWERS;
+                case "hell":
+                    return BIOME_TYPES.HELL;
+                case "halloween":
+                    if (util.isHalloween) {
+                        return BIOME_TYPES.HALLOWEEN;
+                    } else {
+                        return BIOME_TYPES.DEFAULT;
+                    }
+                case "dark_forest":
+                    return BIOME_TYPES.DARK_FOREST;
+                default:
+                    return BIOME_TYPES.DEFAULT;
+            }
+        })(),
+    },
 
   playerID: 0,
 
@@ -2240,20 +2156,20 @@ export const state = {
   ping: 0,
   lastPingTime: 0,
 
-  /** @type {{width:number,height:number,blocks:{x:number,y:number,type:number}[],overlay:SpookyOverlay}|null} */
-  terrain: null,
-  /** @type {OffscreenCanvas|null} */
-  terrainImg: null,
-  /** @type {OffscreenCanvas|null} */
-  minimapImg: null,
+    /** @type {{width:number,height:number,blocks:{x:number,y:number,type:number}[],overlay:SpookyOverlay}|null} */
+    terrain: null,
+    /** @type {OffscreenCanvas|null} */
+    terrainImg: null,
+    /** @type {OffscreenCanvas|null} */
+    minimapImg: null,
 };
 
 export const keyMap = new Set();
 export const mouse = {
-  x: 0,
-  y: 0,
-  left: false,
-  right: false,
+    x: 0,
+    y: 0,
+    left: false,
+    right: false,
 };
 
 export async function loadAssets(lobbyID) {
