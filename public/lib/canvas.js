@@ -1,4 +1,4 @@
-import * as util from "./util.js";
+Fimport * as util from "./util.js";
 
 export const canvas = document.querySelector("canvas");
 export const ctx = canvas.getContext("2d");
@@ -343,6 +343,10 @@ export function drawWrappedText(text, x, y, size, maxWidth, fill = "#FFFFFF", _c
 
     const lineBreaks = text.split("\n");
 
+    if (maxWidth <= 0 || isNaN(maxWidth)) {
+        return 0;
+    }
+
     for (let p = 0; p < lineBreaks.length; p++) {
         const words = lineBreaks[p].split(" ");
 
@@ -361,12 +365,21 @@ export function drawWrappedText(text, x, y, size, maxWidth, fill = "#FFFFFF", _c
                     for (let j = 0; j < oldWord.length; j++) {
                         const testSegment = wordSegment + oldWord[j];
                         if (_ctx.measureText(testSegment).width > maxWidth) {
-                            newWords.push(wordSegment);
-                            wordSegment = "";
+                            if (wordSegment !== "") {
+                                newWords.push(wordSegment);
+                                wordSegment = "";
+                            }
                         }
                         wordSegment += oldWord[j];
                     }
                     newWords.push(wordSegment); // Push last remaining segment
+
+                    if (newWords.length === 1 && newWords[0] === oldWord) {
+                        lines.push(oldWord);
+                        words.splice(i, 1);
+                        i--;
+                        break;
+                    }
 
                     // Replace the current word with the new segments
                     words.splice(i, 1, ...newWords);
@@ -374,6 +387,8 @@ export function drawWrappedText(text, x, y, size, maxWidth, fill = "#FFFFFF", _c
                     // If the word was split into one piece, stop splitting
                     if (newWords.length === 1) break;
                 }
+
+                if (words[i] === undefined) continue;
 
                 const testLine = line + words[i] + " ";
                 const testWidth = _ctx.measureText(testLine).width;
@@ -407,7 +422,6 @@ export function drawWrappedText(text, x, y, size, maxWidth, fill = "#FFFFFF", _c
     // Return the height used for text rendering
     return _ctx.measureText("M").width * lines.length;
 }
-
 const wallBrown = [
     "#4f5b5e", // default
     "#68472E", // garden
