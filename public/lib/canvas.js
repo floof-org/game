@@ -1,4 +1,4 @@
-Fimport * as util from "./util.js";
+import * as util from "./util.js";
 
 export const canvas = document.querySelector("canvas");
 export const ctx = canvas.getContext("2d");
