@@ -59,25 +59,6 @@ var craftRef = null;
   craft.DESERT_PITY_MIN_TIER_IDX = 3;
   craft.SUCCESS_SPIRAL_SWEEP = Math.PI / 2;
 
-  craft.PETAL_NAME_SHORTHAND = {
-    'Third Eye': 'Teye',
-    'Beetle Egg': 'Begg',
-    'Ant Egg': 'Aegg',
-    'Yin Yang': 'Yyang',
-    'Magic Orb': 'Morb',
-    'Golden Leaf': 'Gleaf',
-    'Blood Stinger': 'Bstinger',
-    'Venomous Stinger': 'Vstinger',
-    'Hornet Egg': 'Hegg',
-    'Leech Egg': 'Legg',
-    'Lily Pad': 'Lpad',
-    'Mecha Missile': 'Mmissile',
-    'Tesla Coil': 'Tcoil',
-    'Red Coral': 'Rcoral',
-    'Blue Coral': 'Bcoral',
-    'Cheese Moon': 'Cmoon',
-  };
-
   craft.PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
   craft.PITY_NONE_RE = /^No\s+active\s+pity\s+for\s+.+?\.?\s*$/i;
   craft.PITY_SINGLE_HEADER_RE = /^(.+?)\s+pity:\s*(?:([\d.]+)%\s*\(\+([\d.]+)\s*pity\))?\s*$/i;
@@ -89,11 +70,11 @@ var craftRef = null;
       name: 'Line Maze',
       short: 'Line',
       tiers: [
-        'Common', 'Unusual', 'Rare', 'Epic', 'Legendary', 'Mythic',
+        'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic',
         'Ultra', 'Super', 'Unique', 'Eternal',
       ],
       rates: {
-        'Unusual': 64,
+        'Uncommon': 64,
         'Rare': 32,
         'Epic': 16,
         'Legendary': 8,
@@ -103,6 +84,7 @@ var craftRef = null;
         'Unique': 0.1,
         'Eternal': 0.1,
       },
+      match: function (s) { return !!s.room && s.room.width !== s.room.height; },
     },
     {
       name: 'MMO',
@@ -122,6 +104,7 @@ var craftRef = null;
         'Unique': 0.1,
         'Eternal': 0.1,
       },
+      match: function (s) { return !!s.room && s.room.width === s.room.height; },
     },
     {
       name: 'Desert Maze',
@@ -409,7 +392,9 @@ var craftRef = null;
       for (var j = 0; j < preset.tiers.length; j++) {
         if (preset.tiers[j] !== names[j]) { ok = false; break; }
       }
-      if (ok) return preset;
+      if (!ok) continue;
+      if (typeof preset.match === 'function' && !preset.match(s)) continue;
+      return preset;
     }
     return null;
   };
@@ -896,17 +881,12 @@ var craftRef = null;
     var petalName = craft.getCraftPetalName(s, craft.craftPetalIdx);
 
     var lobbyForCraft = craft.detectLobby(s);
-    var craftPetalToken = petalName;
     var craftAmount = total;
     if (lobbyForCraft &&
         (lobbyForCraft.name === 'Line Maze' || lobbyForCraft.name === 'MMO')) {
-      if (lobbyForCraft.name === 'Line Maze' &&
-          craft.PETAL_NAME_SHORTHAND[petalName]) {
-        craftPetalToken = craft.PETAL_NAME_SHORTHAND[petalName];
-      }
       craftAmount = Math.floor(total / 5);
     }
-    sendChatMessage('/craft ' + tierName + ' ' + craftPetalToken + ' ' + craftAmount);
+    sendChatMessage('/craft ' + tierName + ' ' + petalName + ' ' + craftAmount);
 
     craft.orbitLastPositions = [];
     craft.setCraftResult({
