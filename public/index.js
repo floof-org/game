@@ -1171,15 +1171,31 @@ function makeWaveIcon(entry, mode, key) {
         ctx.restore();
     }
 
-    canvas._render = (now, entry) => render(now, entry);
-    render(performance.now(), entry);
-    return canvas;
+    const draw = () => {
+          const animated =
+          wavesGradientOn() &&
+          entry.rarity >= getGradientMinRarity();
+
+          if (!animated) {
+          __ANIMATED_WAVE_ICONS__.delete(draw);
+          }
+
+          render(performance.now(), entry);
+      };
+
+      canvas._draw = draw;
+      draw();
+      return canvas;
 }
 
-function getWaveIcon(entry, now) {
-    const mode = wavesGradientOn() ? 1 : 0;
-    const sizeKey = Math.round(entry.size * 100) / 100;
-    const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
+function getWaveIcon(entry) {
+  const animated =
+  wavesGradientOn() &&
+  entry.rarity >= getGradientMinRarity();
+
+  const mode = animated ? 1 : 0;
+  const sizeKey = Math.round(entry.size * 100) / 100;
+  const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
 
     let icon = WAVE_CACHE[key];
 
