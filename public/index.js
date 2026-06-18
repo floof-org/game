@@ -6,6 +6,8 @@ import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, 
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
+import "./lib/craftMenu.js";
+import "./lib/craftMenu.js";
 
 if (location.hash) {
     fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1))
@@ -614,14 +616,20 @@ function processDrop() {
     return true;
 }
 
-function formatAmount(v) {
-    if (!isFinite(v)) return "∞";
-    if (isNaN(v)) return "0";
+export function formatAmount(v) {
+  if (!isFinite(v)) return "∞";
+  if (isNaN(v)) return "0";
 
     const f = (num, div, suffix) => {
         const val = num / div;
         if (!isFinite(val)) return "∞";
+    const f = (num, div, suffix) => {
+        const val = num / div;
+        if (!isFinite(val)) return "∞";
 
+        const str = val.toFixed(1);
+        return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
+    };
         const str = val.toFixed(1);
         return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
     };
@@ -632,7 +640,14 @@ function formatAmount(v) {
     if (v >= 1e9) return f(v, 1e9, "b");
     if (v >= 1e6) return f(v, 1e6, "m");
     if (v >= 1e3) return f(v, 1e3, "k");
+    if (v >= 1e18) return f(v, 1e18, "Qt");
+    if (v >= 1e15) return f(v, 1e15, "Qd");
+    if (v >= 1e12) return f(v, 1e12, "t");
+    if (v >= 1e9) return f(v, 1e9, "b");
+    if (v >= 1e6) return f(v, 1e6, "m");
+    if (v >= 1e3) return f(v, 1e3, "k");
 
+    return Math.floor(v).toString();
     return Math.floor(v).toString();
 }
 
@@ -641,7 +656,12 @@ function processInventoryDrop() {
         index: inventoryDragConfig.index,
         rarity: inventoryDragConfig.rarity,
     };
+    const drag = {
+        index: inventoryDragConfig.index,
+        rarity: inventoryDragConfig.rarity,
+    };
 
+    let drop = null;
     let drop = null;
 
     const mX = mouse.x / uiScale();
@@ -722,6 +742,16 @@ inventoryTooltipLayer.style.overflow = "visible";
 inventoryTooltipLayer.style.display = "none";
 
 document.body.appendChild(inventoryTooltipLayer);
+
+function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
+  const bw = 350;
+  const bh = (350 * img.height) / img.width;
+  let x = anchorX - 150;
+  let y = anchorY - bh - 10;
+  x = Math.max(0, Math.min(x, boundW - bw));
+  y = Math.max(0, Math.min(y, boundH - bh));
+  return { x, y, bw, bh };
+}
 
 function drawInventory() {
     net.state.petalElements = [];
@@ -2830,32 +2860,27 @@ function draw() {
         if (inventoryHover) {
             const img = petalTooltip(...inventoryHover);
 
-            const maxW = 300;
-            const minW = 180;
+      const { x, y, bw, bh } = petalTooltipBox(
+        img,
+        inventoryHover[2],
+        inventoryHover[3],
+        window.innerWidth,
+        window.innerHeight,
+      );
 
-            let w = Math.min(maxW, Math.max(minW, window.innerWidth * 0.22));
-            let h = (w * img.height) / img.width;
+      const box = document.createElement("div");
+      box.style.position = "fixed";
+      box.style.left = `${x}px`;
+      box.style.top = `${y}px`;
 
-            const box = document.createElement("div");
-            box.style.position = "fixed";
+      const cv = document.createElement("canvas");
+      cv.width = bw;
+      cv.height = bh;
 
-            let left = inventoryHover[2] - w / 2;
-            let top = inventoryHover[3] - h - 12;
-
-            left = Math.max(0, Math.min(left, window.innerWidth - w));
-            top = Math.max(0, Math.min(top, window.innerHeight - h));
-
-            box.style.left = `${left}px`;
-            box.style.top = `${top}px`;
-
-            const cv = document.createElement("canvas");
-            cv.width = w;
-            cv.height = h;
-
-            const cx = cv.getContext("2d");
-            cx.imageSmoothingEnabled = true;
-            cx.imageSmoothingQuality = "high";
-            cx.drawImage(img, 0, 0, w, h);
+      const cx = cv.getContext("2d");
+      cx.imageSmoothingEnabled = true;
+      cx.imageSmoothingQuality = "high";
+      cx.drawImage(img, 0, 0, bw, bh);
 
             box.appendChild(cv);
 
@@ -2880,15 +2905,15 @@ function draw() {
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = "high";
 
-            if (net.state.petalHoverAlpha > 0) {
-                ctx.globalAlpha = net.state.petalHoverAlpha;
-                let bw = 350;
-                let bh = (350 * img.height) / img.width;
-
-                let x = net.state.lastPetalHover[2] - 150;
-                let y = net.state.lastPetalHover[3] - bh - 10;
-
-                x = Math.max(0, Math.min(x, width - bw));
+      if (net.state.petalHoverAlpha > 0) {
+        ctx.globalAlpha = net.state.petalHoverAlpha;
+        const { x, y, bw, bh } = petalTooltipBox(
+          img,
+          net.state.lastPetalHover[2],
+          net.state.lastPetalHover[3],
+          width,
+          height,
+        );
 
                 ctx.drawImage(img, x, y, bw, bh);
             }
