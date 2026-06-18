@@ -1,4 +1,18 @@
-import { canvas, ctx, drawBackground, drawBackgroundOverlay, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
+import {
+  canvas,
+  ctx,
+  drawBackground,
+  drawBackgroundOverlay,
+  renderTerrainForMap,
+  drawBar,
+  drawFace,
+  drawWrappedText,
+  gameScale,
+  mixColors,
+  setStyle,
+  text,
+  uiScale,
+} from "./lib/canvas.js";
 import * as net from "./lib/net.js";
 import { mouse, keyMap } from "./lib/net.js";
 import { colors, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
@@ -889,32 +903,434 @@ window.addEventListener("keydown", e => {
 const mobIconCanvas = document.createElement("canvas");
 const mobIconCtx = mobIconCanvas.getContext("2d");
 
-function draw() {
-    net.state.petalHover = null;
-    net.state.mobHover = null;
-    net.state.interpolationFactor = options.rigidInterpolation ? .4 : .2;
-    requestAnimationFrame(draw);
+// Mob icons gradient
+const __ANIMATED_WAVE_ICONS__ = new Set();
+let __WAVE_RAF_RUNNING__ = false;
+
+function startWaveRAF() {
+  if (__WAVE_RAF_RUNNING__) return;
+  __WAVE_RAF_RUNNING__ = true;
+
+  const loop = () => {
+    if (__ANIMATED_WAVE_ICONS__.size === 0) {
+      __WAVE_RAF_RUNNING__ = false;
+      return;
+    }
+
+    for (const draw of __ANIMATED_WAVE_ICONS__) {
+      draw();
+    }
+
+    requestAnimationFrame(loop);
+  };
+
+  requestAnimationFrame(loop);
+}
+
+const WAVE_CACHE = (globalThis.__WAVE_CACHE__ ||= Object.create(null));
 
     const start = performance.now();
 
-    if (net.state.socket?.readyState !== WebSocket.OPEN) {
-        net.state.camera.realX += .5;
-        net.state.camera.realY = Math.sin(net.state.camera.realX / 100) * 50;
+const GLOW_PARTICLE_COUNT = 3;
+const GLOW_PARTICLE_MARGIN = 28;
+const GLOW_PARTICLE_SPEED = 0.011;
+
+function rand01(n) {
+  const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function wavesGradientOn() {
+  return !options.disableGradients;
+}
+
+function wavesTierVisual(t) {
+  const tierData = net.state.tiers?.[t] ?? {};
+  return (
+    globalThis.__CUSTOM_GRADIENTS?.[t] ||
+    tierData.gradient ||
+    tierData.gradient_2 ||
+    {}
+  );
+}
+
+function drawWaveMobIcon(ctx, entry) {
+  if (entry.index === 255) {
+    setStyle(colors.crafting, 0.135, 0.2, ctx);
+    ctx.beginPath();
+    ctx.arc(0, 0, 1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    drawFace(0.35, -Math.PI / 4, 1.7, 1.7, 1, false, ctx);
+    return;
+  }
+
+  if (![46, 49, 55].includes(entry.index)) {
+    ctx.rotate(-Math.PI / 4);
+  }
+
+  drawUIMob(entry.index, entry.rarity, ctx);
+}
+
+    const m = {
+      0: 4,
+      1: 4,
+      2: 4,
+      3: 5.5,
+      4: 4,
+      5: 3,
+      6: 4,
+      7: 4,
+      8: 3.25,
+      9: 4,
+      10: 3.25,
+      11: 3.25,
+      12: 3.25,
+      13: 4,
+      14: 4,
+      15: 6.25,
+      16: 6.25,
+      17: 6.25,
+      18: 6.25,
+      19: 4,
+      20: 6.25,
+      21: 6.25,
+      22: 6.25,
+      23: 6.25,
+      24: 4,
+      25: 6.25,
+      26: 6.25,
+      27: 6.25,
+      28: 4,
+      29: 4,
+      30: 5.25,
+      31: 5.25,
+      32: 5.25,
+      33: 5.25,
+      34: 5.25,
+      35: 4,
+      36: 4,
+      37: 4,
+      38: 4.5,
+      39: 4.5,
+      40: 4.5,
+      41: 4.5,
+      42: 4.5,
+      43: 4.5,
+      44: 4.5,
+      45: 3,
+      46: 4,
+      47: 3.25,
+      48: 5.25,
+      49: 3.35,
+      50: 3,
+      51: 5.25,
+      52: 4,
+      53: 4.5,
+      54: 4.5,
+      55: 4,
+      56: 4,
+      57: 4,
+      58: 4,
+      59: 5.5,
+      60: 4,
+      61: 4.5,
+      62: 4,
+      63: 4,
+      64: 6.5,
+      65: 4,
+      66: 4.5,
+      67: 4.5,
+      68: 4,
+      69: 4,
+      70: 4,
+      71: 4,
+      72: 4.5,
+      73: 4.5,
+      255: 4,
+    };
+
+function makeWaveIcon(entry, mode, key) {
+  const size = Math.ceil(entry.size + 12);
+  const canvas = new OffscreenCanvas(size, size);
+  const ctx = canvas.getContext("2d");
+
+  function render(now, entryOverride) {
+  ctx.clearRect(0, 0, size, size);
+    const e = entryOverride || entry;
+    now = Number.isFinite(now) ? now : performance.now();
+
+    const a = e.size;
+    const g = 6;
+    const u = 6;
+    const r = 5;
+
+    const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
+    const cx = g + a / 2;
+    const cy = u + a / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(g, u, a, a, r);
+
+    const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
+
+    if (fill !== null) {
+      ctx.fillStyle = fill;
+      ctx.fill();
     }
 
-    net.state.camera.interpolate();
+    ctx.restore();
 
-    const scale = gameScale(net.state.camera.fov);
-    const cameraX = net.state.camera.x * scale;
-    const cameraY = net.state.camera.y * scale;
-    const halfWidth = canvas.width * .5;
-    const halfHeight = canvas.height * .5;
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(g, u, a, a, r);
+    ctx.clip();
 
-    drawBackground(
-        cameraX, cameraY, scale, net.state.socket?.readyState === WebSocket.OPEN,
-        net.state.room.width, net.state.room.height,
-        net.state.disconnected ? null : BIOME_BACKGROUNDS[net.state.room.biome],
-        net.state.room.isRadial
+    drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
+
+    ctx.translate(cx, cy);
+
+    const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
+    const scale = m[entry.index] ? a / m[entry.index] : a / f;
+
+    ctx.scale(scale, scale);
+    drawWaveMobIcon(ctx, entry);
+
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(g, u, a, a, r);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = wavesBorderStyle(entry.rarity);
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+const draw = () => {
+    const animated =
+        wavesGradientOn() &&
+        entry.rarity >= getGradientMinRarity();
+
+    if (!animated) {
+        __ANIMATED_WAVE_ICONS__.delete(draw);
+    }
+
+    render(performance.now(), entry);
+};
+  canvas._draw = draw;
+  draw();
+  return canvas;
+}
+
+function getWaveIcon(entry) {
+const animated =
+  wavesGradientOn() &&
+  entry.rarity >= getGradientMinRarity();
+
+const mode = animated ? 1 : 0;
+  const sizeKey = Math.round(entry.size * 100) / 100;
+  const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
+
+  let icon = WAVE_CACHE[key];
+
+  if (!icon) {
+    icon = makeWaveIcon(entry, mode, key);
+    WAVE_CACHE[key] = icon;
+  }
+
+  const draw = icon._draw;
+
+  if (animated && draw) {
+    if (!__ANIMATED_WAVE_ICONS__.has(draw)) {
+      __ANIMATED_WAVE_ICONS__.add(draw);
+      startWaveRAF();
+    }
+  } else if (draw) {
+    __ANIMATED_WAVE_ICONS__.delete(draw);
+  }
+
+  return icon;
+}
+
+function drawGlowParticles(
+  ctx,
+  t,
+  size,
+  clipX,
+  clipY,
+  clipW,
+  clipH,
+  clipR,
+  now,
+) {
+  if (!wavesGradientOn()) return;
+  if (t < getGradientMinRarity()) return;
+
+  const custom = wavesTierVisual(t);
+
+  const count = custom.particlecount ?? GLOW_PARTICLE_COUNT;
+  const glowColor = custom.particleglowcolor || "rgba(255,255,255,0.25)";
+  const dotColor = custom.particledotcolor || "rgba(255,255,255,0.95)";
+  const shadowColor = custom.particleshadowcolor || "rgba(0,0,0,0.35)";
+
+  const span = size + GLOW_PARTICLE_MARGIN * 2;
+  const scale = size / 128;
+  const pulse = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(now * 0.002 + t));
+
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.roundRect(clipX, clipY, clipW, clipH, clipR);
+  ctx.clip();
+
+  ctx.globalCompositeOperation = "screen";
+
+  for (let p = 0; p < count; p++) {
+    const seed = t * 1000 + p * 97;
+    const sideMode = rand01(seed + 10);
+
+    let startX, startY;
+
+    if (sideMode < 0.5) {
+      startX = -GLOW_PARTICLE_MARGIN;
+      startY = rand01(seed + 1) * span;
+    } else {
+      startX = rand01(seed) * (18 * scale);
+      startY = rand01(seed + 1) * (18 * scale);
+    }
+
+    const angle = -0.35 + rand01(seed + 2) * 1.2;
+    const vx = Math.cos(angle);
+    const vy = Math.sin(angle);
+    const travel = now * GLOW_PARTICLE_SPEED;
+
+    const x =
+      ((((startX + vx * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
+    const y =
+      ((((startY + vy * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
+
+    const glowR = 20 * scale * pulse;
+    const shadowR = 30 * scale * pulse;
+    const coreR = Math.max(0.8, 1 * scale);
+
+    const shadow = ctx.createRadialGradient(x, y, 0, x, y, shadowR);
+    shadow.addColorStop(0, shadowColor);
+    shadow.addColorStop(1, "rgba(0,0,0,0)");
+
+    ctx.fillStyle = shadow;
+    ctx.beginPath();
+    ctx.arc(x, y, shadowR, 0, Math.PI * 2);
+    ctx.fill();
+
+    const g = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+    g.addColorStop(0, glowColor);
+    g.addColorStop(0.22, glowColor);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, glowR, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = dotColor;
+    ctx.beginPath();
+    ctx.arc(x, y, coreR, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function wavesSweepGradient(ctx, t, base, now) {
+  now = Number.isFinite(now) ? now : performance.now();
+
+  const custom = wavesTierVisual(t);
+
+  const time = (now * 0.07) % 512;
+  const offset = time - 256;
+
+  const g = ctx.createLinearGradient(
+    offset - 160,
+    offset - 160,
+    offset + 160,
+    offset + 160,
+  );
+
+  const soft = custom.soft ?? mixColors(base, "#ffffff", 0.06);
+  const main = custom.base ?? base;
+  const mid = custom.mid ?? mixColors(base, "#ffffff", 0.14);
+  const glow = custom.glow ?? mixColors(base, "#ffffff", 0.24);
+
+  g.addColorStop(0.0, soft);
+  g.addColorStop(0.18, main);
+  g.addColorStop(0.36, mid);
+  g.addColorStop(0.5, glow);
+  g.addColorStop(0.64, mid);
+  g.addColorStop(0.82, main);
+  g.addColorStop(1.0, soft);
+
+  return g;
+}
+
+function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
+  const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
+
+  const custom = wavesTierVisual(t);
+
+  const lines = custom.lines ?? 1;
+
+  const sizeMul = custom.size ?? 0.08;
+
+  const delay = custom.delay ?? 300;
+
+  const cycleDelay = custom.cycleDelay ?? 0;
+
+  const speed = custom.speed ?? 1;
+
+  const reversed = custom.reversed_animation ?? false;
+
+  const lineColor = custom.linecolor ?? mixColors(tierColor, "#000000", 0.15);
+
+  const lineGlow = custom.lineglow ?? mixColors(tierColor, "#ffffff", 0.25);
+
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.rect(x, y + size - clipHeight, size, clipHeight);
+  ctx.clip();
+
+  const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
+
+  ctx.fillStyle = back;
+  ctx.fillRect(x, y, size, size);
+
+  const now = performance.now();
+
+  const band = size * sizeMul;
+
+  const travelDistance = size + band * 2;
+
+  const pxPerMs = Math.max(speed, 0.001) * 0.05;
+
+  const lineDuration = travelDistance / pxPerMs;
+
+  function drawLine(elapsed) {
+    let pos;
+
+    if (!reversed) {
+      pos = -band + elapsed * pxPerMs;
+    } else {
+      pos = size + band - elapsed * pxPerMs;
+    }
+
+    const grad = ctx.createLinearGradient(
+      x + pos - band,
+      y + pos - band,
+      x + pos + band,
+      y + pos + band,
     );
 
     if (net.state.disconnected) {
@@ -955,87 +1371,934 @@ function draw() {
         net.state.dyingPlayers = new Map();
     }
 
-    const currentMobs = new Map();
-    const currentPetals = new Map();
-    const currentPlayers = new Map();
+    ctx.fillStyle = glowColor.startsWith("#")
+      ? glowColor +
+        Math.round(alpha * 255)
+          .toString(16)
+          .padStart(2, "0")
+      : glowColor.replace("rgb(", "rgba(").replace(")", `,${alpha})`);
 
-    net.state.mobs.forEach(mob => currentMobs.set(mob.id, mob));
-    net.state.petals.forEach(petal => currentPetals.set(petal.id, petal));
-    net.state.players.forEach(p => currentPlayers.set(p.id, p));
+    ctx.beginPath();
 
-    net.state.previousMobs.forEach((mob, id) => {
-        if (!currentMobs.has(id)) net.state.dyingMobs.set(id, { mob, progress: 0 });
-    });
+    ctx.arc(cx, cy, outerR, a0, a1);
 
-    net.state.previousPetals.forEach((petal, id) => {
-        if (!currentPetals.has(id)) net.state.dyingPetals.set(id, { petal, progress: 0 });
-    });
+    ctx.arc(cx, cy, innerR, a1, a0, true);
 
-    net.state.previousPlayers.forEach((p, id) => {
-        if (!currentPlayers.has(id)) net.state.dyingPlayers.set(id, { player: p, progress: 0 });
-    });
+    ctx.closePath();
+    ctx.fill();
+  }
 
-    net.state.dyingPetals.forEach((data, id) => {
-        const entity = data.petal;
-        data.progress += .2;
-        if (data.progress >= 1) return net.state.dyingPetals.delete(id);
-        const fade = 1 - data.progress;
-        const scaling = 1.35 + data.progress;
-        const drawX = entity.x * scale - cameraX + halfWidth;
-        const drawY = entity.y * scale - cameraY + halfHeight;
-        const size = entity.size * scale * scaling;
+  ctx.globalCompositeOperation = "source-over";
 
-        // ctx.save();
-        const oldTransform = ctx.getTransform();
-        const oldFillStyle = ctx.fillStyle;
-        const oldStrokeStyle = ctx.strokeStyle;
-        const oldLineWidth = ctx.lineWidth;
-        const oldGlobalAlpha = ctx.globalAlpha;
-        const oldShadowBlur = ctx.shadowBlur;
-        const oldShadowColor = ctx.shadowColor;
-        ctx.globalAlpha = fade;
-        // ctx.translate(drawX, drawY);
-        // ctx.scale(size, size);
-        ctx.setTransform(size, 0, 0, size, drawX, drawY);
-        ctx.rotate(entity.facing);
-        drawPetal(entity.index, entity.hit, ctx, entity.id, entity.size);
-        // ctx.restore();
-        ctx.setTransform(oldTransform);
-        ctx.fillStyle = oldFillStyle;
-        ctx.strokeStyle = oldStrokeStyle;
-        ctx.lineWidth = oldLineWidth;
-        ctx.globalAlpha = oldGlobalAlpha;
-        ctx.shadowBlur = oldShadowBlur;
-        ctx.shadowColor = oldShadowColor;
-    });
+  ctx.fillStyle = coreColor;
 
-    net.state.dyingMobs.forEach((data, id) => {
-        const entity = data.mob;
-        data.progress += .2;
-        if (data.progress >= 1) return net.state.dyingMobs.delete(id);
-        const fade = 1 - data.progress;
-        const scaling = 1.35 + data.progress;
-        const drawX = entity.x * scale - cameraX + halfWidth;
-        const drawY = entity.y * scale - cameraY + halfHeight;
-        const size = entity.size * scale * scaling;
+  ctx.beginPath();
 
-        // ctx.save();
-        const oldTransform = ctx.getTransform();
-        const oldFillStyle = ctx.fillStyle;
-        const oldStrokeStyle = ctx.strokeStyle;
-        const oldLineWidth = ctx.lineWidth;
-        const oldGlobalAlpha = ctx.globalAlpha;
-        const oldShadowBlur = ctx.shadowBlur;
-        const oldShadowColor = ctx.shadowColor;
-        ctx.globalAlpha = fade;
-        // ctx.translate(drawX, drawY);
-        // ctx.scale(size, size);
-        ctx.setTransform(size, 0, 0, size, drawX, drawY);
-        ctx.rotate(entity.facing);
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
 
-        if (options.fancyGraphics && net.state.room.biome === BIOME_TYPES.HELL) {
-            ctx.shadowBlur = 10 * scale * (Math.sin(performance.now() / 500 + entity.id * 3) * .8 + .8);
-            ctx.shadowColor = "#FFFFFF";
+  ctx.fill();
+
+  ctx.globalCompositeOperation = "screen";
+}
+
+function wavesFillStyle(ctx, rarity, base, ratio = null, now, x, y, size) {
+  if (!wavesGradientOn() || rarity < getGradientMinRarity()) {
+    return base;
+  }
+
+  const custom = wavesTierVisual(rarity);
+
+  const hasGradient3 = Array.isArray(custom.rings) || custom.type === 3;
+
+  const hasGradient2 =
+    custom.lines !== undefined || custom.linecolor !== undefined;
+
+  if (hasGradient3) {
+    wavesDrawGradient3(
+      ctx,
+      rarity,
+      x,
+      y,
+      size,
+      ratio === null ? size : size * ratio,
+    );
+
+    return null;
+  }
+
+  if (hasGradient2) {
+    wavesDrawGradient2(
+      ctx,
+      rarity,
+      x,
+      y,
+      size,
+      ratio === null ? size : size * ratio,
+    );
+
+    return null;
+  }
+
+  const safeNow = Number.isFinite(now) ? now : performance.now();
+
+  return wavesSweepGradient(ctx, rarity, base, safeNow);
+}
+
+function wavesBorderStyle(rarity) {
+  const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
+
+  const custom = wavesTierVisual(rarity);
+
+  if (custom.border !== undefined) {
+    return custom.border;
+  }
+
+  return mixColors(base, "#000000", 0.2);
+}
+
+let isJDown = false;
+
+window.addEventListener("keydown", e => {
+    if (document.activeElement?.id === "chatInput")
+        return;
+
+    if (e.code !== "KeyJ" || isJDown)
+        return;
+
+    isJDown = true;
+
+    net.state.minimapImg = renderTerrainForMap(
+        net.state.terrain.width,
+        net.state.terrain.blocks,
+        net.state.tiers,
+        net.state.terrainScores,
+        true
+    );
+});
+
+window.addEventListener("keyup", e => {
+    if (document.activeElement?.id === "chatInput")
+        return;
+
+    if (e.code !== "KeyJ")
+        return;
+
+    isJDown = false;
+
+    net.state.minimapImg = renderTerrainForMap(
+        net.state.terrain.width,
+        net.state.terrain.blocks,
+        net.state.tiers,
+        net.state.terrainScores,
+        false
+    );
+});
+
+function draw() {
+  net.state.petalHover = null;
+  net.state.mobHover = null;
+  net.state.interpolationFactor = options.rigidInterpolation ? 0.4 : 0.2;
+  requestAnimationFrame(draw);
+
+  const start = performance.now();
+
+  if (net.state.socket?.readyState !== WebSocket.OPEN) {
+    net.state.camera.realX += 0.5;
+    net.state.camera.realY = Math.sin(net.state.camera.realX / 100) * 50;
+  }
+
+  net.state.camera.interpolate();
+
+  const scale = gameScale(net.state.camera.fov);
+  const cameraX = net.state.camera.x * scale;
+  const cameraY = net.state.camera.y * scale;
+  const halfWidth = canvas.width * 0.5;
+  const halfHeight = canvas.height * 0.5;
+
+  drawBackground(
+    cameraX,
+    cameraY,
+    scale,
+    net.state.socket?.readyState === WebSocket.OPEN,
+    net.state.room.width,
+    net.state.room.height,
+    net.state.disconnected ? null : BIOME_BACKGROUNDS[net.state.room.biome],
+    net.state.room.isRadial,
+  );
+
+  if (net.state.disconnected) {
+    const sc = uiScale();
+    // ctx.save();
+    const oldTransform = ctx.getTransform();
+    // ctx.scale(sc, sc);
+    ctx.setTransform(sc, 0, 0, sc, 0, 0);
+    const w = canvas.width / sc;
+    const h = canvas.height / sc;
+    text("Disconnected", w / 2, h / 2, 30);
+    text(net.state.disconnectMessage, w / 2, h / 2 + 30, 15);
+    // ctx.restore();
+    ctx.setTransform(oldTransform);
+    return;
+  }
+
+  if (net.state.terrain !== null && net.state.terrainImg) {
+    ctx.drawImage(
+      net.state.terrainImg,
+      (-net.state.room.width / 2) * scale - cameraX + halfWidth,
+      (-net.state.room.height / 2) * scale - cameraY + halfHeight,
+      net.state.room.width * scale,
+      net.state.room.height * scale,
+    );
+  }
+
+  net.state.markers.forEach((marker) => {
+    const drawX = marker.x * scale - cameraX + halfWidth;
+    const drawY = marker.y * scale - cameraY + halfHeight;
+    if (marker.tick > 1) return net.state.markers.delete(marker.id);
+    const oldTransform = ctx.getTransform();
+    ctx.setTransform(
+      marker.size * scale,
+      0,
+      0,
+      marker.size * scale,
+      drawX,
+      drawY,
+    );
+    pentagram(ctx, marker.tick);
+    ctx.setTransform(oldTransform);
+  });
+
+  if (!net.state.previousMobs) {
+    net.state.previousMobs = new Map();
+    net.state.dyingMobs = new Map();
+    net.state.previousPetals = new Map();
+    net.state.dyingPetals = new Map();
+    net.state.previousPlayers = new Map();
+    net.state.dyingPlayers = new Map();
+  }
+
+  const currentMobs = new Map();
+  const currentPetals = new Map();
+  const currentPlayers = new Map();
+
+  net.state.mobs.forEach((mob) => currentMobs.set(mob.id, mob));
+  net.state.petals.forEach((petal) => currentPetals.set(petal.id, petal));
+  net.state.players.forEach((p) => currentPlayers.set(p.id, p));
+
+  net.state.previousMobs.forEach((mob, id) => {
+    if (!currentMobs.has(id)) net.state.dyingMobs.set(id, { mob, progress: 0 });
+  });
+
+  net.state.previousPetals.forEach((petal, id) => {
+    if (!currentPetals.has(id))
+      net.state.dyingPetals.set(id, { petal, progress: 0 });
+  });
+
+  net.state.previousPlayers.forEach((p, id) => {
+    if (!currentPlayers.has(id))
+      net.state.dyingPlayers.set(id, { player: p, progress: 0 });
+  });
+
+  net.state.dyingPetals.forEach((data, id) => {
+    const entity = data.petal;
+    data.progress += 0.2;
+    if (data.progress >= 1) return net.state.dyingPetals.delete(id);
+    const fade = 1 - data.progress;
+    const scaling = 1.35 + data.progress;
+    const drawX = entity.x * scale - cameraX + halfWidth;
+    const drawY = entity.y * scale - cameraY + halfHeight;
+    const size = entity.size * scale * scaling;
+
+    // ctx.save();
+    const oldTransform = ctx.getTransform();
+    const oldFillStyle = ctx.fillStyle;
+    const oldStrokeStyle = ctx.strokeStyle;
+    const oldLineWidth = ctx.lineWidth;
+    const oldGlobalAlpha = ctx.globalAlpha;
+    const oldShadowBlur = ctx.shadowBlur;
+    const oldShadowColor = ctx.shadowColor;
+    ctx.globalAlpha = fade;
+    // ctx.translate(drawX, drawY);
+    // ctx.scale(size, size);
+    ctx.setTransform(size, 0, 0, size, drawX, drawY);
+    ctx.rotate(entity.facing);
+    drawPetal(entity.index, entity.hit, ctx, entity.id, entity.size);
+    // ctx.restore();
+    ctx.setTransform(oldTransform);
+    ctx.fillStyle = oldFillStyle;
+    ctx.strokeStyle = oldStrokeStyle;
+    ctx.lineWidth = oldLineWidth;
+    ctx.globalAlpha = oldGlobalAlpha;
+    ctx.shadowBlur = oldShadowBlur;
+    ctx.shadowColor = oldShadowColor;
+  });
+
+  net.state.dyingMobs.forEach((data, id) => {
+    const entity = data.mob;
+    data.progress += 0.2;
+    if (data.progress >= 1) return net.state.dyingMobs.delete(id);
+    const fade = 1 - data.progress;
+    const scaling = 1.35 + data.progress;
+    const drawX = entity.x * scale - cameraX + halfWidth;
+    const drawY = entity.y * scale - cameraY + halfHeight;
+    const size = entity.size * scale * scaling;
+
+    // ctx.save();
+    const oldTransform = ctx.getTransform();
+    const oldFillStyle = ctx.fillStyle;
+    const oldStrokeStyle = ctx.strokeStyle;
+    const oldLineWidth = ctx.lineWidth;
+    const oldGlobalAlpha = ctx.globalAlpha;
+    const oldShadowBlur = ctx.shadowBlur;
+    const oldShadowColor = ctx.shadowColor;
+    ctx.globalAlpha = fade;
+    // ctx.translate(drawX, drawY);
+    // ctx.scale(size, size);
+    ctx.setTransform(size, 0, 0, size, drawX, drawY);
+    ctx.rotate(entity.facing);
+
+    if (options.fancyGraphics && net.state.room.biome === BIOME_TYPES.HELL) {
+      ctx.shadowBlur =
+        10 *
+        scale *
+        (Math.sin(performance.now() / 500 + entity.id * 3) * 0.8 + 0.8);
+      ctx.shadowColor = "#FFFFFF";
+    }
+
+    drawMob(
+      entity.id,
+      entity.index,
+      entity.rarity,
+      entity.hit,
+      ctx,
+      entity.attack,
+      entity.friendly,
+      entity.facing,
+      entity.extraData,
+    );
+    // ctx.restore();
+    ctx.setTransform(oldTransform);
+    ctx.fillStyle = oldFillStyle;
+    ctx.strokeStyle = oldStrokeStyle;
+    ctx.lineWidth = oldLineWidth;
+    ctx.globalAlpha = oldGlobalAlpha;
+    ctx.shadowBlur = oldShadowBlur;
+    ctx.shadowColor = oldShadowColor;
+  });
+
+  net.state.dyingPlayers.forEach((data, id) => {
+    const entity = data.player;
+    data.progress += 0.2;
+    if (data.progress >= 1) return net.state.dyingPlayers.delete(id);
+    const fade = 1 - data.progress;
+    const scaling = 1 + data.progress;
+
+    const drawX = entity.x * scale - cameraX + halfWidth;
+    const drawY = entity.y * scale - cameraY + halfHeight;
+    const size = entity.size * scale * scaling;
+
+    // ctx.save();
+    const oldAlpha = ctx.globalAlpha;
+    const oldTransform = ctx.getTransform();
+    ctx.globalAlpha = fade;
+    // ctx.translate(drawX, drawY);
+    // ctx.scale(size, size);
+    ctx.setTransform(size, 0, 0, size, drawX, drawY);
+    setStyle(
+      mixColors(
+        [colors.playerYellow, colors.team1, colors.team2][entity.team] ??
+          colors.crafting,
+        colors.legendary,
+        entity.hit * 0.5,
+      ),
+      0.1,
+    );
+    ctx.beginPath();
+    ctx.arc(0, 0, 1, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+    drawFace(1 * 0.375, 0, 1, 0.6, 1, true);
+    // ctx.restore();
+    ctx.globalAlpha = oldAlpha;
+    ctx.setTransform(oldTransform);
+  });
+
+  net.state.previousMobs = currentMobs;
+  net.state.previousPetals = currentPetals;
+  net.state.previousPlayers = currentPlayers;
+
+  net.state.petals.forEach((entity) => {
+    entity.interpolate();
+    entity.size2 ??=
+      entity.index === 24 || entity.index === 64
+        ? entity.size / 1.4
+        : entity.size;
+    if (entity.index === 24 || entity.index === 64)
+      entity.size2 += (entity.size - entity.size2) * 0.25;
+
+    const drawX = entity.x * scale - cameraX + halfWidth;
+    const drawY = entity.y * scale - cameraY + halfHeight;
+
+    // ctx.save();
+    // ctx.translate(drawX, drawY);
+    // ctx.scale(entity.size2 * scale, entity.size2 * scale);
+    const oldTransform = ctx.getTransform();
+    const oldFillStyle = ctx.fillStyle;
+    const oldStrokeStyle = ctx.strokeStyle;
+    const oldLineWidth = ctx.lineWidth;
+    const oldGlobalAlpha = ctx.globalAlpha;
+    const oldShadowBlur = ctx.shadowBlur;
+    const oldShadowColor = ctx.shadowColor;
+    ctx.setTransform(
+      entity.size2 * scale,
+      0,
+      0,
+      entity.size2 * scale,
+      drawX,
+      drawY,
+    );
+    ctx.rotate(entity.facing);
+    drawPetal(entity.index, entity.hit, ctx, entity.id, entity.size2);
+    // ctx.restore();
+    ctx.setTransform(oldTransform);
+    ctx.fillStyle = oldFillStyle;
+    ctx.strokeStyle = oldStrokeStyle;
+    ctx.lineWidth = oldLineWidth;
+    ctx.globalAlpha = oldGlobalAlpha;
+    ctx.shadowBlur = oldShadowBlur;
+    ctx.shadowColor = oldShadowColor;
+
+    if (options.showHitboxes) {
+      ctx.beginPath();
+      ctx.arc(drawX, drawY, entity.size * scale, 0, Math.PI * 2);
+      ctx.lineWidth = 1.5 * scale;
+      ctx.strokeStyle = colors["???"];
+      ctx.stroke();
+      ctx.closePath();
+    }
+    if (keyMap.has("g")) {
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.arc(drawX, drawY, entity.size * scale * 1.4, 0, Math.PI * 2);
+      ctx.fillStyle = net.state.tiers[entity.rarity].color;
+      ctx.fill();
+      ctx.closePath();
+      ctx.globalAlpha = 1;
+      text(
+        net.state.tiers[entity.rarity].name,
+        drawX,
+        drawY,
+        entity.size * scale * 1.15,
+        net.state.tiers[entity.rarity].color,
+      );
+    }
+  });
+
+  function formatAmount(n) {
+    if (n >= 1e12) return "x" + (n / 1e12).toFixed(1) + "t";
+    if (n >= 1e9) return "x" + (n / 1e9).toFixed(1) + "b";
+    if (n >= 1e6) return "x" + (n / 1e6).toFixed(1) + "m";
+    if (n >= 1e3) return "x" + (n / 1e3).toFixed(1) + "k";
+    return "x" + n;
+  }
+
+  net.state.drops.forEach((entity) => {
+    const oldTransform = ctx.getTransform();
+    const oldFillStyle = ctx.fillStyle;
+    const oldAlpha = ctx.globalAlpha;
+    const drawX = entity.x * scale - cameraX + halfWidth;
+    const drawY = entity.y * scale - cameraY + halfHeight;
+    const outlineTimer = Math.sin(performance.now() / 250 + entity.id) + 1.5;
+    entity.creation ??= performance.now();
+    // ctx.save();
+    // ctx.translate(drawX, drawY);
+    entity.rotation ??= Math.random() * (Math.PI / 6) - Math.PI / 12;
+    const aSin = Math.sin((performance.now() + entity.creation) / 200) * 0.05;
+    // ctx.scale((1 + aSin) * entity.size * scale, (1 + aSin) * entity.size * scale);
+    ctx.setTransform(
+      (1 + aSin) * entity.size * scale,
+      0,
+      0,
+      (1 + aSin) * entity.size * scale,
+      drawX,
+      drawY,
+    );
+    ctx.rotate(entity.rotation);
+
+    ctx.fillStyle = colors.black;
+    ctx.beginPath();
+    ctx.roundRect(
+      -0.55 - 0.025 * outlineTimer,
+      -0.55 - 0.025 * outlineTimer,
+      1.1 + 0.05 * outlineTimer,
+      1.1 + 0.05 * outlineTimer,
+      0.1,
+    );
+    ctx.globalAlpha *= 0.125;
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.globalAlpha *= 8;
+
+    ctx.drawImage(getPetalIcon(entity.index, entity.rarity), -0.5, -0.5, 1, 1);
+
+    if ((entity.amount ?? 1) > 1) {
+      const text = formatAmount(entity.amount);
+
+      ctx.font = "bold 0.35px Ubuntu";
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 0.06;
+      ctx.textAlign = "right";
+      ctx.textBaseline = "top";
+
+      const offsetX = 0.6;
+      const offsetY = -0.7;
+
+      ctx.strokeText(text, offsetX, offsetY);
+      ctx.fillText(text, offsetX, offsetY);
+    }
+
+    // ctx.restore();
+    ctx.fillStyle = oldFillStyle;
+    ctx.globalAlpha = oldAlpha;
+    ctx.setTransform(oldTransform);
+  });
+
+  net.state.mobs.forEach((entity) => {
+    entity.interpolate();
+    const drawX = entity.x * scale - cameraX + halfWidth;
+    const drawY = entity.y * scale - cameraY + halfHeight;
+    const size = entity.size * scale;
+    // ctx.save();
+    // ctx.translate(drawX, drawY);
+    // ctx.scale(size, size);
+    const oldTransform = ctx.getTransform();
+    const oldFillStyle = ctx.fillStyle;
+    const oldStrokeStyle = ctx.strokeStyle;
+    const oldLineWidth = ctx.lineWidth;
+    const oldGlobalAlpha = ctx.globalAlpha;
+    const oldShadowBlur = ctx.shadowBlur;
+    const oldShadowColor = ctx.shadowColor;
+    ctx.setTransform(size, 0, 0, size, drawX, drawY);
+    ctx.rotate(entity.facing);
+
+    if (options.fancyGraphics && net.state.room.biome === BIOME_TYPES.HELL) {
+      ctx.shadowBlur =
+        10 *
+        scale *
+        (Math.sin(performance.now() / 500 + entity.id * 3) * 0.8 + 0.8);
+      ctx.shadowColor = "#FFFFFF";
+    }
+
+    drawMob(
+      entity.id,
+      entity.index,
+      entity.rarity,
+      entity.hit,
+      ctx,
+      entity.attack,
+      entity.friendly,
+      entity.facing,
+      entity.extraData,
+    );
+    // ctx.restore();
+    ctx.setTransform(oldTransform);
+    ctx.fillStyle = oldFillStyle;
+    ctx.strokeStyle = oldStrokeStyle;
+    ctx.lineWidth = oldLineWidth;
+    ctx.globalAlpha = oldGlobalAlpha;
+    ctx.shadowBlur = oldShadowBlur;
+    ctx.shadowColor = oldShadowColor;
+
+    if (options.showHitboxes) {
+      ctx.beginPath();
+      ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
+      ctx.lineWidth = 1.5 * scale;
+      ctx.strokeStyle = colors["???"];
+      ctx.stroke();
+    }
+
+    if (!options.hideEntityUI && !net.state.mobConfigs[entity.index].hideUI) {
+      const barSize = Math.max(size, 30 * scale);
+      const barthicc = (5 + entity.size * 0.1) * scale;
+
+      drawBar(
+        drawX - barSize,
+        drawX + barSize,
+        drawY + barSize + 13 * scale,
+        barthicc,
+        colors["???"],
+      );
+      drawBar(
+        drawX - barSize,
+        drawX - barSize + barSize * 2 * entity.secondaryHealthBar,
+        drawY + barSize + 13 * scale,
+        0.667 * barthicc,
+        colors.legendary,
+      );
+      drawBar(
+        drawX - barSize,
+        drawX - barSize + barSize * 2 * entity.healthRatio,
+        drawY + barSize + 13 * scale,
+        0.667 * barthicc,
+        entity.poisoned
+          ? mixColors(
+              colors.common,
+              colors.irisPurple,
+              0.5 + Math.sin(performance.now() / 333 + entity.id * 3) * 0.5,
+            )
+          : colors.common,
+      );
+
+      ctx.textAlign = "left";
+      text(
+        net.state.mobConfigs[entity.index].name,
+        drawX - barSize - barthicc * 0.5,
+        drawY + barSize + 8 * scale - barthicc * 0.5,
+        8.5 * scale,
+      );
+
+      ctx.textAlign = "right";
+      text(
+        net.state.tiers[entity.rarity].name,
+        drawX + barSize + barthicc * 0.5,
+        drawY + barSize + 18 * scale + barthicc * 0.5,
+        8.5 * scale,
+        net.state.tiers[entity.rarity].color,
+      );
+    }
+  });
+
+  ctx.textAlign = "center";
+
+  net.state.players.forEach((entity) => {
+    entity.interpolate();
+
+    let expression = 1,
+      targetMouthDip = 1.7;
+
+    if (entity.attack) {
+      expression = 2;
+      targetMouthDip = 0.6;
+    }
+
+    if (entity.defend) {
+      expression = 3;
+      targetMouthDip = 0.8;
+    }
+
+    entity.mood = lerp(entity.mood, expression, 0.4);
+    entity.mouthDip = lerp(entity.mouthDip, targetMouthDip, 0.4);
+
+    let drawX = entity.x * scale - cameraX + halfWidth,
+      drawY = entity.y * scale - cameraY + halfHeight;
+
+    if (entity.id === net.state.playerID) {
+      drawX = halfWidth;
+      drawY = halfHeight;
+    }
+
+    setStyle(
+      mixColors(
+        [colors.playerYellow, colors.team1, colors.team2][entity.team] ??
+          colors.crafting,
+        colors.legendary,
+        entity.hit * 0.5,
+      ),
+      5 * scale,
+    );
+
+    const size = entity.size * scale;
+
+    if (entity.wearing & WEARABLES.AMULET) {
+      // ctx.save();
+      // ctx.translate(drawX, drawY);
+      const oldTransform = ctx.getTransform();
+      const oldStrokeStyle = ctx.strokeStyle;
+      const oldLineWidth = ctx.lineWidth;
+      const oldFillStyle = ctx.fillStyle;
+      ctx.setTransform(1, 0, 0, 1, drawX, drawY);
+
+      const xTrans =
+        size *
+        0.334 *
+        Math.sin(performance.now() / 1250 + (entity.id * Math.PI) / 6) *
+        scale;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, size + 2.5 * scale, 0, Math.PI * 2);
+      ctx.moveTo(-size, 0);
+      ctx.lineTo(xTrans, size * 2.5);
+      ctx.lineTo(size, 0);
+      ctx.strokeStyle = colors["???"];
+      ctx.lineWidth = 2.5 * scale;
+      ctx.stroke();
+
+      // ctx.translate(xTrans, size * 2.5);
+      // ctx.scale(size * .6, size * .6);
+      ctx.setTransform(size * 0.6, 0, 0, size * 0.6, xTrans, size * 2.5);
+      ctx.rotate(performance.now() / 1000 + entity.id * 5);
+      drawAmulet(ctx, false);
+      // ctx.restore();
+      ctx.setTransform(oldTransform);
+      ctx.strokeStyle = oldStrokeStyle;
+      ctx.lineWidth = oldLineWidth;
+      ctx.fillStyle = oldFillStyle;
+    }
+
+    if (entity.wearing & WEARABLES.ARMOR) {
+      // ctx.save();
+      // ctx.translate(drawX, drawY);
+      // ctx.scale(size * 1.35, size * 1.35);
+      const oldTransform = ctx.getTransform();
+      ctx.setTransform(size * 1.35, 0, 0, size * 1.35, drawX, drawY);
+      ctx.rotate(performance.now() / 250 + entity.id * 5);
+      drawArmor(ctx);
+      // ctx.restore();
+      ctx.setTransform(oldTransform);
+    }
+
+    ctx.beginPath();
+    ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fill();
+
+    const oldTransform = ctx.getTransform();
+    ctx.setTransform(1, 0, 0, 1, drawX, drawY);
+    drawFace(
+      size * 0.4,
+      entity.facing,
+      entity.mood,
+      entity.mouthDip,
+      expression,
+    );
+    ctx.setTransform(oldTransform);
+
+    if (entity.wearing & WEARABLES.THIRD_EYE) {
+      const oldTransform = ctx.getTransform();
+      // ctx.save();
+      // ctx.translate(drawX, drawY - size * .6);
+      // ctx.scale(size * .3, size * .3);
+      ctx.setTransform(size * 0.3, 0, 0, size * 0.3, drawX, drawY - size * 0.6);
+      drawThirdEye(ctx, false);
+      // ctx.restore();
+      ctx.setTransform(oldTransform);
+    }
+
+    if (entity.wearing & WEARABLES.ANTENNAE) {
+      const oldTransform = ctx.getTransform();
+      // ctx.save();
+      // ctx.translate(drawX, drawY - size * .8);
+      // ctx.scale(size * .9, size * .9);
+      ctx.setTransform(size * 0.9, 0, 0, size * 0.9, drawX, drawY - size * 0.8);
+      drawAntennae(ctx);
+      // ctx.restore();
+      ctx.setTransform(oldTransform);
+    }
+
+    if (options.showHitboxes) {
+      ctx.beginPath();
+      ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
+      ctx.lineWidth = 1.5 * scale;
+      ctx.strokeStyle = colors["???"];
+      ctx.stroke();
+    }
+
+    drawBar(
+      drawX - size,
+      drawX + size,
+      drawY + size + 16 * scale,
+      6 * scale,
+      colors["???"],
+    );
+    drawBar(
+      drawX - size,
+      drawX - size + size * 2 * entity.secondaryHealthBar,
+      drawY + size + 16 * scale,
+      4 * scale,
+      colors.legendary,
+    );
+    drawBar(
+      drawX - size,
+      drawX - size + size * 2 * entity.healthRatio,
+      drawY + size + 16 * scale,
+      4 * scale,
+      entity.poisoned
+        ? mixColors(
+            colors.common,
+            colors.irisPurple,
+            0.5 + Math.sin(performance.now() / 333 + entity.id * 3) * 0.5,
+          )
+        : colors.common,
+    );
+
+    if (entity.shieldRatio > 0) {
+      drawBar(
+        drawX - size,
+        drawX - size + size * 2 * entity.shieldRatio,
+        drawY + size + 16 * scale,
+        2.5 * scale,
+        colors.unique,
+      );
+    }
+
+    if (!options.hideEntityUI && entity.id !== net.state.playerID) {
+      // Like mob bar
+      ctx.textAlign = "left";
+      text(
+        entity.name,
+        drawX - size - 2,
+        drawY + size + 9 * scale,
+        8 * scale,
+        entity.nameColor,
+      );
+
+      ctx.textAlign = "right";
+      text(
+        "Lvl " + entity.level,
+        drawX + size + 2,
+        drawY + size + 23 * scale,
+        8 * scale,
+        net.state.tiers[entity.rarity].color,
+      );
+
+      ctx.textAlign = "center";
+    }
+  });
+
+  net.state.lightning.forEach((lightning) => {
+    const alpha = lightning.alpha;
+
+    if (alpha <= 0) {
+      net.state.lightning.delete(lightning.id);
+      return;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(
+      lightning.points[0].x * scale - cameraX + halfWidth,
+      lightning.points[0].y * scale - cameraY + halfHeight,
+    );
+    for (let i = 1; i < lightning.points.length; i++) {
+      ctx.lineTo(
+        lightning.points[i].x * scale - cameraX + halfWidth,
+        lightning.points[i].y * scale - cameraY + halfHeight,
+      );
+    }
+    ctx.lineWidth = 2 * scale;
+    ctx.strokeStyle = colors.white;
+    ctx.globalAlpha = Math.pow(alpha, 4) * 1.25;
+    ctx.stroke();
+  });
+
+  ctx.globalAlpha = 1;
+
+  if (!options.disableTiledBackground) {
+    drawBackgroundOverlay(
+      cameraX,
+      cameraY,
+      scale,
+      BIOME_BACKGROUNDS[net.state.room.biome],
+    );
+  }
+
+  if (
+    net.state.terrain !== null &&
+    net.state.terrain.overlay !== null &&
+    net.state.room.biome === BIOME_TYPES.HALLOWEEN
+  ) {
+    net.state.terrain.overlay.render(
+      ctx,
+      cameraX,
+      cameraY,
+      net.state.camera.lightingBoost,
+      net.state.room.width * scale,
+      net.state.room.width * scale,
+      scale,
+      halfWidth,
+      halfHeight,
+    );
+  }
+
+  const uScale = uiScale();
+  ctx.save();
+  ctx.scale(uScale, uScale);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const width = canvas.width / uScale;
+  const height = canvas.height / uScale;
+  const mX = mouse.x / uScale;
+  const mY = mouse.y / uScale;
+
+  if (net.state.slots.length > 0) {
+    // Slots
+    const padding = 12.5;
+    let boxSize = net.state.isInDestroy ? 48 : 72;
+    let lineWidth = isMobile ? 7 : 5.25;
+    if (isMobile) {
+      boxSize *= 1.4;
+    }
+
+    let secondaryBoxSize = net.state.isInDestroy ? 65 : boxSize * 0.75;
+
+    if (dragConfig.enabled) {
+      dragConfig.item.realSize = boxSize;
+    }
+    if (inventoryDragConfig.enabled) {
+      inventoryDragConfig.item.realSize = boxSize;
+    }
+
+    if (net.state.isInDestroy) {
+      text(
+        "(Press the keybind to destroy the item)",
+        width / 2,
+        height - boxSize - secondaryBoxSize - padding * 4,
+        15,
+      );
+    }
+
+    for (let i = 0; i < net.state.slots.length; i++) {
+      const slot = net.state.slots[i];
+      const x =
+        width / 2 -
+        ((boxSize + padding) * net.state.slots.length) / 2 +
+        (boxSize + padding) * i +
+        padding / 2;
+      const y = height - boxSize - secondaryBoxSize - padding * 3;
+
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = mixColors(colors.unique, "#000000", 0.2);
+      ctx.beginPath();
+      ctx.roundRect(x, y, boxSize, boxSize, 4);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = colors.unique;
+      ctx.beginPath();
+      ctx.roundRect(
+        x + lineWidth,
+        y + lineWidth,
+        boxSize - lineWidth * 2,
+        boxSize - lineWidth * 2,
+        2,
+      );
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      if (
+        slot.index !== -1 &&
+        (!dragConfig.enabled ||
+          dragConfig.type !== DRAG_TYPE_MAINDOCKER ||
+          dragConfig.index !== i)
+      ) {
+        if (slot.icon === undefined) {
+          slot.icon = new net.IconItem();
+          slot.icon.realX = slot.icon.x = x;
+          slot.icon.realY = slot.icon.y = y;
+          slot.icon.realSize = slot.icon.size = boxSize;
         }
 
         drawMob(entity.id, entity.index, entity.rarity, entity.hit, ctx, entity.attack, entity.friendly, entity.facing, entity.extraData);

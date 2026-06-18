@@ -531,7 +531,13 @@ export function renderTerrain(mapWidth, mapHeight, gridWidth, blocks, biomeInfo)
     return img;
 }
 
-export function renderTerrainForMap(gridWidth, blocks) {
+export function renderTerrainForMap(
+    gridWidth,
+    blocks,
+    tiers,
+    terrainScores,
+    showTerrainScores = false,
+) {
     const img = document.createElement("canvas");
     const imgCtx = img.getContext("2d");
 
@@ -550,13 +556,57 @@ export function renderTerrainForMap(gridWidth, blocks) {
     imgCtx.fillStyle = "#000000";
 
     imgCtx.beginPath();
-    for (const block of blocks) {
-        const x = 2 * (block.x + .5) * size;
-        const y = 2 * (block.y + .5) * size;
-        imgCtx.rect(x - size, y - size, size * 2, size * 2);
+
+    for (const block of (blocks ?? [])) {
+        const x = 2 * (block.x + 0.5) * size;
+        const y = 2 * (block.y + 0.5) * size;
+
+        imgCtx.rect(
+            x - size,
+            y - size,
+            size * 2,
+            size * 2,
+        );
     }
 
     imgCtx.fill();
+
+    if (
+        !showTerrainScores ||
+        !terrainScores ||
+        !tiers?.length
+    ) {
+        return img;
+    }
+
+    const maxRarity = tiers.length - 1;
+
+    for (const [key, score] of terrainScores.entries()) {
+        if (score <= 0) continue;
+
+        const [xCell, yCell] = key.split(",").map(Number);
+
+        const x = 2 * (xCell + 0.5) * size;
+        const y = 2 * (yCell + 0.5) * size;
+
+        const rarity = Math.max(
+            0,
+            Math.min(
+                maxRarity,
+                Math.round(score * maxRarity),
+            ),
+        );
+
+        imgCtx.fillStyle =
+            tiers[rarity]?.color ?? "#000000";
+
+        imgCtx.fillRect(
+            x - size,
+            y - size,
+            size * 2,
+            size * 2,
+        );
+    }
 
     return img;
 }
