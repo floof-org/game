@@ -2909,10 +2909,6 @@ function applyFillStyle(ctx, t, base, ratio = null) {
 function getBorderStyle(t) {
   const base = state.tiers[t].color;
 
-  if (!isGradientOn() || t < getGradientMinRarity()) {
-    return mixColors(base, "#000000", 0.2);
-  }
-
   const custom = getTierVisual(t);
 
   if (custom.border !== undefined) {
