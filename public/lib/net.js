@@ -1742,6 +1742,43 @@ export class ClientSocket extends WebSocket {
 
         break;
       }
+case 113: {
+    if (!state.terrain?.blocks) {
+        break;
+    }
+
+    const count = reader.getUint32();
+
+    state.terrainScores = new Map();
+
+    for (let i = 0; i < count; i++) {
+        const x = reader.getUint16();
+        const y = reader.getUint16();
+        const score = reader.getFloat32();
+
+        state.terrainScores.set(`${x},${y}`, score);
+    }
+
+    state.minimapImgWalls = renderTerrainForMap(
+        state.terrain.width,
+        state.terrain.blocks,
+        state.tiers,
+        state.terrainScores,
+        false,
+    );
+
+    state.minimapImgTerrain = renderTerrainForMap(
+        state.terrain.width,
+        state.terrain.blocks,
+        state.tiers,
+        state.terrainScores,
+        true,
+    );
+
+    state.minimapImg = state.minimapImgWalls;
+
+    break;
+}
       case CLIENT_BOUND.ROOM_UPDATE:
         state.room.width = reader.getFloat32();
         state.room.height = reader.getFloat32();
