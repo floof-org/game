@@ -1092,28 +1092,29 @@ function makeWaveIcon(entry, mode, key) {
         ctx.restore();
     }
 
-const draw = () => {
-    const animated =
-        wavesGradientOn() &&
-        entry.rarity >= getGradientMinRarity();
+    const draw = () => {
+          const animated =
+          wavesGradientOn() &&
+          entry.rarity >= getGradientMinRarity();
 
-    if (!animated) {
-        __ANIMATED_WAVE_ICONS__.delete(draw);
-    }
+          if (!animated) {
+          __ANIMATED_WAVE_ICONS__.delete(draw);
+          }
 
-    render(performance.now(), entry);
-};
-  canvas._draw = draw;
-  draw();
-  return canvas;
+          render(performance.now(), entry);
+      };
+
+      canvas._draw = draw;
+      draw();
+      return canvas;
 }
 
 function getWaveIcon(entry) {
-const animated =
+  const animated =
   wavesGradientOn() &&
   entry.rarity >= getGradientMinRarity();
 
-const mode = animated ? 1 : 0;
+  const mode = animated ? 1 : 0;
   const sizeKey = Math.round(entry.size * 100) / 100;
   const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
 
