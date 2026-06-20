@@ -790,7 +790,7 @@ export default class Client {
                 }
             } else if (slots < this.slots.length)
                 for (let i = this.slots.length - 1; i >= slots; i--)
-                    for (const { id, rarity } of [this.slots.pop(), this.secondarySlots.pop()].filter(({id, rarity}) => id !== null))
+                    for (const { id, rarity } of [this.slots.pop(), this.secondarySlots.pop()].filter(({ id, rarity }) => id !== null))
                         if (this.inventory[tiers[rarity].name][id]) this.inventory[tiers[rarity].name][id]++;
                         else this.inventory[tiers[rarity].name][id] = 1;
 
@@ -1500,6 +1500,56 @@ export default class Client {
         });
 
         state.router.postMessage(writer.build());
+
+        const minimapWriter = new Writer(true);
+        minimapWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+        minimapWriter.setUint16(this.id);
+        minimapWriter.setUint8(112);
+
+        const players = [];
+
+        for (const [, obj] of state.entities) {
+            if (!obj) continue;
+            if (obj.type !== ENTITY_TYPES.PLAYER) continue;
+
+            players.push(obj);
+        }
+
+        minimapWriter.setUint16(players.length);
+
+        for (const player of players) {
+            minimapWriter.setUint32(player.id ?? 0);
+            minimapWriter.setFloat32(Number(player.x) || 0);
+            minimapWriter.setFloat32(Number(player.y) || 0);
+        }
+
+        state.router.postMessage(minimapWriter.build());
+
+        if (globalThis._MAP_CELLS?.length) {
+            this.__sentTerrainScores ??= false;
+
+            if (!this.__sentTerrainScores) {
+                this.__sentTerrainScores = true;
+
+                const cells = globalThis._MAP_CELLS ?? [];
+
+                const terrainWriter = new Writer(true);
+
+                terrainWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+                terrainWriter.setUint16(this.id);
+                terrainWriter.setUint8(113);
+
+                terrainWriter.setUint32(cells.length);
+
+                for (const cell of cells) {
+                    terrainWriter.setUint16(cell.x);
+                    terrainWriter.setUint16(cell.y);
+                    terrainWriter.setFloat32(cell.score ?? 0);
+                }
+
+                state.router.postMessage(terrainWriter.build());
+            }
+        }
     }
 
     sendRoom() {

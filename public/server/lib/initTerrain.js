@@ -63,6 +63,8 @@ export default async function initTerrain(type) {
         }
     }
 
+    globalThis._MAP_CELLS = map.cells;
+
     const generator = {
         width: map.width,
         height: map.height,
