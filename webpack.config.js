@@ -15,7 +15,7 @@ const ignoreFiles = [
 ];
 
 const config = {
-    devtool: process.env.NODE_ENV === 'development' ? "eval-cheap-module-source-map" : false,
+    devtool: "eval-cheap-module-source-map",
     optimization: {
         minimize: true,
         minimizer: [
