@@ -6,6 +6,8 @@ import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, 
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
+import "./lib/craftMenu.js";
+import "./lib/craftMenu.js";
 
 if (location.hash) {
     fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1))
@@ -614,11 +616,9 @@ function processDrop() {
     return true;
 }
 
-function formatAmount(v) {
-    if (!isFinite(v)) return "∞";
-    if (isNaN(v)) return "0";
-    if (!isFinite(v)) return "∞";
-    if (isNaN(v)) return "0";
+export function formatAmount(v) {
+  if (!isFinite(v)) return "∞";
+  if (isNaN(v)) return "0";
 
     const f = (num, div, suffix) => {
         const val = num / div;
@@ -738,6 +738,16 @@ inventoryTooltipLayer.style.display = "none";
 
 document.body.appendChild(inventoryTooltipLayer);
 
+function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
+  const bw = 350;
+  const bh = (350 * img.height) / img.width;
+  let x = anchorX - 150;
+  let y = anchorY - bh - 10;
+  x = Math.max(0, Math.min(x, boundW - bw));
+  y = Math.max(0, Math.min(y, boundH - bh));
+  return { x, y, bw, bh };
+}
+
 function drawInventory() {
     net.state.petalElements = [];
     menu.innerHTML = "";
@@ -789,7 +799,6 @@ function drawInventory() {
                 const petalCanvas = getPetalIcon(Number(petalIndex), rarityIndex, "oneshot");
 
                 const icon = document.createElement("canvas");
-                const icon = document.createElement("canvas");
 
                 icon.addEventListener("pointerenter", (ev) => {
                     const r = ev.currentTarget.getBoundingClientRect();
@@ -799,10 +808,6 @@ function drawInventory() {
                 icon.addEventListener("pointermove", (ev) => {
                     const r = ev.currentTarget.getBoundingClientRect();
                     net.state.inventoryPetalHover = [Number(petalIndex), rarityIndex, r.left + r.width / 2, r.top + r.height / 2];
-                });
-
-                icon.addEventListener("pointerleave", () => {
-                    net.state.inventoryPetalHover = null;
                 });
                 icon.addEventListener("pointerleave", () => {
                     net.state.inventoryPetalHover = null;
@@ -1399,10 +1404,6 @@ function wavesSweepGradient(ctx, t, base, now) {
     const main = custom.base ?? base;
     const mid = custom.mid ?? mixColors(base, "#ffffff", 0.14);
     const glow = custom.glow ?? mixColors(base, "#ffffff", 0.24);
-    const soft = custom.soft ?? mixColors(base, "#ffffff", 0.06);
-    const main = custom.base ?? base;
-    const mid = custom.mid ?? mixColors(base, "#ffffff", 0.14);
-    const glow = custom.glow ?? mixColors(base, "#ffffff", 0.24);
 
     g.addColorStop(0.0, soft);
     g.addColorStop(0.18, main);
@@ -1505,7 +1506,6 @@ function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
 
         const grad = ctx.createLinearGradient(x + pos - band, y + pos - band, x + pos + band, y + pos + band);
 
-        grad.addColorStop(0, "rgba(0,0,0,0)");
         grad.addColorStop(0, "rgba(0,0,0,0)");
 
         grad.addColorStop(0.15, lineGlow);
@@ -3268,9 +3268,6 @@ function draw() {
             if (net.state.levelProgressTarget < net.state.levelProgress || isNaN(net.state.levelProgress)) {
                 net.state.levelProgress = 0;
             }
-            if (net.state.levelProgressTarget < net.state.levelProgress || isNaN(net.state.levelProgress)) {
-                net.state.levelProgress = 0;
-            }
 
             const player = net.state.players.get(net.state.playerID);
             drawBar(50, 275, 175, 37.5, colors["???"]);
@@ -3374,15 +3371,12 @@ function draw() {
 
             if (hovered) {
                 net.state._foundHover = true;
-            if (hovered) {
-                net.state._foundHover = true;
 
                 net.state.inventoryPetalHover = [petal.index, petal.rarity, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
 
                 if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
                     beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petal.index, petal.rarity);
 
-                    menu.classList.toggle("active");
                     menu.classList.toggle("active");
 
                     inventoryDragConfig.index = petal.index;
@@ -3431,51 +3425,27 @@ function draw() {
         if (inventoryHover) {
             const img = petalTooltip(...inventoryHover);
 
-            const maxW = 300;
-            const minW = 180;
-            const maxW = 300;
-            const minW = 180;
+      const { x, y, bw, bh } = petalTooltipBox(
+        img,
+        inventoryHover[2],
+        inventoryHover[3],
+        window.innerWidth,
+        window.innerHeight,
+      );
 
-            let w = Math.min(maxW, Math.max(minW, window.innerWidth * 0.22));
-            let h = (w * img.height) / img.width;
-            let w = Math.min(maxW, Math.max(minW, window.innerWidth * 0.22));
-            let h = (w * img.height) / img.width;
+      const box = document.createElement("div");
+      box.style.position = "fixed";
+      box.style.left = `${x}px`;
+      box.style.top = `${y}px`;
 
-            const box = document.createElement("div");
-            box.style.position = "fixed";
-            const box = document.createElement("div");
-            box.style.position = "fixed";
+      const cv = document.createElement("canvas");
+      cv.width = bw;
+      cv.height = bh;
 
-            let left = inventoryHover[2] - w / 2;
-            let top = inventoryHover[3] - h - 12;
-            let left = inventoryHover[2] - w / 2;
-            let top = inventoryHover[3] - h - 12;
-
-            left = Math.max(0, Math.min(left, window.innerWidth - w));
-            top = Math.max(0, Math.min(top, window.innerHeight - h));
-            left = Math.max(0, Math.min(left, window.innerWidth - w));
-            top = Math.max(0, Math.min(top, window.innerHeight - h));
-
-            box.style.left = `${left}px`;
-            box.style.top = `${top}px`;
-            box.style.left = `${left}px`;
-            box.style.top = `${top}px`;
-
-            const cv = document.createElement("canvas");
-            cv.width = w;
-            cv.height = h;
-            const cv = document.createElement("canvas");
-            cv.width = w;
-            cv.height = h;
-
-            const cx = cv.getContext("2d");
-            cx.imageSmoothingEnabled = true;
-            cx.imageSmoothingQuality = "high";
-            cx.drawImage(img, 0, 0, w, h);
-            const cx = cv.getContext("2d");
-            cx.imageSmoothingEnabled = true;
-            cx.imageSmoothingQuality = "high";
-            cx.drawImage(img, 0, 0, w, h);
+      const cx = cv.getContext("2d");
+      cx.imageSmoothingEnabled = true;
+      cx.imageSmoothingQuality = "high";
+      cx.drawImage(img, 0, 0, bw, bh);
 
             box.appendChild(cv);
             box.appendChild(cv);
@@ -3507,15 +3477,15 @@ function draw() {
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = "high";
 
-            if (net.state.petalHoverAlpha > 0) {
-                ctx.globalAlpha = net.state.petalHoverAlpha;
-                let bw = 350;
-                let bh = (350 * img.height) / img.width;
-
-                let x = net.state.lastPetalHover[2] - 150;
-                let y = net.state.lastPetalHover[3] - bh - 10;
-
-                x = Math.max(0, Math.min(x, width - bw));
+      if (net.state.petalHoverAlpha > 0) {
+        ctx.globalAlpha = net.state.petalHoverAlpha;
+        const { x, y, bw, bh } = petalTooltipBox(
+          img,
+          net.state.lastPetalHover[2],
+          net.state.lastPetalHover[3],
+          width,
+          height,
+        );
 
                 ctx.drawImage(img, x, y, bw, bh);
             }
@@ -3588,11 +3558,6 @@ function draw() {
         text(`C: ${clientDebug.fps} FPS | ${clientDebug.mspt.toFixed(2)} mspt`, width - 10, 10, 15);
         text(`S: ${net.state.updateRate} UPS | ${+net.state.ping.toFixed(2)} ms ping`, width - 10, 25, 15);
 
-        if (net.state.socket) {
-            text(`B(I/O): ${net.state.socket.bandWidth.in}/${net.state.socket.bandWidth.out} KB/s`, width - 10, 40, 15);
-        } else {
-            text("Not connected", width - 10, 40, 15);
-        }
         if (net.state.socket) {
             text(`B(I/O): ${net.state.socket.bandWidth.in}/${net.state.socket.bandWidth.out} KB/s`, width - 10, 40, 15);
         } else {
