@@ -1,3 +1,7 @@
+# Update (6/7/2026)
+- Added crafting menu to the three main trusted lobbies (Thanks to @itzshovel)
+- Multiple bugfixes with the chat and the menu.
+
 # Update (5/18/2026)
 - Added gradients for both Petal icons and Mob icons
 - Inventory can now be hovered
