@@ -15,6 +15,7 @@ const ignoreFiles = [
 ];
 
 const config = {
+    devtool: "eval-cheap-module-source-map",
     optimization: {
         minimize: true,
         minimizer: [
