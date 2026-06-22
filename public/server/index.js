@@ -313,8 +313,8 @@ switch (globalThis.environmentName) {
             process.exit();
         }
 
-        if (!["ffa", "tdm", "waves", "line", "maze"].includes(Bun.env.GAMEMODE)) {
-            console.error("GAMEMODE must be 'ffa', 'tdm', 'waves', 'line', or 'maze'");
+        if (!["ffa", "tdm", "waves", "line", "maze", "mmo"].includes(Bun.env.GAMEMODE)) {
+            console.error("GAMEMODE must be 'ffa', 'tdm', 'waves', 'line', 'maze', or 'mmo'");
             process.exit();
         }
 

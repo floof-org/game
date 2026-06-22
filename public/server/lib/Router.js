@@ -237,6 +237,11 @@ export default class Router {
                 state.isTDM = false;
                 state.gamemode = GAMEMODES.FFA;
                 break;
+            case "mmo":
+                state.isTDM = false;
+                state.gamemode = GAMEMODES.MMO;
+                state.biome = BIOME_TYPES.CRYPT;
+                break;
             case "tdm":
                 state.isTDM = true;
                 state.gamemode = GAMEMODES.TDM;
