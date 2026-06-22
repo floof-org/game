@@ -201,10 +201,9 @@ setInterval(() => {
     }
 
     if (!state.isWaves && state.livingMobCount < state.maxMobs && Math.random() > .9) {
-        /* if (Math.random() > .999) {
-            const info = state.spawnNearPlayer(mobConfigs[0]);
-            new AIPlayer(info.position, info.rarity, Math.max(1, info.rarity * 10 + (Math.random() * 6 | 0 - 3)));
-        } else  */if (state.gamemode === GAMEMODES.MAZE) {
+        if (state.gamemode === GAMEMODES.MMO) {
+            // No mob spawning in MMO mode until we have proper PvE zones
+        } else if (state.gamemode === GAMEMODES.MAZE) {
             let cfg = mobConfigs[getMobIndex()];
             const info = state.spawnNearPlayer(cfg);
             if (info.tile?.spawn !== undefined) {
