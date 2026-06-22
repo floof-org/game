@@ -790,7 +790,7 @@ export default class Client {
                 }
             } else if (slots < this.slots.length)
                 for (let i = this.slots.length - 1; i >= slots; i--)
-                    for (const { id, rarity } of [this.slots.pop(), this.secondarySlots.pop()].filter(({ id, rarity }) => id !== null))
+                    for (const { id, rarity } of [this.slots.pop(), this.secondarySlots.pop()].filter(slot => slot !== null))
                         if (this.inventory[tiers[rarity].name][id]) this.inventory[tiers[rarity].name][id]++;
                         else this.inventory[tiers[rarity].name][id] = 1;
 
