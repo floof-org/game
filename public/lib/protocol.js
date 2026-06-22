@@ -2019,5 +2019,6 @@ export const GAMEMODES = {
     TDM: 1,
     WAVES: 2,
     LINE: 3,
-    MAZE: 4
+    MAZE: 4,
+    MMO: 5
 };
