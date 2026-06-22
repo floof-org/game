@@ -241,6 +241,8 @@ export default class Router {
                 state.isTDM = false;
                 state.gamemode = GAMEMODES.MMO;
                 state.biome = BIOME_TYPES.CRYPT;
+                state.mobsExpire = true;
+                await initTerrain(state.biome);
                 break;
             case "tdm":
                 state.isTDM = true;
