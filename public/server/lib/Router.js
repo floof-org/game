@@ -230,7 +230,7 @@ export default class Router {
                 state.gamemode = GAMEMODES.MAZE;
                 state.mobsExpire = true;
                 state.teamCount = 0;
-                state.announceRarity = 8;
+                state.announceRarity = 10;
 
                 // setTimeout(() => {
                 //     state.clients.forEach(c => c.systemMessage("Lobby will be closing in 5 minutes...", "#FF0000"));
