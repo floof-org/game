@@ -1510,6 +1510,8 @@ export class ClientSocket extends WebSocket {
                     state.alivePlayers = alivePlayers;
                 }
 
+                state.playerCount = reader.getUint8();
+
                 state.level = reader.getUint16();
                 state.levelProgressTarget = reader.getFloat32();
 
@@ -1709,56 +1711,96 @@ export class ClientSocket extends WebSocket {
                     state.minimapPlayers.set(id, { id, x, y });
                 }
 
-                break;
-            }
-            case CLIENT_BOUND.ROOM_UPDATE:
-                state.room.width = reader.getFloat32();
-                state.room.height = reader.getFloat32();
-                state.room.isRadial = reader.getUint8() === 1;
-                state.room.biome = reader.getUint8();
-                break;
-            case CLIENT_BOUND.DEATH:
-                state.isDead = true;
-                state.killMessage = reader.getStringUTF8();
-                break;
-            case CLIENT_BOUND.UPDATE_ASSETS:
-                console.warn("Server is asking us to update assets");
-                loadAssets(this.lobbyID);
-                break;
-            case CLIENT_BOUND.JSON_MESSAGE:
-                if (this.devCheatListener) {
-                    const data = JSON.parse(reader.getStringUTF8());
-                    if (
-                        !this.devCheatListener.handle(
-                            data.promiseID,
-                            (() => {
-                                delete data.promiseID;
-                                return data;
-                            })(),
-                        )
-                    ) {
-                        console.warn("Unhandled JSON message", data);
-                    }
-                } else {
-                    console.warn("Received JSON message without a listener:", reader.getStringUTF8());
-                }
-                break;
-            case CLIENT_BOUND.PONG:
-                state.ping = performance.now() - this.pingStart;
-                setTimeout(() => this.ping(), 1e3);
-                break;
-            case CLIENT_BOUND.TERRAIN:
-                state.terrain = {
-                    width: reader.getUint16(),
-                    height: reader.getUint16(),
-                    blocks: ((blocks = []) => {
-                        for (let i = reader.getUint16(); i > 0; i--) {
-                            blocks.push({
-                                x: reader.getInt16(),
-                                y: reader.getInt16(),
-                                type: [reader.getUint8(), reader.getUint8()],
-                                terrain: [],
-                            });
+        break;
+      }
+case 113: {
+    if (!state.terrain?.blocks) {
+        break;
+    }
+
+    const count = reader.getUint32();
+
+    state.terrainScores = new Map();
+
+    for (let i = 0; i < count; i++) {
+        const x = reader.getUint16();
+        const y = reader.getUint16();
+        const score = reader.getFloat32();
+
+        state.terrainScores.set(`${x},${y}`, score);
+    }
+
+    state.minimapImgWalls = renderTerrainForMap(
+        state.terrain.width,
+        state.terrain.blocks,
+        state.tiers,
+        state.terrainScores,
+        false,
+    );
+
+    state.minimapImgTerrain = renderTerrainForMap(
+        state.terrain.width,
+        state.terrain.blocks,
+        state.tiers,
+        state.terrainScores,
+        true,
+    );
+
+    state.minimapImg = state.minimapImgWalls;
+
+    break;
+}
+      case CLIENT_BOUND.ROOM_UPDATE:
+        state.room.width = reader.getFloat32();
+        state.room.height = reader.getFloat32();
+        state.room.isRadial = reader.getUint8() === 1;
+        state.room.biome = reader.getUint8();
+        break;
+      case CLIENT_BOUND.DEATH:
+        state.isDead = true;
+        state.killMessage = reader.getStringUTF8();
+        break;
+      case CLIENT_BOUND.UPDATE_ASSETS:
+        console.warn("Server is asking us to update assets");
+        loadAssets(this.lobbyID);
+        break;
+      case CLIENT_BOUND.JSON_MESSAGE:
+        if (this.devCheatListener) {
+          const data = JSON.parse(reader.getStringUTF8());
+          if (
+            !this.devCheatListener.handle(
+              data.promiseID,
+              (() => {
+                delete data.promiseID;
+                return data;
+              })(),
+            )
+          ) {
+            console.warn("Unhandled JSON message", data);
+          }
+        } else {
+          console.warn(
+            "Received JSON message without a listener:",
+            reader.getStringUTF8(),
+          );
+        }
+        break;
+      case CLIENT_BOUND.PONG:
+        state.ping = performance.now() - this.pingStart;
+        setTimeout(() => this.ping(), 1e3);
+        break;
+      case CLIENT_BOUND.TERRAIN:
+        state.terrain = {
+          width: reader.getUint16(),
+          height: reader.getUint16(),
+          blocks: ((blocks = []) => {
+            for (let i = reader.getUint16(); i > 0; i--) {
+              blocks.push({
+                x: reader.getInt16(),
+                y: reader.getInt16(),
+                type: [reader.getUint8(), reader.getUint8()],
+                terrain: [],
+              });
 
                             blocks[blocks.length - 1].terrain = terrains[blocks[blocks.length - 1].type[0]][blocks[blocks.length - 1].type[1]];
                         }

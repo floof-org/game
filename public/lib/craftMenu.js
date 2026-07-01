@@ -1163,9 +1163,11 @@ var craftRef = null;
           sctx.font = 'bold 12px Ubuntu';
           sctx.textAlign = 'right';
           sctx.textBaseline = 'top';
+          if (snapSlots[i] > 1) {
           var t = 'x' + formatAmount(snapSlots[i]);
           sctx.strokeText(t, SLOT - 4, 4);
           sctx.fillText(t, SLOT - 4, 4);
+          }
           slot.appendChild(sc);
 
           if (clickable) {
@@ -1226,9 +1228,11 @@ var craftRef = null;
         csctx.font = 'bold 12px Ubuntu';
         csctx.textAlign = 'right';
         csctx.textBaseline = 'top';
-        var cct = 'x' + craft.craftResult.delta;
-        csctx.strokeText(cct, SLOT - 4, 4);
-        csctx.fillText(cct, SLOT - 4, 4);
+        if (craft.craftResult.delta > 1) {
+           var cct = 'x' + formatAmount(craft.craftResult.delta);
+               csctx.strokeText(cct, SLOT - 4, 4);
+               csctx.fillText(cct, SLOT - 4, 4);
+        }
         centerSlot.appendChild(csc);
 
         (function (pi, ri, el) {
