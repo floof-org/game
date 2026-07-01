@@ -211,7 +211,8 @@ export const options = {
     showHitboxes: false,
     cacheMobAssets: false,
     cachePetalAssets: false,
-    disableGradients: false,
+
+    disableGradients: true,
     minimumGradientRarity: 6
 };
 
