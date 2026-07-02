@@ -14,7 +14,7 @@ import {
   uiScale,
 } from "./lib/canvas.js";
 import * as net from "./lib/net.js";
-import { mouse, keyMap } from "./lib/net.js";
+import { mouse, keyMap, pruneFloatingTextTrackers } from "./lib/net.js";
 import { colors, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
@@ -2069,6 +2069,37 @@ function draw() {
             ctx.textAlign = "right";
             text(net.state.tiers[entity.rarity].name, drawX + barSize + barthicc * 0.5, drawY + barSize + 18 * scale + barthicc * 0.5, 8.5 * scale, net.state.tiers[entity.rarity].color);
         }
+    });
+
+    const now = performance.now();
+    pruneFloatingTextTrackers(now);
+    net.state.floatingTexts = net.state.floatingTexts.filter((entry) => {
+        const timeUntilExpiry = entry.expiresAt - now;
+        if (timeUntilExpiry <= 0) return false;
+
+        if (entry.animation === "bounce") {
+            entry.velocityY += entry.gravity;
+            entry.y += entry.velocityY;
+        } else if (entry.animation === "rise") {
+            entry.y += entry.velocityY;
+        }
+
+        const drawX = entry.x * scale - cameraX + halfWidth;
+        const drawY = entry.y * scale - cameraY + halfHeight;
+        const alpha = timeUntilExpiry < 200 ? timeUntilExpiry / 200 : 1;
+        const oldAlpha = ctx.globalAlpha;
+        const oldTextAlign = ctx.textAlign;
+        const oldTextBaseline = ctx.textBaseline;
+
+        ctx.globalAlpha = alpha;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        text(entry.value, drawX, drawY, 12 * scale, entry.color);
+
+        ctx.globalAlpha = oldAlpha;
+        ctx.textAlign = oldTextAlign;
+        ctx.textBaseline = oldTextBaseline;
+        return true;
     });
 
     ctx.textAlign = "center";
