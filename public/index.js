@@ -1,4 +1,18 @@
-import { canvas, ctx, drawBackground, drawBackgroundOverlay, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
+import {
+  canvas,
+  ctx,
+  drawBackground,
+  drawBackgroundOverlay,
+  renderTerrainForMap,
+  drawBar,
+  drawFace,
+  drawWrappedText,
+  gameScale,
+  mixColors,
+  setStyle,
+  text,
+  uiScale,
+} from "./lib/canvas.js";
 import * as net from "./lib/net.js";
 import { mouse, keyMap } from "./lib/net.js";
 import { colors, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
@@ -623,13 +637,7 @@ export function formatAmount(v) {
     const f = (num, div, suffix) => {
         const val = num / div;
         if (!isFinite(val)) return "∞";
-    const f = (num, div, suffix) => {
-        const val = num / div;
-        if (!isFinite(val)) return "∞";
 
-        const str = val.toFixed(1);
-        return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
-    };
         const str = val.toFixed(1);
         return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
     };
@@ -640,14 +648,7 @@ export function formatAmount(v) {
     if (v >= 1e9) return f(v, 1e9, "b");
     if (v >= 1e6) return f(v, 1e6, "m");
     if (v >= 1e3) return f(v, 1e3, "k");
-    if (v >= 1e18) return f(v, 1e18, "Qt");
-    if (v >= 1e15) return f(v, 1e15, "Qd");
-    if (v >= 1e12) return f(v, 1e12, "t");
-    if (v >= 1e9) return f(v, 1e9, "b");
-    if (v >= 1e6) return f(v, 1e6, "m");
-    if (v >= 1e3) return f(v, 1e3, "k");
 
-    return Math.floor(v).toString();
     return Math.floor(v).toString();
 }
 
@@ -656,12 +657,7 @@ function processInventoryDrop() {
         index: inventoryDragConfig.index,
         rarity: inventoryDragConfig.rarity,
     };
-    const drag = {
-        index: inventoryDragConfig.index,
-        rarity: inventoryDragConfig.rarity,
-    };
 
-    let drop = null;
     let drop = null;
 
     const mX = mouse.x / uiScale();
@@ -894,6 +890,29 @@ const mobIconCanvas = document.createElement("canvas");
 const mobIconCtx = mobIconCanvas.getContext("2d");
 
 // Mob icons gradient
+const __ANIMATED_WAVE_ICONS__ = new Set();
+let __WAVE_RAF_RUNNING__ = false;
+
+function startWaveRAF() {
+  if (__WAVE_RAF_RUNNING__) return;
+  __WAVE_RAF_RUNNING__ = true;
+
+  const loop = () => {
+    if (__ANIMATED_WAVE_ICONS__.size === 0) {
+      __WAVE_RAF_RUNNING__ = false;
+      return;
+    }
+
+    for (const draw of __ANIMATED_WAVE_ICONS__) {
+      draw();
+    }
+
+    requestAnimationFrame(loop);
+  };
+
+  requestAnimationFrame(loop);
+}
+
 const WAVE_CACHE = (globalThis.__WAVE_CACHE__ ||= Object.create(null));
 
 function getGradientMinRarity() {
@@ -935,46 +954,6 @@ function drawWaveMobIcon(ctx, entry) {
 
     drawUIMob(entry.index, entry.rarity, ctx);
 }
-
-function makeWaveIcon(entry, mode, key) {
-    const size = Math.ceil(entry.size + 12);
-    const canvas = new OffscreenCanvas(size, size);
-    const ctx = canvas.getContext("2d");
-
-    function render(now, entryOverride) {
-        const e = entryOverride || entry;
-        now = Number.isFinite(now) ? now : performance.now();
-
-        const a = e.size;
-        const g = 6;
-        const u = 6;
-        const r = 5;
-
-        const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
-        const cx = g + a / 2;
-        const cy = u + a / 2;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(g, u, a, a, r);
-
-        const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
-
-        if (fill !== null) {
-            ctx.fillStyle = fill;
-            ctx.fill();
-        }
-
-        ctx.restore();
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(g, u, a, a, r);
-        ctx.clip();
-
-        drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
-
-        ctx.translate(cx, cy);
 
         const m = {
             0: 4,
@@ -1054,8 +1033,49 @@ function makeWaveIcon(entry, mode, key) {
             255: 4,
         };
 
-        const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
-        const scale = m[entry.index] ? a / m[entry.index] : a / f;
+function makeWaveIcon(entry, mode, key) {
+  const size = Math.ceil(entry.size + 12);
+  const canvas = new OffscreenCanvas(size, size);
+  const ctx = canvas.getContext("2d");
+
+  function render(now, entryOverride) {
+  ctx.clearRect(0, 0, size, size);
+    const e = entryOverride || entry;
+    now = Number.isFinite(now) ? now : performance.now();
+
+    const a = e.size;
+    const g = 6;
+    const u = 6;
+    const r = 5;
+
+    const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
+    const cx = g + a / 2;
+    const cy = u + a / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(g, u, a, a, r);
+
+    const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
+
+    if (fill !== null) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
+
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(g, u, a, a, r);
+    ctx.clip();
+
+    drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
+
+    ctx.translate(cx, cy);
+
+    const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
+    const scale = m[entry.index] ? a / m[entry.index] : a / f;
 
         ctx.scale(scale, scale);
         drawWaveMobIcon(ctx, entry);
@@ -1072,15 +1092,31 @@ function makeWaveIcon(entry, mode, key) {
         ctx.restore();
     }
 
-    canvas._render = (now, entry) => render(now, entry);
-    render(performance.now(), entry);
-    return canvas;
+    const draw = () => {
+          const animated =
+          wavesGradientOn() &&
+          entry.rarity >= getGradientMinRarity();
+
+          if (!animated) {
+          __ANIMATED_WAVE_ICONS__.delete(draw);
+          }
+
+          render(performance.now(), entry);
+      };
+
+      canvas._draw = draw;
+      draw();
+      return canvas;
 }
 
-function getWaveIcon(entry, now) {
-    const mode = wavesGradientOn() ? 1 : 0;
-    const sizeKey = Math.round(entry.size * 100) / 100;
-    const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
+function getWaveIcon(entry) {
+  const animated =
+  wavesGradientOn() &&
+  entry.rarity >= getGradientMinRarity();
+
+  const mode = animated ? 1 : 0;
+  const sizeKey = Math.round(entry.size * 100) / 100;
+  const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
 
     let icon = WAVE_CACHE[key];
 
@@ -1089,9 +1125,16 @@ function getWaveIcon(entry, now) {
         WAVE_CACHE[key] = icon;
     }
 
-    if (mode === 1 && icon._render) {
-        icon._render(now);
+  const draw = icon._draw;
+
+  if (animated && draw) {
+    if (!__ANIMATED_WAVE_ICONS__.has(draw)) {
+      __ANIMATED_WAVE_ICONS__.add(draw);
+      startWaveRAF();
     }
+  } else if (draw) {
+    __ANIMATED_WAVE_ICONS__.delete(draw);
+  }
 
     return icon;
 }
@@ -1626,11 +1669,7 @@ function wavesFillStyle(ctx, rarity, base, ratio = null, now, x, y, size) {
 }
 
 function wavesBorderStyle(rarity) {
-    const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
-
-    if (!wavesGradientOn() || rarity < getGradientMinRarity()) {
-        return mixColors(base, "#000000", 0.2);
-    }
+  const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
 
     const custom = wavesTierVisual(rarity);
 
@@ -1640,6 +1679,44 @@ function wavesBorderStyle(rarity) {
 
     return mixColors(base, "#000000", 0.2);
 }
+
+let isJDown = false;
+
+window.addEventListener("keydown", e => {
+    if (document.activeElement?.id === "chatInput")
+        return;
+
+    if (e.code !== "KeyJ" || isJDown)
+        return;
+
+    isJDown = true;
+
+    net.state.minimapImg = renderTerrainForMap(
+        net.state.terrain.width,
+        net.state.terrain.blocks,
+        net.state.tiers,
+        net.state.terrainScores,
+        true
+    );
+});
+
+window.addEventListener("keyup", e => {
+    if (document.activeElement?.id === "chatInput")
+        return;
+
+    if (e.code !== "KeyJ")
+        return;
+
+    isJDown = false;
+
+    net.state.minimapImg = renderTerrainForMap(
+        net.state.terrain.width,
+        net.state.terrain.blocks,
+        net.state.tiers,
+        net.state.terrainScores,
+        false
+    );
+});
 
 function draw() {
     net.state.petalHover = null;
