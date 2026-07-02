@@ -1,3 +1,9 @@
+# Update (6/20/2026)
+- Gradients are now disabled by default
+- Fixed craft menu lag
+- Optimized mob gradients
+- Press J to view rarity zones!
+
 # Update (6/7/2026)
 - Added crafting menu to the three main trusted lobbies (Thanks to @itzshovel)
 - Multiple bugfixes with the chat and the menu.

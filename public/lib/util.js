@@ -212,7 +212,7 @@ export const options = {
     cacheMobAssets: false,
     cachePetalAssets: false,
 
-    disableGradients: false,
+    disableGradients: true,
     minimumGradientRarity: 6
 };
 
