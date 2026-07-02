@@ -3,6 +3,256 @@ import { Reader, Writer, SERVER_BOUND, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFI
 import { StarfishData } from "./renders.js";
 import { joystick } from ".././index.js";
 import * as util from "./util.js";
+import { formatLargeNumber } from "./util.js";
+
+const floatingTextDamageState = new Map();
+const floatingTextTrackers = new Map();
+/** @type {Map<number, number>} */
+const recentLightningEntities = new Map();
+/** @type {{x: number, y: number, time: number}[]} */
+const recentLightningStrikes = [];
+
+const FLOATING_TEXT_TRACK_MS = 1000;
+const DAMAGE_TYPE_PRIORITY = { lightning: 3, poison: 2, damage: 1 };
+const FLOATING_TEXT_COLORS = {
+    damage: "#FF4D4D",
+    poison: "#9B4DFF",
+    lightning: "#00FFFF",
+    heal: "#FF85A1",
+};
+
+function formatFloatingTextValue(type, amount) {
+    const rounded = Math.round(amount);
+
+    if (type === "lightning" || type === "poison") {
+        return String(rounded);
+    }
+
+    return formatLargeNumber(rounded, 1);
+}
+
+function getFloatingTextAnimation(type) {
+    switch (type) {
+        case "heal":
+            return { animation: "rise", velocityY: -0.035, gravity: 0 };
+        case "lightning":
+        case "poison":
+            return { animation: "static", velocityY: 0, gravity: 0 };
+        default:
+            return { animation: "bounce", velocityY: -0.055, gravity: 0.0045 };
+    }
+}
+
+function getFloatingTextSpawnY(worldY, entityId) {
+    const player = state.players.get(entityId);
+    if (player) {
+        return worldY - (player.realSize ?? player.size ?? 50) * 0.75;
+    }
+
+    const mob = state.mobs.get(entityId);
+    if (mob) {
+        return worldY - (mob.realSize ?? mob.size ?? 50) * 0.75;
+    }
+
+    return worldY - 30;
+}
+
+function markNearbyLightningEntities(point, now) {
+    const thresholdSq = 160 * 160;
+
+    state.players.forEach((player) => {
+        const dx = point.x - player.realX;
+        const dy = point.y - player.realY;
+        if (dx * dx + dy * dy <= thresholdSq) {
+            recentLightningEntities.set(player.id, now);
+        }
+    });
+
+    state.mobs.forEach((mob) => {
+        const dx = point.x - mob.realX;
+        const dy = point.y - mob.realY;
+        if (dx * dx + dy * dy <= thresholdSq) {
+            recentLightningEntities.set(mob.id, now);
+        }
+    });
+}
+
+function registerLightningStrike(points) {
+    const now = performance.now();
+
+    for (const point of points) {
+        recentLightningStrikes.push({ x: point.x, y: point.y, time: now });
+        markNearbyLightningEntities(point, now);
+    }
+
+    while (recentLightningStrikes.length > 0 && now - recentLightningStrikes[0].time > 500) {
+        recentLightningStrikes.shift();
+    }
+
+    for (const [entityId, time] of recentLightningEntities.entries()) {
+        if (now - time > 500) {
+            recentLightningEntities.delete(entityId);
+        }
+    }
+}
+
+function wasRecentlyLightningDamaged(entityId, worldX, worldY) {
+    const now = performance.now();
+    const entityTime = recentLightningEntities.get(entityId);
+
+    if (entityTime !== undefined && now - entityTime < 450) {
+        return true;
+    }
+
+    const thresholdSq = 120 * 120;
+
+    return recentLightningStrikes.some((strike) => {
+        const dx = strike.x - worldX;
+        const dy = strike.y - worldY;
+        return now - strike.time < 450 && dx * dx + dy * dy <= thresholdSq;
+    });
+}
+
+function removeFloatingTextEntry(entry) {
+    const index = state.floatingTexts.indexOf(entry);
+    if (index !== -1) {
+        state.floatingTexts.splice(index, 1);
+    }
+}
+
+function applyFloatingTextAnimation(entry, type) {
+    Object.assign(entry, getFloatingTextAnimation(type));
+}
+
+function trackFloatingText(entityId, type, amount, worldX, worldY) {
+    if (!util.options.showDamageNumbers) return;
+
+    const isHeal = type === "heal";
+    const key = isHeal ? `${entityId}-heal` : `${entityId}-dmg`;
+    const now = performance.now();
+    const spawnY = getFloatingTextSpawnY(worldY, entityId);
+    let tracker = floatingTextTrackers.get(key);
+
+    if (tracker && now - tracker.lastHit < FLOATING_TEXT_TRACK_MS) {
+        if (!isHeal && tracker.type !== type) {
+            const newPriority = DAMAGE_TYPE_PRIORITY[type] ?? 0;
+            const currentPriority = DAMAGE_TYPE_PRIORITY[tracker.type] ?? 0;
+
+            if (newPriority > currentPriority) {
+                tracker.type = type;
+                tracker.amount = amount;
+                tracker.entry.type = type;
+                tracker.entry.color = FLOATING_TEXT_COLORS[type];
+                tracker.entry.x = worldX;
+                tracker.entry.y = spawnY;
+                applyFloatingTextAnimation(tracker.entry, type);
+            } else if (newPriority === currentPriority) {
+                tracker.amount += amount;
+            } else {
+                return;
+            }
+        } else {
+            tracker.amount += amount;
+        }
+
+        tracker.lastHit = now;
+        tracker.entry.x = worldX;
+
+        if (tracker.entry.animation !== "static") {
+            tracker.entry.y = spawnY;
+        }
+
+        tracker.entry.value = formatFloatingTextValue(tracker.type, tracker.amount);
+        tracker.entry.expiresAt = now + FLOATING_TEXT_TRACK_MS;
+        return;
+    }
+
+    if (tracker) {
+        removeFloatingTextEntry(tracker.entry);
+    }
+
+    const entry = {
+        id: entityId,
+        x: worldX,
+        y: spawnY,
+        value: formatFloatingTextValue(type, amount),
+        color: FLOATING_TEXT_COLORS[type],
+        creation: now,
+        expiresAt: now + FLOATING_TEXT_TRACK_MS,
+        type,
+        ...getFloatingTextAnimation(type),
+    };
+
+    state.floatingTexts.push(entry);
+    floatingTextTrackers.set(key, { amount, lastHit: now, entry, type });
+}
+
+export function pruneFloatingTextTrackers(now) {
+    for (const [key, tracker] of floatingTextTrackers.entries()) {
+        if (now - tracker.lastHit >= FLOATING_TEXT_TRACK_MS) {
+            removeFloatingTextEntry(tracker.entry);
+            floatingTextTrackers.delete(key);
+        }
+    }
+}
+
+/** @type {{entityId: number, oldRatio: number, newRatio: number, worldX: number, worldY: number, isPoison: boolean, maxHealth: number}[]} */
+const pendingHealthChanges = [];
+
+function queueHealthChange(entityId, oldRatio, newRatio, worldX, worldY, isPoison = false, maxHealth = 100) {
+    pendingHealthChanges.push({ entityId, oldRatio, newRatio, worldX, worldY, isPoison, maxHealth });
+}
+
+function flushPendingHealthChanges() {
+    for (const change of pendingHealthChanges) {
+        handleHealthChange(change.entityId, change.oldRatio, change.newRatio, change.worldX, change.worldY, change.isPoison, change.maxHealth);
+    }
+
+    pendingHealthChanges.length = 0;
+}
+
+function handleHealthChange(entityId, oldRatio, newRatio, worldX, worldY, isPoison = false, maxHealth = 100) {
+    if (!util.options.showDamageNumbers) return;
+
+    const deltaRatio = newRatio - oldRatio;
+    if (Math.abs(deltaRatio) < (isPoison ? 0.00001 : 0.0005)) return;
+
+    const effectiveMax = maxHealth ?? 100;
+    const amount = Math.max(1, Math.round(Math.abs(deltaRatio) * effectiveMax));
+
+    if (deltaRatio < 0) {
+        if (wasRecentlyLightningDamaged(entityId, worldX, worldY)) {
+            trackFloatingText(entityId, "lightning", amount, worldX, worldY);
+            return;
+        }
+
+        const damageState = floatingTextDamageState.get(entityId) || { wasPoisoned: false, tickAmount: 0 };
+        let isNormal = false;
+        let isPoisonTick = false;
+
+        if (isPoison && damageState.wasPoisoned) {
+            if (damageState.tickAmount > 0 && amount > damageState.tickAmount * 1.5) {
+                isNormal = true;
+            } else {
+                damageState.tickAmount = amount;
+                isPoisonTick = true;
+            }
+        } else {
+            isNormal = true;
+        }
+
+        damageState.wasPoisoned = isPoison;
+        floatingTextDamageState.set(entityId, damageState);
+
+        if (isPoisonTick) {
+            trackFloatingText(entityId, "poison", amount, worldX, worldY);
+        } else if (isNormal) {
+            trackFloatingText(entityId, "damage", amount, worldX, worldY);
+        }
+    } else {
+        trackFloatingText(entityId, "heal", amount, worldX, worldY);
+    }
+}
 
 function getBrowserInfo() {
     const userAgent = navigator.userAgent;
@@ -1103,6 +1353,7 @@ export class ClientSocket extends WebSocket {
                 state.usesNewInventory = false;
                 break;
             case CLIENT_BOUND.WORLD_UPDATE:
+                pendingHealthChanges.length = 0;
                 state.updatesCounter++;
                 state.camera.realX = reader.getFloat32();
                 state.camera.realY = reader.getFloat32();
@@ -1192,8 +1443,13 @@ export class ClientSocket extends WebSocket {
                     }
 
                     if (flags & ENTITY_FLAGS.HEALTH) {
+                        const oldHealthRatio = player.realHealthRatio;
                         player.realHealthRatio = reader.getUint8() / 255;
                         player.realShieldRatio = reader.getUint8() / 255;
+
+                        if (oldHealthRatio !== player.realHealthRatio) {
+                            queueHealthChange(player.id, oldHealthRatio, player.realHealthRatio, player.realX, player.realY, player.poisoned);
+                        }
                     }
 
                     if (flags & ENTITY_FLAGS.DISPLAY) {
@@ -1331,7 +1587,12 @@ export class ClientSocket extends WebSocket {
                     }
 
                     if (flags & ENTITY_FLAGS.HEALTH) {
+                        const oldHealthRatio = mob.realHealthRatio;
                         mob.realHealthRatio = reader.getUint8() / 255;
+
+                        if (oldHealthRatio !== mob.realHealthRatio) {
+                            queueHealthChange(mob.id, oldHealthRatio, mob.realHealthRatio, mob.realX, mob.realY, mob.poisoned);
+                        }
                     }
 
                     if (flags & ENTITY_FLAGS.ROPE_BODIES) {
@@ -1418,10 +1679,13 @@ export class ClientSocket extends WebSocket {
                         });
                     }
 
+                    registerLightningStrike(lightning.points);
                     lightning.improvePoints();
 
                     state.lightning.set(id, lightning);
                 }
+
+                flushPendingHealthChanges();
 
                 {
                     // Main slots
@@ -2109,6 +2373,8 @@ export const state = {
     terrainImg: null,
     /** @type {OffscreenCanvas|null} */
     minimapImg: null,
+    /** @type {{id:number,x:number,y:number,value:string,color:string,creation:number,lifetime:number,velocityY:number}[]} */
+    floatingTexts: [],
 };
 
 export const keyMap = new Set();

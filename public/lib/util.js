@@ -209,6 +209,7 @@ export const options = {
     useTileBackground: false,
     fancyGraphics: false,
     showHitboxes: false,
+    showDamageNumbers: true,
     cacheMobAssets: false,
     cachePetalAssets: false,
 
