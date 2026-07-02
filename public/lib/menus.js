@@ -130,16 +130,28 @@ function bindOptionToggle(option, elementID) {
     }
 }
 
-bindOptionToggle("showDebug", "show-debug");
-bindOptionToggle("hideGrid", "hide-grid");
-bindOptionToggle("rigidInterpolation", "rigid-interpolation");
-bindOptionToggle("mouseMovement", "mouse-movement");
-bindOptionToggle("hideEntityUI", "hide-entity-ui");
-bindOptionToggle("disableTiledBackground", "disable-tiled-background");
-bindOptionToggle("fancyGraphics", "extra-graphics");
-bindOptionToggle("showHitboxes", "show-hitboxes");
-bindOptionToggle("cacheMobAssets", "cache-mob-assets");
-bindOptionToggle("cachePetalAssets", "cache-petal-assets");
+bindCheckbox("showDebug", "show-debug");
+bindCheckbox("hideGrid", "hide-grid");
+bindCheckbox("rigidInterpolation", "rigid-interpolation");
+bindCheckbox("mouseMovement", "mouse-movement");
+bindCheckbox("hideEntityUI", "hide-entity-ui");
+bindCheckbox("disableTiledBackground", "disable-tiled-background");
+bindCheckbox("fancyGraphics", "extra-graphics");
+bindCheckbox("showHitboxes", "show-hitboxes");
+bindCheckbox("showDamageNumbers", "show-damage-numbers");
+bindCheckbox("cacheMobAssets", "cache-mob-assets");
+bindCheckbox("cachePetalAssets", "cache-petal-assets");
+
+bindCheckbox("disableGradients", "disable-gradients");
+
+bindNumber(
+    "minimumGradientRarity",
+    "minimum-gradient-rarity",
+    {
+        min: 0,
+        max: 999
+    }
+);
 
 export async function loadAndRenderChangelogs() {
     const changelogs = [];
