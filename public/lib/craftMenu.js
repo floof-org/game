@@ -15,6 +15,7 @@ var craftRef = null;
 
   craft.hoverEntry = null;
   craft.isFullscreen = false;
+  craft._fsWidth = null;
   craft.searchQuery = '';
 
   craft.craftSlots = [0, 0, 0, 0, 0];
@@ -59,25 +60,6 @@ var craftRef = null;
   craft.DESERT_PITY_MIN_TIER_IDX = 3;
   craft.SUCCESS_SPIRAL_SWEEP = Math.PI / 2;
 
-  craft.PETAL_NAME_SHORTHAND = {
-    'Third Eye': 'Teye',
-    'Beetle Egg': 'Begg',
-    'Ant Egg': 'Aegg',
-    'Yin Yang': 'Yyang',
-    'Magic Orb': 'Morb',
-    'Golden Leaf': 'Gleaf',
-    'Blood Stinger': 'Bstinger',
-    'Venomous Stinger': 'Vstinger',
-    'Hornet Egg': 'Hegg',
-    'Leech Egg': 'Legg',
-    'Lily Pad': 'Lpad',
-    'Mecha Missile': 'Mmissile',
-    'Tesla Coil': 'Tcoil',
-    'Red Coral': 'Rcoral',
-    'Blue Coral': 'Bcoral',
-    'Cheese Moon': 'Cmoon',
-  };
-
   craft.PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
   craft.PITY_NONE_RE = /^No\s+active\s+pity\s+for\s+.+?\.?\s*$/i;
   craft.PITY_SINGLE_HEADER_RE = /^(.+?)\s+pity:\s*(?:([\d.]+)%\s*\(\+([\d.]+)\s*pity\))?\s*$/i;
@@ -89,11 +71,11 @@ var craftRef = null;
       name: 'Line Maze',
       short: 'Line',
       tiers: [
-        'Common', 'Unusual', 'Rare', 'Epic', 'Legendary', 'Mythic',
+        'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic',
         'Ultra', 'Super', 'Unique', 'Eternal',
       ],
       rates: {
-        'Unusual': 64,
+        'Uncommon': 64,
         'Rare': 32,
         'Epic': 16,
         'Legendary': 8,
@@ -103,6 +85,7 @@ var craftRef = null;
         'Unique': 0.1,
         'Eternal': 0.1,
       },
+      match: function (s) { return !!s.room && s.room.width !== s.room.height; },
     },
     {
       name: 'MMO',
@@ -122,6 +105,7 @@ var craftRef = null;
         'Unique': 0.1,
         'Eternal': 0.1,
       },
+      match: function (s) { return !!s.room && s.room.width === s.room.height; },
     },
     {
       name: 'Desert Maze',
@@ -409,7 +393,9 @@ var craftRef = null;
       for (var j = 0; j < preset.tiers.length; j++) {
         if (preset.tiers[j] !== names[j]) { ok = false; break; }
       }
-      if (ok) return preset;
+      if (!ok) continue;
+      if (typeof preset.match === 'function' && !preset.match(s)) continue;
+      return preset;
     }
     return null;
   };
@@ -544,11 +530,17 @@ var craftRef = null;
   craft.applyPanelSize = function () {
     if (!craft.panel) return;
     if (craft.isFullscreen) {
-      craft.panel.style.width = '95vw';
+      var fsW = craft._fsWidth != null ? craft._fsWidth : craft.computeFullscreenWidth();
       craft.panel.style.maxWidth = 'none';
+      if (fsW != null) {
+        craft.panel.style.width = fsW + 'px';
+        craft.panel.style.left = ((window.innerWidth - fsW) / 2) + 'px';
+      } else {
+        craft.panel.style.width = '95vw';
+        craft.panel.style.left = '2.5vw';
+      }
       craft.panel.style.height = '95vh';
       craft.panel.style.maxHeight = '95vh';
-      craft.panel.style.left = '2.5vw';
       craft.panel.style.right = 'auto';
       craft.panel.style.bottom = 'auto';
       craft.panel.style.top = '2.5vh';
@@ -570,6 +562,19 @@ var craftRef = null;
     var available = window.innerWidth * 0.95 - 32;
     var maxPerCol = Math.floor((available - (nRarities - 1) * 5) / nRarities);
     return Math.max(24, Math.min(50, maxPerCol));
+  };
+
+  craft.computeFullscreenWidth = function () {
+    var s = state;
+    var n = (s && Array.isArray(s.tiers)) ? s.tiers.length : 0;
+    if (!n) return null;
+    var SIZE = craft.computeIconSize(n);
+    var gridWidth = n * SIZE + (n - 1) * 5;
+    var desired = gridWidth + (8 * 2 + 4 * 2 + 12);
+    if (desired < 632) desired = 632;
+    var maxWidth = window.innerWidth * 0.95;
+    if (desired > maxWidth) desired = maxWidth;
+    return desired;
   };
 
   craft.toggleFullscreen = function () {
@@ -599,6 +604,7 @@ var craftRef = null;
 
       craft.pityInitialized = false;
       craft.clearCellCaches();
+      craft._fsWidth = null;
     }
     var shouldShow = !!lobby;
     var newDisplay = shouldShow ? '' : 'none';
@@ -895,18 +901,7 @@ var craftRef = null;
     var tierName = (s.tiers[craft.craftRarity] || {}).name || '';
     var petalName = craft.getCraftPetalName(s, craft.craftPetalIdx);
 
-    var lobbyForCraft = craft.detectLobby(s);
-    var craftPetalToken = petalName;
-    var craftAmount = total;
-    if (lobbyForCraft &&
-        (lobbyForCraft.name === 'Line Maze' || lobbyForCraft.name === 'MMO')) {
-      if (lobbyForCraft.name === 'Line Maze' &&
-          craft.PETAL_NAME_SHORTHAND[petalName]) {
-        craftPetalToken = craft.PETAL_NAME_SHORTHAND[petalName];
-      }
-      craftAmount = Math.floor(total / 5);
-    }
-    sendChatMessage('/craft ' + tierName + ' ' + craftPetalToken + ' ' + craftAmount);
+    sendChatMessage('/craft ' + tierName + ' ' + petalName + ' ' + total);
 
     craft.orbitLastPositions = [];
     craft.setCraftResult({
@@ -1552,6 +1547,7 @@ var craftRef = null;
         if (desired > maxWidth) desired = maxWidth;
         craft.panel.style.width = desired + 'px';
         craft.panel.style.left = ((window.innerWidth - desired) / 2) + 'px';
+        craft._fsWidth = desired;
       }
     } catch (err) {
       craft.derror('render failed', err);

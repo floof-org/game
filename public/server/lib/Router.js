@@ -168,7 +168,7 @@ export default class Router {
     static encoder = new TextEncoder();
     static decoder = new TextDecoder();
 
-    static isSandbox = globalThis.environmentName !== "node" && globalThis.environmentName !== "bun" && location.hostname !== "localhost";
+    static isSandbox = globalThis.environmentName !== "node" && globalThis.environmentName !== "bun" && (typeof location !== "undefined" ? location.hostname !== "localhost" : false);
 
     static u16ToU8 = n => [n & 0xFF, n >> 8];
     static u8ToU16 = (u8, o = 0) => u8[o] | u8[o + 1] << 8;
@@ -252,6 +252,13 @@ export default class Router {
             case "ffa":
                 state.isTDM = false;
                 state.gamemode = GAMEMODES.FFA;
+                break;
+            case "mmo":
+                state.isTDM = false;
+                state.gamemode = GAMEMODES.MMO;
+                state.biome = BIOME_TYPES.CRYPT;
+                state.mobsExpire = true;
+                await initTerrain(state.biome);
                 break;
             case "tdm":
                 state.isTDM = true;
