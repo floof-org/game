@@ -3,6 +3,7 @@ import Client from "./Client.js";
 import { mobConfigs, mobIDOf } from "./config.js";
 import initTerrain from "./initTerrain.js";
 import state from "./state.js";
+import { Building } from "./Entity.js";
 
 globalThis.environmentName ??= "browser";
 
@@ -259,6 +260,7 @@ export default class Router {
                 state.biome = BIOME_TYPES.CRYPT;
                 state.mobsExpire = true;
                 await initTerrain(state.biome);
+                new Building({ x: 0, y: 0 }); 
                 break;
             case "tdm":
                 state.isTDM = true;
