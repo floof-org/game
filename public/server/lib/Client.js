@@ -603,6 +603,9 @@ export class Camera {
     /** @type {Map<number, MobClientCache>} */
     mobCache = new Map();
 
+    /** @type {Map<number, BuildingClientCache>} */
+    buildingCache = new Map(); 
+
     /** @type {Map<number, MarkerClientCache>} */
     markerCache = new Map();
 
