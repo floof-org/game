@@ -4932,6 +4932,47 @@ function drawDiepTank(ctx = _ctx, hit = false) {
 
 const mobCache = new Map();
 
+// export function drawBuilding(ctx) {
+//     ctx.fillStyle = "#FFD700"; // Simple gold color for now
+//     ctx.fillRect(-32, -32, 64, 64); // Matches the size defined in Entity.js
+    
+//     // Add simple text or detail
+//     ctx.fillStyle = "#000000";
+//     ctx.font = "20px Arial";
+//     ctx.fillText("BUILDING", -25, 5);
+// }
+
+export function drawBuilding(ctx = _ctx, hit = false) {
+    // Use units instead of pixels. Size 4 is clearly visible compared to a dot hitbox.
+    const size = 4; 
+    const baseColor = colors.rockGray;
+    const roofColor = colors.scorpionBrown;
+
+    // 1. Base Wall
+    setStyle(ctx, mixColors(baseColor, "#FF0000", hit * 0.5), 0.2);
+    ctx.beginPath();
+    ctx.rect(-size / 2, 0, size, size / 2); 
+    ctx.fill();
+    ctx.stroke();
+
+    // 2. Roof
+    setStyle(ctx, mixColors(roofColor, "#FF0000", hit * 0.5), 0.2);
+    ctx.beginPath();
+    ctx.moveTo(-size / 2 - 0.5, 0);      // Left eave
+    ctx.lineTo(0, -size / 2);            // Peak
+    ctx.lineTo(size / 2 + 0.5, 0);       // Right eave
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 3. Door
+    setStyle(ctx, mixColors(colors.stingerBlack, "#FF0000", hit * 0.5), 0.2);
+    ctx.beginPath();
+    ctx.rect(-0.4, size / 4, 0.8, size / 4);
+    ctx.fill();
+    ctx.stroke();
+}
+
 export function drawMob(id, index, rarity, hit = false, ctx = _ctx, attack = false, friend = false, rot = 0, extra = undefined, date = performance.now()) {
     if (options.cacheMobAssets) {
         const key = `${index}-${rarity}-${friend}`;
