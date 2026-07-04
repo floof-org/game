@@ -1904,6 +1904,42 @@ function draw() {
     net.state.previousMobs = currentMobs;
     net.state.previousPetals = currentPetals;
     net.state.previousPlayers = currentPlayers;
+    
+    net.state.buildings.forEach((entity) => {
+        entity.interpolate();
+        const drawX = entity.x * scale - cameraX + halfWidth;
+        const drawY = entity.y * scale - cameraY + halfHeight;
+        const size = entity.size * scale;
+
+        const oldTransform = ctx.getTransform();
+        const oldFillStyle = ctx.fillStyle;
+        const oldStrokeStyle = ctx.strokeStyle;
+        const oldLineWidth = ctx.lineWidth;
+        const oldGlobalAlpha = ctx.globalAlpha;
+        const oldShadowBlur = ctx.shadowBlur;
+        const oldShadowColor = ctx.shadowColor;
+        ctx.setTransform(size, 0, 0, size, drawX, drawY);
+        ctx.rotate(entity.facing);
+
+        // Call the drawBuilding function from renders.js
+        drawBuilding(ctx); 
+
+        ctx.setTransform(oldTransform);
+        ctx.fillStyle = oldFillStyle;
+        ctx.strokeStyle = oldStrokeStyle;
+        ctx.lineWidth = oldLineWidth;
+        ctx.globalAlpha = oldGlobalAlpha;
+        ctx.shadowBlur = oldShadowBlur;
+        ctx.shadowColor = oldShadowColor;
+
+        if (options.showHitboxes) {
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
+            ctx.lineWidth = 1.5 * scale;
+            ctx.strokeStyle = colors["???"];
+            ctx.stroke();
+        }
+    });
 
     net.state.petals.forEach((entity) => {
         entity.interpolate();
@@ -2067,42 +2103,6 @@ function draw() {
 
             ctx.textAlign = "right";
             text(net.state.tiers[entity.rarity].name, drawX + barSize + barthicc * 0.5, drawY + barSize + 18 * scale + barthicc * 0.5, 8.5 * scale, net.state.tiers[entity.rarity].color);
-        }
-    });
-
-    net.state.buildings.forEach((entity) => {
-        entity.interpolate();
-        const drawX = entity.x * scale - cameraX + halfWidth;
-        const drawY = entity.y * scale - cameraY + halfHeight;
-        const size = entity.size * scale;
-
-        const oldTransform = ctx.getTransform();
-        const oldFillStyle = ctx.fillStyle;
-        const oldStrokeStyle = ctx.strokeStyle;
-        const oldLineWidth = ctx.lineWidth;
-        const oldGlobalAlpha = ctx.globalAlpha;
-        const oldShadowBlur = ctx.shadowBlur;
-        const oldShadowColor = ctx.shadowColor;
-        ctx.setTransform(size, 0, 0, size, drawX, drawY);
-        ctx.rotate(entity.facing);
-
-        // Call the drawBuilding function from renders.js
-        drawBuilding(ctx); 
-
-        ctx.setTransform(oldTransform);
-        ctx.fillStyle = oldFillStyle;
-        ctx.strokeStyle = oldStrokeStyle;
-        ctx.lineWidth = oldLineWidth;
-        ctx.globalAlpha = oldGlobalAlpha;
-        ctx.shadowBlur = oldShadowBlur;
-        ctx.shadowColor = oldShadowColor;
-
-        if (options.showHitboxes) {
-            ctx.beginPath();
-            ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
-            ctx.lineWidth = 1.5 * scale;
-            ctx.strokeStyle = colors["???"];
-            ctx.stroke();
         }
     });
 
