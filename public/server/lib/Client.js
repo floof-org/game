@@ -665,6 +665,17 @@ export class Camera {
 
                     this.mobCache.get(entity.id).update(entity);
                 } break;
+                case ENTITY_TYPES.BUILDING: {
+                    if (!this.buildingCache.has(entity.id)) {
+                        const cache = new BuildingClientCache();
+                        cache.id = entity.id;
+                        cache.index = entity.index;
+                        cache.rarity = entity.rarity;
+                        cache.isNew = true;
+                        this.buildingCache.set(entity.id, cache);
+                    }
+                    this.buildingCache.get(entity.id).update(entity);
+                } break;
             }
         });
 
