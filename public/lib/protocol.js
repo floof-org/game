@@ -966,7 +966,8 @@ export const ENTITY_TYPES = {
     PLAYER: 1,
     PETAL: 2,
     MOB: 3,
-    PROJECTILE: 4
+    PROJECTILE: 4,
+    BUILDING: 5
 };
 
 export const BIOME_TYPES = {
