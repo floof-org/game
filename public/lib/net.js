@@ -1636,6 +1636,57 @@ export class ClientSocket extends WebSocket {
                 }
 
                 while (((id = reader.getUint32()), id > 0)) {
+                    const flags = reader.getUint8();
+                    let building = state.buildings.get(id);
+
+                    if (!building) {
+                        building = new ClientBuilding(id);
+                        state.buildings.set(id, building);
+                    }
+
+                    if (flags === ENTITY_FLAGS.NEW) {
+                        building.index = reader.getUint8();
+                        building.rarity = reader.getUint8();
+                        building.realX = reader.getFloat32();
+                        building.realY = reader.getFloat32();
+                        building.realSize = reader.getFloat32();
+                        building.realFacing = reader.getFloat32();
+
+                        // No specific entity flags for buildings yet, but keep the structure
+                        // const eFlags = reader.getUint8();
+
+                        building.x = building.realX;
+                        building.y = building.realY;
+                        building.size = building.realSize;
+                        building.facing = building.realFacing;
+                        continue;
+                    }
+
+                    if (flags === ENTITY_FLAGS.DIE) {
+                        state.buildings.delete(id);
+                        continue;
+                    }
+
+                    if (flags & ENTITY_FLAGS.POSITION) {
+                        building.realX = reader.getFloat32();
+                        building.realY = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.SIZE) {
+                        building.realSize = reader.getFloat32();
+                    }
+
+                    if (flags & ENTITY_FLAGS.FACING) {
+                        building.realFacing = reader.getFloat32();
+                    }
+                    // If you add custom flags for buildings, process them here
+                    // if (flags & ENTITY_FLAGS.FLAGS) {
+                    //     const eFlags = reader.getUint8();
+                    //     building.someFlag = eFlags & CUSTOM_BUILDING_FLAG;
+                    // }
+                }
+
+                while (((id = reader.getUint32()), id > 0)) {
                     const drop = {
                         id: id,
                         x: reader.getFloat32(),
