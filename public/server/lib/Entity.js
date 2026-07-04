@@ -1710,6 +1710,24 @@ class FakeClient {
     }
 }
 
+export class Building extends Entity {
+    constructor(position = { x: 0, y: 0 }) {
+        super(position);
+        this.type = ENTITY_TYPES.BUILDING;
+        this.size = 64; 
+        this.health.set(Infinity); 
+        this.damage = 0;
+        this.pushability = 0;
+    }
+
+    update() {
+        super.update();
+    }
+
+    collide() { }
+    damage() { }
+}
+
 export class AIPlayer extends Player {
     static names = [
         "Abe", "Abraham", "Adam", "Adrian", "Al", "Alan", "Albert", "Alex", "Alexander", "Alfred", "Allan", "Allen", "Alvin", "Andre",
