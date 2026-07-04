@@ -2339,6 +2339,9 @@ export const state = {
     /** @type {Map<number, ClientMob>} */
     mobs: new Map(),
 
+    /** @type {Map<number, ClientBuilding>} */
+    buildings: new Map(), 
+
     /** @type {Map<number, {id:number,x:number,y:number,size:number,index:number,rarity:number}>} */
     drops: new Map(),
 
