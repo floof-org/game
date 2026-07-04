@@ -718,6 +718,18 @@ export class Camera {
 
         writer.setUint32(0);
 
+        this.buildingCache.forEach(cache => {
+            if (!retrieved.has(cache.id)) {
+                writer.setUint32(cache.id);
+                writer.setUint8(ENTITY_FLAGS.DIE);
+                this.buildingCache.delete(cache.id);
+                return;
+            }
+            cache.pipe(writer);
+        });
+
+        writer.setUint32(0);
+
         this.dropsToAdd.forEach(drop => {
             writer.setUint32(drop.id);
             writer.setFloat32(drop.x);
