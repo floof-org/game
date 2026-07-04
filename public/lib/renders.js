@@ -4944,7 +4944,7 @@ const mobCache = new Map();
 
 export function drawBuilding(ctx = _ctx, hit = false) {
     // Use units instead of pixels. Size 4 is clearly visible compared to a dot hitbox.
-    const size = 4; 
+    const size = 2; 
     const baseColor = colors.rockGray;
     const roofColor = colors.scorpionBrown;
 
