@@ -1714,14 +1714,12 @@ export class Building extends Entity {
     constructor(position = { x: 0, y: 0 }) {
         super(position);
         this.type = ENTITY_TYPES.BUILDING;
+        this.index = 0;
+        this.rarity = 0;
         this.size = 64; 
         this.health.set(Infinity); 
         this.damage = 0;
         this.pushability = 0;
-    }
-
-    update() {
-        super.update();
     }
 
     collide() { }
