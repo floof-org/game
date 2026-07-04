@@ -976,6 +976,22 @@ export class ClientMob extends ClientEntity {
     }
 }
 
+export class ClientBuilding extends ClientEntity {
+    constructor(id) {
+        super(id);
+        this.index = 0; // Assuming buildings might have different types/indices
+        this.rarity = 0; // And rarities, if applicable
+    }
+
+    interpolate() {
+        // Call the parent interpolation for X, Y, and Facing
+        super.interpolate();
+        
+        // FORCE the size back to 32 so the server cannot overwrite it
+        this.size = 64;
+    }
+}
+
 export class ClientMarker {
     constructor(id) {
         this.id = id;
