@@ -472,6 +472,91 @@ export class MobClientCache {
     }
 }
 
+export class BuildingClientCache {
+    id = 0;
+    index = 0;
+    rarity = 0;
+    isNew = true;
+
+    x = 0;
+    y = 0;
+    size = 0;
+    facing = 0;
+
+    updatePosition = false;
+    updateSize = false;
+    updateFacing = false;
+
+    /** @param {Building} real */
+    update(real) {
+        if (this.x !== real.x || this.y !== real.y) {
+            this.x = real.x;
+            this.y = real.y;
+            this.updatePosition = true;
+        }
+
+        if (this.size !== real.size) {
+            this.size = real.size;
+            this.updateSize = true;
+        }
+
+        if (this.facing !== real.facing) {
+            this.facing = real.facing;
+            this.updateFacing = true;
+        }
+
+        // Add logic for any specific building properties if needed
+        // if (this.index !== real.index) { this.index = real.index; this.updateDisplay = true; }
+    }
+
+    /** @param {Writer} writer */
+    pipe(writer) {
+        if (!this.isNew && !this.updatePosition && !this.updateSize && !this.updateFacing) {
+            return;
+        }
+
+        if (this.isNew) {
+            this.isNew = false;
+            this.updatePosition = false;
+            this.updateSize = false;
+            this.updateFacing = false;
+
+            writer.setUint32(this.id);
+            writer.setUint8(ENTITY_FLAGS.NEW);
+            writer.setUint8(this.index);
+            writer.setUint8(this.rarity);
+            writer.setFloat32(this.x);
+            writer.setFloat32(this.y);
+            writer.setFloat32(this.size);
+            writer.setFloat32(this.facing);
+            return;
+        }
+
+        writer.setUint32(this.id);
+        writer.setUint8(
+            (this.updatePosition ? ENTITY_FLAGS.POSITION : 0) |
+            (this.updateSize ? ENTITY_FLAGS.SIZE : 0) |
+            (this.updateFacing ? ENTITY_FLAGS.FACING : 0)
+        );
+
+        if (this.updatePosition) {
+            this.updatePosition = false;
+            writer.setFloat32(this.x);
+            writer.setFloat32(this.y);
+        }
+
+        if (this.updateSize) {
+            this.updateSize = false;
+            writer.setFloat32(this.size);
+        }
+
+        if (this.updateFacing) {
+            this.updateFacing = false;
+            writer.setFloat32(this.facing);
+        }
+    }
+}
+
 export class MarkerClientCache {
     id = 0;
     isNew = true;
