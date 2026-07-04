@@ -134,16 +134,8 @@ setInterval(() => {
 
     state.spatialHash.clear();
     state.viewsSpatialHash.clear();
-
-    state.entities.forEach(entity => {
-        entity.update();
-    });
-
-    state.entities.forEach(entity => {
-        if (entity._AABB) {
-            entity.collide();
-        }
-    });
+    state.entities.forEach(entity => entity.update());
+    state.entities.forEach(entity => { if (entity._AABB) entity.collide() });
 
     switch (state.gamemode) {
         case GAMEMODES.FFA:
@@ -444,7 +436,6 @@ switch (globalThis.environmentName) {
 
         lobbySocket.onopen = () => {
             console.log("Connected to server");
-
             state.router.begin(["start", Bun.env.GAMEMODE, Bun.env.MODDED == "true", crypto.randomUUID(), +Bun.env.BIOME]);
 
             lobbySocket.onmessage = event => {
@@ -453,9 +444,7 @@ switch (globalThis.environmentName) {
                 if (data[0] === 255) {
                     const ok = data[1] === 1;
 
-                    if (!ok) {
-                        throw new Error("Request rejected by server");
-                    }
+                    if (!ok) throw new Error("Request rejected by server");
 
                     console.log("Lobby Verified", new TextDecoder().decode(data.slice(2, -1)));
                     return;
