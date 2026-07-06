@@ -999,6 +999,10 @@ export class Entity {
                                     petal.lightning.chargesLeft--;
                                     petal.health.health = petal.health.maxHealth / petal.lightning.charges * petal.lightning.chargesLeft
                                 }
+
+                                if (petal?.config?.explodesOnParentHit && petal.config?.explodesOut > -1) {
+                                    petal.explodeOut();
+                                }
                             }))
                         }))
                     }
@@ -1019,6 +1023,10 @@ export class Entity {
                                     new Lightning(other).define(petal.lightning.damage, petal.lightning.range, petal.lightning.bounces, petal.rarity).bounce();
                                     petal.lightning.chargesLeft--;
                                     petal.health.health = petal.health.maxHealth / petal.lightning.charges * petal.lightning.chargesLeft
+                                }
+
+                                if (petal?.config?.explodesOnParentHit && petal.config?.explodesOut > -1) {
+                                    petal.explodeOut();
                                 }
                             }))
                         }))
@@ -1410,9 +1418,48 @@ export class Petal extends Entity {
         super.collide();
     }
 
+    explodeOut() {
+        const config = petalConfigs[this.config.explodesOut];
+        if (!config) {
+            return;
+        }
+
+        const tier = config.tiers[this.rarity];
+        const petal = new Petal(this.parent, -1, -1);
+
+        petal.x = this.x;
+        petal.y = this.y;
+        petal.index = this.config.explodesOut;
+        petal.size = config.sizeRatio;
+        petal.health.set(tier.health);
+        petal.damage = tier.damage;
+        petal.rarity = this.rarity;
+        petal.speed = 0;
+        petal.spinSpeed = 0;
+        petal.pushability = 0;
+        petal.launched = true;
+        petal.density = tier.density / 30;
+        petal.range = 3;
+        petal.nullCollision = false;
+
+        if (tier.poison) {
+            petal.poison.toApply.damage = tier.poison.damage;
+            petal.poison.toApply.timer = tier.poison.duration;
+        }
+
+        if (config.enemySpeedDebuff) {
+            petal.speedDebuff.toApply.multiplier = config.enemySpeedDebuff.speedMultiplier;
+            petal.speedDebuff.toApply.timer = config.enemySpeedDebuff.duration;
+        }
+    }
+
     destroy() {
         if (this.slotIndex > -1) {
             this.parent.petalSlots[this.slotIndex].petals[this.petalIndex] = null;
+        }
+
+        if (this.config?.explodesOut > -1 && !this.config?.explodesOnParentHit) {
+            this.explodeOut();
         }
 
         super.destroy();

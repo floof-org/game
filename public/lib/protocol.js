@@ -23,16 +23,10 @@ export const tiers = [{
     name: "Super",
     color: "#2affa3"
 }, {
-    name: "Ancient",
-    color: "#ff7b29"
-}, {
     name: "Omega",
-    color: "#d966e8"
-}, {
-    name: "???",
     color: "#333333"
 }, {
-    name: "Unique",
+    name: "Eternal",
     color: "#FFFFFF"
 }];
 
@@ -172,6 +166,8 @@ export class PetalConfig {
         this.attractsLightning = false;
         this.drawing = null;
         this.shootsOut = -1;
+        this.explodesOut = -1;
+        this.explodesOnParentHit = false;
         this.healsInDefense = false;
         this.phases = false;
         this.canPlaceDown = false;
@@ -347,6 +343,12 @@ export class PetalConfig {
 
     setShootOut(shootIndex) {
         this.shootsOut = shootIndex;
+        return this;
+    }
+
+    setExplodeOut(index, onParentHit = false) {
+        this.explodesOut = index;
+        this.explodesOnParentHit = Boolean(onParentHit);
         return this;
     }
 

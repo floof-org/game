@@ -13,7 +13,7 @@ export const petalConfigs = [
         .setSize(.75)
         .setExtraRadians(.03)
         .setDescription("This one makes your petals spin faster."),
-    new PetalConfig("Heavy", 22.5 * 2, 100, 2.5)
+    new PetalConfig("Heavy", 22.5 * 5, 100, 2.5)
         .setSize(1.25)
         .setDensity(3)
         .setDescription("A more chunky petal that hits harder but takes longer to recharge."),
