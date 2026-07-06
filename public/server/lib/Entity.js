@@ -882,11 +882,11 @@ export class Entity {
                         }
                     }
 
-                    if (this.extraDamage) if (other.health.ratio > this.extraDamage.minHp && other.health.ratio < this.extraDamage.maxHp) {
+                    if (this.extraDamage) if (other.health.ratio >= this.extraDamage.minHp && other.health.ratio <= this.extraDamage.maxHp) {
                         thisDamageDone += this.damage * this.extraDamage.multiplier;
                     }
 
-                    if (other.extraDamage) if (this.health.ratio > other.extraDamage.minHp && this.health.ratio < other.extraDamage.maxHp) {
+                    if (other.extraDamage) if (this.health.ratio >= other.extraDamage.minHp && this.health.ratio <= other.extraDamage.maxHp) {
                         otherDamageDone += other.damage * other.extraDamage.multiplier;
                     }
 
@@ -923,7 +923,7 @@ export class Entity {
                     }
 
                     if (this.config?.name === "Starfish" && this.type === ENTITY_TYPES.MOB && other.config?.name === "Dandelion") {
-                        this.dandelionCooldown = 1 + (0.5 * other.rarity)
+                        this.dandelionCooldown = 22.5 + (11.25 * other.rarity)
                     }
 
                     if (this.damageReflection?.reflection > 0 && !other.parent.spawnInvincibility) {
@@ -2018,10 +2018,6 @@ export class Mob extends Entity {
             this.poison.toApply.timer = tier.poison.duration;
         }
 
-        if (config.name === "Demon") {
-            this.extraTicker = 100;
-        }
-
         if (config.damageReflection) {
             this.damageReflection.reflection = config.damageReflection.reflection;
             this.damageReflection.cap = config.damageReflection.cap;
@@ -2220,6 +2216,7 @@ export class Mob extends Entity {
             Entity.idAccumulator--;
 
             for (let i = 0; i < 8; i++) {
+                const randomAngle = Math.random() * Math.PI * 2;
                 const angle = Math.PI * 2 / 8 * i;
                 const missile = new Petal(this, -1, -1);
                 missile.team = this.team;
@@ -2228,12 +2225,10 @@ export class Mob extends Entity {
                 missile.pushability = 0;
                 missile.dandelionBind = this;
                 missile.size = this.size / 2;
+                missile.health.set(missile.health.maxHealth * 3);
 
-                missile.damage *= .5;
-                missile.health.set(missile.health.maxHealth * .85);
-
-                missile.x = this.x + Math.cos(angle) * (this.size + missile.size * 1.2);
-                missile.y = this.y + Math.sin(angle) * (this.size + missile.size * 1.2);
+                missile.x = this.x + Math.cos(angle + randomAngle) * (this.size + missile.size * 1.2);
+                missile.y = this.y + Math.sin(angle + randomAngle) * (this.size + missile.size * 1.2);
 
                 k.push(missile);
             }
@@ -2356,22 +2351,6 @@ export class Mob extends Entity {
                             state.maxMobs++;
                             state.aliveMobs.push(poop);
                         }
-                    }
-                }
-
-                if (this.config.name === "Demon") {
-                    this.extraTicker--;
-
-                    if (this.extraTicker <= 0) {
-                        const a = Math.random() * Math.PI * 2;
-                        const d = Math.random() * (this.target.size * 8);
-
-                        new Pentagram(this, {
-                            x: this.target.x + Math.cos(a) * d,
-                            y: this.target.y + Math.sin(a) * d
-                        }, this.size * 1.25 * (1 + Math.random() * .2 - .1), 1500 + Math.random() * 1500);
-
-                        this.extraTicker = 100 + Math.random() * 100;
                     }
                 }
                 
