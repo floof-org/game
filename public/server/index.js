@@ -3,6 +3,7 @@ import { BIOME_TYPES, CLIENT_BOUND, Drawing, encodeEverything, ENTITY_TYPES, GAM
 import { DEFAULT_PETAL_COUNT, mobConfigs, PetalConfig, petalConfigs, tiers } from "./lib/config.js";
 import { AIPlayer, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
+import RoomManager from "./lib/Room.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
 
@@ -128,8 +129,7 @@ function getMobIndex() {
     return 0;
 }
 
-// Game loop
-setInterval(() => {
+function gameLoopTick() {
     const startTime = performance.now();
 
     state.spatialHash.clear();
@@ -236,10 +236,10 @@ setInterval(() => {
 
     state.lag.totalTime += performance.now() - startTime;
     state.lag.ticks++;
-}, 1000 / 22.5);
+}
 
 let k = 0;
-setInterval(() => {
+function lagTick() {
     state.lag.mspt = state.lag.totalTime / Math.max(1, state.lag.ticks);
     state.lag.fps = state.lag.ticks;
 
@@ -250,16 +250,22 @@ setInterval(() => {
     if (!Router.isSandbox && ++k % 5 === 0) {
         // console.log("FPS:", state.lag.fps, "MSPT:", state.lag.mspt.toFixed(2));
     }
-}, 1000);
+}
 
 // Drops update
-setInterval(() => {
+function dropsTick() {
     state.drops.forEach(d => d.update());
     state.lightning.forEach(l => l.update());
-}, 256);
+}
 
 // World update loop
-setInterval(() => state.clients.forEach(c => c.worldUpdate()), 1000 / 25);
+function worldTick() {
+    state.clients.forEach(c => c.worldUpdate());
+}
+
+// Every room runs gameLoopTick/lagTick/dropsTick/worldTick independently,
+// each on its own interval and its own state (see Room.js / GameRoom.startLoops).
+Router.setHooks({ tick: gameLoopTick, lag: lagTick, drops: dropsTick, world: worldTick });
 
 // Router server through worker through socket
 state.router = new Router();
@@ -301,7 +307,8 @@ switch (globalThis.environmentName) {
                 "BIOME=0",
                 "HOST=dedicated.floof.supercord.lol",
                 "PORT=3005",
-                "TLS_DIRECTORY=false"
+                "TLS_DIRECTORY=false",
+                "ROOM_COUNT=4"
             ].join("\n"));
             console.warn("Please fill out the .env file with the correct values. Set ENV_DONE to 'true' when done.");
             process.exit();
@@ -363,7 +370,7 @@ switch (globalThis.environmentName) {
 
             websocket: {
                 perMessageDeflate: true,
-                idleTimeout: 0,  // ← DISABLE IDLE TIMEOUT
+                idleTimeout: 0,
                 async open(socket) {
                     socket.binaryType = "arraybuffer";
                     const client = state.router.addClient(socket.data.socketID, socket.data.searchParams.get("uuid"), keys.includes(socket.data.searchParams.get("clientKey")));
@@ -505,7 +512,12 @@ function sendMockups() {
     state.router.postMessage(new Uint8Array([0x02, ...stringToU8(JSON.stringify(encodeEverything(tiers, petalConfigs, mobConfigs)))]));
 
     if (hasDoneItBefore) {
-        setTimeout(() => state.clients.forEach(c => c.talk(CLIENT_BOUND.UPDATE_ASSETS)), 250);
+        // Petal/mob configs are shared across every room, so every room's
+        // clients need to hear about the update, not just whichever room
+        // happened to be active when this ran.
+        setTimeout(() => RoomManager.forEachRoom(() => {
+            state.clients.forEach(c => c.talk(CLIENT_BOUND.UPDATE_ASSETS));
+        }), 250);
     }
 
     hasDoneItBefore = true;
@@ -578,6 +590,11 @@ class ModdingAPI {
     }
 
     parseModdingAPICommand(data) {
+        // The dev/sandbox modding console isn't room-aware yet - it always
+        // operates on room 0. This only matters for the in-browser modding
+        // tool (never instantiated in the production Bun deployment above).
+        RoomManager.rooms[0]?.activate();
+
         const [jobID, functionName, ...args] = data;
 
         switch (functionName) {

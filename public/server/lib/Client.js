@@ -1,4 +1,5 @@
-import state from "./state.js";
+import state, { getActiveRoomState } from "./state.js";
+import RoomManager from "./Room.js";
 import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES } from "../../lib/protocol.js";
 import { mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
@@ -698,6 +699,7 @@ class Disconnect {
         this.body = client.body;
         this.team = client.team;
         this.inventory = client.inventory;
+        this.room = RoomManager.roomOf(client.id);
 
         Client.disconnects.set(this.uuid, this);
 

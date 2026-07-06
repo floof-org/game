@@ -3,6 +3,7 @@ import Client from "./Client.js";
 import { mobConfigs, mobIDOf } from "./config.js";
 import initTerrain from "./initTerrain.js";
 import state from "./state.js";
+import RoomManager, { ROOM_COUNT } from "./Room.js";
 
 globalThis.environmentName ??= "browser";
 
@@ -167,6 +168,7 @@ function applyBiome(int) {
 export default class Router {
     static encoder = new TextEncoder();
     static decoder = new TextDecoder();
+    static hooks = null;
 
     static isSandbox = globalThis.environmentName !== "node" && globalThis.environmentName !== "bun" && (typeof location !== "undefined" ? location.hostname !== "localhost" : false);
 
@@ -178,17 +180,26 @@ export default class Router {
     addClient(numericID, uuid, isAdmin) {
         let kick = false;
         if (!isAdmin) {
-            for (const client of state.clients.values()) {
-                if (client.uuid === uuid) {
-                    kick = "DAR-7";
-                    break;
+            outer: for (const room of RoomManager.rooms) {
+                for (const client of room.roomState.clients.values()) {
+                    if (client.uuid === uuid) {
+                        kick = "DAR-7";
+                        break outer;
+                    }
                 }
             }
         }
 
+        const pendingDisconnect = Client.disconnects.get(uuid);
+        const room = (pendingDisconnect && RoomManager.rooms.includes(pendingDisconnect.room))
+            ? pendingDisconnect.room
+            : RoomManager.findRoomForNewClient();
+
+        room.activate();
+
         const client = new Client(numericID, uuid, isAdmin);
 
-        if (state.clients.size > 35) {
+        if (room.isFull) {
             client.kick("Lobby is full, create another one");
             return null;
         } else if (kick !== false) {
@@ -196,26 +207,53 @@ export default class Router {
             return null;
         }
 
+        RoomManager.assignToRoom(numericID, room);
+
         return client;
     }
 
     pipeMessage(numericID, dataView) {
+        const room = RoomManager.activateFor(numericID);
+        if (!room) return;
+
         const client = state.clients.get(numericID);
         if (!client) return;
         client.onMessage(new Reader(dataView, 0, true));
     }
 
     removeClient(numericID) {
+        const room = RoomManager.activateFor(numericID);
+        if (!room) return;
+
         const client = state.clients.get(numericID);
 
         if (client) {
             client.onClose();
         }
+
+        RoomManager.release(numericID);
+    }
+
+    /**
+     * Sets the hooks (game/drops/world/lag loop bodies, moved out of
+     * index.js) that every room will run independently once it's set up.
+     * Must be called before begin().
+     */
+    static setHooks(hooks) {
+        Router.hooks = hooks;
     }
 
     async begin(message) {
         await loadTerrains();
 
+        RoomManager.create(ROOM_COUNT);
+
+        await RoomManager.beginAll(message, (m, room) => this.beginRoom(m, room), Router.hooks);
+
+        console.log(`Started ${RoomManager.rooms.length} room(s), same gamemode/biome in each, fully isolated from one another.`);
+    }
+
+    async beginRoom(message, room) {
         applyBiome(message[4]);
 
         if (Router.isSandbox && message[1] === "maze") {
@@ -285,7 +323,7 @@ export default class Router {
         state.secretKey = message[3];
 
         console.log([
-            "Lobby Created:",
+            `Room ${room.index} created:`,
             "  - Gamemode: " + message[1],
             "  - Biome: " + BIOME_BACKGROUNDS[message[4]].name,
             "  - Modded: " + (message[2] ? "Yes" : "No"),

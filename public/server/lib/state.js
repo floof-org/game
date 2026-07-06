@@ -15,9 +15,41 @@ export class Zone {
     }
 }
 
-const state = {
-    /** @type {import("./Router.js").default} */
-    router: null,
+let _activeRoomState = null;
+let _sharedRouter = null;
+
+export function setActiveRoomState(roomState) {
+    _activeRoomState = roomState;
+}
+
+export function getActiveRoomState() {
+    return _activeRoomState;
+}
+
+const state = new Proxy({}, {
+    get(_target, prop) {
+        if (prop === "router") return _sharedRouter;
+        if (_activeRoomState == null) {
+            throw new Error(`state.${String(prop)} was accessed before any room was activated`);
+        }
+        return _activeRoomState[prop];
+    },
+    set(_target, prop, value) {
+        if (prop === "router") {
+            _sharedRouter = value;
+            return true;
+        }
+        if (_activeRoomState == null) {
+            throw new Error(`state.${String(prop)} was set before any room was activated`);
+        }
+        _activeRoomState[prop] = value;
+        return true;
+    }
+});
+
+export function createRoomState() {
+
+const roomState = {
 
     width: 32 * 32,
     height: 32 * 32,
@@ -358,8 +390,7 @@ const state = {
     mobTable: null
 };
 
-if (state.inventory) tiers.forEach(tier => {
-     state.inventory[tier.name] = {};
-});
+return roomState;
+}
 
 export default state;
