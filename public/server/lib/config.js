@@ -103,7 +103,7 @@ export const petalConfigs = [
     new PetalConfig("Third Eye",0,0,0)
         .setExtraRange(.5)
         .setMulti(0, false)
-        .setWearable(a.DQ.THIRD_EYE)
+        .setWearable(WEARABLES.THIRD_EYE)
         .setDescription("Through the eye of the beholder comes extra range"),
     new PetalConfig("Pincer",22.5,5,5)
         .setSize(1.2)
@@ -118,7 +118,7 @@ export const petalConfigs = [
     new PetalConfig("Antennae",0,0,0)
         .setExtraVision(150)
         .setMulti(0, false)
-        .setWearable(a.DQ.ANTENNAE)
+        .setWearable(WEARABLES.ANTENNAE)
         .setDescription("These feelers give you some extra vision"),
     new PetalConfig("Peas",22.5,10,10)
         .setSize(1.2)
@@ -831,7 +831,7 @@ export const mobConfigs = [
         .setSandstormMovement(1)
         .setDensity(0)
         .setPushability(0)
-        .setSize(42, a.rx.SIZE_SCALE, .9, .25)
+        .setSize(42, MobTier.SIZE_SCALE, .9, .25)
         .setSpins(0, true)
         .addDrop(petalIDOf("Glass"), .6)
         .addDrop(petalIDOf("Sand"), .45)
@@ -1098,13 +1098,13 @@ export const mobConfigs = [
         .setAggressive(1)
         .addDrop(petalIDOf("Stinger"), .4)
         .addDrop(petalIDOf("Mark"), 0)
-        .setSize(24, a.rx.SIZE_SCALE, .75, .25),
+        .setSize(24, MobTier.SIZE_SCALE, .75, .25),
     new MobConfig("Hell Centipede",50,20,24,4)
         .addDrop(petalIDOf("Stinger"), .4)
         .addDrop(petalIDOf("Mark"), 0)
         .setSystem(1)
         .setAggressive(1)
-        .setSize(24, a.rx.SIZE_SCALE, .75, .25),
+        .setSize(24, MobTier.SIZE_SCALE, .75, .25),
     new MobConfig("Wilt",25,10,30,0)
         .setPushability(0)
         .addDrop(petalIDOf("Leaf"), .6),
@@ -1597,13 +1597,13 @@ export const mobConfigs = [
         .setDrawing((new Drawing).addAction("beginPath").addAction("line", 0, 0, -1.05, -.3).addAction("line", 0, 0, -1.05, .3).addAction("line", 0, 0, -1.15, 0).addAction("paint", "#a38b73", .4, .15).addAction("beginPath").addAction("ellipse", -.2, 0, .75, .65, 0).addAction("paint", "#a38b73", .15, .15).addAction("beginPath").addAction("moveTo", -.4, -.55).addAction("quadraticCurveTo", -.6, 0, -.4, .55).addAction("stroke", "#333333", .25, 0).addAction("beginPath").addAction("ellipse", -.2, 0, .75, .65, 0).addAction("stroke", "#a38b73", .15, .15).addAction("beginPath").addAction("ellipse", .5, 0, .6, .65, 0).addAction("paint", "#a38b73", .15, .15).addAction("beginPath").addAction("moveTo", .85, .17).addAction("quadraticCurveTo", 1.36, .18, 1.5, .5).addAction("moveTo", .85, -.17).addAction("quadraticCurveTo", 1.36, -.18, 1.5, -.5).addAction("circle", 1.5, -.5, .075).addAction("stroke", "#333333", .15, 0).addAction("beginPath").addAction("circle", 1.5, .5, .075).addAction("stroke", "#333333", .2, 0).addAction("beginPath").addAction("circle", 1.5, -.5, .075).addAction("stroke", "#333333", .2, 0)),
     new MobConfig("Lily Pad",25,10,30,0)
         .setWavesIconSize(3.8)
-        .setSize(30, a.rx.SIZE_SCALE, .75, .25)
+        .setSize(30, MobTier.SIZE_SCALE, .75, .25)
         .addDrop(petalIDOf("Lily Pad"), .1)
         .addDrop(petalIDOf("Lotus"), 1)
         .setDrawing((new Drawing).addAction("beginPath").addAction("arc", 0, 0, 1, 5.6, 5).addAction("lineTo", 0, 0).addAction("closePath").addAction("paint", "#3C9564", .25, .2) .addAction("beginPath") .addAction("rotate", 30) .addAction("moveTo", 0, 0) .addAction("bezierCurveTo", -0.312, -0.18, -0.779, -0.45, 0, -0.9) .addAction("bezierCurveTo", 0.779, -0.45, 0.39, -0.225, 0, 0) .addAction("bezierCurveTo", 0.312, -0.18, 0.779, -0.45, 0.779, 0.45) .addAction("bezierCurveTo", 0, 0.9, 0, 0.45, 0, 0) .addAction("bezierCurveTo", 0, 0.36, 0, 0.9, -0.779, 0.45) .addAction("bezierCurveTo", -0.779, -0.45, -0.39, -0.225, 0, 0) .addAction("closePath") .addAction("paint", "#FFB7C5", 0.15, 0.2) .addAction("beginPath") .addAction("circle", 0, 0, 0.3) .addAction("paint", "#ffddbf", 0.125, 0.15)), new MobConfig("Lily Pad",4.5,10,26,0)
         .setWavesIconSize(3.8)
         .setSystem(true)
-        .setSize(26, a.rx.SIZE_SCALE, .75, .25)
+        .setSize(26, MobTier.SIZE_SCALE, .75, .25)
         .addDrop(petalIDOf("Lily Pad"), .1)
         .setDrawing((new Drawing).addAction("beginPath").addAction("arc", 0, 0, 1, 1.6, 1).addAction("lineTo", 0, 0).addAction("closePath").addAction("paint", "#3C9564", .25, .2)),
     new MobConfig("Urchin",37.5,50,26,.5)
@@ -1708,6 +1708,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Iris"), .25, 1)
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ecd54a", .15, .2).addAction("beginPath").addAction("circle", 0, 0, .75).addAction("paint", "#ECD54A", .15, .2).addAction("beginPath").addAction("circle", .6, 0, .175).addAction("fill", "#66BB2A").addAction("stroke", "#BCAA3B", .075, 0).addAction("beginPath").addAction("circle", -.75, 0, .125).addAction("paint", "#8F9699", .075, .2).addAction("beginPath").addAction("dipPolygon", 5, .1, -5, 0).addAction("paint", "#404244", .2, .2)),
     new MobConfig("Tick",62.5,20,20,4)
+        .setWavesIconSize(3.8)
         .setAggressive(1)
         .setPoison(10, 3)
         .setProjectile({
@@ -1730,20 +1731,15 @@ export const mobConfigs = [
 
 export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 
-petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
-petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
-petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
-petalConfigs[petalIDOf("Branch")].setSpawnable(mobIDOf("Wilt") + 1, [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5);
-petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3);
-petalConfigs[petalIDOf("Hornet Egg")].setSpawnable(mobIDOf("Hornet"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5);
-petalConfigs[petalIDOf("Square Egg")].setSpawnable(mobIDOf("Square"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
-petalConfigs[petalIDOf("Triangle Egg")].setSpawnable(mobIDOf("Triangle"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
-petalConfigs[petalIDOf("Pentagon Egg")].setSpawnable(mobIDOf("Pentagon"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
-
-mobConfigs[mobIDOf("Angelic Ladybug")].setPoopable({
-    index: mobIDOf("Evil Ladybug"),
-    interval: 22.5 * 6
-});
+petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
+petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
+petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
+petalConfigs[petalIDOf("Branch")].setSpawnable(mobIDOf("Wilt") + 1, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5);
+petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3);
+petalConfigs[petalIDOf("Hornet Egg")].setSpawnable(mobIDOf("Hornet"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5);
+petalConfigs[petalIDOf("Square Egg")].setSpawnable(mobIDOf("Square"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
+petalConfigs[petalIDOf("Triangle Egg")].setSpawnable(mobIDOf("Triangle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
+petalConfigs[petalIDOf("Pentagon Egg")].setSpawnable(mobIDOf("Pentagon"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
 
 mobConfigs[mobIDOf("Ant Hole")].setAntHoleSpawns([{
     index: mobIDOf("Baby Ant"),
@@ -1881,6 +1877,7 @@ export function queryMob(cb) {
 mobConfigs[mobIDOf("Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Centipede"));
 mobConfigs[mobIDOf("Desert Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Desert Centipede"));
 mobConfigs[mobIDOf("Evil Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Evil Centipede"));
+mobConfigs[mobIDOf("Mecha Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Mecha Centipede"));
 mobConfigs[mobIDOf("Hell Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Hell Centipede"));
 mobConfigs[mobIDOf("Wilt")].branchWith(queryMob(m => m.isSystem && m.name === "Wilt"), 5, 2);
 

@@ -166,8 +166,6 @@ export class PetalConfig {
         this.attractsLightning = false;
         this.drawing = null;
         this.shootsOut = -1;
-        this.explodesOut = -1;
-        this.explodesOnParentHit = false;
         this.healsInDefense = false;
         this.phases = false;
         this.canPlaceDown = false;
@@ -175,6 +173,9 @@ export class PetalConfig {
         this.huddles = false;
         this.ignoreWalls = false;
         this.extraLighting = 0;
+        this.notAttraction = false;
+        this.randomKill = false;
+        this.find = false;
     }
 
     setName(name) {
@@ -343,12 +344,6 @@ export class PetalConfig {
 
     setShootOut(shootIndex) {
         this.shootsOut = shootIndex;
-        return this;
-    }
-
-    setExplodeOut(index, onParentHit = false) {
-        this.explodesOut = index;
-        this.explodesOnParentHit = Boolean(onParentHit);
         return this;
     }
 
@@ -574,6 +569,119 @@ export class PetalConfig {
 
         return this;
     }
+
+    setRandomKill(randomKill) {
+        this.randomKill = Boolean(randomKill);
+        return this;
+    }
+
+    setFinds(find) {
+        this.find = Boolean(find);
+        return this;
+    }
+
+    setNotAttraction(notAttraction) {
+        this.notAttraction = Boolean(notAttraction);
+        return this;
+    }
+
+    setRevives(revives, revivesCD) {
+        this.revives = Boolean(revives);
+        this.revivesCD = revivesCD;
+        return this;
+    }
+
+    setReloadSpeed(reloadSpeed) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].reloadSpeed = reloadSpeed + reloadSpeed * i;
+        }
+
+        return this;
+    }
+
+    setBounce(bounce) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].bounce = bounce + bounce * i;
+        }
+
+        return this;
+    }
+
+    setAttraction(extraAttraction) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].extraAttraction = extraAttraction + extraAttraction * i;
+        }
+
+        return this;
+    }
+
+    setLuck(luck) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].luck = luck + luck * i;
+        }
+
+        return this;
+    }
+
+    setBouncing(cooldown = 22.5) {
+        this.bouncing = {
+            cooldown: (cooldown / 22.5) * 1000
+        };
+
+        return this;
+    }
+
+    setEvade(evadeChance) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].evadeChance = Math.max(0, Math.min(1, evadeChance));
+        }
+
+        return this;
+    }
+
+    setBlock(blockHits) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].blockHits = Math.max(1, Math.round(blockHits));
+        }
+
+        return this;
+    }
+
+    setDecay(decay) {
+        this.decay = decay;
+        return this;
+    }
+
+    setProjectileDamage(projectileDamage) {
+        this.projectileDamage = projectileDamage;
+        return this;
+    }
+
+    setStationaryDamage(stationaryDamage) {
+        this.stationaryDamage = stationaryDamage;
+        return this;
+    }
+
+    setMark(mark) {
+        this.mark = Boolean(mark);
+        return this;
+    }
+
+    setExtraArmor(extraArmor) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].extraArmor = extraArmor * Math.pow(PetalTier.DAMAGE_SCALE, i);
+        }
+
+        return this;
+    }
+
+    setSummonArmor(summonArmor) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].summonArmor = summonArmor * Math.pow(PetalTier.DAMAGE_SCALE, i);
+        }
+
+        return this;
+    }
 }
 
 export class MobDrop {
@@ -639,6 +747,11 @@ export class MobConfig {
         };
 
         this.wavesIconSize = 3.5;
+        this.density = 1;
+        this.isPortal = false;
+        this.isDummy = false;
+        this.friendly = false;
+        this.noDebuff = false;
     }
 
     setSystem(isSystem) {
@@ -886,6 +999,66 @@ export class MobConfig {
 
     setWavesIconSize(wavesIconSize) {
         this.wavesIconSize = wavesIconSize;
+        return this;
+    }
+
+    setDensity(density) {
+        this.density = density;
+        return this;
+    }
+
+    setFriendly(friendly) {
+        this.friendly = Boolean(friendly);
+        return this;
+    }
+
+    setNoDebuff(noDebuff = true) {
+        this.noDebuff = Boolean(noDebuff);
+        return this;
+    }
+
+    setBeetleMovement(beetleMovement) {
+        this.beetleMovement = Boolean(beetleMovement);
+        return this;
+    }
+
+    setDigging(digging) {
+        this.digging = Boolean(digging);
+        return this;
+    }
+
+    setWavesHidden() {
+        this.wavesHidden = true;
+        return this;
+    }
+
+    setPortal(isPortal) {
+        this.isPortal = Boolean(isPortal);
+        return this;
+    }
+
+    setDummy(isDummy) {
+        this.isDummy = Boolean(isDummy);
+        return this;
+    }
+
+    /** @param {string} name @param {number} sizeMultiplier @param {number} damageMultiplier */
+    setExplodes(name, sizeMultiplier = 5, damageMultiplier = 1) {
+        this.explodesOnDeath = {
+            name: name,
+            sizeMultiplier: sizeMultiplier,
+            damageMultiplier: damageMultiplier
+        };
+
+        return this;
+    }
+
+    setPush(radius, force) {
+        this.pushOnDeath = {
+            radius: radius,
+            force: force
+        };
+
         return this;
     }
 }
