@@ -7,7 +7,7 @@ import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
 
 // Dev runtime setup (bun.js wrapper provides this in production)
-globalThis.environmentName = "bun";
+// globalThis.environmentName = "bun";
 // Override fetch to prepend a base URL to relative paths (bun.js wrapper does this)
 if (typeof Bun !== "undefined") {
     const _fetch = globalThis.fetch;
