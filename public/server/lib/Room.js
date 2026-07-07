@@ -5,6 +5,7 @@ export const ROOM_CAPACITY = 35;
 export class GameRoom {
     constructor(index) {
         this.index = index;
+        this.name = `Room ${index + 1}`;
         this.roomState = createRoomState();
         this.intervals = [];
     }
@@ -94,6 +95,28 @@ export class RoomManager {
 
     static roomOf(numericID) {
         return RoomManager.clientRoom.get(numericID) ?? null;
+    }
+
+    /**
+     * Finds a room by its display name (case-insensitive), falling back to
+     * a 1-based room number (e.g. "2" matches "Room 2").
+     * @param {string} input
+     * @returns {GameRoom|null}
+     */
+    static findByName(input) {
+        const trimmed = String(input ?? "").trim();
+        if (!trimmed) return null;
+
+        const lower = trimmed.toLowerCase();
+        const byName = RoomManager.rooms.find(room => room.name.toLowerCase() === lower);
+        if (byName) return byName;
+
+        const asNumber = Number(trimmed);
+        if (Number.isInteger(asNumber)) {
+            return RoomManager.rooms[asNumber - 1] ?? null;
+        }
+
+        return null;
     }
 
     static activateFor(numericID) {

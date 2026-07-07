@@ -2,7 +2,7 @@ import state, { getActiveRoomState } from "./state.js";
 import RoomManager from "./Room.js";
 import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES } from "../../lib/protocol.js";
-import { mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
+import { mobConfigs, mobIDOf, petalConfigs, petalIDOf, tiers } from "./config.js";
 import { xpForLevel } from "../../lib/util.js";
 
 const blockList = [];
@@ -21,6 +21,102 @@ const patterns = [
 ];
 
 const tripsFilter = message => patterns.some(p => p.test(message));
+
+const CRAFT_CHANCES = [0.64, 0.32, 0.16, 0.08, 0.04, 0.02, 0.01, 0.001, 0];
+
+const ORACLE_RATES = [7, 11, 19, 34, 65, 128, 253, 2503];
+
+const MERGE_RECIPES = [
+    { inputs: [{ petal: "light", count: 1 }, { petal: "rose", count: 1 }], output: "Dahlia" },
+    { inputs: [{ petal: "leaf", count: 1 }, { petal: "sand", count: 1 }], output: "Yucca" },
+    { inputs: [{ petal: "stinger", count: 1 }, { petal: "iris", count: 1 }], output: "Venomous Stinger" },
+    { inputs: [{ petal: "leaf", count: 1 }, { petal: "salt", count: 2 }], output: "Starfish" },
+    { inputs: [{ petal: "peas", count: 1 }, { petal: "iris", count: 1 }], output: "Grapes" },
+    { inputs: [{ petal: "dandelion", count: 1 }, { petal: "iris", count: 1 }], output: "Fig" },
+    { inputs: [{ petal: "dandelion", count: 3 }, { petal: "cactus", count: 1 }], output: "Rubber" }
+];
+
+const SHOP_CATALOG = [
+    { petal: "Sand", price: 4 },
+    { petal: "Dandelion", price: 4 },
+    { petal: "Rose", price: 8 },
+    { petal: "Missile", price: 16 },
+    { petal: "Stinger", price: 16 },
+    { petal: "Lentil", price: 16 },
+    { petal: "Lightning", price: 48 },
+    { petal: "Pearl", price: 64 },
+];
+
+function craftSuccessChance(rarityIndex) {
+    return CRAFT_CHANCES[rarityIndex] ?? 0;
+}
+function broadcastAll(message, color) {
+    for (const room of RoomManager.rooms) {
+        for (const client of room.roomState.clients.values()) {
+            client.systemMessage(message, color);
+        }
+    }
+}
+
+function isNearMob(client, mobName) {
+    const room = client.room || getActiveRoomState();
+    const nearby = room.spatialHash.retrieve({
+        AABB: {
+            x1: client.body.x - 256,
+            y1: client.body.y - 256,
+            x2: client.body.x + 256,
+            y2: client.body.y + 256
+        }
+    });
+    return nearby.some(e => e.type === ENTITY_TYPES.MOB && !e.health?.isDead && e.config?.name === mobName);
+}
+
+function findTierIndexByName(name) {
+    const lower = name.toLowerCase();
+    return tiers.findIndex(t => t.name.toLowerCase() === lower);
+}
+
+function findPetalIndexByName(name) {
+    const lower = name.toLowerCase();
+    return petalConfigs.findIndex(p => p.name.toLowerCase() === lower);
+}
+
+/**
+ * @param {string[]} args
+ * @returns {{rarityIndex: number, petalIndex: number, amount: number}|null}
+ */
+function parseRarityPetalAmount(args) {
+    if (args.length < 2) return null;
+
+    const rarityIndex = findTierIndexByName(args[0]);
+    if (rarityIndex === -1) return null;
+
+    let amount = 1;
+    let nameArgs = args.slice(1);
+    const last = nameArgs[nameArgs.length - 1];
+    if (nameArgs.length > 1 && /^\d+$/.test(last)) {
+        amount = Math.max(1, parseInt(last, 10));
+        nameArgs = nameArgs.slice(0, -1);
+    }
+
+    const petalName = nameArgs.join(" ");
+    const petalIndex = findPetalIndexByName(petalName);
+    if (petalIndex === -1) return null;
+
+    return { rarityIndex, petalIndex, amount };
+}
+
+function findClientByUsername(username) {
+    const lower = username.toLowerCase();
+    for (const room of RoomManager.rooms) {
+        for (const client of room.roomState.clients.values()) {
+            if (client.verified && client.username.toLowerCase() === lower) {
+                return client;
+            }
+        }
+    }
+    return null;
+}
 
 export class PlayerClientCache {
     id = 0;
@@ -694,6 +790,7 @@ class Disconnect {
         this.username = client.username;
         this.level = client.level;
         this.xp = client.xp;
+        this.coins = client.coins;
         this.slots = client.slots;
         this.secondarySlots = client.secondarySlots;
         this.body = client.body;
@@ -753,6 +850,7 @@ export default class Client {
         this.secondarySlots = new Array(5).fill(null).map(() => null);
         this.level = 1;
         this.xp = 1;
+        this.coins = 0;
 
         this.lastChat = 0;
         this.frownyMessages = 0;
@@ -875,6 +973,7 @@ export default class Client {
                 if (dc) {
                     this.level = dc.level;
                     this.xp = dc.xp;
+                    this.coins = dc.coins;
                     this.slots = dc.slots;
                     this.secondarySlots = dc.secondarySlots;
                     this.team = dc.team;
@@ -1285,7 +1384,7 @@ export default class Client {
 
                 const message = reader.getStringUTF8();
                 if (!/^[\w\s,.!?'"@#%^&*()_\-+=:;<>\/\\|[\]{}~`\u00A0-\uFFFF]{1,128}$/.test(message)) {
-                    this.systemMessage("That message is too long or contains invalid characters.", "#CACA22");
+                    this.systemMessage("That message is too long or contains invalid characters", "#CACA22");
                     this.frownyMessages++;
 
                     if (this.frownyMessages >= 5) {
@@ -1294,12 +1393,22 @@ export default class Client {
                     return;
                 }
 
+                if (message.startsWith("/")) {
+                    if (performance.now() - this.lastChat < 500) {
+                        this.systemMessage("You're chatting too fast", "#22CACA");
+                        return;
+                    }
+                    this.lastChat = performance.now();
+                    this.handleCommand(message.slice(1));
+                    return;
+                }
+
                 if (message.length > 10) {
                     const setOfChars = new Set(message);
                     const split = message.split("");
                     for (const char of setOfChars) {
                         if (split.filter(c => c === char).length > message.length / 3) {
-                            this.systemMessage("Please refrain from spamming.", "#22CACA");
+                            this.systemMessage("Please refrain from spamming", "#22CACA");
                             this.frownyMessages++;
 
                             if (this.frownyMessages >= 5) {
@@ -1311,7 +1420,7 @@ export default class Client {
                 }
 
                 if (tripsFilter(message)) {
-                    this.systemMessage("Please refrain from saying slurs.", "#CA2222");
+                    this.systemMessage("Please refrain from saying slurs", "#CA2222");
                     this.frownyMessages++;
 
                     if (this.frownyMessages >= 5) {
@@ -1321,13 +1430,571 @@ export default class Client {
                 }
 
                 if (performance.now() - this.lastChat < 500) {
-                    this.systemMessage("You're chatting too fast.", "#22CACA");
+                    this.systemMessage("You're chatting too fast", "#22CACA");
                     return;
                 }
 
                 this.lastChat = performance.now();
                 state.clients.forEach(c => c.chatMessage(this.username, message, this.nameColor));
             } break;
+        }
+    }
+
+    /**
+     * @param {string}
+     */
+    handleCommand(body) {
+        const args = body.trim().split(/\s+/).filter(Boolean);
+        const commandName = (args.shift() ?? "").toLowerCase();
+
+        switch (commandName) {
+            case "help":
+                this.commandHelp(args);
+                break;
+            case "online":
+                this.commandOnline();
+                break;
+            case "give":
+                this.commandGive(args);
+                break;
+            case "craft":
+                this.commandCraft(args);
+                break;
+            case "merge":
+                this.commandMerge(args);
+                break;
+            case "shop":
+                this.commandShop(args);
+                break;
+            case "oracle":
+                this.commandOracle(args);
+                break;
+            default:
+                this.systemMessage(`Unknown command. Try /help.`, "#CACA22");
+                break;
+        }
+    }
+
+    commandHelp(args) {
+        const topic = (args[0] ?? "").toLowerCase();
+        switch (topic) {
+            case "oracle":
+                this.systemMessage("/oracle commands:", "#9682c7");
+                this.systemMessage("/oracle craft <rarity> <petal> - spend that rarity to get the next one", "#9682c7");
+                this.systemMessage("7 Common | 11 Unusual | 19 Rare | 34 Epic", "#9682c7");
+                this.systemMessage("65 Legendary | 128 Mythic | 253 Ultra | 2503 Super", "#9682c7");
+                this.systemMessage("Example: /oracle craft common rose - 7 Common Rose -> 1 Unusual Rose", "#9682c7");
+                break;
+            case "craft":
+                this.systemMessage("/craft commands:", "#d19a57");
+                this.systemMessage("/craft <rarity> <petal> [amount] - craft a petal", "#d19a57");
+                this.systemMessage("/craft <rarity> all - craft all petals of that rarity", "#d19a57");
+                this.systemMessage("Example: /craft common leaf 5", "#d19a57");
+                this.systemMessage("Example: /craft rare ant egg all", "#d19a57");
+                break;
+            case "merge":
+                this.systemMessage("/merge commands:", "#1ea660");
+                this.systemMessage("/merge list - list all merge recipes", "#1ea660");
+                this.systemMessage("/merge craft <rarity> <petal> [amount|all] - merge ingredients into the named petal", "#1ea660");
+                this.systemMessage("Example: /merge craft unusual sawblade all", "#1ea660");
+                break;
+            case "shop":
+                this.systemMessage("/shop commands:", "#ffe763");
+                this.systemMessage("/shop list - list petals available and their Coin prices", "#ffe763");
+                this.systemMessage("/shop coin <rarity> <petal> [count] - convert petals into Coins of that rarity", "#ffe763");
+                this.systemMessage("/shop buy <rarity> <petal> - spend Coins of that rarity to buy petal at that rarity", "#ffe763");
+                this.systemMessage("Example: /shop buy mythic pearl - spends Mythic Coins, gives Mythic Pearl", "#ffe763");
+                break;
+            default:
+                this.systemMessage("/squad - manage your squad...", "#ffe763");
+                this.systemMessage("/craft - crafts 5 petals into a higher rarity", "#ffe763");
+                this.systemMessage("/merge - combine ingredients to create new petals", "#ffe763");
+                this.systemMessage("/shop - sell petals for coin or buy petals via coins", "#ffe763");
+                this.systemMessage("/oracle - combine certain amount of petals for upgraded petal", "#ffe763");
+                break;
+        }
+    }
+
+    commandOnline() {
+        const total = RoomManager.rooms.reduce((sum, room) => sum + room.clientCount, 0);
+        this.systemMessage(`There are currently ${total} player(s) online.`, "#7EEF6D");
+    }
+
+    commandGive(args) {
+        if (this.masterPermissions < 1) {
+            this.systemMessage("You do not have permission to use this command", "#CACA22");
+            return;
+        }
+
+        if (args.length < 3) {
+            this.systemMessage("Usage: /give <player> <rarity> <petal> [amount]", "#CACA22");
+            return;
+        }
+
+        const targetName = args[0];
+        const target = findClientByUsername(targetName);
+        if (!target) {
+            this.systemMessage(`Player "${targetName}" was not found.`, "#CACA22");
+            return;
+        }
+
+        const parsed = parseRarityPetalAmount(args.slice(1));
+        if (!parsed) {
+            this.systemMessage("Could not parse rarity/petal. Usage: /give <player> <rarity> <petal> [amount]", "#CACA22");
+            return;
+        }
+
+        const { rarityIndex, petalIndex, amount } = parsed;
+        const rarityName = tiers[rarityIndex].name;
+        const petalName = petalConfigs[petalIndex].name;
+
+        if (!target.inventory[rarityName]) target.inventory[rarityName] = {};
+        target.inventory[rarityName][petalIndex] = (target.inventory[rarityName][petalIndex] ?? 0) + amount;
+
+        this.systemMessage(`Gave ${amount}x ${rarityName} ${petalName} to ${target.username}.`, "#7EEF6D");
+        target.systemMessage(`${this.username} gave you ${amount}x ${rarityName} ${petalName}.`, "#7EEF6D");
+    }
+
+    commandCraft(args) {
+        const rarityName = args[0]?.toLowerCase();
+        if (!rarityName || args.length < 2) {
+            this.systemMessage("Usage: /craft <rarity> <petal|all> [amount|all]", "#d19a57");
+            return;
+        }
+
+        const s = findTierIndexByName(rarityName);
+        if (s === -1) {
+            this.systemMessage(`Unknown rarity: ${rarityName}`, "#CACA22");
+            return;
+        }
+
+        const n = s + 1;
+        if (n >= tiers.length) {
+            this.systemMessage("Cannot craft beyond max rarity", "#CACA22");
+            return;
+        }
+        if (n >= 8) {
+            this.systemMessage("Unique petals cannot be crafted", "#CACA22");
+            return;
+        }
+
+        const r = tiers[s].name;
+        const l = tiers[n].name;
+        const chance = craftSuccessChance(s);
+        const color = tiers[n].color ?? "#d19a57";
+
+        const attempt = petalIndex => {
+            if (Math.random() < chance) {
+                this.inventory[r][petalIndex] -= 5;
+                if (!this.inventory[l]) this.inventory[l] = {};
+                this.inventory[l][petalIndex] = (this.inventory[l][petalIndex] ?? 0) + 1;
+                broadcastAll(`${this.username} crafted an ${l} ${petalConfigs[petalIndex]?.name ?? `#${petalIndex}`}!`, color);
+                return { crafted: 1, consumed: 5 };
+            } else {
+                const lost = Math.min(Math.floor(4 * Math.random()) + 1, this.inventory[r][petalIndex]);
+                this.inventory[r][petalIndex] -= lost;
+                return { crafted: 0, consumed: lost };
+            }
+        };
+
+        const last = args[args.length - 1]?.toLowerCase();
+        const hasAmountArg = last === "all" || /^\d+$/.test(last);
+
+        if (last === "all" && args.length === 2) {
+            const eligible = Object.keys(this.inventory[r] ?? {})
+                .map(Number)
+                .filter(i => (this.inventory[r][i] ?? 0) >= 5);
+
+            if (eligible.length === 0) {
+                this.systemMessage(`No ${r} petals with ${5}+ to craft`, "#CACA22");
+                return;
+            }
+
+            let crafted = 0, consumed = 0;
+            for (const petalIndex of eligible) {
+                while ((this.inventory[r][petalIndex] ?? 0) >= 5) {
+                    const result = attempt(petalIndex);
+                    crafted += result.crafted;
+                    consumed += result.consumed;
+                }
+            }
+
+            this.systemMessage(`Mass craft done: ${crafted} crafted | ${consumed} consumed`, color);
+            return;
+        }
+
+        const petalArgs = hasAmountArg ? args.slice(1, -1) : args.slice(1);
+        const petalName = petalArgs.join(" ").toLowerCase();
+        if (!petalName) {
+            this.systemMessage("Usage: /craft <rarity> <petal|all> [amount|all]", "#d19a57");
+            return;
+        }
+
+        let targets = [];
+        if (petalName === "all") {
+            targets = Object.keys(this.inventory[r] ?? {})
+                .map(Number)
+                .filter(i => (this.inventory[r][i] ?? 0) >= 5);
+        } else {
+            const petalIndex = findPetalIndexByName(petalName);
+            if (petalIndex === -1) {
+                this.systemMessage(`Unknown petal: ${petalName}`, "#CACA22");
+                return;
+            }
+            targets = [petalIndex];
+        }
+
+        if (targets.length === 0) {
+            this.systemMessage(`No petals available to craft, need at least ${5}`, "#CACA22");
+            return;
+        }
+
+        const amountArg = hasAmountArg ? last : undefined;
+        let totalCrafted = 0, totalConsumed = 0;
+        for (const petalIndex of targets) {
+            const petalName2 = petalConfigs[petalIndex]?.name ?? `#${petalIndex}`;
+            const have = this.inventory[r]?.[petalIndex] ?? 0;
+            if (have < 5) {
+                if (petalName !== "all") {
+                    this.systemMessage(`Not enough ${r} ${petalName2} to craft, need ${5}, have ${have}`, "#CACA22");
+                }
+                continue;
+            }
+
+            let maxAttempts = Infinity;
+            if (amountArg !== undefined && amountArg !== "all") {
+                maxAttempts = Math.max(1, Math.min(9999, parseInt(amountArg, 10)));
+            }
+
+            let attempts = 0, crafted = 0, consumed = 0;
+            while ((this.inventory[r]?.[petalIndex] ?? 0) >= 5 && attempts < maxAttempts) {
+                attempts++;
+                const result = attempt(petalIndex);
+                crafted += result.crafted;
+                consumed += result.consumed;
+            }
+            totalCrafted += crafted;
+            totalConsumed += consumed;
+        }
+
+        if (petalName === "all") {
+            this.systemMessage(`Mass craft done: ${totalCrafted} crafted | ${totalConsumed} consumed`, color);
+        }
+    }
+
+    commandShop(args) {
+        const sub = args[0]?.toLowerCase();
+        const coinIndex = findPetalIndexByName("Coin");
+        const totalCoins = () => {
+            if (coinIndex === -1) return 0;
+            let total = 0;
+            for (const rarityName of Object.keys(this.inventory ?? {})) {
+                total += this.inventory[rarityName]?.[coinIndex] ?? 0;
+            }
+            return total;
+        };
+
+        switch (sub) {
+
+            case "list":
+                this.systemMessage("Shop catalogue:", "#efd85a");
+                this.systemMessage("Costs that many Coins of the chosen rarity", "#ffe763");
+                for (const entry of SHOP_CATALOG) {
+                    this.systemMessage(`${entry.petal} - ${entry.price} Coins (matching rarity)`, "#ffe763");
+                }
+                this.systemMessage(`Your total Coins: ${totalCoins()}`, "#ffe763");
+                return;
+
+            case "coin": {
+                if (!this.body || !isNearMob(this, "Trader")) {
+                    this.systemMessage("You must be near the Trader to use /shop coin!", "#CACA22");
+                    return;
+                }
+
+                const rarityArg = args[1]?.toLowerCase();
+                if (!rarityArg || args.length < 3) {
+                    this.systemMessage("Usage: /shop coin <rarity> <petal> [count]", "#ffe763");
+                    return;
+                }
+
+                const rarityIndex = findTierIndexByName(rarityArg);
+                if (rarityIndex === -1) {
+                    this.systemMessage(`Unknown rarity: ${args[1]}`, "#CACA22");
+                    return;
+                }
+
+                const last = args[args.length - 1];
+                const hasCount = /^\d+$/.test(last) && args.length > 3;
+                const count = hasCount ? Math.max(1, parseInt(last, 10)) : 1;
+                const petalName = (hasCount ? args.slice(2, -1) : args.slice(2)).join(" ").toLowerCase().trim();
+                if (!petalName) {
+                    this.systemMessage("Usage: /shop coin <rarity> <petal> [count]", "#ffe763");
+                    return;
+                }
+
+                const petalIndex = findPetalIndexByName(petalName);
+                if (petalIndex === -1) {
+                    this.systemMessage(`Unknown petal: ${petalName}`, "#CACA22");
+                    return;
+                }
+
+                const rarityName = tiers[rarityIndex].name;
+                const have = this.inventory[rarityName]?.[petalIndex] ?? 0;
+                if (have < count) {
+                    this.systemMessage(`Not enough ${rarityName} ${petalConfigs[petalIndex]?.name}. Need ${count}, have ${have}`, "#CACA22");
+                    return;
+                }
+
+                if (coinIndex === -1) {
+                    this.systemMessage("Coin petal not found on this server", "#CACA22");
+                    return;
+                }
+
+                this.inventory[rarityName][petalIndex] -= count;
+                this.inventory[rarityName][coinIndex] = (this.inventory[rarityName][coinIndex] ?? 0) + count;
+
+                const color = tiers[rarityIndex].color ?? "#ffe763";
+                this.systemMessage(`Converted ${count} ${rarityName} ${petalConfigs[petalIndex]?.name} -> ${count} ${rarityName} Coins!`, color);
+                broadcastAll(`${this.username} sold an ${rarityName} ${petalConfigs[petalIndex]?.name} for ${rarityName} Coin!`, color);
+                return;
+            }
+
+            case "buy": {
+                if (!this.body || !isNearMob(this, "Trader")) {
+                    this.systemMessage("You must be near the Trader to use /shop buy!", "#CACA22");
+                    return;
+                }
+
+                const rarityArg = args[1]?.toLowerCase();
+                if (!rarityArg || args.length < 3) {
+                    this.systemMessage("Usage: /shop buy <rarity> <petal>", "#ffe763");
+                    return;
+                }
+
+                const petalName = args.slice(2).join(" ").toLowerCase().trim();
+                const catalogEntry = SHOP_CATALOG.find(e => e.petal.toLowerCase() === petalName);
+                if (!catalogEntry) {
+                    this.systemMessage(`"${petalName}" is not in the shop. Use /shop list to see available petals`, "#CACA22");
+                    return;
+                }
+
+                const rarityIndex = findTierIndexByName(rarityArg);
+                if (rarityIndex === -1) {
+                    this.systemMessage(`Unknown rarity: ${args[1]}`, "#CACA22");
+                    return;
+                }
+
+                const rarityName = tiers[rarityIndex].name;
+                const petalIndex = findPetalIndexByName(catalogEntry.petal);
+                if (petalIndex === -1 || coinIndex === -1) {
+                    this.systemMessage("Internal shop error: petal not found", "#CACA22");
+                    return;
+                }
+
+                const haveCoins = this.inventory[rarityName]?.[coinIndex] ?? 0;
+                if (haveCoins < catalogEntry.price) {
+                    this.systemMessage(`Not enough ${rarityName} Coins. Need ${catalogEntry.price}, you have ${haveCoins}`, "#CACA22");
+                    return;
+                }
+
+                if (!this.inventory[rarityName]) this.inventory[rarityName] = {};
+                this.inventory[rarityName][coinIndex] -= catalogEntry.price;
+                this.inventory[rarityName][petalIndex] = (this.inventory[rarityName][petalIndex] ?? 0) + 1;
+
+                const color = tiers[rarityIndex].color ?? "#ffe763";
+                this.systemMessage(`Purchased 1x ${rarityName} ${catalogEntry.petal} for ${catalogEntry.price} ${rarityName} Coins! Remaining ${rarityName} Coins: ${this.inventory[rarityName][coinIndex]}`, color);
+                broadcastAll(`${this.username} bought an ${rarityName} ${catalogEntry.petal}!`, color);
+                return;
+            }
+
+            default:
+                this.systemMessage("/shop - list | coin <rarity> <petal> [count] | buy <rarity> <petal>", "#ffe763");
+        }
+    }
+
+    commandOracle(args) {
+        const color = "#9682c7";
+        if (!this.body || this.body.health.isDead) {
+            this.systemMessage("You must be alive to use this command", "#CACA22");
+            return;
+        }
+
+        if (!isNearMob(this, "Oracle")) {
+            this.systemMessage("You can only use /oracle near the Oracle!", color);
+            return;
+        }
+
+        const sub = args[0]?.toLowerCase();
+        switch (sub) {
+
+            case "craft": {
+                const rarityArg = args[1]?.toLowerCase();
+                if (!rarityArg || args.length < 3) {
+                    this.systemMessage("Usage: /oracle craft <rarity> <petal>", color);
+                    return;
+                }
+
+                const a = findTierIndexByName(rarityArg);
+                if (a === -1) {
+                    this.systemMessage(`Unknown rarity: ${rarityArg}`, "#CACA22");
+                    return;
+                }
+                if (a === 8 || a === 9) {
+                    this.systemMessage("Unique and Eternal petals cannot be used as oracle ingredients", "#CACA22");
+                    return;
+                }
+
+                const nextIndex = a === 7 ? 9 : a + 1;
+                const cost = ORACLE_RATES[a] ?? 7;
+                const rarityName = tiers[a].name;
+                const petalName = args.slice(2).join(" ").toLowerCase();
+                if (!petalName) {
+                    this.systemMessage("Usage: /oracle craft <rarity> <petal>", color);
+                    return;
+                }
+
+                const petalIndex = findPetalIndexByName(petalName);
+                if (petalIndex === -1) {
+                    this.systemMessage(`Unknown petal: ${petalName}`, "#CACA22");
+                    return;
+                }
+
+                const have = this.inventory[rarityName]?.[petalIndex] ?? 0;
+                if (have < cost) {
+                    this.systemMessage(`Not enough ${rarityName} ${petalConfigs[petalIndex].name}. Need ${cost}, have ${have}`, "#CACA22");
+                    return;
+                }
+
+                this.inventory[rarityName][petalIndex] -= cost;
+                const nextRarityName = tiers[nextIndex].name;
+                if (!this.inventory[nextRarityName]) this.inventory[nextRarityName] = {};
+                this.inventory[nextRarityName][petalIndex] = (this.inventory[nextRarityName][petalIndex] ?? 0) + 1;
+
+                broadcastAll(`${this.username} crafted an ${nextRarityName} ${petalConfigs[petalIndex]?.name}!`, color);
+                this.systemMessage(`Oracle success! ${cost} ${rarityName} ${petalConfigs[petalIndex].name} -> 1 ${nextRarityName} ${petalConfigs[petalIndex].name}`, color);
+                return;
+            }
+
+            default:
+                this.systemMessage("/oracle - craft <rarity> <petal>", color);
+        }
+    }
+
+    commandMerge(args) {
+        const sub = args[0]?.toLowerCase();
+
+        if (sub === "list") {
+            this.systemMessage("Merge recipes | output - ingredients:", "#18864d");
+            for (const recipe of MERGE_RECIPES) {
+                const ingredients = recipe.inputs
+                    .map(inp => `${petalConfigs[findPetalIndexByName(inp.petal)]?.name ?? inp.petal} ${inp.count}x`)
+                    .join(", ");
+                this.systemMessage(`${recipe.output} - ${ingredients}`, "#1ea660");
+            }
+            return;
+        }
+
+        if (sub !== "craft") {
+            this.systemMessage("Usage: /merge - /merge list | /merge craft <rarity> <petal> [amount|all]", "#1ea660");
+            return;
+        }
+
+        if (!this.body || !isNearMob(this, "Druid")) {
+            this.systemMessage("You can only merge near the Druid!", "#1ea660");
+            return;
+        }
+
+        const rarityArg = args[1]?.toLowerCase();
+        if (!rarityArg || args.length < 3) {
+            this.systemMessage("Usage: /merge craft <rarity> <petal> [amount|all]", "#1ea660");
+            return;
+        }
+
+        const g = findTierIndexByName(rarityArg);
+        if (g === -1) {
+            this.systemMessage(`Unknown rarity "${args[1]}". Usage: /merge craft <rarity> <petal> [amount|all]`, "#CACA22");
+            return;
+        }
+        if (g === 8) {
+            this.systemMessage("Unique petals cannot be merged", "#CACA22");
+            return;
+        }
+
+        const last = args[args.length - 1]?.toLowerCase();
+        const hasAmount = last === "all" || /^\d+$/.test(last);
+        const petalArgs = hasAmount ? args.slice(2, -1) : args.slice(2);
+        const outputName = petalArgs.join(" ").toLowerCase().trim();
+        if (!outputName) {
+            this.systemMessage("Usage: /merge craft <rarity> <petal> [amount|all]", "#1ea660");
+            return;
+        }
+
+        let isAll = false, amount = 1;
+        if (hasAmount) {
+            if (last === "all") isAll = true;
+            else amount = Math.max(1, Math.min(9999, parseInt(last, 10)));
+        }
+
+        const matching = MERGE_RECIPES.filter(r => r.output.toLowerCase() === outputName);
+        if (matching.length === 0) {
+            this.systemMessage(`No merge recipe produces "${outputName}"`, "#CACA22");
+            return;
+        }
+
+        const rarityName = tiers[g].name;
+        const inv = this.inventory;
+        let best = null, bestInputIndices = null, bestCount = 0;
+        for (const recipe of matching) {
+            const inputIndices = recipe.inputs.map(inp => findPetalIndexByName(inp.petal));
+            if (inputIndices.some(i => i === -1)) continue;
+
+            const craftable = Math.min(...recipe.inputs.map((inp, i) =>
+                Math.floor((inv[rarityName]?.[inputIndices[i]] ?? 0) / inp.count)
+            ));
+            if (best === null || craftable > bestCount) {
+                best = recipe;
+                bestInputIndices = inputIndices;
+                bestCount = craftable;
+            }
+        }
+
+        if (!best) {
+            this.systemMessage("Unknown petal name in recipe", "#CACA22");
+            return;
+        }
+
+        const outputIndex = findPetalIndexByName(best.output);
+        if (outputIndex === -1) {
+            this.systemMessage("Unknown petal name in recipe", "#CACA22");
+            return;
+        }
+
+        const craftCount = isAll ? bestCount : Math.min(bestCount, amount);
+        if (craftCount <= 0) {
+            this.systemMessage("Not enough petals to merge!", "#CACA22");
+            best.inputs.forEach((inp, i) => {
+                const have = inv[rarityName]?.[bestInputIndices[i]] ?? 0;
+                this.systemMessage(`Need: ${inp.count} ${petalConfigs[bestInputIndices[i]]?.name ?? inp.petal}, have ${have}`, "#CACA22");
+            });
+            return;
+        }
+
+        if (!inv[rarityName]) inv[rarityName] = {};
+        best.inputs.forEach((inp, i) => {
+            const idx = bestInputIndices[i];
+            inv[rarityName][idx] -= inp.count * craftCount;
+            if (inv[rarityName][idx] <= 0) delete inv[rarityName][idx];
+        });
+        inv[rarityName][outputIndex] = (inv[rarityName][outputIndex] ?? 0) + craftCount;
+
+        const outputPetalName = petalConfigs[outputIndex]?.name ?? best.output;
+        const color = tiers[g].color ?? "#1ea660";
+        const consumedText = best.inputs
+            .map((inp, i) => `${inp.count * craftCount} ${petalConfigs[bestInputIndices[i]]?.name ?? inp.petal}`)
+            .join(" + ");
+        this.systemMessage(`Merged ${consumedText} > ${craftCount} ${outputPetalName}!`, color);
+        for (let i = 0; i < craftCount; i++) {
+            broadcastAll(`${this.username} merged an ${rarityName} ${outputPetalName}!`, color);
         }
     }
 
