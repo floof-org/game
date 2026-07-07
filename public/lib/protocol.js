@@ -31,8 +31,8 @@ export const tiers = [{
 }];
 
 export class PetalTier {
-    static HEALTH_SCALE = 3;
-    static DAMAGE_SCALE = 3;
+    static HEALTH_SCALE = 2;
+    static DAMAGE_SCALE = 2;
 
     constructor(tier, health, damage) {
         this.health = health * Math.pow(PetalTier.HEALTH_SCALE, tier);
@@ -88,9 +88,9 @@ export class PetalTier {
 }
 
 export class MobTier {
-    static HEALTH_SCALE = 3.15;
-    static DAMAGE_SCALE = 3;
-    static SIZE_SCALE = 1.235;
+    static HEALTH_SCALE = 3;
+    static DAMAGE_SCALE = 2;
+    static SIZE_SCALE = 1.2;
 
     constructor(tier, health, damage, size) {
         this.health = health * Math.pow(MobTier.HEALTH_SCALE, tier);
@@ -273,7 +273,7 @@ export class PetalConfig {
 
     setDamageReduction(damageReduction) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].damageReduction = damageReduction * Math.pow(1.1, i);
+            this.tiers[i].damageReduction = damageReduction + damageReduction * i;
         }
 
         return this;
@@ -281,7 +281,7 @@ export class PetalConfig {
 
     setSpeedMultiplier(speedMultiplier) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].speedMultiplier = Math.pow(speedMultiplier, 1 + i / 2.25);
+            this.tiers[i].speedMultiplier = speedMultiplier + speedMultiplier * i;
         }
 
         return this;
@@ -349,7 +349,7 @@ export class PetalConfig {
 
     setExtraRange(extraRange) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].extraRange = extraRange * Math.pow(1.15, i);
+            this.tiers[i].extraRange = extraRange + extraRange * i;
         }
 
         return this;
@@ -374,7 +374,7 @@ export class PetalConfig {
 
     setExtraVision(extraVision) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].extraVision = extraVision * Math.pow(1.45, i);
+            this.tiers[i].extraVision = extraVision * Math.pow(1.5, i);
         }
 
         return this;
@@ -435,7 +435,7 @@ export class PetalConfig {
 
     setExtraPickupRange(extraPickupRange) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].extraPickupRange = extraPickupRange * Math.pow(1.35, i);
+            this.tiers[i].extraPickupRange = extraPickupRange + extraPickupRange * i;
         }
 
         return this;
@@ -444,8 +444,8 @@ export class PetalConfig {
     setDamageReflection(damageReflection, cap = 0) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].damageReflection = {
-                reflection: damageReflection * Math.pow(4 / 3, i),
-                cap: cap * Math.pow(1.05, i)
+                reflection: damageReflection * Math.pow(2, i),
+                cap: 0
             };
         }
 
@@ -459,7 +459,7 @@ export class PetalConfig {
 
     setDensity(density) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].density = density * Math.pow(1.25, i);
+            this.tiers[i].density = density * Math.pow(1.2, i);
         }
 
         return this;

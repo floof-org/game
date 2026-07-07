@@ -389,26 +389,15 @@ export const petalConfigs = [
         .setIcon(1.3, 1, "Wax", -1)
         .setDescription("Can be your personal wall")
         .setDrawing((new Drawing).addAction("beginPath").addAction("polygon", 6, 1, 0).addAction("paint", "#FEE86B", .2, .2)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
-    // Ant Hell new
-
-    new PetalConfig("Shovel",67.5,10,20)
-        .setSize(1.6)
-        .setStationaryDamage(10)
-        .setDescription("Shovel doesn't dig. Deals 10x damage to stationary enemies")
-        .setDrawing((new Drawing).addAction("rotate", 45).addAction("beginPath").addAction("moveTo", -.3, -.6).addAction("lineTo", .3, -.6).addAction("lineTo", .3, 1).addAction("lineTo", -.3, 1).addAction("closePath").addAction("paint", "#795134", .2, .2).addAction("beginPath").addAction("moveTo", -.7, -.4).addAction("quadraticCurveTo", -.8, -1.5, 0, -1.55).addAction("quadraticCurveTo", .8, -1.5, .7, -.4).addAction("closePath").addAction("paint", "#4e4e4e", .2, .2).addAction("beginPath").addAction("moveTo", -.4, 1).addAction("lineTo", .4, 1).addAction("lineTo", .4, 1.4).addAction("lineTo", -.4, 1.4).addAction("closePath").addAction("paint", "#4e4e4e", .2, .2)),
+        
+    new PetalConfig("Pumpkin Seed",22.5,10,10)
+        .setSize(1.4)
+        .setIcon(1, 1, "Seed")
+        .setMark(true)
+        .setDescription(Array.from({
+                length: 10
+            }, (e, t) => `When touched, makes mob explode on death with ${20 * Math.pow(2, t)} explosion damage. Explosion also applies explosive death effect`))
+        .setDrawing((new Drawing).addAction("rotate", 315).addAction("beginPath").addAction("moveTo", -1.05, 0).addAction("quadraticCurveTo", -1, -.8, -.2, -.7).addAction("quadraticCurveTo", .5, -.6, .9, 0).addAction("quadraticCurveTo", .5, .6, -.2, .7).addAction("quadraticCurveTo", -1, .8, -1.05, 0).addAction("paint", "#EAD8B1", .25, .2)),
 
     new PetalConfig("Plank",22.5,30,10)
         .setSize(1.4)
@@ -417,27 +406,18 @@ export const petalConfigs = [
         .setProjectileDamage(10)
         .setDescription("Deals 10x damage to projectiles")
         .setDrawing((new Drawing).addAction("rotate", -120).addAction("beginPath").addAction("moveTo", 1.4, -.7).addAction("lineTo", -.5, -.7).addAction("lineTo", -.5, -.4).addAction("lineTo", -.8, -.7).addAction("lineTo", -1.4, -.7).addAction("lineTo", -1.4, -.1).addAction("lineTo", -1, .1).addAction("lineTo", -1.4, .2).addAction("lineTo", -1.4, .7).addAction("lineTo", 0, .7).addAction("lineTo", .8, .5).addAction("lineTo", 1, .7).addAction("lineTo", 1.4, .7).addAction("lineTo", 1.4, -.7).addAction("paint", "#b96c32", .2, .2).addAction("beginPath").addAction("circle", .8, -.05, .25).addAction("paint", "#b96c32", .2, .2)),
+    
+    new PetalConfig("Blank",22.5,10,10)
+        .setDescription("Blank")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
 
-    new PetalConfig("Clay",22.5,50,10)
-        .setSize(1.6)
-        .setDecay(.01)
-        .setDescription("Decreases in health overtime with random power")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("moveTo", 0, -1.05).addAction("lineTo", .25, -.92).addAction("lineTo", .78, -.62).addAction("lineTo", .85, -.35).addAction("lineTo", .98, .18).addAction("lineTo", .82, .45).addAction("lineTo", .43, .92).addAction("lineTo", .2, .98).addAction("lineTo", -.45, .88).addAction("lineTo", -.65, .65).addAction("lineTo", -.95, .22).addAction("lineTo", -.88, -.15).addAction("lineTo", -.75, -.68).addAction("lineTo", -.4, -.85).addAction("lineTo", 0, -1.05).addAction("closePath").addAction("paint", "#ba7760", .25, .2)),
+    new PetalConfig("Blank",22.5,10,10)
+        .setDescription("Blank")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
 
-    new PetalConfig("Horn",22.5,5,5)
-        .setSize(1.7)
-        .setHuddles(1)
-        .setRandomKill(1)
-        .setNotAttraction(true)
-        .setDescription(Array.from({
-                length: 10
-            }, (e, t) => `Kills random ${tiers[t].name} or below rarity enemy every seven seconds but it doesn't drop loot`))
-        .setDrawing((new Drawing).addAction("beginPath").addAction("moveTo", -1.5, .4).addAction("quadraticCurveTo", 0, .5, 1.6, -.4).addAction("quadraticCurveTo", 1, -.8, .8, -.9).addAction("quadraticCurveTo", 0, -.2, -1.5, .4).addAction("paint", "#555555", .2, .2).addAction("beginPath").addAction("moveTo", -.3, -.15).addAction("quadraticCurveTo", 0, .5, 1.6, -.4).addAction("quadraticCurveTo", 1, -.8, .8, -.9).addAction("quadraticCurveTo", 0, -.3, -.3, -.15).addAction("paint", "#b89c74", .2, .2)),
-
-    new PetalConfig("Triangle",22.5,10,5)
-        .setIcon(.7, 1, "Triangle")
-        .setDescription("Using more triangles will make other triangles have 80% more damage with each next one")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("polygon", 3, 1, 0).addAction("paint", "#ffffff", .3, .2)),
+    new PetalConfig("Blank",22.5,10,10)
+        .setDescription("Blank")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
 
     new PetalConfig("Blank",22.5,10,10)
         .setDescription("Blank")
@@ -466,6 +446,31 @@ export const petalConfigs = [
         .setIcon(.9, 1, "Coin")
         .setDescription("Maybe it's worth something")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#C69B2E").addAction("stroke", "#F5bF39", .23, 0).addAction("beginPath").addAction("arc", 0, 0, .4, Math.PI / 4, 1.8 * Math.PI).addAction("stroke", "#FFE783", .25, 0).addAction("beginPath").addAction("line", 0, .4, 0, .6).addAction("line", 0, -.4, 0, -.6).addAction("stroke", "#FFE783", .2, 0)),
+
+    new PetalConfig("Broccoli",22.5,7,7)
+        .setSize(1.4)
+        .setDescription("Breaks into 3 parts upon death")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("line", -.5, .75, 1, .1).addAction("line", -.75, .5, -.1, -1).addAction("line", -.625, .625, .25, -.25).addAction("line", -.5, .75, -.75, .5).addAction("stroke", "#278A42", .7, 0).addAction("stroke", "#32AE54", .35, 0).addAction("beginPath").addAction("circle", -.1, -.75, .5).addAction("stroke", "#1F6e34", .3, 0).addAction("beginPath").addAction("circle", .75, .1, .5).addAction("stroke", "#1F6e34", .3, 0).addAction("beginPath").addAction("circle", .5, -.5, .5).addAction("stroke", "#1F6e34", .3, 0).addAction("beginPath").addAction("circle", -.1, -.75, .5).addAction("fill", "#278A42").addAction("beginPath").addAction("circle", .75, .1, .5).addAction("fill", "#278A42").addAction("beginPath").addAction("circle", .5, -.5, .5).addAction("fill", "#278A42")),
+
+    new PetalConfig("Fig",22.5,1e-10,0)
+        .setSize(1.4)
+        .setDescription(Array.from({
+                length: 10
+            }, (e, t) => `Explodes on collision dealing ${20 * Math.pow(2, t)} explosion damage`))
+        .setDrawing((new Drawing).addAction("beginPath").addAction("ellipse", 0, 0, .75, 1, 0).addAction("paint", "#cd75de", .25, .2)),
+
+    new PetalConfig("Triangle",22.5,10,5)
+        .setIcon(.7, 1, "Triangle")
+        .setDescription("Using more triangles will make other triangles have 80% more damage with each next one")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("polygon", 3, 1, 0).addAction("paint", "#ffffff", .3, .2)),
+
+    new PetalConfig("Blank",22.5,10,10)
+        .setDescription("Blank")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
+
+    new PetalConfig("Blank",22.5,10,10)
+        .setDescription("Blank")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
 
     new PetalConfig("Blank",22.5,10,10)
         .setDescription("Blank")
@@ -520,112 +525,10 @@ export const petalConfigs = [
         .setDescription("Makes you reflect damage back to enemy")
         .setDrawing((new Drawing).addAction("beginPath").addAction("dipPolygon", 7, 1, .5, 0).addAction("paint", "#FFFFFF", .2, .2)),
 
-    new PetalConfig("Coral",13.5,1e-10,7)
-        .setSize(1.6)
-        .setIcon(1.2, 1, "Coral")
-        .setDescription("Splits on collision into parts")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("moveTo", .18, -.12).addAction("quadraticCurveTo", -.12, 0, -.66, .48).addAction("stroke", "#ab91da", .7, .2).addAction("beginPath").addAction("moveTo", .3, -.72).addAction("quadraticCurveTo", -.18, 0, .72, .18).addAction("stroke", "#ab91da", .7, .2).addAction("beginPath").addAction("moveTo", .18, -.12).addAction("quadraticCurveTo", -.12, 0, -.66, .48).addAction("stroke", "#ab91da", .4, 0).addAction("beginPath").addAction("moveTo", .3, -.72).addAction("quadraticCurveTo", -.18, 0, .72, .18).addAction("stroke", "#ab91da", .4, 0)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-    
-    // Dark Forest new    
-    
-        new PetalConfig("Blood Stinger",22.5,1,100)
-        .setSize(.8)
-        .setIcon(.6, [1, 1, 1, 1, 1, 3, 5, 5, 7, 7], "Stinger")
-        .setMulti([1, 1, 1, 1, 1, 3, 5, 5, 7, 7], true, true)
-        .setHealBack(-.3)
-        .setDescription("Deals massive damage to you and your enemy")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("beginPath").addAction("dipPolygon", 3, 1, .85, 0).addAction("paint", "#962921", .5, .15)),
-    new PetalConfig("Fig",22.5,1e-10,0)
-        .setSize(1.4)
-        .setDescription(Array.from({
-                length: 10
-            }, (e, t) => `Explodes on collision dealing ${20 * Math.pow(3, t)} explosion damage`))
-        .setDrawing((new Drawing).addAction("beginPath").addAction("ellipse", 0, 0, .75, 1, 0).addAction("paint", "#cd75de", .25, .2)),
-    new PetalConfig("Relic",22.5,5,5)
-        .setSize(1.4)
-        .setArmor(3)
-        .setSummonArmor(3)
-        .setIcon(.8, 1, "Relic")
-        .setDescription("A magical relic which buffs your summons armor")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("dipPolygon", 4, 1, 1.5, 0).addAction("paint", "#c7a138", .3, .2)),
-    new PetalConfig("Rubber",22.5,100,1)
-        .setSize(1.4)
-        .setHuddles(1)
-        .setBounce(.3)
-        .setNotAttraction(true)
-        .setDescription("With it, you're like a jumper! Also attract enemy lightning")
-        .setDrawing((new Drawing).addAction("rotate", -30).addAction("beginPath").addAction("dipPolygon", 4, .9, 0, 0).addAction("paint", "#FFFFFF", .2, .2)),
-
-    new PetalConfig("Compass",112.5,10,10)
-        .setSize(1.4)
-        .setHuddles(1)
-        .setFinds(1)
-        .setNotAttraction(1)
-        .setDescription("Summons an chest in the end of wave if its alive")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#42A5F5").addAction("beginPath").addAction("circle", 0, 0, 1).addAction("stroke", "#B0BEC5", .25, 0).addAction("beginPath").addAction("moveTo", .2, .2).addAction("lineTo", -.2, -.2).addAction("lineTo", .6, -.6).addAction("lineTo", .2, .2).addAction("fill", "#e74c3c").addAction("beginPath").addAction("moveTo", .25, .25).addAction("lineTo", -.2, -.2).addAction("lineTo", -.6, .6).addAction("lineTo", .2, .2).addAction("fill", "#ffffff").addAction("beginPath").addAction("circle", 0, 0, .2).addAction("fill", "#B0BEC5")),
-
-    new PetalConfig("Pumpkin Seed",22.5,10,10)
-        .setSize(1.4)
-        .setIcon(1, 1, "Seed")
-        .setMark(true)
-        .setDescription(Array.from({
-                length: 10
-            }, (e, t) => `When touched, makes mob explode on death with ${20 * Math.pow(3, t)} explosion damage. Explosion also applies explosive death effect`))
-        .setDrawing((new Drawing).addAction("rotate", 315).addAction("beginPath").addAction("moveTo", -1.05, 0).addAction("quadraticCurveTo", -1, -.8, -.2, -.7).addAction("quadraticCurveTo", .5, -.6, .9, 0).addAction("quadraticCurveTo", .5, .6, -.2, .7).addAction("quadraticCurveTo", -1, .8, -1.05, 0).addAction("paint", "#EAD8B1", .25, .2)),
-    
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
     new PetalConfig("Blank",22.5,10,10)
         .setDescription("Blank")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
         
-    // Factory new
-
-    new PetalConfig("Cog",22.5,10,5)
-        .setSize(1.6)
-        .setBlock(8)
-        .setIcon(1.1, 1, "Cog")
-        .setDescription("Losing only 1/8 of health on hit")
-        .setDrawing((new Drawing) .addAction("beginPath") .addAction("moveTo", .75, 0) .addAction("lineTo", 1, .08) .addAction("lineTo", .85, .528) .addAction("lineTo", .66, .44) .addAction("lineTo", .537, .536) .addAction("lineTo", .65, .769) .addAction("lineTo", .23, .97) .addAction("lineTo", .12, .74) .addAction("lineTo", 0, .75) .addAction("lineTo", -.087, 1) .addAction("lineTo", -.528, .85) .addAction("lineTo", -.44, .66) .addAction("lineTo", -.536, .537) .addAction("lineTo", -.769, .65) .addAction("lineTo", -.97, .23) .addAction("lineTo", -.74, .124) .addAction("lineTo", -.75, 0) .addAction("lineTo", -1, -.082) .addAction("lineTo", -.85, -.527) .addAction("lineTo", -.67, -.44) .addAction("lineTo", -.537, -.536) .addAction("lineTo", -.65, -.766) .addAction("lineTo", -.23, -.97) .addAction("lineTo", -.127, -.74) .addAction("lineTo", 0, -.75) .addAction("lineTo", .08, -1) .addAction("lineTo", .524, -.85) .addAction("lineTo", .44, -.67) .addAction("lineTo", .535, -.537) .addAction("lineTo", .765, -.65) .addAction("lineTo", .97, -.23) .addAction("lineTo", .74, -.134) .addAction("closePath") .addAction("moveTo", 0, -.26) .addAction("quadraticCurveTo", -.25, -.25, -.26, 0) .addAction("quadraticCurveTo", -.25, .25, 0, .26) .addAction("quadraticCurveTo", .25, .25, .26, 0) .addAction("quadraticCurveTo", .25, -.25, 0, -.26) .addAction("closePath") .addAction("paint", "#E78d78", .2, .2)),
-
-    new PetalConfig("Fragment",67.5,10,10)
-        .setSize(.9)
-        .setIcon(.8, [3, 3, 3, 4, 4, 5, 5, 6, 6, 7], "Fragment")
-        .setMulti([3, 3, 3, 4, 4, 5, 5, 6, 6, 7], true, true)
-        .setDescription("Increase it projectile amount with every second rarity")
-        .setDrawing((new Drawing).addAction("rotate", -15).addAction("beginPath").addAction("polygon", 3, 1, 0).addAction("paint", "#8F9699", .4, .2)),
-
-    new PetalConfig("Mecha Missile",22.5,2,30)
-        .setSize(1.4)
-        .setIcon(.8, 1, "Missile", -45)
-        .setLaunchable(1, 225, true)
-        .setDescription("Modified missile will target enemy with incredible accuracy")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("moveTo", -2.2, 0).addAction("lineTo", -.7, -.7).addAction("lineTo", -.7, .7).addAction("lineTo", -2.2, 0).addAction("fill", "#f13e3e").addAction("beginPath").addAction("moveTo", -1.6, 0).addAction("lineTo", -.7, -.6).addAction("lineTo", -.7, .6).addAction("lineTo", -1.6, 0).addAction("fill", "#ECD54A").addAction("beginPath").addAction("moveTo", 1.1, 0).addAction("lineTo", -.8, -.8).addAction("lineTo", -.8, .8).addAction("lineTo", 1.1, 0).addAction("paint", "#8F9699", .2, .2).addAction("beginPath").addAction("circle", .1, 0, .2).addAction("fill", "#FF0000")),
-
-    new PetalConfig("Sawblade",22.5,30,40)
-        .setSize(2.0)
-        .setIcon(1.2, 1, "Saw")
-        .setDescription("Cut you enemies in half!")
-        .setDrawing((new Drawing) .addAction("beginPath") .addAction("moveTo", 0, -.88) .addAction("lineTo", .092, -1.096) .addAction("lineTo", .358, -.804) .addAction("lineTo", .53, -.964) .addAction("lineTo", .654, -.589) .addAction("lineTo", .876, -.665) .addAction("lineTo", .837, -.272) .addAction("lineTo", 1.071, -.251) .addAction("lineTo", .875, .092) .addAction("lineTo", 1.081, .206) .addAction("lineTo", .762, .44) .addAction("lineTo", .903, .628) .addAction("lineTo", .517, .712) .addAction("lineTo", .57, .941) .addAction("lineTo", .183, .861) .addAction("lineTo", .138, 1.091) .addAction("lineTo", -.183, .861) .addAction("lineTo", -.318, 1.053) .addAction("lineTo", -.517, .712) .addAction("lineTo", -.719, .833) .addAction("lineTo", -.762, .44) .addAction("lineTo", -.995, .468) .addAction("lineTo", -.875, .092) .addAction("lineTo", -1.1, .023) .addAction("lineTo", -.837, -.272) .addAction("lineTo", -1.014, -.426) .addAction("lineTo", -.654, -.589) .addAction("lineTo", -.753, -.802) .addAction("lineTo", -.358, -.804) .addAction("lineTo", -.362, -1.039) .addAction("closePath") .addAction("moveTo", 0, -.29) .addAction("quadraticCurveTo", -.27, -.27, -.29, 0) .addAction("quadraticCurveTo", -.27, .27, 0, .29) .addAction("quadraticCurveTo", .27, .27, .29, 0) .addAction("quadraticCurveTo", .27, -.27, 0, -.29) .addAction("closePath") .addAction("paint", "#888a89", .15, .2)),
-        
     new PetalConfig("Blank",22.5,10,10)
         .setDescription("Blank")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
@@ -638,35 +541,16 @@ export const petalConfigs = [
         .setDescription("Blank")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
 
-    // Sewers new
-
-    new PetalConfig("Broccoli",22.5,7,7)
-        .setSize(1.4)
-        .setDescription("Breaks into 3 parts upon death")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("line", -.5, .75, 1, .1).addAction("line", -.75, .5, -.1, -1).addAction("line", -.625, .625, .25, -.25).addAction("line", -.5, .75, -.75, .5).addAction("stroke", "#278A42", .7, 0).addAction("stroke", "#32AE54", .35, 0).addAction("beginPath").addAction("circle", -.1, -.75, .5).addAction("stroke", "#1F6e34", .3, 0).addAction("beginPath").addAction("circle", .75, .1, .5).addAction("stroke", "#1F6e34", .3, 0).addAction("beginPath").addAction("circle", .5, -.5, .5).addAction("stroke", "#1F6e34", .3, 0).addAction("beginPath").addAction("circle", -.1, -.75, .5).addAction("fill", "#278A42").addAction("beginPath").addAction("circle", .75, .1, .5).addAction("fill", "#278A42").addAction("beginPath").addAction("circle", .5, -.5, .5).addAction("fill", "#278A42")),
-
     new PetalConfig("Blank",22.5,10,10)
         .setDescription("Blank")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
-    new PetalConfig("Blank",22.5,10,10)
-        .setDescription("Blank")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#ffffff", .2, .2)),
-
+    
     // Projectiles
 
     new PetalConfig("Radiation.projectile",960,1e4,0)
         .setPoison(5, 1)
         .setDescription("[object null object]")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .33).addAction("fill", "#66BB2A")),
-
-    new PetalConfig("coral.projectile",960,1e-10,7)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("moveTo", .3, -.6).addAction("quadraticCurveTo", -.7, 0, .3, .6).addAction("stroke", "#ab91da", .7, .2).addAction("stroke", "#ab91da", .4, 0)),
 
     new PetalConfig("broccoli.projectile",960,7,7)
         .setSize(1.1)
@@ -699,23 +583,11 @@ export const petalConfigs = [
         .setDescription("[object null object]")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .3).addAction("fill", "#4f412e")),
 
-    new PetalConfig("mace.explosion",960,1e3,9)
-        .setSize(90)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .3).addAction("fill", "#bcc7e1")),
-
     new PetalConfig("flea.explosion",960,1e3,9)
         .setSize(90)
         .setIgnoreWalls(1)
         .setDescription("[object null object]")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .3).addAction("fill", "#a38b73")),
-
-    new PetalConfig("mark.explosion",960,1e3,27)
-        .setSize(90)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .3).addAction("fill", "#A51818")),
 
     new PetalConfig("pumpkin.explosion",960,1e3,20)
         .setSize(90)
@@ -855,7 +727,7 @@ export const mobConfigs = [
         .setArmor(9)
         .addDrop(petalIDOf("Leaf"), .6)
         .addDrop(petalIDOf("Root"), .6)
-        .addDrop(petalIDOf("Golden Leaf"), 0, 5),
+        .addDrop(petalIDOf("Golden Leaf"), 0, 6),
 
     new MobConfig("Roach",62.5,20,34,6.5)
         .setNeutral(1)
@@ -955,9 +827,7 @@ export const mobConfigs = [
     new MobConfig("Queen Ant",250,10,28,3.5)
         .setAggressive(1)
         .setPushability(.6)
-        .addDrop(petalIDOf("Ant Egg"), .6)
-        .addDrop(petalIDOf("Ant Egg"), .6)
-        .addDrop(petalIDOf("Horn"), .01, 2),
+        .addDrop(petalIDOf("Ant Egg"), 1),
 
     new MobConfig("Ant Hole Deleted",0,0,0,0),
 
@@ -979,34 +849,28 @@ export const mobConfigs = [
     new MobConfig("Queen Fire Ant",250,20,25,3.5)
         .setAggressive(1)
         .setPushability(.6)
-        .addDrop(petalIDOf("Ant Egg"))
-        .addDrop(petalIDOf("Ant Egg")),
+        .addDrop(petalIDOf("Ant Egg"), 1),
 
     new MobConfig("Fire Ant Hole Deleted",0,0,0,0),
     new MobConfig("Baby Termite",25,10,16,3.5)
-        .addDrop(petalIDOf("Light"), .25)
         .setDamageReflection(.01)
-        .addDrop(petalIDOf("Relic"), .1, 1),
+        .addDrop(petalIDOf("Light"), .25),
 
     new MobConfig("Worker Termite",62.5,10,18,3.5)
         .setNeutral(1)
         .setDamageReflection(.01)
-        .addDrop(petalIDOf("Corn"), .45)
-        .addDrop(petalIDOf("Relic"), .1, 1),
+        .addDrop(petalIDOf("Corn"), .45),
 
     new MobConfig("Soldier Termite",100,10,18,3.5)
         .setAggressive(1)
         .setDamageReflection(.01)
-        .addDrop(petalIDOf("Triangle"), .25)
-        .addDrop(petalIDOf("Relic"), .1, 1),
+        .addDrop(petalIDOf("Triangle"), .25),
 
     new MobConfig("Termite Overmind",425,10,42,.5)
         .setAggressive(1)
         .setDamageReflection(.01)
         .setPushability(.2)
-        .addDrop(petalIDOf("Relic"), 1, 1)
-        .addDrop(petalIDOf("Ant Egg"), 1)
-        .addDrop(petalIDOf("Compass"), .25, 2),
+        .addDrop(petalIDOf("Ant Egg"), 1),
 
     new MobConfig("Termite Mound",0,0,0,0),
 
@@ -1090,8 +954,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Dandelion"), 1, 1),
 
     new MobConfig("Sponge",125,10,42,0)
-        .addDrop(petalIDOf("Sponge"), 1, 1)
-        .addDrop(petalIDOf("Coral"), .45, 1),
+        .addDrop(petalIDOf("Sponge"), 1, 1),
 
     new MobConfig("Bubble",1,5,42,.2)
         .setPush(3.2, 100)
@@ -1190,7 +1053,7 @@ export const mobConfigs = [
     new MobConfig("Hell Hornet",125,50,36,4)
         .setAggressive(1)
         .setProjectile({
-                petalIndex: petalIDOf("Blood Stinger"),
+                petalIndex: petalIDOf("Stinger"),
                 cooldown: 33.75,
                 health: 62.5,
                 damage: 10,
@@ -1201,7 +1064,6 @@ export const mobConfigs = [
                 aimbot: true
             })
         .addDrop(petalIDOf("Antennae"), 1, 2)
-        .addDrop(petalIDOf("Blood Stinger"), .6)
         .addDrop(petalIDOf("Wing"), .6),
 
     new MobConfig("Termite Overmind Egg",150,3,17,0)
@@ -1470,49 +1332,15 @@ export const mobConfigs = [
         .setPushability(0)
         .setDensity(0)
         .addDrop(petalIDOf("Dirt"), .6)
-        .addDrop(petalIDOf("Relic"), .1, 1)
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#d1a25a").addAction("beginPath").addAction("circle", 0, 0, .66).addAction("fill", "#a78148").addAction("beginPath").addAction("circle", 0, 0, .33).addAction("fill", "#7e6136")),
 
-    new MobConfig("Wasp",62.5,50,34,3)
-        .setAggressive(1)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("moveTo", -1.6, 0).addAction("lineTo", -.6, -.4).addAction("lineTo", -.6, .4).addAction("lineTo", -1.6, 0).addAction("paint", "#222222", .2, 0).addAction("beginPath").addAction("ellipse", 0, 0, 1, .7, 0).addAction("paint", "#c8803c", .15, .2).addAction("beginPath").addAction("moveTo", .275, -.625).addAction("quadraticCurveTo", .125, 0, .275, .625).addAction("moveTo", .15, -.6).addAction("quadraticCurveTo", 0, 0, .15, .6).addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("moveTo", -.2, -.65).addAction("quadraticCurveTo", -.35, 0, -.2, .65).addAction("moveTo", -.4, -.6).addAction("quadraticCurveTo", -.55, 0, -.4, .6).addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("ellipse", 0, 0, 1, .7, 0).addAction("stroke", "#c8803c", .15, .15).addAction("beginPath").addAction("moveTo", .85, .16).addAction("quadraticCurveTo", 1.36, .18, 1.68, .49).addAction("quadraticCurveTo", 1.26, .3, .85, .16).addAction("moveTo", .85, -.16).addAction("quadraticCurveTo", 1.36, -.18, 1.68, -.49).addAction("quadraticCurveTo", 1.26, -.3, .85, -.16).addAction("stroke", "#222222", .15, 0))
-        .setProjectile({
-                petalIndex: petalIDOf("Stinger"),
-                cooldown: 22.5,
-                health: 62.5,
-                damage: 10,
-                recoil: 8,
-                speed: 7.5,
-                aimbot: true,
-                range: 45
-            })
-        .addDrop(petalIDOf("Antennae"), 1, 2)
-        .addDrop(petalIDOf("Fig"), .35)
-        .addDrop(petalIDOf("Blood Stinger"), .45),
-
-    // Utils
+    // Garden new
 
     new MobConfig("Wax",1e3,0,42,1e-10)
         .setSpins(0, true)
-        .setPushability(.2)
+        .setPushability(.1)
         .setSystem(1)
         .setDrawing((new Drawing).addAction("beginPath").addAction("polygon", 6, 1, 0).addAction("paint", "#FEE86B", .2, .2)),
-
-    new MobConfig("Pearl",67.5,20,20,0)
-        .setArmor(0)
-        .setWavesIconSize(3.8)
-        .setPushability(.6)
-        .addDrop(petalIDOf("Pearl"), 1, 1)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#fff0b7", .125, .2)),
-
-    new MobConfig("Chest",62.5,5,25,0)
-        .setWavesIconSize(3.8)
-        .addDrop(petalIDOf("Coin"), .01)
-        .addDrop(petalIDOf("Coin"), .01)
-        .addDrop(petalIDOf("Coin"), .01)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("moveTo", -.8, -.6).addAction("quadraticCurveTo", 0, -.8, .8, -.6).addAction("quadraticCurveTo", 1.1, 0, .8, .6).addAction("quadraticCurveTo", 0, .8, -.8, .6).addAction("quadraticCurveTo", -1.1, 0, -.8, -.6).addAction("stroke", "#F5bF39", .6, 0).addAction("paint", "#4c3b19", .2, .2).addAction("beginPath").addAction("line", .5, .8, .5, -.8).addAction("stroke", "#F5bF39", .2, 0).addAction("beginPath").addAction("line", -.5, .8, -.5, -.8).addAction("stroke", "#F5bF39", .2, 0).addAction("beginPath").addAction("rect", -.2, .77, .4, .2).addAction("stroke", "#F5bF39", .2, 0)),
-
-    // Garden new
 
     new MobConfig("Digger",1125,30,36,3)
         .setWavesIconSize(3.8)
@@ -1559,6 +1387,13 @@ export const mobConfigs = [
         .setDrawing((new Drawing).addAction("beginPath").addAction("line", 0, 0, -1.05, -.3).addAction("line", 0, 0, -1.05, .3).addAction("line", 0, 0, -1.15, 0).addAction("paint", "#a38b73", .4, .15).addAction("beginPath").addAction("ellipse", -.2, 0, .75, .65, 0).addAction("paint", "#a38b73", .15, .15).addAction("beginPath").addAction("moveTo", -.4, -.55).addAction("quadraticCurveTo", -.6, 0, -.4, .55).addAction("stroke", "#333333", .25, 0).addAction("beginPath").addAction("ellipse", -.2, 0, .75, .65, 0).addAction("stroke", "#a38b73", .15, .15).addAction("beginPath").addAction("ellipse", .5, 0, .6, .65, 0).addAction("paint", "#a38b73", .15, .15).addAction("beginPath").addAction("moveTo", .85, .17).addAction("quadraticCurveTo", 1.36, .18, 1.5, .5).addAction("moveTo", .85, -.17).addAction("quadraticCurveTo", 1.36, -.18, 1.5, -.5).addAction("circle", 1.5, -.5, .075).addAction("stroke", "#333333", .15, 0).addAction("beginPath").addAction("circle", 1.5, .5, .075).addAction("stroke", "#333333", .2, 0).addAction("beginPath").addAction("circle", 1.5, -.5, .075).addAction("stroke", "#333333", .2, 0)),
 
     // Ocean new
+    
+    new MobConfig("Pearl",67.5,20,20,0)
+        .setArmor(0)
+        .setWavesIconSize(3.8)
+        .setPushability(.6)
+        .addDrop(petalIDOf("Pearl"), 1, 1)
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#fff0b7", .125, .2)),
 
     new MobConfig("Lily Pad",25,10,30,0)
         .setWavesIconSize(3.8)
