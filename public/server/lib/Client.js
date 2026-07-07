@@ -58,17 +58,13 @@ function broadcastAll(message, color) {
     }
 }
 
-function isNearMob(client, mobName) {
-    const room = client.room || getActiveRoomState();
-    const nearby = room.spatialHash.retrieve({
-        AABB: {
-            x1: client.body.x - 256,
-            y1: client.body.y - 256,
-            x2: client.body.x + 256,
-            y2: client.body.y + 256
-        }
-    });
-    return nearby.some(e => e.type === ENTITY_TYPES.MOB && !e.health?.isDead && e.config?.name === mobName);
+function isNearMob(client, mobName, radius = 256) {
+    if (!client.body) return false;
+    return state.aliveMobs.some(mob =>
+        mob.config?.name === mobName &&
+        !mob.health?.isDead &&
+        Math.hypot(mob.x - client.body.x, mob.y - client.body.y) <= radius
+    );
 }
 
 function findTierIndexByName(name) {
@@ -1573,10 +1569,6 @@ export default class Client {
             this.systemMessage("Cannot craft beyond max rarity", "#CACA22");
             return;
         }
-        if (n >= 8) {
-            this.systemMessage("Unique petals cannot be crafted", "#CACA22");
-            return;
-        }
 
         const r = tiers[s].name;
         const l = tiers[n].name;
@@ -1839,10 +1831,6 @@ export default class Client {
                     this.systemMessage(`Unknown rarity: ${rarityArg}`, "#CACA22");
                     return;
                 }
-                if (a === 8 || a === 9) {
-                    this.systemMessage("Unique and Eternal petals cannot be used as oracle ingredients", "#CACA22");
-                    return;
-                }
 
                 const nextIndex = a === 7 ? 9 : a + 1;
                 const cost = ORACLE_RATES[a] ?? 7;
@@ -1913,10 +1901,6 @@ export default class Client {
         const g = findTierIndexByName(rarityArg);
         if (g === -1) {
             this.systemMessage(`Unknown rarity "${args[1]}". Usage: /merge craft <rarity> <petal> [amount|all]`, "#CACA22");
-            return;
-        }
-        if (g === 8) {
-            this.systemMessage("Unique petals cannot be merged", "#CACA22");
             return;
         }
 

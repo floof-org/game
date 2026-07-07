@@ -1165,7 +1165,6 @@ export const mobConfigs = [
     new MobConfig("Hell Beetle",150,50,35,4)
         .addDrop(petalIDOf("Beetle Egg"), 1)
         .addDrop(petalIDOf("Stinger"), .4)
-        .addDrop(petalIDOf("Mark"), 0)
         .setAggressive(1)
         .setBeetleMovement(1),
 
@@ -1173,7 +1172,6 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Web"), 1)
         .addDrop(petalIDOf("Stinger"), .4)
         .addDrop(petalIDOf("Third Eye"), 0, 5)
-        .addDrop(petalIDOf("Mark"), 0)
         .setAggressive(1)
         .setPoison(30, 3)
         .setProjectile({
@@ -1204,8 +1202,7 @@ export const mobConfigs = [
             })
         .addDrop(petalIDOf("Antennae"), 1, 2)
         .addDrop(petalIDOf("Blood Stinger"), .6)
-        .addDrop(petalIDOf("Wing"), .6)
-        .addDrop(petalIDOf("Mark"), 0),
+        .addDrop(petalIDOf("Wing"), .6),
 
     new MobConfig("Termite Overmind Egg",150,3,17,0)
         .setPushability(.1)
@@ -1225,12 +1222,10 @@ export const mobConfigs = [
     new MobConfig("Hell Centipede",50,20,24,4)
         .setAggressive(1)
         .addDrop(petalIDOf("Stinger"), .4)
-        .addDrop(petalIDOf("Mark"), 0)
         .setSize(24, MobTier.SIZE_SCALE, .75, .25),
 
     new MobConfig("Hell Centipede",50,20,24,4)
         .addDrop(petalIDOf("Stinger"), .4)
-        .addDrop(petalIDOf("Mark"), 0)
         .setSystem(1)
         .setAggressive(1)
         .setSize(24, MobTier.SIZE_SCALE, .75, .25),
@@ -1576,7 +1571,7 @@ export const mobConfigs = [
         .setSize(26, MobTier.SIZE_SCALE, .75, .25)
         .addDrop(petalIDOf("Lily Pad"), .1)
         .setDrawing((new Drawing).addAction("beginPath").addAction("arc", 0, 0, 1, 1.6, 1).addAction("lineTo", 0, 0).addAction("closePath").addAction("paint", "#3C9564", .25, .2)),
-        
+
     new MobConfig("Urchin",37.5,50,26,.5)
         .setWavesIconSize(3.8)
         .setNeutral(1)
@@ -1725,7 +1720,6 @@ export function queryMob(cb) {
 mobConfigs[mobIDOf("Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Centipede"));
 mobConfigs[mobIDOf("Desert Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Desert Centipede"));
 mobConfigs[mobIDOf("Evil Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Evil Centipede"));
-mobConfigs[mobIDOf("Mecha Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Mecha Centipede"));
 mobConfigs[mobIDOf("Hell Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Hell Centipede"));
 mobConfigs[mobIDOf("Wilt")].branchWith(queryMob(m => m.isSystem && m.name === "Wilt"), 5, 2);
 
