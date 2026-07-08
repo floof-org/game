@@ -297,8 +297,10 @@ export const petalConfigs = [
         .setLightning(3, 128, 10, 3, true)
         .setDescription("A battery that can release electric charges when its parent is hit"),
 
-    new PetalConfig("Dust",0,0,0)
-        .setDescription("Dust"),
+    new PetalConfig("Dust",13.5,30,30)
+        .setSize(1.2)
+        .setMulti([3, 3, 3, 3, 3, 3, 3, 4, 5, 6], true, true)
+        .setDescription("A bunch of rocks"),
 
     new PetalConfig("Armor",0,0,0)
         .setDescription("Armor"),
