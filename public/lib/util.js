@@ -39,9 +39,11 @@ export const colors = {
     // RENDER COLORS
     white: "#FFFFFF",
     peach: "#FFF0B7",
+    sponge: "#FFD09F",
     cumWhite: "#ffffC9",
     black: "#000000",
     rosePink: "#FC93C5",
+    jellyPink: "#e3b8df",
     irisPurple: "#CD75DE",
     pollenGold: "#FEE86B",
     peaGreen: "#8CC05B",
@@ -69,31 +71,29 @@ export const colors = {
     shinyLadybugGold: "#ebeb34",
     hellMobColor: "#AA1C1D",
     beeYellow: "#FFE763",
-    peachSponge: "#f4d09f",
     pincer: "#2a2a2a",
     antHole: "#A8711E",
     ants: "#555555",
     fireAnt: "#a82a01",
     termite: "#d3a35b",
-    wasp: "#cd633d",
+    wasp: "#e48125",
     jellyfish: "#EFEFEF",
     spider: "#4f412e",
     darkGreen: "#118240",
     beetlePurple: "#915db0",
     roach: "#9D4F23",
     roachHead: "#6C3419",
-    fireFlyLight: "#fff176",
-    fireFlyLightBright: "#fff7b2",
     sand: "#E1C85D",
     jelly: "#D5B5D3",
     orange: "#F1BC48",
-    starfish: "#AA403F",
+    starfish: "#c74a48",
     book: "#c28043",
-    bookSpine: "#c28043",
     shrubGreen: "#0b7240",
     crabBodyOrange: "#dc704b",
     crabLimbBrown: "#4d2621",
-    desertSand: "#ECDCB8"
+    desertSand: "#ECDCB8",
+    jelly: "#D5B5D3"
+    
 };
 export function formatLargeNumber(number, type = 0) {
     let returnedNumber = number;
