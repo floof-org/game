@@ -1044,7 +1044,7 @@ export const mobConfigs = [
 
     new MobConfig("Spirit",1,0,0,0),
 
-    new MobConfig("Wasp",60,50,30,4),
+    new MobConfig("Wasp",60,50,30,4)
         .setAggressive(1)
         .setProjectile({
                 petalIndex: petalIDOf("Wasp Missile.projectile"),
