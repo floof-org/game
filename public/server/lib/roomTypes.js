@@ -27,7 +27,7 @@ export function resolveRoomType(name) {
     const roomType = ROOM_TYPES[name];
 
     if (!roomType) {
-        throw new Error(`Unknown room name "${name}". Valid options: ${Object.keys(ROOM_TYPES).join(", ")}`);
+        throw new Error(`Unknown room type "${name}". Valid options: ${Object.keys(ROOM_TYPES).join(", ")}`);
     }
 
     return roomType;
