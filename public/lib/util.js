@@ -75,7 +75,7 @@ export const colors = {
     ants: "#555555",
     fireAnt: "#a82a01",
     termite: "#d3a35b",
-    wasp: "#cd633d",
+    wasp: "#c8803c",
     jellyfish: "#EFEFEF",
     spider: "#4f412e",
     darkGreen: "#118240",
