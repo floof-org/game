@@ -1,15 +1,18 @@
 import state, { createRoomState, setActiveRoomState } from "./state.js";
-export const ROOM_COUNT = +(globalThis?.process?.env?.ROOM_COUNT ?? (typeof Bun !== "undefined" ? Bun.env.ROOM_COUNT : null) ?? 4);
+import { ROOM_TYPES } from "./roomTypes.js";
+
 export const ROOM_CAPACITY = 35;
 
 export class GameRoom {
-    constructor(index) {
+    constructor(index, name, definition) {
         this.index = index;
-        this.name = `Room ${index + 1}`;
+        this.name = name;
+        this.biome = definition.biome;
+        this.gamemode = definition.gamemode;
         this.roomState = createRoomState();
         this.intervals = [];
     }
-    
+
     activate() {
         setActiveRoomState(this.roomState);
         return this;
@@ -52,13 +55,22 @@ export class RoomManager {
     /** @type {Map<number, GameRoom>} */
     static clientRoom = new Map();
 
+    /**
+     * @type {Map<number, GameRoom>}
+     */
+    static previousRoom = new Map();
+
     static hooks = null;
 
-    static create(count = ROOM_COUNT) {
+    static create() {
         RoomManager.rooms = [];
-        for (let i = 0; i < count; i++) {
-            RoomManager.rooms.push(new GameRoom(i));
+
+        let i = 0;
+        for (const name in ROOM_TYPES) {
+            RoomManager.rooms.push(new GameRoom(i, name, ROOM_TYPES[name]));
+            i++;
         }
+
         return RoomManager.rooms;
     }
 
@@ -77,15 +89,7 @@ export class RoomManager {
     }
 
     static findRoomForNewClient() {
-        let best = RoomManager.rooms[0];
-
-        for (const room of RoomManager.rooms) {
-            if (room.clientCount < best.clientCount) {
-                best = room;
-            }
-        }
-
-        return best;
+        return RoomManager.rooms[0] ?? null;
     }
 
     static assignToRoom(numericID, room) {
@@ -98,8 +102,6 @@ export class RoomManager {
     }
 
     /**
-     * Finds a room by its display name (case-insensitive), falling back to
-     * a 1-based room number (e.g. "2" matches "Room 2").
      * @param {string} input
      * @returns {GameRoom|null}
      */
@@ -127,6 +129,7 @@ export class RoomManager {
 
     static release(numericID) {
         RoomManager.clientRoom.delete(numericID);
+        RoomManager.previousRoom.delete(numericID);
     }
 
     static forEachRoom(fn) {
@@ -134,6 +137,54 @@ export class RoomManager {
             room.activate();
             fn(room);
         }
+    }
+
+    /**
+     * @param {import("./Client.js").default} client
+     * @param {GameRoom} toRoom
+     * @returns {boolean} whether the move happened
+     */
+    static moveClient(client, toRoom) {
+        const fromRoom = RoomManager.clientRoom.get(client.id);
+
+        if (!fromRoom || !toRoom) return false;
+        if (fromRoom === toRoom) {
+            client.systemMessage(`You're already in "${toRoom.name}".`, "#CACA22");
+            return false;
+        }
+
+        if (toRoom.isFull) {
+            client.systemMessage(`Room "${toRoom.name}" is full.`, "#CACA22");
+            return false;
+        }
+
+        fromRoom.activate();
+        client.body?.destroy();
+        client.body = null;
+        state.alivePlayers = state.alivePlayers.filter(m => m.id !== client.id);
+        state.playerCount = Math.max(0, state.playerCount - 1);
+        state.clients.delete(client.id);
+
+        RoomManager.previousRoom.set(client.id, fromRoom);
+
+        toRoom.activate();
+        RoomManager.clientRoom.set(client.id, toRoom);
+        state.clients.set(client.id, client);
+        state.playerCount++;
+
+        client.team = false;
+        if (state.isTDM) {
+            client.team = 0;
+            if (state.teamCount > 0) {
+                client.team = ((client.id - 1) % state.teamCount) + 1;
+            }
+        }
+
+        client.sendRoom();
+        state.sendTerrain(client.id);
+        client.systemMessage(`Joined room "${toRoom.name}".`, "#7EEF6D");
+
+        return true;
     }
 }
 

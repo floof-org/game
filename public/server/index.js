@@ -4,8 +4,9 @@ import { DEFAULT_PETAL_COUNT, mobConfigs, PetalConfig, petalConfigs, tiers } fro
 import { AIPlayer, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
 import RoomManager from "./lib/Room.js";
+import { ROOM_TYPES } from "./lib/roomTypes.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
-import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
+import { applyArticle, getWaveMobRarity } from "../lib/util.js";
 
 // Dev runtime setup (bun.js wrapper provides this in production)
 // globalThis.environmentName = "bun";
@@ -299,16 +300,17 @@ switch (globalThis.environmentName) {
             await Bun.write("./.env", [
                 "ENV_DONE=false",
                 "ROUTING_SERVER=https://routing.floof.supercord.lol",
+                "GAME_SERVER=https://dedicated.floof.supercord.lol",
+                // This process hosts every room listed in lib/roomTypes.js
+                // (ffa-main, garden-main, desert-main, ocean-main, ...) at
+                // once. GAME_NAME is just the label announced to the lobby.
                 "GAME_NAME=dedicated lobby",
                 "MODDED=false",
-                "GAMEMODE=maze",
                 `SECRET=${Array.from(crypto.getRandomValues(new Uint8Array(24))).map(e => e.toString(16).padStart(2, "0")).join("")}`,
                 "ADMIN_KEYS=devkey,devkey2",
-                "BIOME=0",
                 "HOST=dedicated.floof.supercord.lol",
-                "PORT=3005",
-                "TLS_DIRECTORY=false",
-                "ROOM_COUNT=4"
+                "DEDICATED_LOBBY_PORT=3005",
+                "TLS_DIRECTORY=false"
             ].join("\n"));
             console.warn("Please fill out the .env file with the correct values. Set ENV_DONE to 'true' when done.");
             process.exit();
@@ -319,10 +321,8 @@ switch (globalThis.environmentName) {
             process.exit();
         }
 
-        if (!["ffa", "tdm", "waves", "line", "maze", "mmo"].includes(Bun.env.GAMEMODE)) {
-            console.error("GAMEMODE must be 'ffa', 'tdm', 'waves', 'line', 'maze', or 'mmo'");
-            process.exit();
-        }
+        const defaultRoomName = Object.keys(ROOM_TYPES)[0];
+        const defaultRoomType = ROOM_TYPES[defaultRoomName];
 
         if (!/^[0-9a-f]{48}$/i.test(Bun.env.SECRET)) {
             console.error("SECRET must be a 48 character hex string");
@@ -332,11 +332,6 @@ switch (globalThis.environmentName) {
         if (!Bun.env.ADMIN_KEYS.split(",").every(e => typeof e === "string")) {
             console.error("ADMIN_KEYS must be a comma separated list of strings");
             process.exit();
-        }
-
-        if (Bun.env.BIOME == -1) {
-            console.log("BIOME is set to -1, selecting random biome");
-            Bun.env.BIOME = isHalloween ? BIOME_TYPES.HALLOWEEN : (Math.random() * 8 | 0);
         }
 
         const keys = Bun.env.ADMIN_KEYS.split(",").filter(e => e.length > 3);
@@ -438,7 +433,7 @@ switch (globalThis.environmentName) {
 
         const timezone = -Math.floor(new Date().getTimezoneOffset() / 60);
 
-        const lobbySocket = new WebSocket(`${Bun.env.ROUTING_SERVER.replace('http', 'ws')}/ws/lobby?gameName=${Bun.env.GAME_NAME}&isModded=${Bun.env.MODDED == "true" ? "yes" : "no"}&gamemode=${Bun.env.GAMEMODE}&secretKey=${Bun.env.SECRET}&isPrivate=no&biome=${Bun.env.BIOME}&directConnect=${Bun.env.HOST},${timezone}&analytics=${ANALYTICS_DATA}`, {
+        const lobbySocket = new WebSocket(`${Bun.env.ROUTING_SERVER.replace('http', 'ws')}/ws/lobby?gameName=${Bun.env.GAME_NAME}&isModded=${Bun.env.MODDED == "true" ? "yes" : "no"}&gamemode=${defaultRoomType.gamemode}&secretKey=${Bun.env.SECRET}&isPrivate=no&biome=${defaultRoomType.biome}&directConnect=${Bun.env.HOST},${timezone}&analytics=${ANALYTICS_DATA}`, {
             origin: Bun.env.HOST,
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
@@ -452,7 +447,7 @@ switch (globalThis.environmentName) {
         lobbySocket.onopen = () => {
             console.log("Connected to server");
 
-            state.router.begin(["start", Bun.env.GAMEMODE, Bun.env.MODDED == "true", crypto.randomUUID(), +Bun.env.BIOME]);
+            state.router.begin(["start", defaultRoomType.gamemode, Bun.env.MODDED == "true", crypto.randomUUID(), defaultRoomType.biome]);
 
             lobbySocket.onmessage = event => {
                 const data = new Uint8Array(event.data);

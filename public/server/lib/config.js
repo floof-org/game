@@ -598,7 +598,17 @@ export const petalConfigs = [
 
     // Particle effects
 
-    new PetalConfig("portal.particle",960,1e3,0)
+    new PetalConfig("super.particle",960,1e3,0)
+        .setIgnoreWalls(1)
+        .setDescription("[object null object]")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#2BFFA3")),
+
+    new PetalConfig("omega.particle",960,1e3,0)
+        .setIgnoreWalls(1)
+        .setDescription("[object null object]")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#000000")),
+
+    new PetalConfig("eternal.particle",960,1e3,0)
         .setIgnoreWalls(1)
         .setDescription("[object null object]")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#FFFFFF")),
@@ -607,26 +617,6 @@ export const petalConfigs = [
         .setIgnoreWalls(1)
         .setDescription("[object null object]")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#2ec778")),
-
-    new PetalConfig("anthell.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#bd8458")),
-
-    new PetalConfig("ant.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#555555")),
-
-    new PetalConfig("fireant.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#a82a01")),
-
-    new PetalConfig("termite.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#d3a35b")),
 
     new PetalConfig("desert.particle",960,1e3,0)
         .setIgnoreWalls(1)
@@ -637,36 +627,6 @@ export const petalConfigs = [
         .setIgnoreWalls(1)
         .setDescription("[object null object]")
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#93c5e9")),
-
-    new PetalConfig("darkforest.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#4d7e5c")),
-
-    new PetalConfig("factory.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#a2b6ba")),
-
-    new PetalConfig("hell.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#d1312f")),
-
-    new PetalConfig("sewers.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#85380c")),
-    new PetalConfig("rift.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#000000")),
-
-    new PetalConfig("super.particle",960,1e3,0)
-        .setIgnoreWalls(1)
-        .setDescription("[object null object]")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("opacity", .5).addAction("fill", "#2BFFA3")),
 
     new PetalConfig("dig.particle",960,1e3,0)
         .setIgnoreWalls(1)
@@ -682,7 +642,7 @@ petalConfigs[petalIDOf("Peas")].setSplits(petalIDOf("Pea.projectile"), 4);
 petalConfigs[petalIDOf("Grapes")].setSplits(petalIDOf("projectile.grape"), 4);
 
 export const mobConfigs = [
-    new MobConfig("Ladybug",62.5,10,25,3.5)
+    new MobConfig("Ladybug",60,10,25,3.5)
         .setNeutral(1)
         .addDrop(petalIDOf("Rose"), .6)
         .addDrop(petalIDOf("Light"), .45),
@@ -698,7 +658,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Stinger"), .45)
         .addDrop(petalIDOf("Pollen"), .25, 1),
 
-    new MobConfig("Spider",62.5,20,20,4)
+    new MobConfig("Spider",60,20,20,4)
         .setAggressive(1)
         .setPoison(10, 3)
         .setProjectile({
@@ -729,17 +689,17 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Root"), .6)
         .addDrop(petalIDOf("Golden Leaf"), 0, 6),
 
-    new MobConfig("Roach",62.5,20,34,6.5)
+    new MobConfig("Roach",60,20,34,6.5)
         .setNeutral(1)
         .addDrop(petalIDOf("Antennae"), 1, 2)
         .addDrop(petalIDOf("Iris"), .25, 1),
 
-    new MobConfig("Hornet",62.5,50,30,3)
+    new MobConfig("Hornet",60,50,30,3)
         .setAggressive(1)
         .setProjectile({
                 petalIndex: petalIDOf("Missile"),
                 cooldown: 33.75,
-                health: 62.5,
+                health: 60,
                 damage: 10,
                 recoil: 8,
                 speed: 6.75,
@@ -814,7 +774,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Leaf"), .6)
         .addDrop(petalIDOf("Rice"), .25),
 
-    new MobConfig("Worker Ant",62.5,10,18,3.5)
+    new MobConfig("Worker Ant",60,10,18,3.5)
         .setNeutral(1)
         .addDrop(petalIDOf("Leaf"), .25)
         .addDrop(petalIDOf("Corn"), .45),
@@ -841,7 +801,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Yucca"), 1, 1)
         .addDrop(petalIDOf("Corn"), .45),
 
-    new MobConfig("Soldier Fire Ant",62.5,20,15,3.5)
+    new MobConfig("Soldier Fire Ant",60,20,15,3.5)
         .setAggressive(1)
         .addDrop(petalIDOf("Yucca"), 1, 1)
         .addDrop(petalIDOf("Bone"), .1),
@@ -856,7 +816,7 @@ export const mobConfigs = [
         .setDamageReflection(.01)
         .addDrop(petalIDOf("Light"), .25),
 
-    new MobConfig("Worker Termite",62.5,10,18,3.5)
+    new MobConfig("Worker Termite",60,10,18,3.5)
         .setNeutral(1)
         .setDamageReflection(.01)
         .addDrop(petalIDOf("Corn"), .45),
@@ -991,7 +951,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Lightbulb"), .45)
         .addDrop(petalIDOf("Battery"), .45),
 
-    new MobConfig("Bumblebee",62.5,20,30,5)
+    new MobConfig("Bumblebee",60,20,30,5)
         .setMoveInSines(1)
         .setBumblebeeMovement(1)
         .setProjectile({
@@ -1014,7 +974,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Wing"), .6)
         .addDrop(petalIDOf("Lightbulb"), .45),
 
-    new MobConfig("Fly",62.5,10,24,6)
+    new MobConfig("Fly",60,10,24,6)
         .setAggressive(1)
         .setMoveInSines(1)
         .addDrop(petalIDOf("Wing"), .6),
@@ -1055,7 +1015,7 @@ export const mobConfigs = [
         .setProjectile({
                 petalIndex: petalIDOf("Stinger"),
                 cooldown: 33.75,
-                health: 62.5,
+                health: 60,
                 damage: 10,
                 speed: 6.5,
                 recoil: 8,
@@ -1098,7 +1058,7 @@ export const mobConfigs = [
 
     new MobConfig("Wilt",0,0,0,0),
 
-    new MobConfig("Pumpkin",62.5,10,32,0)
+    new MobConfig("Pumpkin",60,10,32,0)
         .setExplodes("pumpkin.explosion")
         .addDrop(petalIDOf("Root"), .25)
         .addDrop(petalIDOf("Pumpkin Seed"), .25, 1),
@@ -1376,7 +1336,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Sandstone"), .25)
         .setDrawing((new Drawing).addAction("beginPath").addAction("dipPolygon", 5, 1, 0, 0).addAction("paint", "#E1C85D", .2, .2)),
 
-    new MobConfig("Flea",62.5,10,20,40)
+    new MobConfig("Flea",60,10,20,40)
         .setExplodes("flea.explosion")
         .setWavesIconSize(3.6)
         .setMovesInBursts(true)

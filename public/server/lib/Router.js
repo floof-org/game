@@ -3,7 +3,7 @@ import Client from "./Client.js";
 import { mobConfigs, mobIDOf } from "./config.js";
 import initTerrain from "./initTerrain.js";
 import state from "./state.js";
-import RoomManager, { ROOM_COUNT } from "./Room.js";
+import RoomManager from "./Room.js";
 
 globalThis.environmentName ??= "browser";
 
@@ -71,14 +71,9 @@ function applyBiome(int) {
             [mobIDOf("Sandstorm")]: 3,
             [mobIDOf("Scorpion")]: 6,
             [mobIDOf("Beetle")]: 6,
-            [mobIDOf("Fire Ant Egg")]: 1,
-            [mobIDOf("Baby Fire Ant")]: 2,
-            [mobIDOf("Worker Fire Ant")]: 3,
-            [mobIDOf("Soldier Fire Ant")]: 4,
-            [mobIDOf("Pupa")]: 3,
             [mobIDOf("Moth")]: 3,
             [mobIDOf("Desert Centipede")]: 3,
-            [mobIDOf("Fire Ant Hole")]: 1,
+            [mobIDOf("Fire Burrow")]: 1,
             [mobIDOf("Cactus")]: 4
         }),
         [BIOME_TYPES.OCEAN]: createTable({
@@ -89,70 +84,6 @@ function applyBiome(int) {
             [mobIDOf("Starfish")]: 3,
             [mobIDOf("Leech")]: 3,
             [mobIDOf("Crab")]: 2.5
-        }),
-        [BIOME_TYPES.SEWERS]: createTable({
-            [mobIDOf("Fly")]: 5,
-            [mobIDOf("Moth")]: 4,
-            [mobIDOf("Firefly")]: 4,
-            [mobIDOf("Maggot")]: 3,
-            [mobIDOf("Roach")]: 3,
-            [mobIDOf("Spider")]: 3,
-            [mobIDOf("Rock")]: 2,
-            [mobIDOf("Evil Ladybug")]: 2,
-            [mobIDOf("Evil Centipede")]: 1
-        }),
-        [BIOME_TYPES.ANT_HELL]: createTable({
-            [mobIDOf("Baby Ant")]: 5,
-            [mobIDOf("Worker Ant")]: 5,
-            [mobIDOf("Soldier Ant")]: 5,
-            [mobIDOf("Queen Ant")]: 1,
-            [mobIDOf("Ant Egg")]: 2,
-            [mobIDOf("Baby Fire Ant")]: 5,
-            [mobIDOf("Worker Fire Ant")]: 5,
-            [mobIDOf("Soldier Fire Ant")]: 5,
-            [mobIDOf("Queen Fire Ant")]: 1,
-            [mobIDOf("Fire Ant Egg")]: 2,
-            [mobIDOf("Baby Termite")]: 5,
-            [mobIDOf("Worker Termite")]: 5,
-            [mobIDOf("Soldier Termite")]: 5,
-            [mobIDOf("Termite Overmind")]: 1,
-            [mobIDOf("Termite Egg")]: 2
-        }),
-        [BIOME_TYPES.HELL]: createTable({
-            [mobIDOf("Hell Beetle")]: 25,
-            [mobIDOf("Hell Spider")]: 25,
-            [mobIDOf("Hell Yellowjacket")]: 20,
-            [mobIDOf("Hell Centipede")]: 5,
-            [mobIDOf("Demon")]: 2,
-            [mobIDOf("Angelic Ladybug")]: 1
-        }),
-        [BIOME_TYPES.HALLOWEEN]: createTable({
-            [mobIDOf("Hell Beetle")]: 5,
-            [mobIDOf("Hell Spider")]: 5,
-            [mobIDOf("Hell Yellowjacket")]: 5,
-            [mobIDOf("Hell Centipede")]: 5,
-            [mobIDOf("Spider")]: 5,
-            [mobIDOf("Pumpkin")]: 5,
-            [mobIDOf("Jack O' Lantern")]: 5,
-            [mobIDOf("Spirit")]: 4,
-            [mobIDOf("Wilt")]: 3,
-            [mobIDOf("Demon")]: 2,
-            [mobIDOf("Termite Mound")]: 1
-        }),
-        [BIOME_TYPES.DARK_FOREST]: createTable({
-            [mobIDOf("Evil Centipede")]: 2,
-            [mobIDOf("Evil Ladybug")]: 12.5,
-            [mobIDOf("Termite Mound")]: 2,
-            [mobIDOf("Soldier Termite")]: 16,
-            [mobIDOf("Worker Termite")]: 8,
-            [mobIDOf("Baby Termite")]: 8,
-            [mobIDOf("Termite Egg")]: 1,
-            [mobIDOf("Termite Overmind")]: 1,
-            [mobIDOf("Wasp")]: 32.5,
-            [mobIDOf("Spider")]: 25,
-            [mobIDOf("Fly")]: 12.5,
-            [mobIDOf("Stickbug")]: 8,
-            [mobIDOf("Shrub")]: 15
         }),
     }[int];
 
@@ -246,22 +177,22 @@ export default class Router {
     async begin(message) {
         await loadTerrains();
 
-        RoomManager.create(ROOM_COUNT);
+        RoomManager.create();
 
         await RoomManager.beginAll(message, (m, room) => this.beginRoom(m, room), Router.hooks);
 
-        console.log(`Started ${RoomManager.rooms.length} room(s), same gamemode/biome in each, fully isolated from one another.`);
+        console.log(`Started ${RoomManager.rooms.length} room(s): ${RoomManager.rooms.map(r => r.name).join(", ")}`);
     }
 
     async beginRoom(message, room) {
-        applyBiome(message[4]);
+        applyBiome(room.biome);
 
-        if (Router.isSandbox && message[1] === "maze") {
-            message[1] = "ffa";
+        if (Router.isSandbox && room.gamemode === "maze") {
+            room.gamemode = "ffa";
             console.warn("Maze is not supported in sandbox");
         }
 
-        switch (message[1]) {
+        switch (room.gamemode) {
             case "maze":
                 state.isTDM = true;
                 state.width = state.height = 32 * (256 + 64 + 64);
@@ -323,9 +254,9 @@ export default class Router {
         state.secretKey = message[3];
 
         console.log([
-            `Room ${room.index} created:`,
-            "  - Gamemode: " + message[1],
-            "  - Biome: " + BIOME_BACKGROUNDS[message[4]].name,
+            `Room "${room.name}" created:`,
+            "  - Gamemode: " + room.gamemode,
+            "  - Biome: " + BIOME_BACKGROUNDS[room.biome].name,
             "  - Modded: " + (message[2] ? "Yes" : "No"),
             "  - Admin UUID: " + state.secretKey,
             "  - Spawn Table: " + (state.mobTable ? mobTableIntoChances(state.mobTable) : "None")
