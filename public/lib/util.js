@@ -69,20 +69,21 @@ export const colors = {
     shinyLadybugGold: "#ebeb34",
     hellMobColor: "#AA1C1D",
     beeYellow: "#FFE763",
+    peachSponge: "#f4d09f",
     pincer: "#2a2a2a",
     antHole: "#A8711E",
     ants: "#555555",
     fireAnt: "#a82a01",
     termite: "#d3a35b",
-    wasp: "#9f4627",
-    waspDark: "#34221c",
+    wasp: "#cd633d",
     jellyfish: "#EFEFEF",
     spider: "#4f412e",
     darkGreen: "#118240",
     beetlePurple: "#915db0",
     roach: "#9D4F23",
     roachHead: "#6C3419",
-    fireFlyLight: "#EFDECC",
+    fireFlyLight: "#fff176",
+    fireFlyLightBright: "#fff7b2",
     sand: "#E1C85D",
     jelly: "#D5B5D3",
     orange: "#F1BC48",
@@ -91,7 +92,8 @@ export const colors = {
     bookSpine: "#c28043",
     shrubGreen: "#0b7240",
     crabBodyOrange: "#dc704b",
-    crabLimbBrown: "#4d2621"
+    crabLimbBrown: "#4d2621",
+    desertSand: "#ECDCB8"
 };
 export function formatLargeNumber(number, type = 0) {
     let returnedNumber = number;
