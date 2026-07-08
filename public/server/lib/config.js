@@ -789,7 +789,7 @@ export const mobConfigs = [
         .setPushability(.6)
         .addDrop(petalIDOf("Ant Egg"), 1),
 
-    new MobConfig("Ant Hole Deleted",750,10,34,0)
+    new MobConfig("Ant Hole",750,10,34,0)
         .setPushability(0)
         .setDensity(0)
         .addDrop(petalIDOf("Dirt"), .6),
