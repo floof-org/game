@@ -303,8 +303,8 @@ export const petalConfigs = [
     new PetalConfig("Armor",0,0,0)
         .setDescription("Armor"),
 
-    new PetalConfig("Wasp Missile.projectile",0,0,0)
-        .setDescription("Wasp Projectile"),
+    new PetalConfig("Wasp Missile.projectile",2109.4,1e5,0)
+        .setDescription("[object null object]"),
 
     new PetalConfig("Shrub",0,0,0)
         .setDescription("Shrub"),
@@ -789,7 +789,10 @@ export const mobConfigs = [
         .setPushability(.6)
         .addDrop(petalIDOf("Ant Egg"), 1),
 
-    new MobConfig("Ant Hole Deleted",0,0,0,0),
+    new MobConfig("Ant Hole Deleted",750,10,34,0)
+        .setPushability(0)
+        .setDensity(0)
+        .addDrop(petalIDOf("Dirt"), .6),
 
     new MobConfig("Baby Fire Ant",25,20,15,3.5)
         .addDrop(petalIDOf("Light"), .6)
@@ -811,7 +814,11 @@ export const mobConfigs = [
         .setPushability(.6)
         .addDrop(petalIDOf("Ant Egg"), 1),
 
-    new MobConfig("Fire Ant Hole Deleted",0,0,0,0),
+    new MobConfig("Fire Burrow",1e-10,10,24,0)
+        .setPushability(0)
+        .setDensity(0)
+        .addDrop(petalIDOf("Magnet"), 1, 2),
+
     new MobConfig("Baby Termite",25,10,16,3.5)
         .setDamageReflection(.01)
         .addDrop(petalIDOf("Light"), .25),
@@ -832,7 +839,11 @@ export const mobConfigs = [
         .setPushability(.2)
         .addDrop(petalIDOf("Ant Egg"), 1),
 
-    new MobConfig("Termite Mound",0,0,0,0),
+    new MobConfig("Termite Mound",750,10,34,0)
+        .setPushability(0)
+        .setDensity(0)
+        .addDrop(petalIDOf("Dirt"), .6)
+        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#d1a25a").addAction("beginPath").addAction("circle", 0, 0, .66).addAction("fill", "#a78148").addAction("beginPath").addAction("circle", 0, 0, .33).addAction("fill", "#7e6136")),
 
     new MobConfig("Ant Egg",150,3,17,0)
         .addDrop(petalIDOf("Ant Egg"), .6)
@@ -1013,7 +1024,7 @@ export const mobConfigs = [
     new MobConfig("Hell Hornet",125,50,36,4)
         .setAggressive(1)
         .setProjectile({
-                petalIndex: petalIDOf("Stinger"),
+                petalIndex: petalIDOf("Missile"),
                 cooldown: 33.75,
                 health: 60,
                 damage: 10,
@@ -1033,7 +1044,21 @@ export const mobConfigs = [
 
     new MobConfig("Spirit",1,0,0,0),
 
-    new MobConfig("Wasp",0,0,0,0),
+    new MobConfig("Wasp",60,50,30,4),
+        .setAggressive(1)
+        .setProjectile({
+                petalIndex: petalIDOf("Wasp Missile.projectile"),
+                cooldown: 33.75,
+                health: 60,
+                damage: 10,
+                speed: 6.5,
+                recoil: 8,
+                aimbot: true,
+                range: 45,
+                aimbot: true
+            })
+        .addDrop(petalIDOf("Antennae"), 1, 2)
+        .addDrop(petalIDOf("Wing"), .6),
 
     new MobConfig("Stickbug",0,0,0,0),
 
@@ -1273,26 +1298,6 @@ export const mobConfigs = [
         .setHealing(1)
         .setDrawing((new Drawing).addAction("beginPath").addAction("dipPolygon", 11, 1.4, -5, 0).addAction("paint", "#326667", .2, .2).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#3f8081").addAction("beginPath").addAction("line", .05, 0, .25, .3).addAction("line", .05, 0, -.15, .5).addAction("line", .05, 0, -.55, -.05).addAction("line", .05, 0, -.1, -.35).addAction("line", .05, 0, .45, -.4).addAction("line", .05, 0, .35, .1).addAction("line", .05, 0, -.05, .25).addAction("line", .25, .3, .45, .55).addAction("line", .25, .3, .55, .2).addAction("line", -.15, .5, -.3, .85).addAction("line", -.15, .5, .15, .8).addAction("line", -.55, -.05, -.9, -.2).addAction("line", -.55, -.05, -.85, .25).addAction("line", -.1, -.35, -.05, -.75).addAction("line", -.1, -.35, -.4, -.65).addAction("line", .45, -.4, .7, -.8).addAction("line", .45, -.4, .85, -.3).addAction("line", .35, .1, .65, .25).addAction("line", .35, .1, .6, -.15).addAction("line", -.05, .25, -.15, .6).addAction("line", -.05, .25, .2, .55).addAction("line", .05, 0, -.05, .25).addAction("stroke", "#9682c7", .4, .2).addAction("stroke", "#9682c7", .2, 0))
         .setFriendly(true),
-
-    // Resprites
-
-    new MobConfig("Ant Hole",750,10,34,0)
-        .setPushability(0)
-        .setDensity(0)
-        .addDrop(petalIDOf("Dirt"), .6)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#A8711E").addAction("beginPath").addAction("circle", 0, 0, .66).addAction("fill", "#865A18").addAction("beginPath").addAction("circle", 0, 0, .33).addAction("fill", "#6B4813")),
-
-    new MobConfig("Fire Burrow",1e-10,20,18,0)
-        .setPushability(0)
-        .setDensity(0)
-        .addDrop(petalIDOf("Magnet"), 1, 2)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#a82a01").addAction("beginPath").addAction("circle", 0, 0, .66).addAction("fill", "#862100").addAction("beginPath").addAction("circle", 0, 0, .33).addAction("fill", "#641800")),
-
-    new MobConfig("Termite Mound",1500,10,34,0)
-        .setPushability(0)
-        .setDensity(0)
-        .addDrop(petalIDOf("Dirt"), .6)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#d1a25a").addAction("beginPath").addAction("circle", 0, 0, .66).addAction("fill", "#a78148").addAction("beginPath").addAction("circle", 0, 0, .33).addAction("fill", "#7e6136")),
 
     // Garden new
 
