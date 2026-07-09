@@ -1,3 +1,6 @@
+# Update (6/8/2026)
+- Updated most Mobs and Petals drawings (Thanks to @Bo)
+
 # Update (7/2/2026)
 - Added Show Damage Numbers
 
