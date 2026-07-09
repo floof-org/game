@@ -516,7 +516,7 @@ export class PetalSlot {
                         mob.givesXP = !1;
                         mob.density = 0.5;
 
-                        this.boundMobs[petal].push(mob);
+                        this.boundMobs[j].push(mob);
                         this.config.phases ? (petal.range = this.config.tiers[this.rarity].spawnable.timer,
                                 setTimeout( () => {
                                     mob && mob.health && (mob.health.health = 0)

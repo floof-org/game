@@ -1,5 +1,5 @@
-const shiftA = 6;
-const shiftB = 6;
+const shiftA = 10;
+const shiftB = 10;
 
 export default class SpatialHashGrid {
     constructor() {
