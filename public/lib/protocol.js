@@ -642,6 +642,17 @@ export class PetalConfig {
         return this;
     }
 
+    setCritical(chance, multiplier) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].critDamage = {
+                chance: Math.max(0, Math.min(1, chance)),
+                multiplier: multiplier
+            };
+        }
+
+        return this;
+    }
+
     setBlock(blockHits) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].blockHits = Math.max(1, Math.round(blockHits));
@@ -1942,7 +1953,7 @@ export function decodePetalConfigs(data, nTiers) {
 
 /** @param {MobConfig} config */
 function encodeMobConfig(config) {
-    const output = [config.id, config.name, +config.isSystem, config.drops, 0x00];
+    const output = [config.id, config.name, +config.isSystem, null, 0x00];
 
     const flagsIndex = output.length - 1;
 
