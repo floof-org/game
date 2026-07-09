@@ -461,10 +461,11 @@ export const petalConfigs = [
             }, (e, t) => `Explodes on collision dealing ${20 * Math.pow(2, t)} explosion damage`))
         .setDrawing((new Drawing).addAction("beginPath").addAction("ellipse", 0, 0, .75, 1, 0).addAction("paint", "#cd75de", .25, .2)),
 
-    new PetalConfig("Triangle",22.5,10,5)
-        .setIcon(.7, 1, "Triangle")
-        .setDescription("Using more triangles will make other triangles have 80% more damage with each next one")
-        .setDrawing((new Drawing).addAction("beginPath").addAction("polygon", 3, 1, 0).addAction("paint", "#ffffff", .3, .2)),
+    new PetalConfig("Dice",22.5,10,5)
+        .setIcon(.7, 1, "Dice")
+        .setCritical(0.16, 16)
+        .setDescription("Chance to crit")
+        .setDrawing((new Drawing).addAction("beginPath").addAction("polygon", 4, 1, 45).addAction("paint", "#ffffff", .3, .2)),
 
     new PetalConfig("Blank",22.5,10,10)
         .setDescription("Blank")
@@ -1402,15 +1403,17 @@ export const mobConfigs = [
 
 export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 
-petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
-petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
-petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
-petalConfigs[petalIDOf("Branch")].setSpawnable(mobIDOf("Wilt") + 1, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5);
-petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3);
-petalConfigs[petalIDOf("Hornet Egg")].setSpawnable(mobIDOf("Hornet"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5);
-petalConfigs[petalIDOf("Square Egg")].setSpawnable(mobIDOf("Square"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
-petalConfigs[petalIDOf("Triangle Egg")].setSpawnable(mobIDOf("Triangle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
-petalConfigs[petalIDOf("Pentagon Egg")].setSpawnable(mobIDOf("Pentagon"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2);
+// Petal, Mob, Rarity, Reload, Health, Damage, Size
+
+petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 9, 900, 6, 32);
+petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5, 1e-10, 10,);
+petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 14, 600, 4, 28);
+petalConfigs[petalIDOf("Branch")].setSpawnable(mobIDOf("Wilt") + 1, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 255, 1e-10, 1e-10, 24);
+petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 255, 1e-10, 1e-10, 24);
+petalConfigs[petalIDOf("Hornet Egg")].setSpawnable(mobIDOf("Hornet"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 255, 400, 6, 32);
+petalConfigs[petalIDOf("Square Egg")].setSpawnable(mobIDOf("Square"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 900, 10, 32);
+petalConfigs[petalIDOf("Triangle Egg")].setSpawnable(mobIDOf("Triangle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 1800, 10, 48);
+petalConfigs[petalIDOf("Pentagon Egg")].setSpawnable(mobIDOf("Pentagon"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 2700, 10, 64);
 
 mobConfigs[mobIDOf("Ant Hole")].setAntHoleSpawns([{
     index: mobIDOf("Baby Ant"),
@@ -1428,6 +1431,11 @@ mobConfigs[mobIDOf("Ant Hole")].setAntHoleSpawns([{
     index: mobIDOf("Queen Ant"),
     count: 1,
     minHealthRatio: .01
+}, {
+    index: mobIDOf("Digger"),
+    count: 1,
+    minHealthRatio: .01,
+    chance: 0.1
 }]);
 
 mobConfigs[mobIDOf("Hive")].setAntHoleSpawns([{
@@ -1442,14 +1450,8 @@ mobConfigs[mobIDOf("Fire Burrow")].setAntHoleSpawns([{
     index: mobIDOf("Baby Fire Ant"),
     count: [3, 3, 3, 4, 4, 4, 5]
 }, {
-    index: mobIDOf("Worker Fire Ant"),
-    count: [4, 4, 4, 5, 5, 5, 6]
-}, {
     index: mobIDOf("Soldier Fire Ant"),
     count: [7, 7, 7, 8, 8, 8, 9]
-}, {
-    index: mobIDOf("Fire Ant Egg"),
-    count: 5
 }, {
     index: mobIDOf("Queen Fire Ant"),
     count: 1,
@@ -1458,13 +1460,13 @@ mobConfigs[mobIDOf("Fire Burrow")].setAntHoleSpawns([{
 
 mobConfigs[mobIDOf("Termite Mound")].setAntHoleSpawns([{
     index: mobIDOf("Baby Termite"),
-    count: 6
+    count: [7, 7, 7, 8, 8, 8, 9]
 }, {
     index: mobIDOf("Worker Termite"),
-    count: 8
+    count: [7, 7, 7, 8, 8, 8, 9]
 }, {
     index: mobIDOf("Soldier Termite"),
-    count: 8
+    count: [7, 7, 7, 8, 8, 8, 9]
 }, {
     index: mobIDOf("Termite Egg"),
     count: 5

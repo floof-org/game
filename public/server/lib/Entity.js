@@ -500,7 +500,7 @@ export class PetalSlot {
                 if (this.config.tiers[this.rarity].spawnable) {
                     petal.range--;
 
-                    if (petal.range <= 0) {
+                    if (petal.range <= -3) {
                         const mob = new Mob(petal);
                         mob.parent = this.player;
                         mob.team = this.player.team;

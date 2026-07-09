@@ -921,7 +921,8 @@ export class MobConfig {
             this.tiers[i].antHoleSpawns = data.map(({ index, count, minHealthRatio: minHealthRatio }) => ({
                 index: index,
                 count: count instanceof Array ? (count[i] ?? count[count.length - 1]) : count,
-                minHealthRatio: minHealthRatio ?? 1
+                minHealthRatio: minHealthRatio ?? 1,
+                chance: chance ?? 1
             }));
         }
 
