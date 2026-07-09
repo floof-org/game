@@ -136,6 +136,10 @@ export class PetalSlot {
             this.player.attraction += this.config.tiers[this.rarity].extraAttraction;
         }
 
+        if (this.config.tiers[this.rarity].extraArmor) {
+            this.player.armor += this.config.tiers[this.rarity].extraArmor;
+        }
+
         if (this.config.tiers[this.rarity].absorbsDamage) {
             this.player.absorbStacks.set(this.index, new SpongeStack(this.config.tiers[this.rarity].absorbsDamage.maxDamage, this.config.tiers[this.rarity].absorbsDamage.period));
         }
@@ -183,6 +187,10 @@ export class PetalSlot {
 
         if (this.config.tiers[this.rarity].extraAttraction) {
             this.player.attraction -= this.config.tiers[this.rarity].extraAttraction;
+        }
+
+        if (this.config.tiers[this.rarity].extraArmor) {
+            this.player.armor -= this.config.tiers[this.rarity].extraArmor;
         }
 
         if (this.config.tiers[this.rarity].absorbsDamage) {
@@ -402,7 +410,7 @@ export class PetalSlot {
 
                         // Clump orbit
                         const ang2 = j / this.amount * Math.PI * 2 - this.player.petalRotation;
-                        let k = petal.size * 2.5;
+                        let k = petal.size * 1.5;
 
                         if (this.config.wingMovement === 2) {
                             k *= 1 + Math.sin(performance.now() / 125 + petal.id * 5) * 4;
@@ -472,7 +480,7 @@ export class PetalSlot {
                             newPet.health.set(petal.health.health);
                             newPet.damage = petal.damage;
                             newPet.poison = petal.poison
-                            newPet.speed = petal.speed * .8;
+                            newPet.speed = petal.speed;
                             newPet.spinSpeed = petal.spinSpeed;
                             newPet.launched = true;
                             newPet.range = 100;
@@ -504,9 +512,16 @@ export class PetalSlot {
                         mob.health.set(spawnable.health);
                         mob.damage = spawnable.damage;
                         mob.size = spawnable.size;
+                        mob.armor = 0;
+                        mob.givesXP = !1;
+                        mob.density = 0.5;
 
-                        this.boundMobs[j].push(mob);
-                        petal.health.health = 0;
+                        this.boundMobs[petal].push(mob);
+                        this.config.phases ? (petal.range = this.config.tiers[this.rarity].spawnable.timer,
+                                setTimeout( () => {
+                                    mob && mob.health && (mob.health.health = 0)
+                                }
+                                , 135 * this.config.tiers[this.rarity].spawnable.timer)) : petal.health.health = 0;
 
                         if (mob.segmentBodies) {
                             mob.segmentBodies.forEach((segment => {
@@ -885,28 +900,20 @@ export class Entity {
                     thisDamageDone = thisDamageDone - other.armor
                     otherDamageDone = otherDamageDone - this.armor
 
-                    if (this.type === ENTITY_TYPES.PETAL && this.parent?.type === ENTITY_TYPES.PLAYER) {
-                        let velocity = this.velocity.magnitude;
-                        if (velocity > 4.5) {
-                            let critChance = 1 - Math.exp(-(velocity - 4.5) * .008);
-                            
-                            critChance = Math.min(critChance, .2351);
-                            if (Math.random() < critChance) {
-                                thisDamageDone *= 1.45;
-                            }
-                        }
+                    if (this.type === ENTITY_TYPES.PETAL && this.evadeChance > 0 && Math.random() < this.evadeChance) {
+                        otherDamageDone = 0;
                     }
-                    
-                    if (other.type === ENTITY_TYPES.PETAL && other.parent?.type === ENTITY_TYPES.PLAYER) {
-                        let velocity = other.velocity.magnitude;
-                        if (velocity > 4.5) {
-                            let critChance = 1 - Math.exp(-(velocity - 4.5) * .008);
-                            
-                            critChance = Math.min(critChance, .2351);
-                            if (Math.random() < critChance) {
-                                otherDamageDone *= 1.45;
-                            }
-                        }
+
+                    if (other.type === ENTITY_TYPES.PETAL && other.evadeChance > 0 && Math.random() < other.evadeChance) {
+                        thisDamageDone = 0;
+                    }
+
+                    if (this.type === ENTITY_TYPES.PETAL && this.critDamage && Math.random() < this.critDamage.chance) {
+                        thisDamageDone *= this.critDamage.multiplier;
+                    }
+
+                    if (other.type === ENTITY_TYPES.PETAL && other.critDamage && Math.random() < other.critDamage.chance) {
+                        otherDamageDone *= other.critDamage.multiplier;
                     }
 
                     if (this.extraDamage) if (other.health.ratio >= this.extraDamage.minHp && other.health.ratio <= this.extraDamage.maxHp) {
@@ -1035,7 +1042,10 @@ export class Entity {
                     }
 
                     if (this.type === ENTITY_TYPES.PETAL && this.lightning !== null && this.lightning.chargesLeft > 0 && !this.lightning.lightningOnParentHit) {
-                        new Lightning(this.parent).define(this.lightning.damage, this.lightning.range, this.lightning.bounces).bounce();
+                        const lightning = new Lightning(this.parent).define(this.lightning.damage, this.lightning.range, this.lightning.bounces);
+                        lightning.points[0].x = this.x;
+                        lightning.points[0].y = this.y;
+                        lightning.bounce();
 
                         if (this.lightning.charges > 1) {
                             this.lightning.chargesLeft--;
@@ -1060,7 +1070,10 @@ export class Entity {
                     }
 
                     if (other.type === ENTITY_TYPES.PETAL && other.lightning !== null && other.lightning.chargesLeft > 0 && !other.lightning.lightningOnParentHit) {
-                        new Lightning(other.parent).define(other.lightning.damage, other.lightning.range, other.lightning.bounces).bounce();
+                        const lightning = new Lightning(other.parent).define(other.lightning.damage, other.lightning.range, other.lightning.bounces);
+                        lightning.points[0].x = other.x;
+                        lightning.points[0].y = other.y;
+                        lightning.bounce();
 
                         if (other.lightning.charges > 1) {
                             other.lightning.chargesLeft--;
@@ -1258,6 +1271,8 @@ export class Petal extends Entity {
         this.placeDown = false;
         this.rarity = 0;
         this.armor = 0;
+        this.evadeChance = 0;
+        this.critDamage = null;
 
         /** @type {{damage:number,range:number,bounces:number,charges:number,chargesLeft:number}|null} */
         this.lightning = null;
@@ -1279,6 +1294,8 @@ export class Petal extends Entity {
         this.index = config.id;
         this.spinSpeed = config.launchable ? 0 : .1;
         this.armor = 0;
+        this.evadeChance = tier.evadeChance ?? 0;
+        this.critDamage = tier.critDamage ?? null;
 
         if (config.enemySpeedDebuff) {
             this.speedDebuff.toApply.multiplier = config.enemySpeedDebuff.speedMultiplier;
@@ -1523,7 +1540,7 @@ export class Player extends Entity {
 
         this.wearing = [];
         this.extraVision = 0;
-        this.attraction = 0;
+        this.attraction = 0.4;
 
         this.lightVision = 2;
     }
