@@ -722,6 +722,8 @@ export class Entity {
 
         this.damagedBy = {};
 
+        this.noDebuff = false;
+
         this.speedDebuff = {
             multiplier: 1,
             timer: 0,
@@ -1082,22 +1084,22 @@ export class Entity {
                     }
                 }
 
-                if (this.speedDebuff.toApply.timer > 0) {
+                if (this.speedDebuff.toApply.timer > 0 && !other.noDebuff) {
                     other.speedDebuff.multiplier = this.speedDebuff.toApply.multiplier;
                     other.speedDebuff.timer = this.speedDebuff.toApply.timer;
                 }
 
-                if (other.speedDebuff.toApply.timer > 0) {
+                if (other.speedDebuff.toApply.timer > 0 && !this.noDebuff) {
                     this.speedDebuff.multiplier = other.speedDebuff.toApply.multiplier;
                     this.speedDebuff.timer = other.speedDebuff.toApply.timer;
                 }
 
-                if (this.poison.toApply.timer > 0) {
+                if (this.poison.toApply.timer > 0 && !other.noDebuff) {
                     other.poison.damage = this.poison.toApply.damage;
                     other.poison.timer = this.poison.toApply.timer;
                 }
 
-                if (other.poison.toApply.timer > 0) {
+                if (other.poison.toApply.timer > 0 && !this.noDebuff) {
                     this.poison.damage = other.poison.toApply.damage;
                     this.poison.timer = other.poison.toApply.timer;
                 }
@@ -1962,6 +1964,7 @@ export class Mob extends Entity {
         this.team = -69;
         this.aggressive = false;
         this.neutral = false;
+        this.friendly = false;
 
         /** @type {Mob|null} */
         this.head = null;
@@ -2038,6 +2041,8 @@ export class Mob extends Entity {
         this.rarity = rarity;
         this.aggressive = config.aggressive;
         this.neutral = config.neutral;
+        this.friendly = config.friendly;
+        this.noDebuff = config.noDebuff;
         this.spins = config.spins;
         this.healing = config.healing;
         this.fleeAtLowHealth = config.fleeAtLowHealth;
@@ -2261,8 +2266,7 @@ export class Mob extends Entity {
             Entity.idAccumulator--;
 
             for (let i = 0; i < 8; i++) {
-                const randomAngle = Math.random() * Math.PI * 2;
-                const angle = Math.PI * 2 / 8 * i;
+                const angle = Math.PI * 2 / 8 * i + this.facing;
                 const missile = new Petal(this, -1, -1);
                 missile.team = this.team;
                 missile.define(petalConfigs[petalIDOf("Dandelion")], this.rarity);
@@ -2272,8 +2276,8 @@ export class Mob extends Entity {
                 missile.size = this.size / 2;
                 missile.health.set(missile.health.maxHealth * 3);
 
-                missile.x = this.x + Math.cos(angle + randomAngle) * (this.size + missile.size * 1.2);
-                missile.y = this.y + Math.sin(angle + randomAngle) * (this.size + missile.size * 1.2);
+                missile.x = this.x + Math.cos(angle) * (this.size + missile.size * 1.2);
+                missile.y = this.y + Math.sin(angle) * (this.size + missile.size * 1.2);
 
                 k.push(missile);
             }
@@ -2851,11 +2855,13 @@ export class Pentagram {
                     entity.damagedBy[this.parent.id][0] += this.damage;
                 }
 
-                entity.poison.timer = this.poisonTime;
-                entity.poison.damage = this.poisonDamage;
+                if (!entity.noDebuff) {
+                    entity.poison.timer = this.poisonTime;
+                    entity.poison.damage = this.poisonDamage;
 
-                entity.speedDebuff.timer = this.speedDebuffTime;
-                entity.speedDebuff.multiplier = this.speedDebuff;
+                    entity.speedDebuff.timer = this.speedDebuffTime;
+                    entity.speedDebuff.multiplier = this.speedDebuff;
+                }
             }
         });
     }
