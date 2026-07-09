@@ -132,6 +132,10 @@ export class PetalSlot {
             this.player.extraVision += this.config.tiers[this.rarity].extraVision;
         }
 
+        if (this.config.tiers[this.rarity].extraAttraction) {
+            this.player.attraction += this.config.tiers[this.rarity].extraAttraction;
+        }
+
         if (this.config.tiers[this.rarity].absorbsDamage) {
             this.player.absorbStacks.set(this.index, new SpongeStack(this.config.tiers[this.rarity].absorbsDamage.maxDamage, this.config.tiers[this.rarity].absorbsDamage.period));
         }
@@ -175,6 +179,10 @@ export class PetalSlot {
 
         if (this.config.tiers[this.rarity].extraVision) {
             this.player.extraVision -= this.config.tiers[this.rarity].extraVision;
+        }
+
+        if (this.config.tiers[this.rarity].extraAttraction) {
+            this.player.attraction -= this.config.tiers[this.rarity].extraAttraction;
         }
 
         if (this.config.tiers[this.rarity].absorbsDamage) {
@@ -409,6 +417,22 @@ export class PetalSlot {
                         gy = this.player.y + Math.sin(ang) * orbit;
                     }
 
+                    if (!this.config.notAttraction) {
+                        if (!(petal.attractionTimer > 0)) {
+                            petal.attractionTimer = 4;
+                            petal.attractionTarget = petal.findTarget(12 * (1 + this.player.attraction));
+                        } else {
+                            petal.attractionTimer--;
+                        }
+
+                        if (petal.attractionTarget && !petal.attractionTarget.health?.isDead) {
+                            gx = petal.attractionTarget.x;
+                            gy = petal.attractionTarget.y;
+                        } else {
+                            petal.attractionTarget = null;
+                        }
+                    }
+
                     const dx = gx - petal.x;
                     const dy = gy - petal.y;
                     petal.moveStrength = Math.max(1, Math.cbrt(dx * dx + dy * dy) / petal.speed);
@@ -474,9 +498,12 @@ export class PetalSlot {
                         mob.team = this.player.team;
                         mob.friendly = true;
                         state.livingMobCount--;
-                        mob.define(mobConfigs[this.config.tiers[this.rarity].spawnable.index], this.config.tiers[this.rarity].spawnable.rarity);
-                        mob.health.maxHealth *= 6;
-                        mob.health.health *= 6;
+
+                        const spawnable = this.config.tiers[this.rarity].spawnable;
+                        mob.define(mobConfigs[spawnable.index], spawnable.rarity);
+                        mob.health.set(spawnable.health);
+                        mob.damage = spawnable.damage;
+                        mob.size = spawnable.size;
 
                         this.boundMobs[j].push(mob);
                         petal.health.health = 0;
@@ -1496,6 +1523,7 @@ export class Player extends Entity {
 
         this.wearing = [];
         this.extraVision = 0;
+        this.attraction = 0;
 
         this.lightVision = 2;
     }

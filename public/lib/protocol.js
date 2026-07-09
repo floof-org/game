@@ -360,12 +360,15 @@ export class PetalConfig {
         return this;
     }
 
-    setSpawnable(index, rarity, timer) {
+    setSpawnable(index, rarity, timer, health = 1, damage = 1, size = 34) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].spawnable = {
                 index: index,
                 rarity: rarity instanceof Array ? (rarity[i] ?? rarity[rarity.length - 1]) : rarity,
-                timer: timer * 22.5
+                timer: timer * 22.5,
+                health: health * Math.pow(3, i),
+                damage: damage * Math.pow(3, i),
+                size: size * Math.pow(1.1, i)
             };
         }
 
