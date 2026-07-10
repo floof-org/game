@@ -1,7 +1,7 @@
 import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
-import state from "./state.js";
+import state, { getActiveRoomState, setActiveRoomState } from "./state.js";
 import Vector2D from "./Vector2D.js";
 
 export class HealthComponent {
@@ -2094,14 +2094,26 @@ export class Mob extends Entity {
                 spawns[i].maxCount = spawns[i].count;
             }
 
+            const roomState = getActiveRoomState();
+
             for (const spawn of spawns) {
                 if (spawn.count > 4) {
                     for (let i = 0, n = Math.random() * 4 | 0; i < n; i++) {
                         setTimeout(() => {
+                            if (Math.random() >= spawn.chance) {
+                                return;
+                            }
+
+                            const previousRoomState = getActiveRoomState();
+                            setActiveRoomState(roomState);
+
                             const rarity = Math.max(0, this.rarity - (Math.random() * 2 | 0));
                             const mob = new Mob(sp(mobConfigs[spawn.index].tiers[rarity].size));
                             mob.define(mobConfigs[spawn.index], rarity);
                             mob.team = this.team;
+                            if (mob.config.name === "Digger") {
+                                mob.team = 0;
+                            }
                             mob.friendly = this.friendly;
                             spawn.count--;
                             spawn.maxCount--;
@@ -2110,6 +2122,8 @@ export class Mob extends Entity {
                                 state.maxMobs++;
                                 state.aliveMobs.push(mob);
                             }
+
+                            setActiveRoomState(previousRoomState);
                         }, 64);
                     }
                 }
@@ -2122,12 +2136,20 @@ export class Mob extends Entity {
                     }
 
                     if (!!!spawn.minHealthRatio || this.health.ratio <= spawn.minHealthRatio) {
-                        while (spawn.count > 0 && (spawn.minHealthRatio < 1 || this.health.ratio <= (spawn.count + 1) / spawn.maxCount)) {
+                        while (spawn.count > 0 && (spawn.minHealthRatio < 1 || this.health.ratio <= spawn.count / spawn.maxCount)) {
+                            if (Math.random() >= spawn.chance) {
+                                spawn.count--;
+                                continue;
+                            }
+
                             const rarity = spawn.maxCount === 1 ? this.rarity : Math.max(0, this.rarity - (Math.random() * 2 | 0));
                             const mob = new Mob(sp(mobConfigs[spawn.index].tiers[rarity].size));
                             mob.define(mobConfigs[spawn.index], rarity);
                             mob.aggressive = true;
                             mob.team = this.team;
+                            if (mob.config.name === "Digger") {
+                                mob.team = 0;
+                            }
                             mob.friendly = this.friendly;
                             spawn.count--;
 
@@ -2551,10 +2573,12 @@ export class Mob extends Entity {
             this.velocity.x += Math.cos(this.movementAngle) * this.moveStrength;
             this.velocity.y += Math.sin(this.movementAngle) * this.moveStrength;
 
-            if (this.spins) {
-                this.facing += (this.spins.constant == false ? this.velocity.magnitude : 1) / this.speed * .1 * this.spins.rate;
-            } else {
-                this.facing = this.movementAngle;
+            if (!this.projectile || this.projectile.aimLockTick <= 0) {
+                if (this.spins) {
+                    this.facing += (this.spins.constant == false ? this.velocity.magnitude : 1) / this.speed * .1 * this.spins.rate;
+                } else {
+                    this.facing = this.movementAngle;
+                }
             }
 
             if (this.strafes && this.target) if (this.strafes.cTick == this.strafes.cooldown) {
@@ -2565,23 +2589,33 @@ export class Mob extends Entity {
         if (this.projectile !== null) {
             this.projectile.tick++;
 
-            if (this.projectile.aimbot && this.target?.velocity.magnitude > 0) {
-                const dist = Math.sqrt(quickDiff(this, this.target));
-                const time = dist / this.projectile.speed / 2;
-                const targetX = this.target.x + this.target.velocity.x * time;
-                const targetY = this.target.y + this.target.velocity.y * time;
-                this.facing = Math.atan2(targetY - this.y, targetX - this.x);
+            if (this.projectile.aimLockTick > 0) {
+                this.projectile.aimLockTick--;
             }
 
-            if ((this.config.name === "Bumblebee" || this.target?.health.ratio > 0) && this.projectile.tick >= this.projectile.cooldown) {
+            if ((this.config.name === "Bumblebee" || this.config.isPortal || this.target?.health.ratio > 0) && this.projectile.tick >= this.projectile.cooldown) {
                 this.projectile.tick = 0;
 
+                if (this.projectile.aimbot && this.target) {
+                    const dist = Math.sqrt(quickDiff(this, this.target));
+                    const time = dist / this.projectile.speed / 2;
+                    const targetX = this.target.x + this.target.velocity.x * time;
+                    const targetY = this.target.y + this.target.velocity.y * time;
+                    this.facing = Math.atan2(targetY - this.y, targetX - this.x);
+                    this.projectile.aimLockTick = 7;
+                }
+
                 if (this.projectile.multiShot) {
+                    const roomState = getActiveRoomState();
+
                     for (let i = 0; i < this.projectile.multiShot.count; i++) {
                         setTimeout(() => {
                             if (this.health.isDead || this.target === null || this.target.health.isDead) {
                                 return;
                             }
+
+                            const previousRoomState = getActiveRoomState();
+                            setActiveRoomState(roomState);
 
                             const petal = new Petal(this, -1, -1);
                             petal.define(petalConfigs[this.projectile.petalIndex], this.rarity);
@@ -2589,20 +2623,41 @@ export class Mob extends Entity {
                             petal.size = this.size * this.projectile.size;
                             petal.health.set(this.projectile.health);
                             petal.damage = this.projectile.damage;
-                            petal.speed = this.projectile.speed;
+                            petal.speed = this.projectile.stops ? 0 : this.projectile.speed;
                             petal.launched = true;
                             petal.range = this.projectile.range;
                             petal.spinSpeed = 0;
                             petal.nullCollision = this.projectile.nullCollision;
 
-                            let ang = this.facing;
+                            let ang = this.projectile.random ? Math.random() * Math.PI * 2 : this.facing;
 
                             if (this.projectile.multiShot.spread > 0) {
                                 ang += (Math.random() - .5) * this.projectile.multiShot.spread;
-                                petal.speed *= 1 + (Math.random() - .5) * this.projectile.multiShot.spread;
+
+                                if (!this.projectile.stops) {
+                                    petal.speed *= 1 + (Math.random() - .5) * this.projectile.multiShot.spread;
+                                }
                             }
 
                             petal.facing = petal.moveAngle = ang;
+
+                            if (!this.projectile.center) {
+                                petal.x += Math.cos(ang) * this.size * .8;
+                                petal.y += Math.sin(ang) * this.size * .8;
+                            }
+
+                            if (this.projectile.stops) {
+                                const spreadFactor = this.projectile.multiShot.spread > 0 ? 1 + (Math.random() - .5) * this.projectile.multiShot.spread : 1;
+                                petal.velocity.x += Math.cos(ang) * this.projectile.speed * spreadFactor;
+                                petal.velocity.y += Math.sin(ang) * this.projectile.speed * spreadFactor;
+                            }
+
+                            if (this.projectile.recoil > 0) {
+                                this.velocity.x -= Math.cos(ang) * this.projectile.recoil;
+                                this.velocity.y -= Math.sin(ang) * this.projectile.recoil;
+                            }
+
+                            setActiveRoomState(previousRoomState);
                         }, i * this.projectile.multiShot.delay);
                     }
                 } else {
@@ -2612,16 +2667,33 @@ export class Mob extends Entity {
                     petal.size = this.size * this.projectile.size;
                     petal.health.set(this.projectile.health);
                     petal.damage = this.projectile.damage;
-                    petal.speed = this.projectile.speed;
+                    petal.speed = this.projectile.stops ? 0 : this.projectile.speed;
                     petal.launched = true;
                     petal.range = this.projectile.range;
                     petal.spinSpeed = 0;
                     petal.nullCollision = this.projectile.nullCollision;
-                    petal.facing = petal.moveAngle = this.facing;
-                    
-                    if (this.config.name === "Tank") {
-                        petal.x += Math.cos(this.facing) * (this.size) * 1.25;
-                        petal.y += Math.sin(this.facing) * (this.size) * 1.25;
+
+                    const ang = this.projectile.random ? Math.random() * Math.PI * 2 : this.facing;
+                    petal.facing = petal.moveAngle = ang;
+
+                    if (!this.projectile.center) {
+                        petal.x += Math.cos(ang) * this.size * .66;
+                        petal.y += Math.sin(ang) * this.size * .66;
+
+                        if (this.config.name === "Tank") {
+                            petal.x += Math.cos(ang) * (this.size) * 1.25;
+                            petal.y += Math.sin(ang) * (this.size) * 1.25;
+                        }
+                    }
+
+                    if (this.projectile.stops) {
+                        petal.velocity.x += Math.cos(ang) * this.projectile.speed;
+                        petal.velocity.y += Math.sin(ang) * this.projectile.speed;
+                    }
+
+                    if (this.projectile.recoil > 0) {
+                        this.velocity.x -= Math.cos(ang) * this.projectile.recoil;
+                        this.velocity.y -= Math.sin(ang) * this.projectile.recoil;
                     }
                 }
             }

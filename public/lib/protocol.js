@@ -99,7 +99,7 @@ export class MobTier {
 
         this.damageReduction = 0;
 
-        /** @type {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number}|null}|null} */
+        /** @type {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number}|null, aimLockTick: number, center: boolean, recoil: number, stops: boolean, random: boolean}|null} */
         this.projectile = null;
 
         /** @type {{speedMultiplier: number, duration: number}|null} */
@@ -108,7 +108,7 @@ export class MobTier {
         /** @type {{cooldown: number, bounces: number, range: number, damage: number}|null} */
         this.lightning = null;
 
-        /** @type {{index: number, count: number, minHealthRatio: number}[]} */
+        /** @type {{index: number, count: number, minHealthRatio: number, chance: number}[]} */
         this.antHoleSpawns = null;
     }
 }
@@ -462,7 +462,7 @@ export class PetalConfig {
 
     setDensity(density) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].density = density * Math.pow(1.2, i);
+            this.tiers[i].density = density;
         }
 
         return this;
@@ -833,7 +833,7 @@ export class MobConfig {
         return this;
     }
 
-    /** @param {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number,spread:number}|null, runs: boolean, nullCollision: boolean}} projectile */
+    /** @param {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number,spread:number}|null, runs: boolean, nullCollision: boolean, center: boolean, recoil: number, stops: boolean, random: boolean}} projectile */
     setProjectile(projectile = {}) {
         for (let i = 0; i < this.tiers.length; i++) {
         
@@ -848,7 +848,12 @@ export class MobConfig {
                 multiShot: projectile.multiShot ?? null,
                 runs: projectile.runs ?? false,
                 nullCollision: projectile.nullCollision ?? false,
-                aimbot: projectile.aimbot ?? false
+                aimbot: projectile.aimbot ?? false,
+                aimLockTick: 0,
+                center: projectile.center ?? false,
+                recoil: projectile.recoil ?? 0,
+                stops: projectile.stops ?? false,
+                random: projectile.random ?? false
             };
         }
 
@@ -915,10 +920,10 @@ export class MobConfig {
         return this;
     }
 
-    /** @param {{index:number,count:number|number[],minHealthRatio?:number}[]} data */
+    /** @param {{index:number,count:number|number[],minHealthRatio?:number,chance?:number}[]} data */
     setAntHoleSpawns(data) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].antHoleSpawns = data.map(({ index, count, minHealthRatio: minHealthRatio }) => ({
+            this.tiers[i].antHoleSpawns = data.map(({ index, count, minHealthRatio, chance }) => ({
                 index: index,
                 count: count instanceof Array ? (count[i] ?? count[count.length - 1]) : count,
                 minHealthRatio: minHealthRatio ?? 1,

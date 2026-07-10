@@ -834,7 +834,7 @@ export const mobConfigs = [
     new MobConfig("Soldier Termite",100,10,18,3.5)
         .setAggressive(1)
         .setDamageReflection(.01)
-        .addDrop(petalIDOf("Triangle"), .25),
+        .addDrop(petalIDOf("Bone"), .25),
 
     new MobConfig("Termite Overmind",425,10,42,.5)
         .setAggressive(1)
@@ -993,11 +993,11 @@ export const mobConfigs = [
         .setMoveInSines(1)
         .addDrop(petalIDOf("Wing"), .6),
 
-    new MobConfig("Square",100,10,0,0),
+    new MobConfig("Square",100,10,32,0),
 
-    new MobConfig("Triangle",0,0,0,0),
+    new MobConfig("Triangle",200,10,38,0),
 
-    new MobConfig("Pentagon",0,0,0,0),
+    new MobConfig("Pentagon",300,10,42,0),
 
     new MobConfig("Hell Beetle",150,50,35,4)
         .addDrop(petalIDOf("Beetle Egg"), 1)
