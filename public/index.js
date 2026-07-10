@@ -2080,13 +2080,23 @@ function draw() {
         if (entry.animation === "bounce") {
             entry.velocityY += entry.gravity;
             entry.y += entry.velocityY;
+            if (entry.velocityX) entry.x += entry.velocityX;
         } else if (entry.animation === "rise") {
             entry.y += entry.velocityY;
         }
 
         const drawX = entry.x * scale - cameraX + halfWidth;
         const drawY = entry.y * scale - cameraY + halfHeight;
-        const alpha = timeUntilExpiry < 200 ? timeUntilExpiry / 200 : 1;
+
+        let alpha;
+        if (entry.fade) {
+            const totalLife = entry.expiresAt - entry.creation;
+            const elapsed = now - entry.creation;
+            alpha = totalLife > 0 ? Math.max(0, 1 - elapsed / totalLife) : 0;
+        } else {
+            alpha = timeUntilExpiry < 200 ? timeUntilExpiry / 200 : 1;
+        }
+
         const oldAlpha = ctx.globalAlpha;
         const oldTextAlign = ctx.textAlign;
         const oldTextBaseline = ctx.textBaseline;
