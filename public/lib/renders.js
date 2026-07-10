@@ -277,7 +277,7 @@ function drawDirt(id, ctx = _ctx, hit = false) {
     
     for (let i = 0; i < 7; i++) {
         const angle = (TAU / 7) * i + Math.sin(id * 3 + i * 9) * 0.08;
-        const dist = 1 + Math.sin(id * 5 + i * 7) * 0.2;
+        const dist = 1 + Math.sin(id * 5 + i * 7) * 0.125;
         ctx.lineTo(Math.cos(angle) * dist, Math.sin(angle) * dist);
     }
     ctx.closePath();
@@ -301,11 +301,11 @@ function drawMagnolia(ctx = _ctx, hit = false) {
 function drawCorn(ctx = _ctx, hit = false) {
     setStyle(ctx, mixColors(colors.beeYellow, "#FF0000", hit * 0.5), 0.25);
     ctx.beginPath();
-    ctx.moveTo(0.85, 0.85);
-    ctx.quadraticCurveTo(1.3, 0, 0.85, -0.85);
-    ctx.bezierCurveTo(0.55, -1.3, -0.05, -0.95, -0.9, -0.55);
-    ctx.quadraticCurveTo(-0.1, 0, -0.9, 0.55);
-    ctx.bezierCurveTo(-0.05, 0.95, 0.55, 1.3, 0.85, 0.85);
+    ctx.moveTo(0.9, 0.8);
+    ctx.quadraticCurveTo(1.4, 0, 0.9, -0.8);
+    ctx.bezierCurveTo(0.55, -1.25, -0.05, -0.95, -0.875, -0.55);
+    ctx.quadraticCurveTo(-0.1, 0, -0.875, 0.55);
+    ctx.bezierCurveTo(-0.05, 0.95, 0.55, 1.25, 0.9, 0.8);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -342,7 +342,7 @@ function drawSands(ctx = _ctx, index, rarity) {
 }
 
 function drawOrange(ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(colors.orange, "#FF0000", hit * 0.5), 0.275);
+    setStyle(ctx, mixColors(colors.orange, "#FF0000", hit * 0.5), 0.25);
 
     ctx.beginPath();
     ctx.arc(0, 0, 1, 0, TAU);
@@ -350,7 +350,7 @@ function drawOrange(ctx = _ctx, hit = false) {
     ctx.fill();
     ctx.stroke();
 
-    setStyle(ctx, mixColors(colors.leafGreen, "#FF0000", hit * 0.5), 0.275);
+    setStyle(ctx, mixColors(colors.leafGreen, "#FF0000", hit * 0.5), 0.25);
 
     ctx.translate(0, 0.5);
     ctx.beginPath();
@@ -557,12 +557,13 @@ export function drawThirdEye(ctx = _ctx, hit = false) {
 
 function drawPincer(ctx = _ctx, hit = false) {
     setStyle(ctx, mixColors(colors.stingerBlack, "#FF0000", hit * 0.5), 0.25);
-    ctx.rotate(-Math.PI / 12);
+    ctx.rotate(-Math.PI / 10);
     ctx.beginPath();
-    ctx.moveTo(-1, -0.1);
-    ctx.quadraticCurveTo(-0.2, -1, 1, 0.2);
-    ctx.lineTo(0.9, 0.2);
-    ctx.quadraticCurveTo(0.2, -0.1, -1, 0.1);
+    ctx.moveTo(-1, 0);
+    ctx.quadraticCurveTo(-0.3, -1.25, 1, 0.3);
+    ctx.lineTo(1, 0.3);
+    ctx.quadraticCurveTo(0.3, -0.15, -1, 0);
+    ctx.closePath();
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -681,29 +682,40 @@ function drawPrimrose(ctx = _ctx, hit = false, real = false) {
         ctx.closePath();
         ctx.fill();
     }
+    ctx.lineWidth = 0.2;
+    const step = TAU / 5;
+    ctx.fillStyle = mixColors("#fff9ce", "#FF0000", hit * 0.5);
+    ctx.strokeStyle = mixColors(ctx.fillStyle, "#000000", 0.2);
 
-    setStyle(ctx, mixColors(colors.honeyGold, "#FF0000", hit * 0.5), 0.15);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    for (let i = 0; i < 5; i++) {
+        const angle = i * step;
+        const a1 = angle - step * 0.5;
+        const b1 = angle + step * 0.5;
 
-    ctx.rotate(Math.PI / 6);
-    dipPolygon(ctx, 3, 1.2, 0.1, 0);
-    ctx.rotate(-Math.PI / 6);
-    ctx.fill();
-    ctx.stroke();
-
-    dipPolygon(ctx, 3, 0.8, 0.1, 0);
-    ctx.fill();
-    ctx.stroke();
-
-    setStyle(ctx, mixColors(colors.rosePink, "#FF0000", hit * 0.5), 0.075);
-    for (let i = 0; i < 3; i++) {
-        const angle = (TAU / 3) * i + TAU / 6;
-
-        ctx.beginPath();
-        ctx.arc(Math.cos(angle) * 0.3, Math.sin(angle) * 0.3, 0.12, 0, TAU);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        ctx.bezierCurveTo(
+            Math.cos(a1) * 0.6,
+            Math.sin(a1) * 0.6,
+            Math.cos(a1) * 1.2,
+            Math.sin(a1) * 1.2,
+            Math.cos(angle) * 1,
+            Math.sin(angle) * 1
+        );
+        ctx.bezierCurveTo(
+            Math.cos(b1) * 1.2,
+            Math.sin(b1) * 1.2,
+            Math.cos(b1) * 0.6,
+            Math.sin(b1) * 0.6, 0, 0
+        );
     }
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = mixColors("#fff185", "#FF0000", hit * 0.5);
+    ctx.beginPath();
+    ctx.arc(0, 0, 0.25, 0, TAU);
+    ctx.fill();
 }
 
 function drawSpellbook(ctx = _ctx, hit = false, real = false, spell = 0) {
@@ -886,6 +898,17 @@ export function drawAmulet(ctx = _ctx, hit = false) {
     ctx.arc(0, 0, 0.15, 0, TAU);
     ctx.fillStyle = colors.cactusLightGreen;
     ctx.fill();
+}
+
+export function drawCutter(ctx = _ctx, hit = false) {
+    setStyle(ctx, mixColors(colors.stingerBlack, "#FF0000", hit * 0.5), 0.2, 0);
+
+    ctx.beginPath();
+    dipPolygon(ctx, 13, 1, 1, Math.PI / 6);
+    ctx.arc(0, 0, 0.8, 0, TAU);
+    ctx.fill("evenodd");
+    ctx.stroke();
+    ctx.closePath();
 }
 
 export function drawArmor(ctx = _ctx, hit = false) {
@@ -1323,20 +1346,16 @@ function drawDust(ctx = _ctx, index, rarity) {
 }
 
 function drawShrubPetal(color, ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.125);
+    let oldColor = color
+    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.2);
 
-    for (let i = 9; i >= 8; i--) {
-        polygon(ctx, i, 1 - 0.33 * (9 - i), 0);
-        ctx.fill();
-        ctx.stroke();
-    }
+    dipPolygon(ctx, 7, 1.15, -2, 0)
+    ctx.fill()
+    ctx.stroke()
 
-    ctx.fillStyle = mixColors(mixColors(color, "#000000", 0.1), "#FF0000", hit * 0.5);
-
-    ctx.beginPath();
-    ctx.arc(0, 0, 0.33, 0, TAU);
-    ctx.fill();
-    ctx.closePath();
+    ctx.fillStyle = mixColors(ctx.fillStyle, "#FFFFFF", .065)
+    dipPolygon(ctx, 7, .7, -2, 0)
+    ctx.fill()
 }
 
 function drawLantern(color, altColor, ctx = _ctx, hit = false) {
@@ -1844,7 +1863,7 @@ function petalRender(index, hit, ctx, id, size) {
             drawPeas(ctx, hit, colors.peaGreen, index);
             break;
         case 30: // Stick
-            drawStick(colors.spider, ctx, hit);
+            drawStick(colors.stick, ctx, hit);
             break;
         case 31: // scorpion.projectile
             drawScorpionProjectile(ctx, hit);
@@ -2083,13 +2102,14 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             drawYucca(ctx);
             ctx.restore();
             break;
+        case 43: // Yggdrasil
+            ctx.save();
+            ctx.scale(0.9, 0.9);
+            drawYggdrasil(ctx, hit);
+            ctx.restore();
+            break;
         case 45: // Dandelion
             drawDandyIcon(ctx, index, rarity);
-            break;
-        case 46: // Sponge
-            ctx.save();
-            drawSpongePetal(ctx);
-            ctx.restore();
             break;
         case 47: // Pearl
             ctx.save();
@@ -4334,7 +4354,7 @@ function drawFlyWings(x, y, s, id, rotSpd, hit = false, ctx = _ctx, date) {
 }
 
 function drawFly(ctx, color, id, attack = false, hit = false, date) {
-    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.3);
+    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.275);
     ctx.beginPath();
     ctx.arc(0, 0, 1, 0, TAU);
     ctx.closePath();
@@ -4345,7 +4365,7 @@ function drawFly(ctx, color, id, attack = false, hit = false, date) {
 }
 
 function drawMoth(ctx, color, id, attack = false, hit = false, date) {
-    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.2);
+    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.275);
     ctx.beginPath();
     ctx.arc(0, 0, 1, 0, TAU);
     ctx.closePath();
@@ -4419,7 +4439,7 @@ function drawFirefly(ctx = _ctx, friendly, id, hit = false, date) {
 
     drawFlyWings(-0.25 * 1.25, 0, 1.25 * 1.25, id, 0.0025, hit, ctx, date);
 
-    setStyle(ctx, mixColors(friendly ? colors.playerYellow : colors.ants, "#FF0000", hit * 0.5), 0.3);
+    setStyle(ctx, mixColors(friendly ? colors.playerYellow : colors.ants, "#FF0000", hit * 0.5), 0.275);
     ctx.beginPath();
     ctx.arc(0, 0, 1, 0, TAU);
     ctx.closePath();
@@ -4793,24 +4813,20 @@ function drawStickbug(ctx = _ctx, id, color, altColor, altColor2, attack, hit = 
 }
 
 function drawShrub(id, color, ctx = _ctx, hit = false) {
-    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.125);
+    let oldColor = color
+    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.2);
 
-    for (let i = 9; i >= 7; i--) {
-        polygon(ctx, i, 1 - 0.25 * (9 - i), 0);
-        ctx.fill();
-        ctx.stroke();
-    }
+    dipPolygon(ctx, 9, 1.2, -2, 0)
+    ctx.fill()
+    ctx.stroke()
 
-    for (let i = 0; i < 5; i++) {
-        const angle = Math.sin(i * 10000 + id) * TAU;
-        const radius = Math.sin(i * 1000 + id) * 0.02 + 0.2;
-        const d = Math.sin(i * 10000 + id) * 0.7;
-        ctx.fillStyle = mixColors(mixColors(color, "#000000", 0.115 * Math.sin(1e3 * i + id) + 0.2), "#FF0000", hit * 0.5);
+    ctx.fillStyle = mixColors(ctx.fillStyle, "#FFFFFF", .055)
+    dipPolygon(ctx, 8, .8, -2, 0)
+    ctx.fill()
 
-        ctx.beginPath();
-        ctx.arc(Math.cos(angle) * d, Math.sin(angle) * d, radius, 0, TAU);
-        ctx.fill();
-    }
+    ctx.fillStyle = mixColors(ctx.fillStyle, "#FFFFFF", .055)
+    dipPolygon(ctx, 7, .5, -2, 0)
+    ctx.fill()
 }
 
 function drawPumpkin(color, altColor, ctx, hit, id) {
@@ -5655,7 +5671,7 @@ function createPetalTooltip(index, rarityIndex) {
 
         if (tier.damageReflection.cap > 0) {
             let y = 10 + text("Reflection Cap: ", 10, newY, 15, mixColors(colors.legendary, "#FFFFFF", 0.35), ctx);
-            y += text(+(+(tier.damageReflection.cap * 100).toFixed(2)) + "%", y, newY, 15, colors.white, ctx);
+            y += text(+(tier.damageReflection.cap * 100).toFixed(2) + "%", y, newY, 15, colors.white, ctx);
             newY += 17.5;
         }
     }
@@ -5857,7 +5873,7 @@ function createMobTooltip(index, rarityIndex) {
 
         if (mob.damageReflection.cap > 0) {
             let y = 10 + text("Reflection Cap: ", 10, newY, 15, mixColors(colors.legendary, "#FFFFFF", 0.35), ctx);
-            y += text(+(+(mob.damageReflection.cap * 100).toFixed(2)) + "%", y, newY, 15, colors.white, ctx);
+            y += text(+(mob.damageReflection.cap * 100).toFixed(2) + "%", y, newY, 15, colors.white, ctx);
             newY += 17.5;
         }
     }

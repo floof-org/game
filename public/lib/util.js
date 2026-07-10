@@ -84,7 +84,6 @@ export const colors = {
     roach: "#9D4F23",
     roachHead: "#6C3419",
     sand: "#E1C85D",
-    jelly: "#D5B5D3",
     orange: "#F1BC48",
     starfish: "#c74a48",
     book: "#c28043",
@@ -92,7 +91,7 @@ export const colors = {
     crabBodyOrange: "#dc704b",
     crabLimbBrown: "#4d2621",
     desertSand: "#ECDCB8",
-    jelly: "#D5B5D3"
+    stick: "#876222"
     
 };
 export function formatLargeNumber(number, type = 0) {
