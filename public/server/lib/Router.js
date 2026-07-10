@@ -5,7 +5,7 @@ import initTerrain from "./initTerrain.js";
 import state from "./state.js";
 import RoomManager from "./Room.js";
 import { Mob } from "./Entity.js";
-import { ROOM_CENTER_PORTALS } from "./roomTypes.js";
+import { ROOM_CENTER_PORTALS, ROOM_SIDE_PORTALS } from "./roomTypes.js";
 
 globalThis.environmentName ??= "browser";
 
@@ -268,6 +268,29 @@ export default class Router {
                 const portal = new Mob({ x: 0, y: 0 });
                 portal.define(portalConfig, 0);
                 portal.team = 0;
+            }
+        }
+
+        const sidePortals = ROOM_SIDE_PORTALS[room.name];
+        if (sidePortals) {
+            const edgeMargin = 80;
+            const edgeX = state.width / 2 - edgeMargin;
+
+            for (const side of ["left", "right"]) {
+                const target = sidePortals[side];
+                if (!target) continue;
+
+                const portalIndex = mobIDOf(target.portal);
+                const portalConfig = mobConfigs[portalIndex];
+                if (!portalConfig) continue;
+
+                const sidePortal = new Mob({
+                    x: side === "left" ? -edgeX : edgeX,
+                    y: 0
+                });
+                sidePortal.define(portalConfig, 0);
+                sidePortal.team = 0;
+                sidePortal.sideTargetRoomName = target.room;
             }
         }
 

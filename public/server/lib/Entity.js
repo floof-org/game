@@ -2788,6 +2788,14 @@ export class Mob extends Entity {
                     const fromRoom = RoomManager.roomOf(client.id);
                     if (!fromRoom) return;
 
+                    if (portal.sideTargetRoomName) {
+                        const targetRoom = RoomManager.findByName(portal.sideTargetRoomName);
+                        if (!targetRoom) return;
+
+                        RoomManager.moveClient(client, targetRoom);
+                        return;
+                    }
+
                     if (ROOM_CENTER_PORTALS[fromRoom.name] !== portal.config.name) return;
 
                     const waveRoom = RoomManager.createWaveRoom(fromRoom);

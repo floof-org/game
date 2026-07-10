@@ -38,3 +38,17 @@ export const ROOM_CENTER_PORTALS = {
     "main-desert": "Desert Portal",
     "main-ocean": "Ocean Portal"
 };
+
+export const ROOM_SIDE_PORTALS = {
+    "main-garden": {
+        left: { room: "main-ffa", portal: "Portal" },
+        right: { room: "main-desert", portal: "Desert Portal" }
+    },
+    "main-desert": {
+        left: { room: "main-garden", portal: "Garden Portal" },
+        right: { room: "main-ocean", portal: "Ocean Portal" }
+    },
+    "main-ocean": {
+        left: { room: "main-desert", portal: "Desert Portal" }
+    }
+};
