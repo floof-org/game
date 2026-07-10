@@ -1,17 +1,17 @@
 import {
-  canvas,
-  ctx,
-  drawBackground,
-  drawBackgroundOverlay,
-  renderTerrainForMap,
-  drawBar,
-  drawFace,
-  drawWrappedText,
-  gameScale,
-  mixColors,
-  setStyle,
-  text,
-  uiScale,
+    canvas,
+    ctx,
+    drawBackground,
+    drawBackgroundOverlay,
+    renderTerrainForMap,
+    drawBar,
+    drawFace,
+    drawWrappedText,
+    gameScale,
+    mixColors,
+    setStyle,
+    text,
+    uiScale,
 } from "./lib/canvas.js";
 import * as net from "./lib/net.js";
 import { mouse, keyMap } from "./lib/net.js";
@@ -631,8 +631,8 @@ function processDrop() {
 }
 
 export function formatAmount(v) {
-  if (!isFinite(v)) return "∞";
-  if (isNaN(v)) return "0";
+    if (!isFinite(v)) return "∞";
+    if (isNaN(v)) return "0";
 
     const f = (num, div, suffix) => {
         const val = num / div;
@@ -740,13 +740,13 @@ inventoryTooltipLayer.style.display = "none";
 document.body.appendChild(inventoryTooltipLayer);
 
 function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
-  const bw = 350;
-  const bh = (350 * img.height) / img.width;
-  let x = anchorX - 150;
-  let y = anchorY - bh - 10;
-  x = Math.max(0, Math.min(x, boundW - bw));
-  y = Math.max(0, Math.min(y, boundH - bh));
-  return { x, y, bw, bh };
+    const bw = 350;
+    const bh = (350 * img.height) / img.width;
+    let x = anchorX - 150;
+    let y = anchorY - bh - 10;
+    x = Math.max(0, Math.min(x, boundW - bw));
+    y = Math.max(0, Math.min(y, boundH - bh));
+    return { x, y, bw, bh };
 }
 
 function drawInventory() {
@@ -894,23 +894,23 @@ const __ANIMATED_WAVE_ICONS__ = new Set();
 let __WAVE_RAF_RUNNING__ = false;
 
 function startWaveRAF() {
-  if (__WAVE_RAF_RUNNING__) return;
-  __WAVE_RAF_RUNNING__ = true;
+    if (__WAVE_RAF_RUNNING__) return;
+    __WAVE_RAF_RUNNING__ = true;
 
-  const loop = () => {
-    if (__ANIMATED_WAVE_ICONS__.size === 0) {
-      __WAVE_RAF_RUNNING__ = false;
-      return;
-    }
+    const loop = () => {
+        if (__ANIMATED_WAVE_ICONS__.size === 0) {
+            __WAVE_RAF_RUNNING__ = false;
+            return;
+        }
 
-    for (const draw of __ANIMATED_WAVE_ICONS__) {
-      draw();
-    }
+        for (const draw of __ANIMATED_WAVE_ICONS__) {
+            draw();
+        }
+
+        requestAnimationFrame(loop);
+    };
 
     requestAnimationFrame(loop);
-  };
-
-  requestAnimationFrame(loop);
 }
 
 const WAVE_CACHE = (globalThis.__WAVE_CACHE__ ||= Object.create(null));
@@ -955,127 +955,127 @@ function drawWaveMobIcon(ctx, entry) {
     drawUIMob(entry.index, entry.rarity, ctx);
 }
 
-        const m = {
-            0: 4,
-            1: 4,
-            2: 4,
-            3: 5.5,
-            4: 4,
-            5: 3,
-            6: 4,
-            7: 4,
-            8: 3.25,
-            9: 4,
-            10: 3.25,
-            11: 3.25,
-            12: 3.25,
-            13: 4,
-            14: 4,
-            15: 6.25,
-            16: 6.25,
-            17: 6.25,
-            18: 6.25,
-            19: 4,
-            20: 6.25,
-            21: 6.25,
-            22: 6.25,
-            23: 6.25,
-            24: 4,
-            25: 6.25,
-            26: 6.25,
-            27: 6.25,
-            28: 4,
-            29: 4,
-            30: 5.25,
-            31: 5.25,
-            32: 5.25,
-            33: 5.25,
-            34: 5.25,
-            35: 4,
-            36: 4,
-            37: 4,
-            38: 4.5,
-            39: 4.5,
-            40: 4.5,
-            41: 4.5,
-            42: 4.5,
-            43: 4.5,
-            44: 4.5,
-            45: 3,
-            46: 4,
-            47: 3.25,
-            48: 5.25,
-            49: 3.35,
-            50: 3,
-            51: 5.25,
-            52: 4,
-            53: 4.5,
-            54: 4.5,
-            55: 4,
-            56: 4,
-            57: 4,
-            58: 4,
-            59: 5.5,
-            60: 4,
-            61: 4.5,
-            62: 4,
-            63: 4,
-            64: 6.5,
-            65: 4,
-            66: 4.5,
-            67: 4.5,
-            68: 4,
-            69: 4,
-            70: 4,
-            71: 4,
-            72: 4.5,
-            73: 4.5,
-            255: 4,
-        };
+const m = {
+    0: 4,
+    1: 4,
+    2: 4,
+    3: 5.5,
+    4: 4,
+    5: 3,
+    6: 4,
+    7: 4,
+    8: 3.25,
+    9: 4,
+    10: 3.25,
+    11: 3.25,
+    12: 3.25,
+    13: 4,
+    14: 4,
+    15: 6.25,
+    16: 6.25,
+    17: 6.25,
+    18: 6.25,
+    19: 4,
+    20: 6.25,
+    21: 6.25,
+    22: 6.25,
+    23: 6.25,
+    24: 4,
+    25: 6.25,
+    26: 6.25,
+    27: 6.25,
+    28: 4,
+    29: 4,
+    30: 5.25,
+    31: 5.25,
+    32: 5.25,
+    33: 5.25,
+    34: 5.25,
+    35: 4,
+    36: 4,
+    37: 4,
+    38: 4.5,
+    39: 4.5,
+    40: 4.5,
+    41: 4.5,
+    42: 4.5,
+    43: 4.5,
+    44: 4.5,
+    45: 3,
+    46: 4,
+    47: 3.25,
+    48: 5.25,
+    49: 3.35,
+    50: 3,
+    51: 5.25,
+    52: 4,
+    53: 4.5,
+    54: 4.5,
+    55: 4,
+    56: 4,
+    57: 4,
+    58: 4,
+    59: 5.5,
+    60: 4,
+    61: 4.5,
+    62: 4,
+    63: 4,
+    64: 6.5,
+    65: 4,
+    66: 4.5,
+    67: 4.5,
+    68: 4,
+    69: 4,
+    70: 4,
+    71: 4,
+    72: 4.5,
+    73: 4.5,
+    255: 4,
+};
 
 function makeWaveIcon(entry, mode, key) {
-  const size = Math.ceil(entry.size + 12);
-  const canvas = new OffscreenCanvas(size, size);
-  const ctx = canvas.getContext("2d");
+    const size = Math.ceil(entry.size + 12);
+    const canvas = new OffscreenCanvas(size, size);
+    const ctx = canvas.getContext("2d");
 
-  function render(now, entryOverride) {
-  ctx.clearRect(0, 0, size, size);
-    const e = entryOverride || entry;
-    now = Number.isFinite(now) ? now : performance.now();
+    function render(now, entryOverride) {
+        ctx.clearRect(0, 0, size, size);
+        const e = entryOverride || entry;
+        now = Number.isFinite(now) ? now : performance.now();
 
-    const a = e.size;
-    const g = 6;
-    const u = 6;
-    const r = 5;
+        const a = e.size;
+        const g = 6;
+        const u = 6;
+        const r = 5;
 
-    const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
-    const cx = g + a / 2;
-    const cy = u + a / 2;
+        const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
+        const cx = g + a / 2;
+        const cy = u + a / 2;
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect(g, u, a, a, r);
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(g, u, a, a, r);
 
-    const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
+        const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
 
-    if (fill !== null) {
-      ctx.fillStyle = fill;
-      ctx.fill();
-    }
+        if (fill !== null) {
+            ctx.fillStyle = fill;
+            ctx.fill();
+        }
 
-    ctx.restore();
+        ctx.restore();
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect(g, u, a, a, r);
-    ctx.clip();
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(g, u, a, a, r);
+        ctx.clip();
 
-    drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
+        drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
 
-    ctx.translate(cx, cy);
+        ctx.translate(cx, cy);
 
-    const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
-    const scale = m[entry.index] ? a / m[entry.index] : a / f;
+        const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
+        const scale = m[entry.index] ? a / m[entry.index] : a / f;
 
         ctx.scale(scale, scale);
         drawWaveMobIcon(ctx, entry);
@@ -1093,30 +1093,30 @@ function makeWaveIcon(entry, mode, key) {
     }
 
     const draw = () => {
-          const animated =
-          wavesGradientOn() &&
-          entry.rarity >= getGradientMinRarity();
+        const animated =
+            wavesGradientOn() &&
+            entry.rarity >= getGradientMinRarity();
 
-          if (!animated) {
-          __ANIMATED_WAVE_ICONS__.delete(draw);
-          }
+        if (!animated) {
+            __ANIMATED_WAVE_ICONS__.delete(draw);
+        }
 
-          render(performance.now(), entry);
-      };
+        render(performance.now(), entry);
+    };
 
-      canvas._draw = draw;
-      draw();
-      return canvas;
+    canvas._draw = draw;
+    draw();
+    return canvas;
 }
 
 function getWaveIcon(entry) {
-  const animated =
-  wavesGradientOn() &&
-  entry.rarity >= getGradientMinRarity();
+    const animated =
+        wavesGradientOn() &&
+        entry.rarity >= getGradientMinRarity();
 
-  const mode = animated ? 1 : 0;
-  const sizeKey = Math.round(entry.size * 100) / 100;
-  const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
+    const mode = animated ? 1 : 0;
+    const sizeKey = Math.round(entry.size * 100) / 100;
+    const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
 
     let icon = WAVE_CACHE[key];
 
@@ -1125,16 +1125,16 @@ function getWaveIcon(entry) {
         WAVE_CACHE[key] = icon;
     }
 
-  const draw = icon._draw;
+    const draw = icon._draw;
 
-  if (animated && draw) {
-    if (!__ANIMATED_WAVE_ICONS__.has(draw)) {
-      __ANIMATED_WAVE_ICONS__.add(draw);
-      startWaveRAF();
+    if (animated && draw) {
+        if (!__ANIMATED_WAVE_ICONS__.has(draw)) {
+            __ANIMATED_WAVE_ICONS__.add(draw);
+            startWaveRAF();
+        }
+    } else if (draw) {
+        __ANIMATED_WAVE_ICONS__.delete(draw);
     }
-  } else if (draw) {
-    __ANIMATED_WAVE_ICONS__.delete(draw);
-  }
 
     return icon;
 }
@@ -1179,7 +1179,7 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
         const angle = -0.35 + rand01(seed + 2) * 1.2;
         const vx = Math.cos(angle);
         const vy = Math.sin(angle);
-        const travel = now * GLOW_PARTICLE_SPEED;
+        const travel = now * GLOW_PARTICLE_SPEED * scale;
 
         const x = ((((startX + vx * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
         const y = ((((startY + vy * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
@@ -1216,15 +1216,24 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
     ctx.restore();
 }
 
-function wavesSweepGradient(ctx, t, base, now) {
+function wavesSweepGradient(ctx, t, base, now, size) {
     now = Number.isFinite(now) ? now : performance.now();
 
     const custom = wavesTierVisual(t);
 
-    const time = (now * 0.07) % 512;
-    const offset = time - 256;
+    const scale = size / 120;
 
-    const g = ctx.createLinearGradient(offset - 160, offset - 160, offset + 160, offset + 160);
+    const time = (now * 0.07 * scale) % (512 * scale);
+    const offset = time - 256 * scale;
+
+    const extent = size * (160 / 120);
+
+    const g = ctx.createLinearGradient(
+        offset - extent,
+        offset - extent,
+        offset + extent,
+        offset + extent
+    );
 
     const soft = custom.soft ?? mixColors(base, "#ffffff", 0.06);
     const main = custom.base ?? base;
@@ -1280,7 +1289,12 @@ function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
 
     const travelDistance = size + band * 2;
 
-    const pxPerMs = Math.max(speed, 0.001) * 0.05;
+    const scale = size / 120;
+
+    const pxPerMs =
+        Math.max(speed, 0.001) *
+        0.05 *
+        scale;
 
     const lineDuration = travelDistance / pxPerMs;
 
@@ -1452,9 +1466,14 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
     ctx.save();
     ctx.globalCompositeOperation = "screen";
 
-    const pxPerMs = 0.04 * speed;
+    const scale = size / 120;
 
-    const MAX_RADIUS = (Math.hypot(size * 0.5, size * 0.5) + 40) * 3;
+    const pxPerMs = 0.04 * speed * scale;
+
+    const margin = 40 * scale;
+
+    const MAX_RADIUS =
+        (Math.hypot(size * 0.5, size * 0.5) + margin) * 3;
 
     const ringCount = rings.length || 1;
 
@@ -1502,7 +1521,7 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
 
             if (elapsed < 0) continue;
 
-            const radius = 1 + elapsed * pxPerMs;
+            const radius = scale + elapsed * pxPerMs;
 
             if (radius <= 0 || radius > MAX_RADIUS) {
                 continue;
@@ -1510,7 +1529,7 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
 
             const ring = rings[infiniteLoop ? ((index % ringCount) + ringCount) % ringCount : Math.floor((linearSpawnTime % cycleLength) / delay)];
 
-            wavesDrawGradient3Ring(ctx, ring, radius, cx, cy);
+            wavesDrawGradient3Ring(ctx, ring, radius, cx, cy, size);
         }
     } else {
         const START_RADIUS = MAX_RADIUS * 0.22 * 1.15;
@@ -1565,7 +1584,7 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
         });
 
         for (const item of drawList) {
-            wavesDrawGradient3Ring(ctx, rings[item.ringId], item.radius, cx, cy);
+            wavesDrawGradient3Ring(ctx, rings[item.ringId], item.radius, cx, cy, size);
         }
     }
 
@@ -1573,15 +1592,17 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
     ctx.restore();
 }
 
-function wavesDrawGradient3Ring(ctx, ring, radius, cx, cy) {
+function wavesDrawGradient3Ring(ctx, ring, radius, cx, cy, size) {
     const coreColor = ring.color;
 
     const glowColor = ring.glow;
 
-    const GLOW_WIDTH = 20;
-    const GLOW_OFFSET = -7;
+    const scale = size / 120;
 
-    const innerR = Math.max(0, radius + GLOW_OFFSET);
+    const GLOW_WIDTH = 20 * scale;
+    const GLOW_OFFSET = -7 * scale;
+
+    const innerR = Math.max(scale * 0.001, radius + GLOW_OFFSET);
 
     const outerR = innerR + GLOW_WIDTH;
 
@@ -1612,9 +1633,9 @@ function wavesDrawGradient3Ring(ctx, ring, radius, cx, cy) {
 
         ctx.fillStyle = glowColor.startsWith("#")
             ? glowColor +
-              Math.round(alpha * 255)
-                  .toString(16)
-                  .padStart(2, "0")
+            Math.round(alpha * 255)
+                .toString(16)
+                .padStart(2, "0")
             : glowColor.replace("rgb(", "rgba(").replace(")", `,${alpha})`);
 
         ctx.beginPath();
@@ -1665,11 +1686,11 @@ function wavesFillStyle(ctx, rarity, base, ratio = null, now, x, y, size) {
 
     const safeNow = Number.isFinite(now) ? now : performance.now();
 
-    return wavesSweepGradient(ctx, rarity, base, safeNow);
+    return wavesSweepGradient(ctx, rarity, base, safeNow, size);
 }
 
 function wavesBorderStyle(rarity) {
-  const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
+    const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
 
     const custom = wavesTierVisual(rarity);
 
@@ -2937,27 +2958,27 @@ function draw() {
         if (inventoryHover) {
             const img = petalTooltip(...inventoryHover);
 
-      const { x, y, bw, bh } = petalTooltipBox(
-        img,
-        inventoryHover[2],
-        inventoryHover[3],
-        window.innerWidth,
-        window.innerHeight,
-      );
+            const { x, y, bw, bh } = petalTooltipBox(
+                img,
+                inventoryHover[2],
+                inventoryHover[3],
+                window.innerWidth,
+                window.innerHeight,
+            );
 
-      const box = document.createElement("div");
-      box.style.position = "fixed";
-      box.style.left = `${x}px`;
-      box.style.top = `${y}px`;
+            const box = document.createElement("div");
+            box.style.position = "fixed";
+            box.style.left = `${x}px`;
+            box.style.top = `${y}px`;
 
-      const cv = document.createElement("canvas");
-      cv.width = bw;
-      cv.height = bh;
+            const cv = document.createElement("canvas");
+            cv.width = bw;
+            cv.height = bh;
 
-      const cx = cv.getContext("2d");
-      cx.imageSmoothingEnabled = true;
-      cx.imageSmoothingQuality = "high";
-      cx.drawImage(img, 0, 0, bw, bh);
+            const cx = cv.getContext("2d");
+            cx.imageSmoothingEnabled = true;
+            cx.imageSmoothingQuality = "high";
+            cx.drawImage(img, 0, 0, bw, bh);
 
             box.appendChild(cv);
 
@@ -2982,15 +3003,15 @@ function draw() {
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = "high";
 
-      if (net.state.petalHoverAlpha > 0) {
-        ctx.globalAlpha = net.state.petalHoverAlpha;
-        const { x, y, bw, bh } = petalTooltipBox(
-          img,
-          net.state.lastPetalHover[2],
-          net.state.lastPetalHover[3],
-          width,
-          height,
-        );
+            if (net.state.petalHoverAlpha > 0) {
+                ctx.globalAlpha = net.state.petalHoverAlpha;
+                const { x, y, bw, bh } = petalTooltipBox(
+                    img,
+                    net.state.lastPetalHover[2],
+                    net.state.lastPetalHover[3],
+                    width,
+                    height,
+                );
 
                 ctx.drawImage(img, x, y, bw, bh);
             }
