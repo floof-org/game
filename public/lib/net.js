@@ -13,12 +13,18 @@ const recentLightningEntities = new Map();
 const recentLightningStrikes = [];
 
 const FLOATING_TEXT_TRACK_MS = 1000;
-const DAMAGE_TYPE_PRIORITY = { lightning: 3, poison: 2, damage: 1 };
+const FLOATING_TEXT_STACK_WINDOW_MS = 100;
 const FLOATING_TEXT_COLORS = {
     damage: "#FF4D4D",
     poison: "#9B4DFF",
     lightning: "#00FFFF",
     heal: "#FF85A1",
+};
+const FLOATING_TEXT_X_OFFSET = {
+    damage: 0,
+    poison: -0.6,
+    lightning: 0.6,
+    heal: 0,
 };
 
 function formatFloatingTextValue(type, amount) {
@@ -34,27 +40,55 @@ function formatFloatingTextValue(type, amount) {
 function getFloatingTextAnimation(type) {
     switch (type) {
         case "heal":
-            return { animation: "rise", velocityY: -0.035, gravity: 0 };
+            return { animation: "rise", velocityY: -2, gravity: -0.10, fade: true };
         case "lightning":
-        case "poison":
             return { animation: "static", velocityY: 0, gravity: 0 };
-        default:
-            return { animation: "bounce", velocityY: -0.055, gravity: 0.0045 };
+        case "poison":
+            return { animation: "rise", velocityY: -0.08, gravity: 0, fade: true };
+        case "damage":
+        default: {
+            const dir = Math.random() < 0.5 ? -1 : 1;
+            return {
+                animation: "bounce",
+                velocityY: -2,
+                gravity: 0.10,
+                velocityX: dir * (0.50 + Math.random() * 0.50),
+            };
+        }
     }
 }
 
-function getFloatingTextSpawnY(worldY, entityId) {
+const FLOATING_TEXT_SPAWN_Y_OFFSET = {
+    damage: -0.75,
+    poison: 0,
+    lightning: -0.75,
+    heal: -0.75,
+};
+
+function getFloatingTextSpawnY(worldY, entityId, type = "damage") {
+    const yOffset = FLOATING_TEXT_SPAWN_Y_OFFSET[type] ?? -0.75;
+
     const player = state.players.get(entityId);
     if (player) {
-        return worldY - (player.realSize ?? player.size ?? 50) * 0.75;
+        return worldY + yOffset * (player.realSize ?? player.size ?? 50);
     }
 
     const mob = state.mobs.get(entityId);
     if (mob) {
-        return worldY - (mob.realSize ?? mob.size ?? 50) * 0.75;
+        return worldY + yOffset * (mob.realSize ?? mob.size ?? 50);
     }
 
-    return worldY - 30;
+    return worldY + yOffset * 50;
+}
+
+function getFloatingTextEntitySize(entityId) {
+    const player = state.players.get(entityId);
+    if (player) return player.realSize ?? player.size ?? 50;
+
+    const mob = state.mobs.get(entityId);
+    if (mob) return mob.realSize ?? mob.size ?? 50;
+
+    return 50;
 }
 
 function markNearbyLightningEntities(point, now) {
@@ -120,43 +154,19 @@ function removeFloatingTextEntry(entry) {
     }
 }
 
-function applyFloatingTextAnimation(entry, type) {
-    Object.assign(entry, getFloatingTextAnimation(type));
-}
-
 function trackFloatingText(entityId, type, amount, worldX, worldY) {
     if (!util.options.showDamageNumbers) return;
 
-    const isHeal = type === "heal";
-    const key = isHeal ? `${entityId}-heal` : `${entityId}-dmg`;
+    const key = `${entityId}-${type}`;
     const now = performance.now();
-    const spawnY = getFloatingTextSpawnY(worldY, entityId);
-    let tracker = floatingTextTrackers.get(key);
+    const spawnY = getFloatingTextSpawnY(worldY, entityId, type);
+    const spawnX = worldX + (FLOATING_TEXT_X_OFFSET[type] || 0) * getFloatingTextEntitySize(entityId);
+    const tracker = floatingTextTrackers.get(key);
 
-    if (tracker && now - tracker.lastHit < FLOATING_TEXT_TRACK_MS) {
-        if (!isHeal && tracker.type !== type) {
-            const newPriority = DAMAGE_TYPE_PRIORITY[type] ?? 0;
-            const currentPriority = DAMAGE_TYPE_PRIORITY[tracker.type] ?? 0;
-
-            if (newPriority > currentPriority) {
-                tracker.type = type;
-                tracker.amount = amount;
-                tracker.entry.type = type;
-                tracker.entry.color = FLOATING_TEXT_COLORS[type];
-                tracker.entry.x = worldX;
-                tracker.entry.y = spawnY;
-                applyFloatingTextAnimation(tracker.entry, type);
-            } else if (newPriority === currentPriority) {
-                tracker.amount += amount;
-            } else {
-                return;
-            }
-        } else {
-            tracker.amount += amount;
-        }
-
+    if (tracker && now - tracker.createdAt < FLOATING_TEXT_STACK_WINDOW_MS) {
+        tracker.amount += amount;
         tracker.lastHit = now;
-        tracker.entry.x = worldX;
+        tracker.entry.x = spawnX;
 
         if (tracker.entry.animation !== "static") {
             tracker.entry.y = spawnY;
@@ -167,13 +177,9 @@ function trackFloatingText(entityId, type, amount, worldX, worldY) {
         return;
     }
 
-    if (tracker) {
-        removeFloatingTextEntry(tracker.entry);
-    }
-
     const entry = {
         id: entityId,
-        x: worldX,
+        x: spawnX,
         y: spawnY,
         value: formatFloatingTextValue(type, amount),
         color: FLOATING_TEXT_COLORS[type],
@@ -184,7 +190,7 @@ function trackFloatingText(entityId, type, amount, worldX, worldY) {
     };
 
     state.floatingTexts.push(entry);
-    floatingTextTrackers.set(key, { amount, lastHit: now, entry, type });
+    floatingTextTrackers.set(key, { amount, lastHit: now, createdAt: now, entry, type });
 }
 
 export function pruneFloatingTextTrackers(now) {
@@ -1591,7 +1597,8 @@ export class ClientSocket extends WebSocket {
                         mob.realHealthRatio = reader.getUint8() / 255;
 
                         if (oldHealthRatio !== mob.realHealthRatio) {
-                            queueHealthChange(mob.id, oldHealthRatio, mob.realHealthRatio, mob.realX, mob.realY, mob.poisoned);
+                            const mobMaxHealth = state.tiers[mob.rarity]?.health ?? 100;
+                            queueHealthChange(mob.id, oldHealthRatio, mob.realHealthRatio, mob.realX, mob.realY, mob.poisoned, mobMaxHealth);
                         }
                     }
 
