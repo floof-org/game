@@ -1,3 +1,7 @@
+# Update (7/10/2026)
+- Fixed "Show Damage Numbers" only showing lost percentage not the actual damage dealt
+- Added animations for damage text and healing
+
 # Update (7/2/2026)
 - Added Show Damage Numbers
 
