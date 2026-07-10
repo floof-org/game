@@ -273,8 +273,7 @@ export default class Router {
 
         const sidePortals = ROOM_SIDE_PORTALS[room.name];
         if (sidePortals) {
-            const edgeMargin = 80;
-            const edgeX = state.width / 2 - edgeMargin;
+            const edgeX = state.width / 2;
 
             for (const side of ["left", "right"]) {
                 const target = sidePortals[side];
