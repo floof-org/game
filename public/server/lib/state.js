@@ -71,20 +71,73 @@ const roomState = {
 
     teamMinimaps: [],
 
-    random: () => {
-        if (state.isRadial) {
-            const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * state.width / 2;
+    mobSpawnProtectionRadius: 256,
 
-            return {
-                x: Math.cos(angle) * radius,
-                y: Math.sin(angle) * radius
-            };
+    isNearAnyPlayer: (pos, radius) => {
+        for (const client of state.clients.values()) {
+            if (!client.body) continue;
+
+            const dx = client.body.x - pos.x;
+            const dy = client.body.y - pos.y;
+
+            if (dx * dx + dy * dy < radius * radius) return true;
         }
 
+        return false;
+    },
+
+    random: () => {
+        let pos,
+            attempts = 0;
+
+        do {
+            if (state.isRadial) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * state.width / 2;
+
+                pos = {
+                    x: Math.cos(angle) * radius,
+                    y: Math.sin(angle) * radius
+                };
+            } else {
+                pos = {
+                    x: -state.width / 2 + Math.random() * state.width,
+                    y: -state.height / 2 + Math.random() * state.height
+                };
+            }
+        } while (state.isNearAnyPlayer(pos, state.mobSpawnProtectionRadius) && ++attempts < 20);
+
+        return pos;
+    },
+
+    circleSpawn: () => {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 256 + 56 * Math.random();
+
         return {
-            x: -state.width / 2 + Math.random() * state.width,
-            y: -state.height / 2 + Math.random() * state.height
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius
+        };
+    },
+
+    spawnNearOtherPlayer: () => {
+        const bodies = [];
+
+        state.clients.forEach(c => {
+            if (c.body) {
+                bodies.push({ x: c.body.x, y: c.body.y });
+            }
+        });
+
+        if (bodies.length === 0) return null;
+
+        const body = bodies[Math.floor(Math.random() * bodies.length)];
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 128 + Math.random() * 128;
+
+        return {
+            x: body.x + Math.cos(angle) * dist,
+            y: body.y + Math.sin(angle) * dist
         };
     },
 
@@ -94,7 +147,7 @@ const roomState = {
 
     mapBasedSpawn(type, client) {
         if (state.mapSpawns == null || state.mapSpawns[type] == null) {
-            return state.random();
+            return type === ENTITY_TYPES.PLAYER ? state.circleSpawn() : state.random();
         }
 
         let spawns = state.mapSpawns[type];
@@ -181,6 +234,11 @@ const roomState = {
     },
 
     getPlayerSpawn: client => {
+        if (state.isWaves) {
+            const nearOther = state.spawnNearOtherPlayer();
+            if (nearOther) return nearOther;
+        }
+
         if (!state.isLineMap) {
             let pos = state.mapBasedSpawn(ENTITY_TYPES.PLAYER, client);
 

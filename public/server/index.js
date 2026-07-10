@@ -147,17 +147,19 @@ function gameLoopTick() {
     });
 
     switch (state.gamemode) {
-        case GAMEMODES.FFA:
-        case GAMEMODES.TDM:
+        case GAMEMODES.FFA: {
             const oldMapSize = state.width;
-            const newMapSize = 1024 + 32 * 8 * (state.clients.size - 1);
+            const newMapSize = 768 + 32 * 8 * state.clients.size;
 
             if (oldMapSize !== newMapSize) {
                 state.width = state.height = newMapSize;
-                state.maxMobs = 10 + 2 * (state.clients.size - 1);
+                state.maxMobs = 0;
 
                 state.clients.forEach(client => client.sendRoom());
             }
+            break;
+        }
+        case GAMEMODES.TDM:
             break;
         case GAMEMODES.WAVES: {
             if (state.isWaves && state.livingMobCount <= 0) {
@@ -197,33 +199,13 @@ function gameLoopTick() {
             }
         } break;
         case GAMEMODES.MAZE:
-            state.maxMobs = state.biome === BIOME_TYPES.ANT_HELL ? (32 + 12 * state.clients.size) : (24 + 6 * state.clients.size);
+            state.maxMobs = 0;
             break;
     }
 
-    if (!state.isWaves && state.livingMobCount < state.maxMobs && Math.random() > .9) {
+    if (!state.isWaves && state.gamemode !== GAMEMODES.MAZE && state.livingMobCount < state.maxMobs && Math.random() > .9) {
         if (state.gamemode === GAMEMODES.MMO) {
             // No mob spawning in MMO mode until we have proper PvE zones
-        } else if (state.gamemode === GAMEMODES.MAZE) {
-            let cfg = mobConfigs[getMobIndex()];
-            const info = state.spawnNearPlayer(cfg);
-            if (info.tile?.spawn !== undefined) {
-                const spawner = state.mapData.mobSpawners.find(spawner => { spawner.id == info.tile?.spawn });
-                if (spawner && spawner.availableMobs.length) {
-                    const spawn = spawner.availableMobs[spawner.availableMobs.length * Math.random() | 0]
-                    cfg = mobConfigs[spawn[0]]
-                    if (spawn[1] !== true) {
-                        info.rarity = Math.min(spawn[1], spawner.maxRarity);
-                    }
-                }
-            }
-            const mob = new Mob(info.position);
-            mob.define(cfg, info.rarity);
-
-            if (info.rarity >= state.announceRarity && state.announceRarity > -1) {
-                if (!tiers[info.rarity]) console.error(`Rarity returns undefined: ${info.rarity}`);
-                else state.clients.forEach(c => c.systemMessage(applyArticle(tiers[info.rarity].name, true) + " " + cfg.name + " has spawned!", tiers[info.rarity].color));
-            }
         } else if (state.isLineMap) {
             const cfg = mobConfigs[getMobIndex()];
             const info = state.lineMapMobSpawn(cfg);

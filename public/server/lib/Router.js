@@ -220,6 +220,8 @@ export default class Router {
                 break;
             case "ffa":
                 state.isTDM = false;
+                state.isRadial = true;
+                state.maxMobs = 0;
                 state.gamemode = GAMEMODES.FFA;
                 break;
             case "mmo":
@@ -231,6 +233,10 @@ export default class Router {
                 break;
             case "tdm":
                 state.isTDM = true;
+                state.teamCount = 0;
+                state.isRadial = true;
+                state.width = state.height = 1024;
+                state.maxMobs = 0;
                 state.gamemode = GAMEMODES.TDM;
                 break;
             case "waves":
