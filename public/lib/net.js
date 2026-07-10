@@ -1562,7 +1562,7 @@ export class ClientSocket extends WebSocket {
                         mob.realHealthRatio = reader.getUint8() / 255;
 
                         if (oldHealthRatio !== mob.realHealthRatio) {
-                            const mobMaxHealth = state.mobConfigs[mob.index]?.tiers[mob.rarity]?.health ?? 100;
+                            const mobMaxHealth = state.tiers[mob.rarity]?.health ?? 100;
                             queueHealthChange(mob.id, oldHealthRatio, mob.realHealthRatio, mob.realX, mob.realY, mob.poisoned, mobMaxHealth);
                         }
                     }
