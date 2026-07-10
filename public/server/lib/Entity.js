@@ -1508,6 +1508,44 @@ export class Petal extends Entity {
             this.explodeOut();
         }
 
+        if (this.config?.breaks) {
+            const config = petalConfigs[this.config.breaks.index];
+
+            if (config) {
+                const tier = config.tiers[this.rarity];
+                const count = this.config.breaks.count;
+                const baseAngle = Math.random() * Math.PI * 2;
+
+                for (let i = 0; i < count; i++) {
+                    const petal = new Petal(this.parent, -1, -1);
+
+                    petal.x = this.x;
+                    petal.y = this.y;
+                    petal.index = this.config.breaks.index;
+                    petal.size = this.size / count * 2.5;
+                    petal.health.set(tier.health);
+                    petal.damage = tier.damage;
+                    petal.rarity = this.rarity;
+                    petal.speed = 6.5;
+                    petal.spinSpeed = .15;
+                    petal.launched = true;
+                    petal.range = 20 + 30 * Math.random();
+                    petal.moveAngle = petal.facing = baseAngle + (2 * Math.PI / count) * i;
+                    petal.moveStrength = 1;
+
+                    if (tier.poison) {
+                        petal.poison.toApply.damage = tier.poison.damage;
+                        petal.poison.toApply.timer = tier.poison.duration;
+                    }
+
+                    if (config.enemySpeedDebuff) {
+                        petal.speedDebuff.toApply.multiplier = config.enemySpeedDebuff.speedMultiplier;
+                        petal.speedDebuff.toApply.timer = config.enemySpeedDebuff.duration;
+                    }
+                }
+            }
+        }
+
         super.destroy();
     }
 }

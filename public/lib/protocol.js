@@ -162,10 +162,14 @@ export class PetalConfig {
         /** @type {{index: number, count: number}|null} */
         this.splits = null;
 
+        /** @type {{index: number, count: number}|null} */
+        this.breaks = null;
+
         this.tiers = this.#initTiers();
         this.attractsLightning = false;
         this.drawing = null;
         this.shootsOut = -1;
+        this.explodesOut = -1;
         this.healsInDefense = false;
         this.phases = false;
         this.canPlaceDown = false;
@@ -389,6 +393,20 @@ export class PetalConfig {
             count: count
         };
 
+        return this;
+    }
+
+    setBreaks(index, count) {
+        this.breaks = {
+            index: index,
+            count: count
+        };
+
+        return this;
+    }
+
+    setExplodeOut(explodesOut) {
+        this.explodesOut = explodesOut;
         return this;
     }
 
