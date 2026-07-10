@@ -5,12 +5,7 @@ import initTerrain from "./initTerrain.js";
 import state from "./state.js";
 import RoomManager from "./Room.js";
 import { Mob } from "./Entity.js";
-
-const ROOM_CENTER_PORTALS = {
-    "main-garden": "Garden Portal",
-    "main-desert": "Desert Portal",
-    "main-ocean": "Ocean Portal"
-};
+import { ROOM_CENTER_PORTALS } from "./roomTypes.js";
 
 globalThis.environmentName ??= "browser";
 

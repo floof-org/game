@@ -1,4 +1,5 @@
-import state, { createRoomState, setActiveRoomState } from "./state.js";
+import { GAMEMODES } from "../../lib/protocol.js";
+import state, { createRoomState, getActiveRoomState, setActiveRoomState } from "./state.js";
 import { ROOM_TYPES } from "./roomTypes.js";
 
 export const ROOM_CAPACITY = 35;
@@ -61,6 +62,49 @@ export class RoomManager {
     static previousRoom = new Map();
 
     static hooks = null;
+
+    static waveRoomSeq = 0;
+
+    /**
+     * @param {GameRoom} parentRoom
+     * @returns {GameRoom}
+     */
+    static createWaveRoom(parentRoom) {
+        RoomManager.waveRoomSeq++;
+        const name = `${parentRoom.name}-waves-${RoomManager.waveRoomSeq}`;
+
+        const room = new GameRoom(RoomManager.rooms.length, name, {
+            biome: parentRoom.biome,
+            gamemode: "waves"
+        });
+        room.parentRoomName = parentRoom.name;
+
+        RoomManager.rooms.push(room);
+
+        const previousRoomState = getActiveRoomState();
+        room.activate();
+
+        state.isTDM = true;
+        state.teamCount = 0;
+        state.isWaves = true;
+        state.isRadial = true;
+        state.gamemode = GAMEMODES.WAVES;
+        state.maxMobs = 0;
+        state.biome = parentRoom.biome;
+        state.mobTable = parentRoom.roomState.mobTable;
+        state.announceRarity = parentRoom.roomState.announceRarity;
+        state.secretKey = parentRoom.roomState.secretKey;
+
+        if (RoomManager.hooks) {
+            room.startLoops(RoomManager.hooks);
+        }
+
+        setActiveRoomState(previousRoomState);
+
+        console.log(`Room "${room.name}" created: waves sub-room of "${parentRoom.name}"`);
+
+        return room;
+    }
 
     static create() {
         RoomManager.rooms = [];

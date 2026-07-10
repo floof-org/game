@@ -32,3 +32,9 @@ export function resolveRoomType(name) {
 
     return roomType;
 }
+
+export const ROOM_CENTER_PORTALS = {
+    "main-garden": "Garden Portal",
+    "main-desert": "Desert Portal",
+    "main-ocean": "Ocean Portal"
+};

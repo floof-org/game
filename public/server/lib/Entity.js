@@ -4,6 +4,7 @@ import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPoss
 import state, { getActiveRoomState, setActiveRoomState } from "./state.js";
 import Vector2D from "./Vector2D.js";
 import RoomManager from "./Room.js";
+import { ROOM_CENTER_PORTALS } from "./roomTypes.js";
 
 export class HealthComponent {
     constructor(x) {
@@ -2746,6 +2747,53 @@ export class Mob extends Entity {
                     }
                 }
             }
+        }
+
+        if (this.config.isPortal) {
+            this.facing = performance.now() / 1000 * (2 * Math.PI / 3);
+
+            const pullRadius = 1.5 * this.size;
+            const pullRadiusSq = pullRadius * pullRadius;
+
+            this.portalQueue ??= new Set();
+
+            state.alivePlayers.forEach(client => {
+                if (!client.body || client.body.health.isDead) return;
+
+                const dx = client.body.x - this.x;
+                const dy = client.body.y - this.y;
+                const distSq = dx * dx + dy * dy;
+
+                if (distSq >= pullRadiusSq) return;
+
+                const dist = Math.sqrt(distSq) || 1;
+                const pull = 1 - dist / pullRadius;
+                const strength = 12 + 20 * pull * pull;
+
+                client.body.velocity.x -= dx / dist * strength;
+                client.body.velocity.y -= dy / dist * strength;
+
+                if (this.portalQueue.has(client)) return;
+                this.portalQueue.add(client);
+
+                const portal = this;
+
+                setTimeout(() => {
+                    portal.portalQueue?.delete(client);
+
+                    if (portal.health.isDead || !client.body || client.body.health.isDead) {
+                        return;
+                    }
+
+                    const fromRoom = RoomManager.roomOf(client.id);
+                    if (!fromRoom) return;
+
+                    if (ROOM_CENTER_PORTALS[fromRoom.name] !== portal.config.name) return;
+
+                    const waveRoom = RoomManager.createWaveRoom(fromRoom);
+                    RoomManager.moveClient(client, waveRoom);
+                }, 1000);
+            });
         }
 
         this.bindToRoom();
