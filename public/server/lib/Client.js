@@ -5,7 +5,7 @@ import { mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
 import { xpForLevel } from "../../lib/util.js";
 
 const blockList = [];
-fetch("/profanity.txt").then(res => res.text()).then(txt => {
+fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
     blockList.push(...txt.replaceAll("\r", "").split("\n").map(e => e.trim()));
     console.log("Profanity list loaded", blockList.length, "words");
 });
@@ -790,7 +790,7 @@ export default class Client {
                 }
             } else if (slots < this.slots.length)
                 for (let i = this.slots.length - 1; i >= slots; i--)
-                    for (const { id, rarity } of [this.slots.pop(), this.secondarySlots.pop()].filter(({ id, rarity }) => id !== null))
+                    for (const { id, rarity } of [this.slots.pop(), this.secondarySlots.pop()].filter(slot => slot !== null))
                         if (this.inventory[tiers[rarity].name][id]) this.inventory[tiers[rarity].name][id]++;
                         else this.inventory[tiers[rarity].name][id] = 1;
 

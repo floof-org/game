@@ -1,3 +1,6 @@
+# Update (7/2/2026)
+- Added Show Damage Numbers
+
 # Update (6/20/2026)
 - Gradients are now disabled by default
 - Fixed craft menu lag
