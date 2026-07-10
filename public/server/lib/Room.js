@@ -89,7 +89,7 @@ export class RoomManager {
     }
 
     static findRoomForNewClient() {
-        return RoomManager.rooms[0] ?? null;
+        return RoomManager.findByName("main-garden") ?? RoomManager.rooms[0] ?? null;
     }
 
     static assignToRoom(numericID, room) {

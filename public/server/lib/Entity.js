@@ -3,6 +3,7 @@ import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, quickDi
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
 import state, { getActiveRoomState, setActiveRoomState } from "./state.js";
 import Vector2D from "./Vector2D.js";
+import RoomManager from "./Room.js";
 
 export class HealthComponent {
     constructor(x) {
@@ -1748,6 +1749,16 @@ export class Player extends Entity {
             this.client.talk(CLIENT_BOUND.DEATH, string);
             this.client.body = null;
             state.alivePlayers = state.alivePlayers.filter(m => m.id !== this.client.id);
+
+            const currentRoom = RoomManager.roomOf(this.client.id);
+            if (currentRoom && currentRoom.name === "main-ffa") {
+                const client = this.client;
+                const gardenRoom = RoomManager.findByName("main-garden");
+
+                if (gardenRoom) {
+                    setTimeout(() => RoomManager.moveClient(client, gardenRoom), 0);
+                }
+            }
         }
     }
 }

@@ -4,6 +4,13 @@ import { mobConfigs, mobIDOf } from "./config.js";
 import initTerrain from "./initTerrain.js";
 import state from "./state.js";
 import RoomManager from "./Room.js";
+import { Mob } from "./Entity.js";
+
+const ROOM_CENTER_PORTALS = {
+    "main-garden": "Garden Portal",
+    "main-desert": "Desert Portal",
+    "main-ocean": "Ocean Portal"
+};
 
 globalThis.environmentName ??= "browser";
 
@@ -255,6 +262,18 @@ export default class Router {
                 break;
             default:
                 throw new Error("Invalid gamemode");
+        }
+
+        const portalName = ROOM_CENTER_PORTALS[room.name];
+        if (portalName) {
+            const portalIndex = mobIDOf(portalName);
+            const portalConfig = mobConfigs[portalIndex];
+
+            if (portalConfig) {
+                const portal = new Mob({ x: 0, y: 0 });
+                portal.define(portalConfig, 0);
+                portal.team = 0;
+            }
         }
 
         state.secretKey = message[3];
