@@ -852,6 +852,36 @@ export default class Client {
         this.frownyMessages = 0;
     }
 
+    spawn() {
+        this.body = new Player(state.getPlayerSpawn(this));
+        this.body.name = this.username;
+        this.body.nameColor = this.nameColor;
+        this.body.client = this;
+        this.body.health.set(this.healthAdjustement);
+        this.body.damage = this.bodyDamageAdjustment;
+        this.addXP(0);
+
+        this.body.initSlots(this.slots.length);
+        for (let i = 0; i < this.slots.length; i++) {
+            if (this.slots[i]) {
+                this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
+            }
+        }
+
+        this.body.spawnInvincibility = true;
+
+        setTimeout(() => {
+            if (this.body) {
+                this.body.spawnInvincibility = false;
+            }
+        }, 2 * 1000);
+
+        if (state.isTDM) {
+            this.body.team = -this.team;
+        }
+        state.alivePlayers.push(this);
+    }
+
     addXP(x) {
         if (!Number.isFinite(x)) {
             return;
@@ -998,33 +1028,7 @@ export default class Client {
                     return;
                 }
 
-                this.body = new Player(state.getPlayerSpawn(this));
-                this.body.name = this.username;
-                this.body.nameColor = this.nameColor;
-                this.body.client = this;
-                this.body.health.set(this.healthAdjustement);
-                this.body.damage = this.bodyDamageAdjustment;
-                this.addXP(0)
-
-                this.body.initSlots(this.slots.length);
-                for (let i = 0; i < this.slots.length; i++) {
-                    if (this.slots[i]) {
-                        this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
-                    }
-                }
-
-                this.body.spawnInvincibility = true
-
-                setTimeout(() => {
-                    if (this.body) {
-                        this.body.spawnInvincibility = false;
-                    }
-                }, 2 * 1000);
-
-                if (state.isTDM) {
-                    this.body.team = -this.team;
-                }
-                state.alivePlayers.push(this);
+                this.spawn();
                 break;
             case SERVER_BOUND.INPUTS: {
                 if (!this.verified) {

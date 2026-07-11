@@ -1,5 +1,5 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
-import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
+import { ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
+import { angleDiff, applyArticle, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
 import state, { getActiveRoomState, setActiveRoomState } from "./state.js";
 import Vector2D from "./Vector2D.js";
@@ -1713,52 +1713,37 @@ export class Player extends Entity {
 
         if (this.client !== null) {
             const topDamagers = this.getTopDamagers(10);
-            const playerKillers = [];
-            const mobKillers = {};
 
             const xpToGift = this.petalSlots.reduce((acc, slot) => acc + Math.pow(slot.rarity + 1, 3), 0);
             this.client.addXP(-Math.random() * .1 * this.client.xp);
 
             topDamagers.forEach(damager => {
-                if (damager.type === ENTITY_TYPES.PLAYER) {
-                    playerKillers.push(damager.name);
+                if (damager.type === ENTITY_TYPES.PLAYER && damager.clientID !== null) {
+                    const client = state.clients.get(damager.clientID);
 
-                    if (damager.clientID !== null) {
-                        const client = state.clients.get(damager.clientID);
-
-                        if (client) {
-                            client.addXP(xpToGift);
-                        }
+                    if (client) {
+                        client.addXP(xpToGift);
                     }
-                }
-
-                if (damager.type === ENTITY_TYPES.MOB) {
-                    mobKillers[damager.name] = (mobKillers[damager.name] || 0) + 1;
                 }
             });
 
-            const allKillers = [...playerKillers, ...Object.entries(mobKillers).map(([name, count]) => (count === 1 ? "a" : count) + " " + (count > 1 ? applyPlural(name) : name))];
+            const client = this.client;
+            client.body = null;
+            state.alivePlayers = state.alivePlayers.filter(m => m.id !== client.id);
 
-            let string = "You were killed by ";
+            const currentRoom = RoomManager.roomOf(client.id);
 
-            if (allKillers.length > 0) {
-                string += allKillers.slice(0, -1).join(", ") + (allKillers.length > 1 ? " and " : "") + allKillers[allKillers.length - 1];
-            } else {
-                string += "\"the game\"";
-            }
-
-            this.client.talk(CLIENT_BOUND.DEATH, string);
-            this.client.body = null;
-            state.alivePlayers = state.alivePlayers.filter(m => m.id !== this.client.id);
-
-            const currentRoom = RoomManager.roomOf(this.client.id);
             if (currentRoom && currentRoom.name === "main-ffa") {
-                const client = this.client;
                 const gardenRoom = RoomManager.findByName("main-garden");
 
                 if (gardenRoom) {
-                    setTimeout(() => RoomManager.moveClient(client, gardenRoom), 0);
+                    setTimeout(() => {
+                        RoomManager.moveClient(client, gardenRoom);
+                        client.spawn();
+                    }, 0);
                 }
+            } else if (currentRoom && currentRoom.gamemode !== "waves") {
+                setTimeout(() => client.spawn(), 0);
             }
         }
     }

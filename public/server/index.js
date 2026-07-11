@@ -184,6 +184,12 @@ function gameLoopTick() {
                     mob.define(mobConfigs[mobIndexes[i]], getWaveMobRarity(state.currentWave, 4.83 * Math.pow(1.012, state.currentWave), tiers.length - 1));
                     state.aliveMobs.push(mob);
                 }
+
+                state.clients.forEach(client => {
+                    if (client.verified && !client.body) {
+                        client.spawn();
+                    }
+                });
             }
         } break;
         case GAMEMODES.LINE: {
