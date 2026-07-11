@@ -689,6 +689,10 @@ export class Gun {
 export class Entity {
     static idAccumulator = 1; // 0 is reserved for the protocol as a flag
 
+    static PLAYER_PUSH_STRENGTH = 16;
+
+    static COLLISION_AGGRESSIVENESS = 1.6;
+
     constructor(position = { x: 0, y: 0 }) {
         this.id = Entity.idAccumulator++;
         this.parent = this;
@@ -1110,15 +1114,19 @@ export class Entity {
             if (!this.nullCollision && !other.nullCollision && !this.phases && !other.phases) {
                 const angle = Math.atan2(dy, dx);
                 const combinedSize = this.size + other.size;
-                const strength = combinedSize - Math.sqrt(distSqr);
+                const overlap = combinedSize - Math.sqrt(distSqr);
+                const strength = overlap * Entity.COLLISION_AGGRESSIVENESS;
                 const mySizeRatio = this.size / combinedSize;
                 const otherSizeRatio = other.size / combinedSize;
+
+                const thisStrength = this.type === ENTITY_TYPES.PLAYER ? Entity.PLAYER_PUSH_STRENGTH : strength;
+                const otherStrength = other.type === ENTITY_TYPES.PLAYER ? Entity.PLAYER_PUSH_STRENGTH : strength;
+
+                this.velocity.x += Math.cos(angle) * thisStrength * this.pushability * other.density * otherSizeRatio;
+                this.velocity.y += Math.sin(angle) * thisStrength * this.pushability * other.density * otherSizeRatio;
             
-                this.velocity.x += Math.cos(angle) * strength * this.pushability * other.density * otherSizeRatio;
-                this.velocity.y += Math.sin(angle) * strength * this.pushability * other.density * otherSizeRatio;
-            
-                other.velocity.x -= Math.cos(angle) * strength * other.pushability * this.density * mySizeRatio;
-                other.velocity.y -= Math.sin(angle) * strength * other.pushability * this.density * mySizeRatio;
+                other.velocity.x -= Math.cos(angle) * otherStrength * other.pushability * this.density * mySizeRatio;
+                other.velocity.y -= Math.sin(angle) * otherStrength * other.pushability * this.density * mySizeRatio;
             }
         });
     }
@@ -2390,7 +2398,7 @@ export class Mob extends Entity {
             direction: 0
         }
 
-        this.pushability = config.pushability
+        this.pushability = config.pushability / Math.pow(1.10, rarity)
     }
 
     update() {
