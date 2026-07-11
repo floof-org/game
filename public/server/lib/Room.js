@@ -202,8 +202,10 @@ export class RoomManager {
             return false;
         }
 
+        const hadBody = Boolean(client.body) && !client.body.health.isDead;
+
         fromRoom.activate();
-        client.body?.destroy();
+        client.body?.destroy({ transferringRoom: true });
         client.body = null;
         state.alivePlayers = state.alivePlayers.filter(m => m.id !== client.id);
         state.playerCount = Math.max(0, state.playerCount - 1);
@@ -222,6 +224,10 @@ export class RoomManager {
             if (state.teamCount > 0) {
                 client.team = ((client.id - 1) % state.teamCount) + 1;
             }
+        }
+
+        if (hadBody) {
+            client.spawn();
         }
 
         client.sendRoom();

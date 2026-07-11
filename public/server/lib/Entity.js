@@ -1707,29 +1707,46 @@ export class Player extends Entity {
         });
     }
 
-    destroy() {
+    /**
+     * @param {{transferringRoom?: boolean}} [options] Pass `transferringRoom: true`
+     * when this is called as part of RoomManager.moveClient (portals, /room
+     * join, etc). That path is not an actual death - it just needs the body
+     * detached from the room it's leaving - so death penalties (XP loss/gift)
+     * and the auto-respawn scheduling below must be skipped. Letting them run
+     * during a room transfer raced against moveClient's own room activation
+     * and could spawn a duplicate body in whichever room happened to be
+     * active when the setTimeout fired (often the room being left), which is
+     * what made it look like the player's body got left behind.
+     */
+    destroy(options = {}) {
+        const { transferringRoom = false } = options;
+
         this.petalSlots.forEach(slot => slot.destroy());
         super.destroy();
 
         if (this.client !== null) {
-            const topDamagers = this.getTopDamagers(10);
-
-            const xpToGift = this.petalSlots.reduce((acc, slot) => acc + Math.pow(slot.rarity + 1, 3), 0);
-            this.client.addXP(-Math.random() * .1 * this.client.xp);
-
-            topDamagers.forEach(damager => {
-                if (damager.type === ENTITY_TYPES.PLAYER && damager.clientID !== null) {
-                    const client = state.clients.get(damager.clientID);
-
-                    if (client) {
-                        client.addXP(xpToGift);
-                    }
-                }
-            });
-
             const client = this.client;
             client.body = null;
             state.alivePlayers = state.alivePlayers.filter(m => m.id !== client.id);
+
+            if (transferringRoom) {
+                return;
+            }
+
+            const topDamagers = this.getTopDamagers(10);
+
+            const xpToGift = this.petalSlots.reduce((acc, slot) => acc + Math.pow(slot.rarity + 1, 3), 0);
+            client.addXP(-Math.random() * .1 * client.xp);
+
+            topDamagers.forEach(damager => {
+                if (damager.type === ENTITY_TYPES.PLAYER && damager.clientID !== null) {
+                    const damagerClient = state.clients.get(damager.clientID);
+
+                    if (damagerClient) {
+                        damagerClient.addXP(xpToGift);
+                    }
+                }
+            });
 
             const currentRoom = RoomManager.roomOf(client.id);
 

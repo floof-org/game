@@ -5,7 +5,7 @@ import initTerrain from "./initTerrain.js";
 import state from "./state.js";
 import RoomManager from "./Room.js";
 import { Mob } from "./Entity.js";
-import { ROOM_CENTER_PORTALS, ROOM_SIDE_PORTALS } from "./roomTypes.js";
+import { ROOM_CENTER_PORTALS, ROOM_SIDE_PORTALS, ROOM_NPCS } from "./roomTypes.js";
 
 globalThis.environmentName ??= "browser";
 
@@ -290,6 +290,20 @@ export default class Router {
                 sidePortal.define(portalConfig, 0);
                 sidePortal.team = 0;
                 sidePortal.sideTargetRoomName = target.room;
+            }
+        }
+
+        const npcs = ROOM_NPCS[room.name];
+        if (npcs) {
+            for (const npc of npcs) {
+                const npcIndex = mobIDOf(npc.name);
+                const npcConfig = mobConfigs[npcIndex];
+                if (!npcConfig) continue;
+
+                const mob = new Mob({ x: npc.x, y: npc.y });
+                mob.define(npcConfig, 0);
+                mob.team = 0;
+                state.aliveMobs.push(mob);
             }
         }
 
