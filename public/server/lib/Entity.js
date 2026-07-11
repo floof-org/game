@@ -694,7 +694,7 @@ export class Entity {
 
     // Fixed knockback strength applied to players on any collision, regardless
     // of either entity's velocity/overlap depth at the moment of impact.
-    static PLAYER_PUSH_STRENGTH = 8;
+    static PLAYER_PUSH_STRENGTH = 48;
 
     // Multiplier applied to non-player entity-vs-entity collision resolution
     // to make overlaps get resolved harder/faster (more aggressive collisions).
