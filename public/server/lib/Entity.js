@@ -694,7 +694,7 @@ export class Entity {
 
     // Fixed knockback strength applied to players on any collision, regardless
     // of either entity's velocity/overlap depth at the moment of impact.
-    static PLAYER_PUSH_STRENGTH = 48;
+    static PLAYER_PUSH_STRENGTH = 32;
 
     // Multiplier applied to non-player entity-vs-entity collision resolution
     // to make overlaps get resolved harder/faster (more aggressive collisions).
@@ -1283,7 +1283,7 @@ export class Petal extends Entity {
         this.size = 7.5;
         this.health.set(10);
         this.type = ENTITY_TYPES.PETAL;
-        this.friction = .7;
+        this.friction = .5;
         this.index = 0;
         this.spinSpeed = .1;
         this.launched = false;
@@ -1423,6 +1423,18 @@ export class Petal extends Entity {
     }
 
     update() {
+        if (this.launched && this.config?.name?.includes("Stinger")) {
+            const zigzagStrength = .2;
+            const randomFactor = Math.random();
+
+            this.zigzagTimer ??= 0;
+            this.zigzagTimer += zigzagStrength;
+
+            const wave = Math.cos(this.zigzagTimer) * randomFactor;
+            this.moveAngle += .1 * wave;
+            this.facing = this.moveAngle;
+        }
+
         if (this.dandelionBind) {
             this.x = this.dandelionBind.x + Math.cos(this.facing) * (this.size + this.dandelionBind.size * 1.2);
             this.y = this.dandelionBind.y + Math.sin(this.facing) * (this.size + this.dandelionBind.size * 1.2);
