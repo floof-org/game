@@ -2868,30 +2868,41 @@ export class Mob extends Entity {
                 const client = state.clients.get(damager.clientID);
 
                 if (client) {
-                    client.addXP((Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1));
+                    client.addXP(Math.max(1, this.health.maxHealth / 100));
+                }
+            }
+        });
 
-                    const output = [];
-                    for (const drop of mobConfigs[this.index].drops) {
-                        if (Math.random() > drop.chance) {
-                            continue;
-                        }
+        const roomClients = [...state.clients.values()];
 
-                        const rarity = getDropRarity(this.rarity, client.highestRarity + 5);
-                        if (rarity < drop.minRarity) {
-                            continue;
-                        }
+        if (roomClients.length > 0) {
+            const highestRarityInRoom = roomClients.reduce((max, c) => Math.max(max, c.highestRarity || 0), 0);
 
-                        output.push(new Drop(this, client, drop.index, rarity));
-                    }
+            const rolledDrops = [];
+            for (const drop of mobConfigs[this.index].drops) {
+                if (Math.random() > drop.chance) {
+                    continue;
+                }
+
+                const rarity = getDropRarity(this.rarity, highestRarityInRoom + 5);
+                if (rarity < drop.minRarity) {
+                    continue;
+                }
+
+                rolledDrops.push({ index: drop.index, rarity });
+            }
+
+            if (rolledDrops.length > 0) {
+                roomClients.forEach(client => {
+                    const output = rolledDrops.map(rolled => new Drop(this, client, rolled.index, rolled.rarity));
 
                     for (let i = 0; i < output.length; i++) {
                         output[i].x += Math.cos(i / output.length * Math.PI * 2) * 30;
                         output[i].y += Math.sin(i / output.length * Math.PI * 2) * 30;
                     }
-                }
-
+                });
             }
-        });
+        }
 
         if (
             this.config.isSystem === false &&

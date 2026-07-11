@@ -264,6 +264,7 @@ function doWipe() {
 
         if (parentRoom) {
             RoomManager.moveClient(client, parentRoom);
+            client.spawn();
             setActiveRoomState(waveRoomState);
         }
     }
