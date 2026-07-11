@@ -512,6 +512,8 @@ export class PetalSlot {
 
                         const spawnable = this.config.tiers[this.rarity].spawnable;
                         mob.define(mobConfigs[spawnable.index], spawnable.rarity);
+                        mob.friendly = true;
+                        mob.yellow = true;
                         mob.health.set(spawnable.health);
                         mob.damage = spawnable.damage;
                         mob.size = spawnable.size;
@@ -2026,6 +2028,7 @@ export class Mob extends Entity {
         this.aggressive = false;
         this.neutral = false;
         this.friendly = false;
+        this.yellow = false;
 
         /** @type {Mob|null} */
         this.head = null;
@@ -2176,6 +2179,7 @@ export class Mob extends Entity {
                                 mob.team = 0;
                             }
                             mob.friendly = this.friendly;
+                            mob.yellow = this.yellow;
                             spawn.count--;
                             spawn.maxCount--;
 
@@ -2212,6 +2216,7 @@ export class Mob extends Entity {
                                 mob.team = 0;
                             }
                             mob.friendly = this.friendly;
+                            mob.yellow = this.yellow;
                             spawn.count--;
 
                             if (state.isWaves) {
@@ -2261,6 +2266,7 @@ export class Mob extends Entity {
                 segment.segmentID = segmentID;
                 segment.team = this.team;
                 segment.friendly = this.friendly;
+                segment.yellow = this.yellow;
 
                 segment.x = last.x - Math.cos(this.facing) * (this.size + segment.size + 1);
                 segment.y = last.y - Math.sin(this.facing) * (this.size + segment.size + 1);
@@ -2290,6 +2296,7 @@ export class Mob extends Entity {
                     segment.segmentID = segmentID;
                     segment.team = this.team;
                     segment.friendly = this.friendly;
+                    segment.yellow = this.yellow;
 
                     const ang = this.facing + branchID * (Math.PI * 2) / config.branch.branches
 
@@ -2395,6 +2402,7 @@ export class Mob extends Entity {
                 });
                 const mob = new Mob(this);
                 mob.friendly = this.friendly;
+                mob.yellow = this.yellow;
                 mob.team = this.team;
                 mob.define(choices[Math.random() * choices.length | 0], this.rarity);
             }
@@ -2437,6 +2445,7 @@ export class Mob extends Entity {
                 mob.target = this.parent.target;
                 mob.team = this.team;
                 mob.friendly = this.friendly;
+                mob.yellow = this.yellow;
                 if (state.isWaves && !mob.friendly) {
                     state.aliveMobs.push(mob)
                 }
@@ -2478,6 +2487,7 @@ export class Mob extends Entity {
                         poop.team = this.team;
                         poop.parent = this;
                         poop.friendly = this.friendly;
+                        poop.yellow = this.yellow;
 
                         if (state.isWaves) {
                             state.maxMobs++;

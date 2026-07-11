@@ -477,7 +477,7 @@ export class MobClientCache {
             flags |= ENTITY_MODIFIER_FLAGS.POISON;
         }
 
-        if (real.friendly) {
+        if (real.yellow) {
             flags |= ENTITY_MODIFIER_FLAGS.FRIEND;
         }
 
