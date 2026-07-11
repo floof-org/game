@@ -149,7 +149,7 @@ function gameLoopTick() {
     switch (state.gamemode) {
         case GAMEMODES.FFA: {
             const oldMapSize = state.width;
-            const newMapSize = 768 + 32 * 8 * state.clients.size;
+            const newMapSize = 1024 + 32 * 8 * state.clients.size;
 
             if (oldMapSize !== newMapSize) {
                 state.width = state.height = newMapSize;
