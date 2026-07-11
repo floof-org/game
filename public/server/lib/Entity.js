@@ -689,7 +689,7 @@ export class Gun {
 export class Entity {
     static idAccumulator = 1; // 0 is reserved for the protocol as a flag
 
-    static PLAYER_PUSH_STRENGTH = 16;
+    static PLAYER_PUSH_STRENGTH = 48;
 
     static COLLISION_AGGRESSIVENESS = 1.6;
 
