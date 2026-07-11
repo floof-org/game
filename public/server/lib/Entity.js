@@ -228,11 +228,12 @@ export class PetalSlot {
 
         for (let j = 0; j < this.amount; j++) {
             const petal = this.petals[j];
-            if (petal) {
-                if (this.config.tiers[this.rarity].constantHeal !== 0 && this.player.health.ratio <= this.config.healWhenUnder && this.player.health.ratio > 0 && (!this.config.healsInDefense || (!this.player.attack && this.player.defend))) {
-                    this.player.health.health = Math.min(this.player.health.maxHealth, this.player.health.health + this.config.tiers[this.rarity].constantHeal);
-                }
 
+            if (this.config.tiers[this.rarity].constantHeal !== 0 && this.player.health.ratio <= this.config.healWhenUnder && this.player.health.ratio > 0 && (!this.config.healsInDefense || (!this.player.attack && this.player.defend))) {
+                this.player.health.health = Math.min(this.player.health.maxHealth, this.player.health.health + this.config.tiers[this.rarity].constantHeal);
+            }
+
+            if (petal) {
                 if (this.config.healSpit) {
                     petal.range--;
 
@@ -247,7 +248,7 @@ export class PetalSlot {
                                 y2: this.player.y + this.config.healSpit.range
                             }
                         }).forEach(entity => {
-                            if (entity.parent.id !== this.player.id || entity.type !== ENTITY_TYPES.PLAYER || entity.health.ratio >= 1) {
+                            if (entity.parent.team !== petal.parent.team || entity.type !== ENTITY_TYPES.PLAYER || entity.health.ratio >= 1) {
                                 return;
                             }
 
@@ -689,8 +690,12 @@ export class Gun {
 export class Entity {
     static idAccumulator = 1; // 0 is reserved for the protocol as a flag
 
-    static PLAYER_PUSH_STRENGTH = 48;
+    // Fixed knockback strength applied to players on any collision, regardless
+    // of either entity's velocity/overlap depth at the moment of impact.
+    static PLAYER_PUSH_STRENGTH = 8;
 
+    // Multiplier applied to non-player entity-vs-entity collision resolution
+    // to make overlaps get resolved harder/faster (more aggressive collisions).
     static COLLISION_AGGRESSIVENESS = 1.6;
 
     constructor(position = { x: 0, y: 0 }) {
@@ -1115,10 +1120,14 @@ export class Entity {
                 const angle = Math.atan2(dy, dx);
                 const combinedSize = this.size + other.size;
                 const overlap = combinedSize - Math.sqrt(distSqr);
+                // More aggressive collision resolution between (non-player) entities:
+                // overlaps get pushed apart harder instead of drifting apart slowly.
                 const strength = overlap * Entity.COLLISION_AGGRESSIVENESS;
                 const mySizeRatio = this.size / combinedSize;
                 const otherSizeRatio = other.size / combinedSize;
 
+                // Players always get knocked back with a fixed strength, regardless of
+                // the overlap depth or either entity's current velocity.
                 const thisStrength = this.type === ENTITY_TYPES.PLAYER ? Entity.PLAYER_PUSH_STRENGTH : strength;
                 const otherStrength = other.type === ENTITY_TYPES.PLAYER ? Entity.PLAYER_PUSH_STRENGTH : strength;
 
