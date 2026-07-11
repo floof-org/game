@@ -1178,7 +1178,7 @@ export const mobConfigs = [
         .setSpins(1.6, true)
         .setDrawing((new Drawing).addAction("opacity", .5).addAction("beginPath").addAction("polygon", 6, 1, "date_.0007").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .9, "date_.0004").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .8, "date_.0007").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .7, "date_.0003").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .6, "date_.0006").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .5, "date_.0006").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .4, "date_.0004").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .3, "date_.0003").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .2, "date_.0006").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0).addAction("beginPath").addAction("polygon", 6, .1, "date_.0004").addAction("fill", "#a2b6ba").addAction("stroke", "#a2b6ba", .2, 0))
         .setProjectile({
-                petalIndex: petalIDOf("unique.particle"),
+                petalIndex: petalIDOf("omega.particle"),
                 cooldown: 3.8,
                 health: 1e4,
                 damage: 0,
