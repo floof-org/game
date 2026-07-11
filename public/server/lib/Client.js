@@ -2194,8 +2194,8 @@ export default class Client {
         if (state.isWaves) {
             writer.setUint8(1);
             writer.setUint16(state.currentWave);
-            writer.setUint16(state.livingMobCount);
-            writer.setUint16(state.maxMobs);
+            writer.setUint16(state.waveDisplayProgress); // currentMobCount, 0-100, smoothed
+            writer.setUint16(100); // maxMobCount, always 100
             writer.setUint16(state.aliveMobs.length);
 
             for (const entity of state.aliveMobs) {

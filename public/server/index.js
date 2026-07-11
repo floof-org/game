@@ -204,6 +204,8 @@ function startWave() {
     }
 
     state.maxMobs = mobCount;
+    state.waveSpawnPhaseDurationTicks = WAVE_SPAWN_WINDOW_TICKS;
+    state.waveDisplayProgress = 0;
     state.waveSpawnInterval = Math.max(1, Math.floor(WAVE_SPAWN_WINDOW_TICKS / mobCount));
     state.waveSpawnTicker = 0;
     state.wavePhase = "spawning";
@@ -254,6 +256,9 @@ function doWipe() {
     state.wavePhaseTick = 0;
     state.wipeTimerTicks = 0;
     state.currentWave = 0;
+    state.waveSpawnPhaseDurationTicks = 0;
+    state.wavePhaseTimeoutTicks = 0;
+    state.waveDisplayProgress = 0;
 
     const waveRoomState = getActiveRoomState();
     const currentRoom = RoomManager.rooms.find(room => room.roomState === waveRoomState);
@@ -329,6 +334,7 @@ function gameLoopTick() {
                         state.waveSpawnQueue = [];
                         state.wavePhase = "killing";
                         state.wavePhaseTick = 0;
+                        state.wavePhaseTimeoutTicks = WAVE_PHASE_TIMEOUT_TICKS;
                     }
                     break;
                 }
@@ -357,6 +363,8 @@ function gameLoopTick() {
                     break;
                 }
             }
+
+            state.tickWaveDisplayProgress();
         } break;
         case GAMEMODES.LINE: {
             const oldW = state.width;

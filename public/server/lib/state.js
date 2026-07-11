@@ -73,6 +73,9 @@ const roomState = {
     waveSpawnQueue: [],
     waveSpawnInterval: 1,
     waveSpawnTicker: 0,
+    waveSpawnPhaseDurationTicks: 0,
+    wavePhaseTimeoutTicks: 0,
+    waveDisplayProgress: 0,
 
     dynamicRoom: true,
 
@@ -115,6 +118,30 @@ const roomState = {
         } while (state.isNearAnyPlayer(pos, state.mobSpawnProtectionRadius) && ++attempts < 20);
 
         return pos;
+    },
+
+    getWavePhaseTargetProgress: () => {
+        if (state.wavePhase === "spawning" && state.waveSpawnPhaseDurationTicks > 0) {
+            const pct = state.wavePhaseTick / state.waveSpawnPhaseDurationTicks * 100;
+            return Math.max(0, Math.min(100, Math.round(pct)));
+        }
+
+        if (state.wavePhase === "killing" && state.wavePhaseTimeoutTicks > 0) {
+            const remaining = 1 - state.wavePhaseTick / state.wavePhaseTimeoutTicks;
+            return Math.max(0, Math.min(100, Math.round(remaining * 100)));
+        }
+
+        return 0;
+    },
+
+    tickWaveDisplayProgress: () => {
+        const target = state.getWavePhaseTargetProgress();
+
+        if (state.waveDisplayProgress < target) {
+            state.waveDisplayProgress = Math.min(target, state.waveDisplayProgress + 1);
+        } else if (state.waveDisplayProgress > target) {
+            state.waveDisplayProgress = Math.max(target, state.waveDisplayProgress - 1);
+        }
     },
 
     circleSpawn: () => {
