@@ -88,14 +88,24 @@ export class PetalTier {
 }
 
 export class MobTier {
-    static HEALTH_SCALE = 3;
-    static DAMAGE_SCALE = 2;
-    static SIZE_SCALE = 1.2;
+    static HEALTH_SCALE = 3.15;
+    static DAMAGE_SCALE = 3;
+    static SIZE_SCALE = 1.3;
+    static HEALTH_MULTIPLIERS = [4, 5, 5, 6, 10, 25, 5, 5, 5, 5];
+    static SIZE_MULTIPLIERS = [1.1, 1.1, 1.1, 1.3, 1.8, 1.4, 1.6, 1.4];
+
+    static cumulativeMultiplier(multipliers, tier) {
+        let result = 1;
+        for (let i = 0; i < tier; i++)
+            result *= multipliers[i] ?? multipliers[multipliers.length - 1];
+        return result;
+    }
 
     constructor(tier, health, damage, size) {
-        this.health = health * Math.pow(MobTier.HEALTH_SCALE, tier);
+        this.health = health * MobTier.cumulativeMultiplier(MobTier.HEALTH_MULTIPLIERS, tier);
         this.damage = damage * Math.pow(MobTier.DAMAGE_SCALE, tier);
-        this.size = size * Math.pow(MobTier.SIZE_SCALE, tier);
+        this.size = size * MobTier.cumulativeMultiplier(MobTier.SIZE_MULTIPLIERS, tier);
+        this.armor = 1 * Math.pow(MobTier.DAMAGE_SCALE, tier);
 
         this.damageReduction = 0;
 

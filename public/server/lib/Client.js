@@ -817,6 +817,8 @@ export default class Client {
     /** @type {Map<number,Disconnect>} */
     static disconnects = new Map();
 
+    static SLOT_UNLOCK_LEVELS = [5, 10, 20, 30, 50];
+
     constructor(id, uuid, masterPermissions = 0) {
         this.id = id;
         this.verified = false;
@@ -907,7 +909,7 @@ export default class Client {
             }
         }
 
-        let slots = 5 + Math.min(5, Math.floor(this.level / 10));
+        let slots = 5 + Client.SLOT_UNLOCK_LEVELS.filter(unlockLevel => this.level >= unlockLevel).length;
         if (slots !== this.slots.length) {
             if (slots > this.slots.length) {
                 for (let i = this.slots.length; i < slots; i++) {
@@ -927,11 +929,11 @@ export default class Client {
     }
 
     get healthAdjustement() {
-        return 40 + 5 * Math.pow(this.level, 1.5);
+        return Math.min(11600, 40 + 5 * Math.pow(this.level, 1.5));
     }
 
     get bodyDamageAdjustment() {
-        return 5 + 1 * Math.pow(this.level, 1.5);
+        return Math.min(810, 5 + 1 * Math.pow(this.level, 1.5));
     }
 
     get highestRarity() {
