@@ -1708,15 +1708,7 @@ export class Player extends Entity {
     }
 
     /**
-     * @param {{transferringRoom?: boolean}} [options] Pass `transferringRoom: true`
-     * when this is called as part of RoomManager.moveClient (portals, /room
-     * join, etc). That path is not an actual death - it just needs the body
-     * detached from the room it's leaving - so death penalties (XP loss/gift)
-     * and the auto-respawn scheduling below must be skipped. Letting them run
-     * during a room transfer raced against moveClient's own room activation
-     * and could spawn a duplicate body in whichever room happened to be
-     * active when the setTimeout fired (often the room being left), which is
-     * what made it look like the player's body got left behind.
+     * @param {{transferringRoom?: boolean}} [options]
      */
     destroy(options = {}) {
         const { transferringRoom = false } = options;

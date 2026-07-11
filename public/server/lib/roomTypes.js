@@ -41,18 +41,12 @@ export const ROOM_CENTER_PORTALS = {
 
 export const ROOM_NPCS = {
     "main-garden": [
-        { name: "Druid", x: -180, y: 180 },
-        { name: "Trader", x: 180, y: 180 },
-        { name: "Oracle", x: 0, y: -220 }
+        { name: "Druid", x: 0, y: 220 },
     ],
     "main-desert": [
-        { name: "Druid", x: -180, y: 180 },
-        { name: "Trader", x: 180, y: 180 },
-        { name: "Oracle", x: 0, y: -220 }
+        { name: "Trader", x: 0, y: 220 },
     ],
     "main-ocean": [
-        { name: "Druid", x: -180, y: 180 },
-        { name: "Trader", x: 180, y: 180 },
         { name: "Oracle", x: 0, y: -220 }
     ]
 };
