@@ -638,8 +638,10 @@ export function formatAmount(v) {
         const val = num / div;
         if (!isFinite(val)) return "∞";
 
-        const str = val.toFixed(1);
-        return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
+        const truncated = Math.floor(val * 10) / 10;
+        const str = truncated.toFixed(1);
+
+        return str.endsWith(".0") ? str.slice(0, -2) + suffix : str + suffix;
     };
 
     if (v >= 1e18) return f(v, 1e18, "Qt");
