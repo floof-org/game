@@ -47,6 +47,11 @@ export class GameRoom {
             hooks.world();
         }, 1000 / 25));
     }
+
+    stopLoops() {
+        this.intervals.forEach(clearInterval);
+        this.intervals = [];
+    }
 }
 
 export class RoomManager {
@@ -130,6 +135,27 @@ export class RoomManager {
             await beginFn(message, room);
             room.startLoops(hooks);
         }
+    }
+
+    /**
+     * @param {string} name
+     * @returns {boolean}
+     */
+    static isMainRoom(name) {
+        return Object.prototype.hasOwnProperty.call(ROOM_TYPES, name);
+    }
+
+    /**
+     * @param {GameRoom} room
+     */
+    static removeIfEmpty(room) {
+        if (!room || RoomManager.isMainRoom(room.name)) return;
+        if (room.clientCount > 0) return;
+
+        room.stopLoops();
+        RoomManager.rooms = RoomManager.rooms.filter(r => r !== room);
+
+        console.log(`Room "${room.name}" removed (empty wave room)`);
     }
 
     static findRoomForNewClient() {

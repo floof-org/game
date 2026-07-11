@@ -1,4 +1,4 @@
-import state from "./lib/state.js";
+import state, { getActiveRoomState, setActiveRoomState } from "./lib/state.js";
 import { BIOME_TYPES, CLIENT_BOUND, Drawing, encodeEverything, ENTITY_TYPES, GAMEMODES, PetalTier, ROUTER_PACKET_TYPES } from "../lib/protocol.js";
 import { DEFAULT_PETAL_COUNT, mobConfigs, PetalConfig, petalConfigs, tiers } from "./lib/config.js";
 import { AIPlayer, Mob, Player } from "./lib/Entity.js";
@@ -130,6 +130,149 @@ function getMobIndex() {
     return 0;
 }
 
+const WAVE_SPAWN_WINDOW_TICKS = 675;
+const WAVE_PHASE_TIMEOUT_TICKS = 1350;
+const WIPE_GRACE_TICKS = 68;
+const WAVE_RESPAWN_LIMIT = 4;
+
+/**
+ * @param {number} wave
+ * @returns {() => number}
+ */
+function createWaveRarityRoller(wave) {
+    const averageRarity = Math.max(0, Math.min(7, 1.74 * Math.log(wave + 1.9) - 2.673));
+    state.announceRarity = Math.floor(averageRarity) + 1;
+
+    const spread = Math.max(.3, 2 - .02 * wave);
+    const bonusChance = .1 / wave;
+
+    return () => {
+        const rolled = averageRarity + 2 * ((Math.random() + Math.random() + Math.random()) / 3 - .5) * spread;
+        const withBonus = Math.random() < bonusChance ? rolled + 1 : rolled;
+        const rarity = Math.max(0, Math.min(5, Math.round(withBonus)));
+
+        if (rarity === 5) {
+            const roll = Math.random();
+            if (roll < 1e-5) return 7;
+            if (roll < .001) return 6;
+        }
+
+        return rarity;
+    };
+}
+
+/**
+ * @param {number} limit
+ */
+function respawnDeadPlayers(limit = WAVE_RESPAWN_LIMIT) {
+    let remaining = limit;
+
+    for (const client of state.clients.values()) {
+        if (remaining <= 0) break;
+
+        if (client.verified && (!client.body || client.body.health.isDead)) {
+            remaining--;
+            client.spawn();
+        }
+    }
+}
+
+function startWave() {
+    state.currentWave++;
+    const wave = state.currentWave;
+
+    const rollRarity = createWaveRarityRoller(wave);
+
+    const clientMultiplier = 1 + .5 * (state.clients.size - 1);
+    const mobCount = Math.max(1, Math.round((16 + Math.floor(wave)) * clientMultiplier));
+    const mobPlan = createWave(mobCount);
+
+    state.waveSpawnQueue = [];
+    for (let i = 0; i < mobCount; i++) {
+        if (mobPlan[i] === -1) {
+            state.waveSpawnQueue.push({
+                isBot: true,
+                rarity: Math.max(0, getWaveMobRarity(wave, 4.83 * Math.pow(1.012, wave), tiers.length - 1))
+            });
+        } else {
+            state.waveSpawnQueue.push({
+                isBot: false,
+                mobIndex: mobPlan[i],
+                rarity: rollRarity()
+            });
+        }
+    }
+
+    state.maxMobs = mobCount;
+    state.waveSpawnInterval = Math.max(1, Math.floor(WAVE_SPAWN_WINDOW_TICKS / mobCount));
+    state.waveSpawnTicker = 0;
+    state.wavePhase = "spawning";
+    state.wavePhaseTick = 0;
+    state.wipeTimerTicks = 0;
+
+    respawnDeadPlayers();
+}
+
+function spawnNextQueuedMob() {
+    const next = state.waveSpawnQueue.shift();
+
+    if (next.isBot) {
+        new AIPlayer(state.random(), next.rarity, state.currentWave);
+        return;
+    }
+
+    const mob = new Mob(state.random());
+    mob.define(mobConfigs[next.mobIndex], next.rarity);
+    state.aliveMobs.push(mob);
+}
+
+function tickWipeTimer() {
+    const hasClients = state.clients.size > 0;
+    const anyoneAlive = hasClients && [...state.clients.values()].some(c => c.body && !c.body.health.isDead);
+
+    if (hasClients && !anyoneAlive) {
+        if (state.wipeTimerTicks === 0) state.wipeTimerTicks = WIPE_GRACE_TICKS;
+        state.wipeTimerTicks--;
+
+        if (state.wipeTimerTicks === 0) doWipe();
+    } else {
+        state.wipeTimerTicks = 0;
+    }
+}
+
+function doWipe() {
+    for (const drop of [...state.drops.values()]) {
+        try {
+            drop.destroy();
+        } catch {
+            // ignore, drop was likely already gone
+        }
+    }
+
+    state.waveSpawnQueue = [];
+    state.wavePhase = "idle";
+    state.wavePhaseTick = 0;
+    state.wipeTimerTicks = 0;
+    state.currentWave = 0;
+
+    const waveRoomState = getActiveRoomState();
+    const currentRoom = RoomManager.rooms.find(room => room.roomState === waveRoomState);
+    const parentRoom = RoomManager.findByName(currentRoom?.parentRoomName ?? "main-garden");
+
+    for (const client of [...state.clients.values()]) {
+        client.systemMessage("You lost. Returning to main room", "#ffaaaa");
+
+        if (parentRoom) {
+            RoomManager.moveClient(client, parentRoom);
+            setActiveRoomState(waveRoomState);
+        }
+    }
+
+    if (currentRoom) {
+        RoomManager.removeIfEmpty(currentRoom);
+    }
+}
+
 function gameLoopTick() {
     const startTime = performance.now();
 
@@ -162,34 +305,56 @@ function gameLoopTick() {
         case GAMEMODES.TDM:
             break;
         case GAMEMODES.WAVES: {
-            if (state.isWaves && state.livingMobCount <= 0) {
-                state.currentWave++;
-                state.maxMobs = Math.min(64, 6 + 2 * state.currentWave);
-                state.width = state.height = Math.min(1024 + 36 * 2.25 * state.currentWave, Math.pow(128, 2));
+            if (!state.isWaves) break;
 
-                state.clients.forEach(client => client.sendRoom());
-                const mobIndexes = createWave(state.maxMobs);
+            switch (state.wavePhase) {
+                case "spawning": {
+                    state.wavePhaseTick++;
+                    state.waveSpawnTicker++;
 
-                for (let i = 0; i < state.maxMobs; i++) {
-                    if (mobIndexes[i] === -1) {
-                        new AIPlayer(
-                            state.random(),
-                            Math.max(0, getWaveMobRarity(state.currentWave, 4.83 * Math.pow(1.012, state.currentWave), tiers.length - 1)),
-                            state.currentWave
-                        );
-                        continue;
+                    tickWipeTimer();
+
+                    if (
+                        state.wipeTimerTicks === 0 &&
+                        state.wavePhase === "spawning" &&
+                        state.waveSpawnTicker >= state.waveSpawnInterval &&
+                        state.waveSpawnQueue.length > 0
+                    ) {
+                        state.waveSpawnTicker = 0;
+                        spawnNextQueuedMob();
                     }
 
-                    const mob = new Mob(state.random());
-                    mob.define(mobConfigs[mobIndexes[i]], getWaveMobRarity(state.currentWave, 4.83 * Math.pow(1.012, state.currentWave), tiers.length - 1));
-                    state.aliveMobs.push(mob);
+                    if (state.waveSpawnQueue.length === 0 || state.wavePhaseTick >= WAVE_PHASE_TIMEOUT_TICKS) {
+                        state.waveSpawnQueue = [];
+                        state.wavePhase = "killing";
+                        state.wavePhaseTick = 0;
+                    }
+                    break;
                 }
+                case "killing": {
+                    state.wavePhaseTick++;
+                    state.aliveMobs = state.aliveMobs.filter(mob => mob && !mob.health.isDead);
 
-                state.clients.forEach(client => {
-                    if (client.verified && !client.body) {
-                        client.spawn();
+                    const cleared = state.aliveMobs.length <= 0;
+                    const timedOut = state.wavePhaseTick >= WAVE_PHASE_TIMEOUT_TICKS;
+
+                    if (cleared || timedOut) {
+                        state.wipeTimerTicks = 0;
+                        state.wavePhase = "idle";
+                        state.wavePhaseTick = 0;
+                        startWave();
+                    } else {
+                        tickWipeTimer();
                     }
-                });
+                    break;
+                }
+                case "idle":
+                default: {
+                    if (state.clients.size > 0) {
+                        startWave();
+                    }
+                    break;
+                }
             }
         } break;
         case GAMEMODES.LINE: {

@@ -67,6 +67,13 @@ const roomState = {
     currentWave: 0,
     mobsExpire: false,
 
+    wavePhase: "idle",
+    wavePhaseTick: 0,
+    wipeTimerTicks: 0,
+    waveSpawnQueue: [],
+    waveSpawnInterval: 1,
+    waveSpawnTicker: 0,
+
     dynamicRoom: true,
 
     teamMinimaps: [],
