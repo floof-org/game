@@ -2531,6 +2531,16 @@ export class Mob extends Entity {
                         this.movementAngle = a2;
                         this.moveStrength = this.speed;
                     }
+                } else if (this.config.beetleMovement) {
+                    if (this.tick <= 0) {
+                        this.tick = 22.5 * (1.5 + Math.random());
+                        this.wiggleDirection = this.wiggleDirection === undefined ? (Math.random() > .5 ? 1 : -1) : -this.wiggleDirection;
+                    }
+
+                    const angle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
+
+                    this.movementAngle = angle + this.wiggleDirection * .5;
+                    this.moveStrength = this.speed;
                 } else if (this.movesInBursts) {
                     if (this.tick <= 0) {
                         this.tick = 35 - this.rarity;
@@ -2885,9 +2895,80 @@ export class Mob extends Entity {
         }
     }
 
+    explodeOnDeath() {
+        const explosion = this.config.explodesOnDeath;
+        const explosionIndex = petalIDOf(explosion.name);
+        const config = petalConfigs[explosionIndex];
+
+        if (!config) {
+            return;
+        }
+
+        const tier = config.tiers[this.rarity];
+        const petal = new Petal(this, -1, -1);
+
+        petal.x = this.x;
+        petal.y = this.y;
+        petal.index = explosionIndex;
+        petal.size = config.sizeRatio * explosion.sizeMultiplier;
+        petal.health.set(tier.health);
+        petal.damage = tier.damage * explosion.damageMultiplier;
+        petal.rarity = this.rarity;
+        petal.speed = 0;
+        petal.spinSpeed = 0;
+        petal.pushability = 0;
+        petal.launched = true;
+        petal.nullCollision = false;
+        petal.range = 5;
+    }
+
+    pushOnDeath() {
+        const { radius, force } = this.config.pushOnDeath;
+        const pushRadius = this.size * radius;
+
+        const nearby = state.spatialHash.retrieve({
+            _AABB: {
+                x1: this.x - pushRadius,
+                y1: this.y - pushRadius,
+                x2: this.x + pushRadius,
+                y2: this.y + pushRadius
+            }
+        });
+
+        nearby.forEach(entity => {
+            if (entity === this || entity.health.isDead) {
+                return;
+            }
+
+            const dx = entity.x - this.x;
+            const dy = entity.y - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist >= pushRadius) {
+                return;
+            }
+
+            const angle = Math.atan2(dy, dx);
+            const strength = force * (1 - dist / pushRadius) * entity.pushability;
+
+            entity.velocity.x += Math.cos(angle) * strength;
+            entity.velocity.y += Math.sin(angle) * strength;
+        });
+    }
+
     destroy() {
         if (this.deathEvent) {
             this.deathEvent();
+        }
+
+        if (this.health.isDead) {
+            if (this.config.explodesOnDeath) {
+                this.explodeOnDeath();
+            }
+
+            if (this.config.pushOnDeath) {
+                this.pushOnDeath();
+            }
         }
 
         super.destroy();
