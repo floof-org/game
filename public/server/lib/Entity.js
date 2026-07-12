@@ -2532,14 +2532,11 @@ export class Mob extends Entity {
                         this.moveStrength = this.speed;
                     }
                 } else if (this.config.beetleMovement) {
-                    if (this.tick <= 0) {
-                        this.tick = 22.5 * (1.5 + Math.random());
-                        this.wiggleDirection = this.wiggleDirection === undefined ? (Math.random() > .5 ? 1 : -1) : -this.wiggleDirection;
-                    }
+                    const desiredAngle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
+                    const maxTurn = 4 * Math.PI / 180;
+                    const diff = angleDiff(desiredAngle, this.movementAngle);
 
-                    const angle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
-
-                    this.movementAngle = angle + this.wiggleDirection * .5;
+                    this.movementAngle += Math.max(-maxTurn, Math.min(maxTurn, diff));
                     this.moveStrength = this.speed;
                 } else if (this.movesInBursts) {
                     if (this.tick <= 0) {
