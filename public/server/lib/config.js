@@ -1504,6 +1504,7 @@ mobConfigs[mobIDOf("Centipede")].segmentWith(queryMob(m => m.isSystem && m.name 
 mobConfigs[mobIDOf("Desert Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Desert Centipede"));
 mobConfigs[mobIDOf("Evil Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Evil Centipede"));
 mobConfigs[mobIDOf("Hell Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Hell Centipede"));
+mobConfigs[mobIDOf("Lily Pad")].segmentWith(queryMob(m => m.isSystem && m.name === "Lily Pad"));
 mobConfigs[mobIDOf("Wilt")].branchWith(queryMob(m => m.isSystem && m.name === "Wilt"), 5, 2);
 
 export const DEFAULT_PETAL_COUNT = petalConfigs.length;

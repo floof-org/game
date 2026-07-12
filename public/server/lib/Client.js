@@ -2222,9 +2222,29 @@ export default class Client {
             writer.setUint16(state.currentWave);
             writer.setUint16(state.waveDisplayProgress); // currentMobCount, 0-100, smoothed
             writer.setUint16(100); // maxMobCount, always 100
-            writer.setUint16(state.aliveMobs.length);
+
+            const waveIconMobs = [];
 
             for (const entity of state.aliveMobs) {
+                const config = mobConfigs[entity.index];
+
+                if (!config || config.wavesHidden) {
+                    continue; // eggs and other mobs marked as wavesHidden never show up in the wave icon list
+                }
+
+                // Segments/branches (e.g. Centipede, Lily Pad, Wilt) should be represented
+                // by their head mob in the wave icon instead of as a separate mob entry.
+                let head = entity;
+                while (head.head) {
+                    head = head.head;
+                }
+
+                waveIconMobs.push(head);
+            }
+
+            writer.setUint16(waveIconMobs.length);
+
+            for (const entity of waveIconMobs) {
                 writer.setUint8(entity.index);
                 writer.setUint8(entity.rarity);
             }
