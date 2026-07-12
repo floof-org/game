@@ -205,10 +205,11 @@ export const petalConfigs = [
         .setConstantHeal(11, true)
         .setDescription("A strange leaf that heals you but only when you're in defensive mode"),
 
-    new PetalConfig("Magnet",13.5,30,1)
+    new PetalConfig("Magnet",22.5,90,1)
         .setSize(1.8)
-        .setExtraPickupRange(50)
-        .setDescription("This petal's magnetic field will attract nearby items. Does not stack"),
+        .setAttractsLightning(true)
+        .setExtraPickupRange(90)
+        .setDescription("This petal's magnetic field will attract nearby items and lightnings. Does not stack"),
 
     new PetalConfig("Amulet",0,0,0)
         .setDescription("Amulet"),

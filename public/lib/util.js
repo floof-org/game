@@ -199,20 +199,21 @@ export function quickDiff(a, b) {
 }
 
 export function xpForLevel(level) {
-    if (level <= 0) {
-        return 0;
+    if (level === 0) return 0;
+
+    let xp = 32;
+
+    for (let i = 3; i <= level; i++) {
+        if (i <= 60) {
+            xp *= 1.25;
+        } else if (i <= 90) {
+            xp *= 1.15;
+        } else {
+            xp *= 1.05;
+        }
     }
 
-    return Math.round(
-        Math.pow(
-            10,
-            4.5528 +
-            0.07963 * level -
-            0.0003715 * level * level +
-            3.965e-7 * level * level * level +
-            0.10 * Math.exp(-(level - 1) / 3)
-        )
-    );
+    return Math.round(xp);
 }
 
 export const options = {

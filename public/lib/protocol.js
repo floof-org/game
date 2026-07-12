@@ -91,8 +91,8 @@ export class MobTier {
     static HEALTH_SCALE = 3.15;
     static DAMAGE_SCALE = 3;
     static SIZE_SCALE = 1.3;
-    static HEALTH_MULTIPLIERS = [4, 5, 5, 6, 10, 25, 5, 5, 5, 5];
-    static SIZE_MULTIPLIERS = [1.1, 1.1, 1.1, 1.3, 1.8, 1.4, 1.6, 1.4];
+    static HEALTH_MULTIPLIERS = [4, 5, 5, 6, 10, 25, 25, 10, 6, 5];
+    static SIZE_MULTIPLIERS = [1.1, 1.1, 1.1, 1.3, 1.8, 1.4, 1.4, 1.4];
 
     static cumulativeMultiplier(multipliers, tier) {
         let result = 1;
@@ -699,11 +699,6 @@ export class PetalConfig {
         return this;
     }
 
-    setStationaryDamage(stationaryDamage) {
-        this.stationaryDamage = stationaryDamage;
-        return this;
-    }
-
     setMark(mark) {
         this.mark = Boolean(mark);
         return this;
@@ -717,13 +712,6 @@ export class PetalConfig {
         return this;
     }
 
-    setSummonArmor(summonArmor) {
-        for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].summonArmor = summonArmor * Math.pow(PetalTier.DAMAGE_SCALE, i);
-        }
-
-        return this;
-    }
 }
 
 export class MobDrop {
@@ -1987,7 +1975,7 @@ export function decodePetalConfigs(data, nTiers) {
 
 /** @param {MobConfig} config */
 function encodeMobConfig(config) {
-    const output = [config.id, config.name, +config.isSystem, null, 0x00];
+    const output = [config.id, config.name, +config.isSystem, [], 0x00];
 
     const flagsIndex = output.length - 1;
 

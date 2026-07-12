@@ -2890,7 +2890,7 @@ export class Mob extends Entity {
                 const client = state.clients.get(damager.clientID);
 
                 if (client) {
-                    client.addXP(Math.max(1, this.health.maxHealth / 100));
+                    client.addXP(Math.floor(Math.max(1, this.health.maxHealth / 300)));
                 }
             }
         });
