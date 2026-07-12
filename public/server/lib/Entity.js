@@ -5,6 +5,7 @@ import state, { getActiveRoomState, setActiveRoomState } from "./state.js";
 import Vector2D from "./Vector2D.js";
 import RoomManager from "./Room.js";
 import { ROOM_CENTER_PORTALS } from "./roomTypes.js";
+import { findSquadOf } from "./Squad.js";
 
 export class HealthComponent {
     constructor(x) {
@@ -2831,8 +2832,24 @@ export class Mob extends Entity {
 
                     if (ROOM_CENTER_PORTALS[fromRoom.name] !== portal.config.name) return;
 
+                    const squadEntry = findSquadOf(client);
+                    if (squadEntry && squadEntry[1].leader !== client) {
+                        client.systemMessage("Only your squad leader can start a Waves run. Wait for them to go through the portal.", "#FF6666");
+                        return;
+                    }
+
                     const waveRoom = RoomManager.createWaveRoom(fromRoom);
                     RoomManager.moveClient(client, waveRoom);
+
+                    if (squadEntry) {
+                        const [, squad] = squadEntry;
+                        squad.members.forEach(member => {
+                            if (member !== client) {
+                                RoomManager.moveClient(member, waveRoom);
+                                member.systemMessage("Your squad leader started a Waves run - you were brought along!", "#ffaaaa");
+                            }
+                        });
+                    }
                 }, 1000);
             });
         }

@@ -1,6 +1,13 @@
 import state, { getActiveRoomState } from "./state.js";
 import RoomManager from "./Room.js";
 import { Entity, Mob, Player } from "./Entity.js";
+import {
+    handleSquadCommand,
+    canUseRoomJoin,
+    dragSquadAlongOnRoomMove,
+    cleanupSquadOnDisconnect,
+    printSquadHelp
+} from "./Squad.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES } from "../../lib/protocol.js";
 import { mobConfigs, mobIDOf, petalConfigs, petalIDOf, tiers } from "./config.js";
 import { xpForLevel } from "../../lib/util.js";
@@ -852,6 +859,8 @@ export default class Client {
 
         this.lastChat = 0;
         this.frownyMessages = 0;
+
+        this.squadDisabled = false;
     }
 
     spawn() {
@@ -1474,6 +1483,9 @@ export default class Client {
             case "room":
                 this.commandRoom(args);
                 break;
+            case "squad":
+                this.commandSquad(args);
+                break;
             default:
                 this.systemMessage(`Unknown command. Try /help.`, "#FF6666");
                 break;
@@ -1517,6 +1529,9 @@ export default class Client {
                 this.systemMessage("/room back - return to the room you were in before", "#7ea6ef");
                 this.systemMessage("Example: /room join garden-main", "#7ea6ef");
                 break;
+            case "squad":
+                printSquadHelp(this);
+                break;
             default:
                 this.systemMessage("/squad - manage your squad...", "#ffe763");
                 this.systemMessage("/craft - crafts 5 petals into a higher rarity", "#ffe763");
@@ -1531,6 +1546,10 @@ export default class Client {
     commandOnline() {
         const total = RoomManager.rooms.reduce((sum, room) => sum + room.clientCount, 0);
         this.systemMessage(`There are currently ${total} player(s) online.`, "#7EEF6D");
+    }
+
+    commandSquad(args) {
+        handleSquadCommand(this, args);
     }
 
     commandRoom(args) {
@@ -1565,6 +1584,10 @@ export default class Client {
             return;
         }
 
+        if (!canUseRoomJoin(this)) {
+            return;
+        }
+
         const target = RoomManager.findByName(name);
 
         if (!target) {
@@ -1573,6 +1596,7 @@ export default class Client {
         }
 
         RoomManager.moveClient(this, target);
+        dragSquadAlongOnRoomMove(this, target);
     }
 
     commandRoomBack() {
@@ -2125,6 +2149,8 @@ export default class Client {
         state.alivePlayers = state.alivePlayers.filter(m => m.id !== this.id);
         state.playerCount = Math.max(0, state.playerCount - 1);
         state.clients.delete(this.id);
+
+        cleanupSquadOnDisconnect(this);
     }
 
     terminate() {
