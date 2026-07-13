@@ -4799,15 +4799,25 @@ function drawShrub(id, color, ctx = _ctx, hit = false) {
 }
 
 function drawWilt(ctx = _ctx, friendly = false, hit = false, id) {
-    let color = friendly ? colors.playerYellow : mixColors(colors.rockGray, "#000000", 0.115 + Math.sin(id * 1000) * 0.175)
-    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.25);
+    let color = friendly ? colors.playerYellow : mixColors(colors.rockGray, "#000000", 0.2 + Math.sin(id * 1000) * 0.1)
 
-    dipPolygon(ctx, 9, 1, .3, 0)
+    let sides = (id % 3) + 8
+  
+    setStyle(ctx, mixColors(color, "#FF0000", hit * 0.5), 0.15);
+    polygon(ctx, sides, 1, 0)
     ctx.fill()
     ctx.stroke()
 
-    ctx.fillStyle = mixColors(mixColors(color, "#FFFFFF", friendly ? .375 : .0675), "#FF0000", hit * 0.5)
-    dipPolygon(ctx, 8, .55, .3, 0)
+    polygon(ctx, sides - 1, .75, 0)
+    ctx.fill()
+    ctx.stroke()
+
+    polygon(ctx, sides - 2, .5, 0)
+    ctx.fill()
+    ctx.stroke()
+
+    setStyle(ctx, mixColors(mixColors(color, "#FFFFFF", .075 * ((friendly * 4) + 1)), "#FF0000", hit * 0.5), 0.15);
+    polygon(ctx, sides - 2, .25, 0)
     ctx.fill()
 }
 
