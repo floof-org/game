@@ -8,7 +8,7 @@ const TAU = Math.PI * 2;
 function setStyle(c, main, lineWidth = 0.1, mixStrength = 0.2) {
     c.fillStyle = main;
     c.strokeStyle = mixColors(main, "#000000", mixStrength);
-    c.lineWidth = lineWidth;s
+    c.lineWidth = lineWidth;
 }
 
 function dipPolygon(ctx, sides, r, dipMult, R) {
