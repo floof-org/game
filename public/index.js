@@ -1,4 +1,4 @@
-import {canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale} from "./lib/canvas.js";
+import { canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
 import * as net from "./lib/net.js";
 import { mouse, keyMap, pruneFloatingTextTrackers } from "./lib/net.js";
 import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
