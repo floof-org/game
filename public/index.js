@@ -2650,13 +2650,18 @@ function draw() {
     }
 
     if (net.state.waveInfo) {
+        let width = (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs) * 400
+        net.state.waveInfoBarWidth ??= 0;
+        net.state.waveInfoBarWidth = r.Cc(net.state.waveInfoBarWidth, width, 0.15);
+        let size = 22.5 * Math.min(1, net.state.waveInfoBarWidth / 15);
+        
         ctx.textBaseline = "middle";
 
         text("Wave " + net.state.waveInfo.wave, width / 2, 30, 35);
 
         drawBar(width / 2 - 200, width / 2 + 200, 65, 30, colors["???"]);
 
-        drawBar(width / 2 - 200, width / 2 - 200 + 400 * (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs), 65, 22.5, mixColors(BIOME_BACKGROUNDS[net.state.room.biome].color, colors.white, 0.2));
+        drawBar(width / 2 - 200, width / 2 - 200 + net.state.waveInfoBarWidth, 65, size, mixColors(BIOME_BACKGROUNDS[net.state.room.biome].color, colors.white, 0.2));
 
         text(net.state.waveInfo.livingMobs + " / " + net.state.waveInfo.maxMobs, width / 2, 65, 22.5);
 
