@@ -2746,9 +2746,9 @@ function draw() {
     }
 
     if (net.state.waveInfo) {
-        let barWidth = (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs) * 400
+        let width = (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs) * 400
         net.state.waveInfoBarWidth ??= 0;
-        net.state.waveInfoBarWidth = lerp(net.state.waveInfoBarWidth, barWidth, 0.15);
+        net.state.waveInfoBarWidth = r.Cc(net.state.waveInfoBarWidth, width, 0.15);
         let size = 22.5 * Math.min(1, net.state.waveInfoBarWidth / 15);
         
         ctx.textBaseline = "middle";
