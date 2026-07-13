@@ -1,5 +1,10 @@
+# Update (7/12/2026)
+- Fixed player equipped Amulet and Armor visuals
+- Fixed mob stat boxes having extra space at the bottom
+- Updated multiple mob and petal drawings
+
 # Update (7/10/2026)
-- Fixed "Show Damage Numbers" only showing lost percentage not the actual damage dealt
+- Fixed Show Damage Numbers only showing lost percentage and not the actual damage dealt
 - Added animations for damage text and healing
 
 # Update (7/2/2026)
@@ -17,8 +22,8 @@
 
 # Update (5/18/2026)
 - Added gradients for both Petal icons and Mob icons
-- Inventory can now be hovered
-- You can now view everyone in minimap in certain lobbies
+- Petals in the inventory can now show their stats
+- You can now view everyone in the minimap in certain lobbies
 
 # Update (5/9/2026)
 - Updated Pumpkin and Jack O' Lantern Drawings (Thanks to @Fubuki and @Dwajl)
