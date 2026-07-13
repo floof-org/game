@@ -3783,19 +3783,20 @@ function drawQueenAntT(id, fillColor, attk = false, hit = false, ctx = _ctx, dat
 }
 
 function drawAntHoleT(fillColor, hit = false, ctx = _ctx) {
-    ctx.fillStyle = mixColors(fillColor, "#FF0000", hit * 0.5);
+    let color = mixColors(fillColor, "#FF0000", hit * 0.5);
+    ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(0, 0, 1, 0, TAU);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = mixColors(ctx.fillStyle, "#000000", 0.125);
+    ctx.fillStyle = mixColors(color, "#000000", 0.15);
     ctx.beginPath();
     ctx.arc(0, 0, 0.667, 0, TAU);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = mixColors(ctx.fillStyle, "#000000", 0.25);
+    ctx.fillStyle = mixColors(color, "#000000", 0.3);
     ctx.beginPath();
     ctx.arc(0, 0, 0.333, 0, TAU);
     ctx.closePath();
