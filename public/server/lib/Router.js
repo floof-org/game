@@ -52,41 +52,48 @@ function applyBiome(int) {
     state.biome = int;
 
     const mobTable = {
+
+        [BIOME_TYPES.DEFAULT]: createTable({
+            [mobIDOf("Dark Ladybug")]: 1
+        }),
+
         [BIOME_TYPES.GARDEN]: createTable({
-            [mobIDOf("Ladybug")]: 5,
-            [mobIDOf("Bee")]: 5,
-            [mobIDOf("Bumblebee")]: 2,
-            [mobIDOf("Rock")]: 4,
-            [mobIDOf("Hornet")]: 6,
-            [mobIDOf("Baby Ant")]: 3,
-            [mobIDOf("Ant Egg")]: 1,
-            [mobIDOf("Worker Ant")]: 4,
-            [mobIDOf("Soldier Ant")]: 5,
-            [mobIDOf("Spider")]: 4,
-            [mobIDOf("Leafbug")]: 3,
-            [mobIDOf("Centipede")]: 2,
-            [mobIDOf("Ant Hole")]: 1,
-            [mobIDOf("Dandelion")]: 2
+            [mobIDOf("Ladybug")]: 36,
+            [mobIDOf("Bee")]: 36,
+            [mobIDOf("Hornet")]: 36,
+            [mobIDOf("Rock")]: 36,
+            [mobIDOf("Dandelion")]: 30,
+            [mobIDOf("Bumblebee")]: 30,
+            [mobIDOf("Centipede")]: 18,
+            [mobIDOf("Ant Hole")]: 12,
+            [mobIDOf("Hive")]: 12
         }),
+
         [BIOME_TYPES.DESERT]: createTable({
-            [mobIDOf("Shiny Ladybug")]: 1,
-            [mobIDOf("Sandstorm")]: 3,
-            [mobIDOf("Scorpion")]: 6,
-            [mobIDOf("Beetle")]: 6,
-            [mobIDOf("Moth")]: 3,
-            [mobIDOf("Desert Centipede")]: 3,
-            [mobIDOf("Fire Burrow")]: 1,
-            [mobIDOf("Cactus")]: 4
+            [mobIDOf("Beetle")]: 60,
+            [mobIDOf("Cactus")]: 60,
+            [mobIDOf("Desert Centipede")]: 36,
+            [mobIDOf("Scorpion")]: 36,
+            [mobIDOf("Sandstorm")]: 36,
+            [mobIDOf("Sandstone")]: 36,
+            [mobIDOf("Flea")]: 36,
+            [mobIDOf("Fire Burrow")]: 36,
+            [mobIDOf("Shiny Ladybug")]: 1
         }),
+        
         [BIOME_TYPES.OCEAN]: createTable({
-            [mobIDOf("Jellyfish")]: 5,
-            [mobIDOf("Sponge")]: 5,
-            [mobIDOf("Bubble")]: 4,
-            [mobIDOf("Shell")]: 4,
-            [mobIDOf("Starfish")]: 3,
-            [mobIDOf("Leech")]: 3,
-            [mobIDOf("Crab")]: 2.5
+            [mobIDOf("Crab")]: 48,
+            [mobIDOf("Bubble")]: 48,
+            [mobIDOf("Shell")]: 40,
+            [mobIDOf("Jellyfish")]: 40,
+            [mobIDOf("Leech")]: 36,
+            [mobIDOf("Urchin")]: 36,
+            [mobIDOf("Starfish")]: 36,
+            [mobIDOf("Sponge")]: 36,
+            [mobIDOf("Lily Pad")]: 18,
+            [mobIDOf("Aquatic Ladybug")]: 1
         }),
+    
     }[int];
 
     if (mobTable) {

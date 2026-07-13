@@ -108,18 +108,6 @@ function getMobIndex() {
         const index = Math.random() * mobConfigs.length | 0;
         const name = mobConfigs[index].name.toLowerCase();
 
-        if (mobConfigs[index].tiers[0].antHoleSpawns?.length > 0 && Math.random() > .9) {
-            return index;
-        }
-
-        if ((name.includes("ant") || name.includes("termite")) && Math.random() > .2) {
-            continue;
-        }
-
-        if (name.includes("demon") && Math.random() > .995) {
-            return index;
-        }
-
         if (mobConfigs[index].isSystem) {
             continue;
         }

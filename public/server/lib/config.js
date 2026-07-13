@@ -712,7 +712,7 @@ export const mobConfigs = [
             })
         .addDrop(petalIDOf("Missile"), .6)
         .addDrop(petalIDOf("Antennae"), 1, 2)
-        .addDrop(petalIDOf("Dandelion"), .45, 1),
+        .addDrop(petalIDOf("Orange"), .45, 1),
 
     new MobConfig("Mantis",125,20,34,2)
         .setAggressive(1)
@@ -1123,51 +1123,6 @@ export const mobConfigs = [
         .setDummy(true)
         .setSize(25, 1)
         .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#988eba", .2, .2).addAction("beginPath").addAction("line", .05, 0, .25, .3).addAction("line", .05, 0, -.15, .5).addAction("line", .05, 0, -.55, -.05).addAction("line", .05, 0, -.1, -.35).addAction("line", .05, 0, .45, -.4).addAction("line", .05, 0, .35, .1).addAction("line", .05, 0, -.05, .25).addAction("line", .25, .3, .45, .55).addAction("line", .25, .3, .55, .2).addAction("line", -.15, .5, -.3, .85).addAction("line", -.15, .5, .15, .8).addAction("line", -.55, -.05, -.9, -.2).addAction("line", -.55, -.05, -.85, .25).addAction("line", -.1, -.35, -.05, -.75).addAction("line", -.1, -.35, -.4, -.65).addAction("line", .45, -.4, .7, -.8).addAction("line", .45, -.4, .85, -.3).addAction("line", .35, .1, .65, .25).addAction("line", .35, .1, .6, -.15).addAction("line", -.05, .25, -.15, .6).addAction("line", -.05, .25, .2, .55).addAction("line", .05, 0, -.05, .25).addAction("stroke", "#F66767", .4, .2).addAction("stroke", "#F66767", .2, 0)),
-    new MobConfig("Ant Dummy",1e10,10,25,0)
-        .setPushability(0)
-        .setSystem(true)
-        .setDummy(true)
-        .setSize(25, 1)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#555555", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .625).addAction("stroke", "#555555", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .25).addAction("stroke", "#555555", .2, .2)),
-    new MobConfig("Fire Ant Dummy",1e10,10,25,0)
-        .setPushability(0)
-        .setSystem(true)
-        .setDummy(true)
-        .setSize(25, 1)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#a82a01", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .625).addAction("stroke", "#a82a01", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .25).addAction("stroke", "#a82a01", .2, .2)),
-    new MobConfig("Termite Dummy",1e10,10,25,0)
-        .setPushability(0)
-        .setSystem(true)
-        .setDummy(true)
-        .setSize(25, 1)
-        .setDamageReflection(.01)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#d3a35b", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .625).addAction("stroke", "#d3a35b", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .25).addAction("stroke", "#d3a35b", .2, .2)),
-    new MobConfig("Dark Forest Dummy",1e10,10,25,0)
-        .setPushability(0)
-        .setSystem(true)
-        .setDummy(true)
-        .setSize(25, 1)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#c8803c", .2, .2).addAction("beginPath").addAction("dipPolygon", 7, .5, -2, 0).addAction("stroke", "#222222", .25, 0)),
-    new MobConfig("Factory Dummy",1e10,10,25,0)
-        .setArmor(3)
-        .setSystem(true)
-        .setDummy(true)
-        .setPushability(0)
-        .setSize(25, 1)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#8F9699", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .5).addAction("stroke", "#ECD54A", .25, 0)),
-    new MobConfig("Sewers Dummy",1e10,10,25,0)
-        .setSystem(true)
-        .setDummy(true)
-        .setPushability(0)
-        .setSize(25, 1)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#4a7c4e", .2, .2).addAction("beginPath").addAction("polygon", 6, .5, 0).addAction("stroke", "#2d5c31", .25, 0)),
-    new MobConfig("Hell Dummy",1e10,10,25,0)
-        .setSystem(true)
-        .setDummy(true)
-        .setPushability(0)
-        .setSize(25, 1)
-        .setDrawing((new Drawing).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#b12524", .2, .2).addAction("beginPath").addAction("spikeBall", 5, .75, 0).addAction("stroke", "#b12524", .2, .2).addAction("beginPath").addAction("polygon", 5, .35, Math.PI).addAction("stroke", "#b12524", .2, .2)),
-
     // Portals
 
     new MobConfig("Portal",1e4,1,64,0)
@@ -1177,7 +1132,7 @@ export const mobConfigs = [
         .setPushability(0)
         .setDensity(0)
         .setSpins(1.6, true)
-        .setDrawing((new Drawing).addAction("opacity", .5).addAction("beginPath").addAction("polygon", 6, 1, "date_.0007").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .9, "date_.0004").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .8, "date_.0007").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .7, "date_.0003").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .6, "date_.0006").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .5, "date_.0006").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .4, "date_.0004").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .3, "date_.0003").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .2, "date_.0006").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0).addAction("beginPath").addAction("polygon", 6, .1, "date_.0004").addAction("fill", "#222222").addAction("stroke", "#222222", .2, 0))
+        .setDrawing((new Drawing).addAction("opacity", .5).addAction("beginPath").addAction("polygon", 6, 1, "date_.0007").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .9, "date_.0004").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .8, "date_.0007").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .7, "date_.0003").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .6, "date_.0006").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .5, "date_.0006").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .4, "date_.0004").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .3, "date_.0003").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .2, "date_.0006").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0).addAction("beginPath").addAction("polygon", 6, .1, "date_.0004").addAction("fill", "#666666").addAction("stroke", "#666666", .2, 0))
         .setProjectile({
                 petalIndex: petalIDOf("omega.particle"),
                 cooldown: 3.8,
@@ -1384,15 +1339,14 @@ export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 
 // Petal, Mob, Rarity, Reload, Health, Damage, Size
 
-petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 9, 900, 6, 18);
-petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5, 1e-10, 10, 24);
-petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 14, 600, 4, 12);
-petalConfigs[petalIDOf("Branch")].setSpawnable(mobIDOf("Wilt") + 1, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 255, 1e-10, 1e-10, 10);
-petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 255, 1e-10, 1e-10, 10);
-petalConfigs[petalIDOf("Hornet Egg")].setSpawnable(mobIDOf("Hornet"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 255, 400, 6, 18);
-petalConfigs[petalIDOf("Square Egg")].setSpawnable(mobIDOf("Square"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 900, 10, 24);
-petalConfigs[petalIDOf("Triangle Egg")].setSpawnable(mobIDOf("Triangle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 1800, 10, 28);
-petalConfigs[petalIDOf("Pentagon Egg")].setSpawnable(mobIDOf("Pentagon"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 2700, 10, 32);
+petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 9, 900, 6, 36);
+petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5, 1e-10, 10, 42);
+petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 14, 600, 5, 18);
+petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4, 900, 5, 16);
+petalConfigs[petalIDOf("Hornet Egg")].setSpawnable(mobIDOf("Hornet"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 9, 400, 6, 30);
+petalConfigs[petalIDOf("Square Egg")].setSpawnable(mobIDOf("Square"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 900, 10, 32);
+petalConfigs[petalIDOf("Triangle Egg")].setSpawnable(mobIDOf("Triangle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 1800, 10, 38);
+petalConfigs[petalIDOf("Pentagon Egg")].setSpawnable(mobIDOf("Pentagon"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0, 2700, 10, 42);
 
 mobConfigs[mobIDOf("Ant Hole")].setAntHoleSpawns([{
     index: mobIDOf("Baby Ant"),
@@ -1419,10 +1373,10 @@ mobConfigs[mobIDOf("Ant Hole")].setAntHoleSpawns([{
 
 mobConfigs[mobIDOf("Hive")].setAntHoleSpawns([{
     index: mobIDOf("Hornet"),
-    count: 6
+    count: [4, 4, 4, 5, 5, 5, 6]
 }, {
     index: mobIDOf("Bee"),
-    count: 6
+    count: [4, 4, 4, 5, 5, 5, 6]
 }]);
 
 mobConfigs[mobIDOf("Fire Burrow")].setAntHoleSpawns([{
@@ -1455,19 +1409,33 @@ mobConfigs[mobIDOf("Termite Mound")].setAntHoleSpawns([{
     minHealthRatio: .01
 }]);
 
-mobConfigs[mobIDOf("Queen Ant Egg")].setHatchables({
-    index: mobIDOf("Soldier Ant"),
-    time: 22.5 * 5
-});
+mobConfigs[mobIDOf("Shell")].setAntHoleSpawns([{
+    index: mobIDOf("Pearl"),
+    count: 1,
+    chance: 10 / 100
+}]);
+
+mobConfigs[mobIDOf("Ant Egg")].setAntHoleSpawns([{
+    index: mobIDOf("Baby Ant"),
+    count: 1,
+    chance: 20 / 100
+}]);
+
+mobConfigs[mobIDOf("Fire Ant Egg")].setAntHoleSpawns([{
+    index: mobIDOf("Baby Fire Ant"),
+    count: 1,
+    chance: 20 / 100
+}]);
+
+mobConfigs[mobIDOf("Termite Egg")].setAntHoleSpawns([{
+    index: mobIDOf("Baby Termite"),
+    count: 1,
+    chance: 20 / 100
+}]);
 
 mobConfigs[mobIDOf("Queen Ant")].setPoopable({
     index: mobIDOf("Queen Ant Egg"),
     interval: 22.5 * 3
-});
-
-mobConfigs[mobIDOf("Queen Fire Ant Egg")].setHatchables({
-    index: mobIDOf("Soldier Fire Ant"),
-    time: 22.5 * 5
 });
 
 mobConfigs[mobIDOf("Queen Fire Ant")].setPoopable({
@@ -1475,14 +1443,25 @@ mobConfigs[mobIDOf("Queen Fire Ant")].setPoopable({
     interval: 22.5 * 3
 });
 
-mobConfigs[mobIDOf("Termite Overmind Egg")].setHatchables({
-    index: mobIDOf("Soldier Termite"),
-    time: 22.5 * 2
-});
-
 mobConfigs[mobIDOf("Termite Overmind")].setPoopable({
     index: mobIDOf("Termite Overmind Egg"),
-    interval: 22.5 * 4
+    interval: 22.5 * 3
+});
+
+mobConfigs[mobIDOf("Queen Ant Egg")].setHatchables({
+    index: mobIDOf("Soldier Ant"),
+    time: 22.5 * 15
+});
+
+mobConfigs[mobIDOf("Queen Fire Ant Egg")].setHatchables({
+    index: mobIDOf("Soldier Fire Ant"),
+    time: 22.5 * 15
+});
+
+
+mobConfigs[mobIDOf("Termite Overmind Egg")].setHatchables({
+    index: mobIDOf("Soldier Termite"),
+    time: 22.5 * 15
 });
 
 /**
