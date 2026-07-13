@@ -2997,11 +2997,7 @@ export class Mob extends Entity {
 
             const rolledDrops = [];
             for (const drop of mobConfigs[this.index].drops) {
-                if (Math.random() > drop.chance) {
-                    continue;
-                }
-
-                const rarity = getDropRarity(this.rarity, highestRarityInRoom + 5);
+                const rarity = getDropRarity(this.rarity, highestRarityInRoom + 5, drop.weight);
                 if (rarity < drop.minRarity) {
                     continue;
                 }

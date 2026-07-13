@@ -717,7 +717,7 @@ export class PetalConfig {
 export class MobDrop {
     index = 0;
     minRarity = 0;
-    chance = 1;
+    weight = 1;
 }
 
 export class MobConfig {
@@ -876,7 +876,7 @@ export class MobConfig {
         return this;
     }
 
-    addDrop(index, chance = 1, minRarity = 0) {
+    addDrop(index, weight = 1, minRarity = 0) {
         if (index < 0 || index > 255) {
             throw new Error("Invalid drop index");
         }
@@ -884,7 +884,7 @@ export class MobConfig {
         const drop = new MobDrop();
         drop.index = index;
         drop.minRarity = minRarity;
-        drop.chance = chance;
+        drop.weight = weight;
 
         this.drops.push(drop);
         return this;

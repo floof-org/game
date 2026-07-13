@@ -127,12 +127,43 @@ export function formatLargeNumber(number, type = 0) {
 
 const threshold = .6375;
 
-export function getDropRarity(mobRarity, highestPlayerRarity) {
+const COMMON_TIER = 0;
+const UNUSUAL_TIER = 1;
+const RARE_TIER = 2;
+const EPIC_TIER = 3;
+const LEGENDARY_TIER = 4;
+const MYTHIC_TIER = 5;
+const ULTRA_TIER = 6;
+const SUPER_TIER = 7;
+const OMEGA_TIER = 8;
+const ETERNAL_TIER = 9;
+
+export function getDropRarity(mobRarity, highestPlayerRarity, weight = 1) {
     const maxRarity = Math.min(11, Math.min(mobRarity, highestPlayerRarity + 1));
     const minRarity = Math.max(0, maxRarity - 2);
 
     if (minRarity > maxRarity) {
         return minRarity;
+    }
+
+    if (maxRarity === SUPER_TIER) {
+        const cappedMax = Math.min(maxRarity - 1, ULTRA_TIER);
+
+        const ultraBonusChance = weight * .9;
+        if (Math.random() < ultraBonusChance) {
+            return cappedMax;
+        }
+
+        let rarity = minRarity;
+        const myThreshold = Math.pow(threshold, maxRarity);
+
+        for (let i = minRarity; i < cappedMax; i++) {
+            if (Math.random() < myThreshold) {
+                rarity++;
+            }
+        }
+
+        return rarity;
     }
 
     let rarity = minRarity;
