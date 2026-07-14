@@ -5,7 +5,6 @@ import { joystick } from ".././index.js";
 import * as util from "./util.js";
 import { formatLargeNumber } from "./util.js";
 
-const floatingTextDamageState = new Map();
 const floatingTextTrackers = new Map();
 /** @type {Map<number, number>} */
 const recentLightningEntities = new Map();
@@ -29,11 +28,6 @@ const FLOATING_TEXT_X_OFFSET = {
 
 function formatFloatingTextValue(type, amount) {
     const rounded = Math.round(amount);
-
-    if (type === "lightning" || type === "poison") {
-        return String(rounded);
-    }
-
     return formatLargeNumber(rounded, 1);
 }
 
@@ -229,30 +223,9 @@ function handleHealthChange(entityId, oldRatio, newRatio, worldX, worldY, isPois
     if (deltaRatio < 0) {
         if (wasRecentlyLightningDamaged(entityId, worldX, worldY)) {
             trackFloatingText(entityId, "lightning", amount, worldX, worldY);
-            return;
-        }
-
-        const damageState = floatingTextDamageState.get(entityId) || { wasPoisoned: false, tickAmount: 0 };
-        let isNormal = false;
-        let isPoisonTick = false;
-
-        if (isPoison && damageState.wasPoisoned) {
-            if (damageState.tickAmount > 0 && amount > damageState.tickAmount * 1.5) {
-                isNormal = true;
-            } else {
-                damageState.tickAmount = amount;
-                isPoisonTick = true;
-            }
-        } else {
-            isNormal = true;
-        }
-
-        damageState.wasPoisoned = isPoison;
-        floatingTextDamageState.set(entityId, damageState);
-
-        if (isPoisonTick) {
+        } else if (isPoison) {
             trackFloatingText(entityId, "poison", amount, worldX, worldY);
-        } else if (isNormal) {
+        } else {
             trackFloatingText(entityId, "damage", amount, worldX, worldY);
         }
     } else {
@@ -805,13 +778,6 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
         socket.onopen = () => {
             console.log("Connected to server");
 
-            // Setup ping
-            const PING_INTERVAL = 30000; // 30 seconds
-            const ping = () => {
-                if (socket.readyState === WebSocket.OPEN) socket.ping();
-            };
-            const intervalId = setInterval(ping, PING_INTERVAL);
-
             const worker = new Worker("./server/index.js", { type: "module" });
             worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
 
@@ -848,7 +814,6 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
             };
 
             socket.onclose = () => {
-                clearInterval(intervalId);
                 console.log("Disconnected from server");
                 worker.terminate();
             };
@@ -1597,7 +1562,7 @@ export class ClientSocket extends WebSocket {
                         mob.realHealthRatio = reader.getUint8() / 255;
 
                         if (oldHealthRatio !== mob.realHealthRatio) {
-                            const mobMaxHealth = state.tiers[mob.rarity]?.health ?? 100;
+                            const mobMaxHealth = state.mobConfigs[mob.index]?.tiers[mob.rarity]?.health ?? 100;
                             queueHealthChange(mob.id, oldHealthRatio, mob.realHealthRatio, mob.realX, mob.realY, mob.poisoned, mobMaxHealth);
                         }
                     }
