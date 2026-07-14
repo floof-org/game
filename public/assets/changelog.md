@@ -1,3 +1,6 @@
+# Update (7/13/2026)
+- "Show-damage-numbers" now actually shows dealt damage, rendering up to 1 quindrillion
+
 # Update (7/12/2026)
 - Fixed player equipped Amulet and Armor visuals
 - Fixed mob stat boxes having extra space at the bottom
