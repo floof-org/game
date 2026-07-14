@@ -1,7 +1,8 @@
 # Update (7/13/2026)
-- "Show-damage-numbers" now actually shows dealt damage, rendering up to 1 quindrillion
+- Show Damage Numbers now show real damage dealt and can render up to 1 quadrillion
 
 # Update (7/12/2026)
+- Fixed Queen Ant drawings
 - Fixed player equipped Amulet and Armor visuals
 - Fixed mob stat boxes having extra space at the bottom
 - Updated multiple mob and petal drawings
