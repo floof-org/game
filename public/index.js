@@ -20,7 +20,7 @@ import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, 
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
-import "./lib/craftMenu.js";
+import { getUserFromSession } from "./lib/auth.js";
 import "./lib/craftMenu.js";
 
 if (location.hash) {
@@ -3254,26 +3254,4 @@ document.getElementById("privateLobby").checked = localStorage.getItem("privateL
 
 showMenus();
 loadAndRenderChangelogs();
-
-async function getUserFromSession() {
-    try {
-        const res = await fetch(`${process.env.AUTH_SERVER}/api/me`, {
-            method: "GET",
-            credentials: "include",
-            headers: { Accept: "application/json" },
-        });
-
-        if (!res.ok) throw new Error("Not logged in");
-
-        const user = await res.json();
-        console.log("Logged in as:", user.username + "#" + user.discriminator);
-        return user;
-    } catch (e) {
-        console.error(e);
-        console.log("Not logged in");
-        return null;
-    }
-}
-
-// Call it anywhere
 getUserFromSession();
