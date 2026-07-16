@@ -14,6 +14,19 @@
 - Fixed Show Damage Numbers only showing lost percentage and not the actual damage dealt
 - Added animations for damage text and healing
 
+# Update (7/13/2026)
+- Show Damage Numbers now show real damage dealt and can render up to 1 quadrillion
+
+# Update (7/12/2026)
+- Fixed Queen Ant drawings
+- Fixed player equipped Amulet and Armor visuals
+- Fixed mob stat boxes having extra space at the bottom
+- Updated multiple mob and petal drawings
+
+# Update (7/10/2026)
+- Fixed Show Damage Numbers only showing lost percentage and not the actual damage dealt
+- Added animations for damage text and healing
+
 # Update (7/2/2026)
 - Added Show Damage Numbers
 
