@@ -41,6 +41,7 @@ const config = {
         new webpack.DefinePlugin({ 
             "process.env.ROUTING_SERVER": JSON.stringify(process.env.ROUTING_SERVER),
             "process.env.AUTH_SERVER": JSON.stringify(process.env.AUTH_SERVER),
+            "process.env.DISCORD_OAUTH2_REDIRECT_URL": JSON.stringify(process.env.DISCORD_OAUTH2_REDIRECT_URL),            
          }),
         new HtmlWebpackPlugin({
             template: './public/index.ejs',
