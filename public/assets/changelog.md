@@ -1,7 +1,49 @@
+# Update (7/16/2026)
+- Discord logins are now required to join lobbies.
+
+# Update (7/13/2026)
+- Show Damage Numbers now show real damage dealt and can render up to 1 quadrillion
+
+# Update (7/12/2026)
+- Fixed Queen Ant drawings
+- Fixed player equipped Amulet and Armor visuals
+- Fixed mob stat boxes having extra space at the bottom
+- Updated multiple mob and petal drawings
+
+# Update (7/10/2026)
+- Fixed Show Damage Numbers only showing lost percentage and not the actual damage dealt
+- Added animations for damage text and healing
+
+# Update (7/13/2026)
+- Show Damage Numbers now show real damage dealt and can render up to 1 quadrillion
+
+# Update (7/12/2026)
+- Fixed Queen Ant drawings
+- Fixed player equipped Amulet and Armor visuals
+- Fixed mob stat boxes having extra space at the bottom
+- Updated multiple mob and petal drawings
+
+# Update (7/10/2026)
+- Fixed Show Damage Numbers only showing lost percentage and not the actual damage dealt
+- Added animations for damage text and healing
+
+# Update (7/2/2026)
+- Added Show Damage Numbers
+
+# Update (6/20/2026)
+- Gradients are now disabled by default
+- Fixed craft menu lag
+- Optimized mob gradients
+- Press J to view rarity zones!
+
+# Update (6/7/2026)
+- Added crafting menu to the three main trusted lobbies (Thanks to @itzshovel)
+- Multiple bugfixes with the chat and the menu.
+
 # Update (5/18/2026)
 - Added gradients for both Petal icons and Mob icons
-- Inventory can now be hovered
-- You can now view everyone in minimap in certain lobbies
+- Petals in the inventory can now show their stats
+- You can now view everyone in the minimap in certain lobbies
 
 # Update (5/9/2026)
 - Updated Pumpkin and Jack O' Lantern Drawings (Thanks to @Fubuki and @Dwajl)

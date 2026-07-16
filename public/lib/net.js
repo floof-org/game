@@ -3,6 +3,235 @@ import { Reader, Writer, SERVER_BOUND, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFI
 import { StarfishData } from "./renders.js";
 import { joystick } from ".././index.js";
 import * as util from "./util.js";
+import { formatLargeNumber } from "./util.js";
+
+const floatingTextTrackers = new Map();
+/** @type {Map<number, number>} */
+const recentLightningEntities = new Map();
+/** @type {{x: number, y: number, time: number}[]} */
+const recentLightningStrikes = [];
+
+const FLOATING_TEXT_TRACK_MS = 1000;
+const FLOATING_TEXT_STACK_WINDOW_MS = 100;
+const FLOATING_TEXT_COLORS = {
+    damage: "#FF4D4D",
+    poison: "#9B4DFF",
+    lightning: "#00FFFF",
+    heal: "#FF85A1",
+};
+const FLOATING_TEXT_X_OFFSET = {
+    damage: 0,
+    poison: -0.6,
+    lightning: 0.6,
+    heal: 0,
+};
+
+function formatFloatingTextValue(type, amount) {
+    const rounded = Math.round(amount);
+    return formatLargeNumber(rounded, 1);
+}
+
+function getFloatingTextAnimation(type) {
+    switch (type) {
+        case "heal":
+            return { animation: "rise", velocityY: -2, gravity: -0.10, fade: true };
+        case "lightning":
+            return { animation: "static", velocityY: 0, gravity: 0 };
+        case "poison":
+            return { animation: "rise", velocityY: -0.08, gravity: 0, fade: true };
+        case "damage":
+        default: {
+            const dir = Math.random() < 0.5 ? -1 : 1;
+            return {
+                animation: "bounce",
+                velocityY: -2,
+                gravity: 0.10,
+                velocityX: dir * (0.50 + Math.random() * 0.50),
+            };
+        }
+    }
+}
+
+const FLOATING_TEXT_SPAWN_Y_OFFSET = {
+    damage: -0.75,
+    poison: 0,
+    lightning: -0.75,
+    heal: -0.75,
+};
+
+function getFloatingTextSpawnY(worldY, entityId, type = "damage") {
+    const yOffset = FLOATING_TEXT_SPAWN_Y_OFFSET[type] ?? -0.75;
+
+    const player = state.players.get(entityId);
+    if (player) {
+        return worldY + yOffset * (player.realSize ?? player.size ?? 50);
+    }
+
+    const mob = state.mobs.get(entityId);
+    if (mob) {
+        return worldY + yOffset * (mob.realSize ?? mob.size ?? 50);
+    }
+
+    return worldY + yOffset * 50;
+}
+
+function getFloatingTextEntitySize(entityId) {
+    const player = state.players.get(entityId);
+    if (player) return player.realSize ?? player.size ?? 50;
+
+    const mob = state.mobs.get(entityId);
+    if (mob) return mob.realSize ?? mob.size ?? 50;
+
+    return 50;
+}
+
+function markNearbyLightningEntities(point, now) {
+    const thresholdSq = 160 * 160;
+
+    state.players.forEach((player) => {
+        const dx = point.x - player.realX;
+        const dy = point.y - player.realY;
+        if (dx * dx + dy * dy <= thresholdSq) {
+            recentLightningEntities.set(player.id, now);
+        }
+    });
+
+    state.mobs.forEach((mob) => {
+        const dx = point.x - mob.realX;
+        const dy = point.y - mob.realY;
+        if (dx * dx + dy * dy <= thresholdSq) {
+            recentLightningEntities.set(mob.id, now);
+        }
+    });
+}
+
+function registerLightningStrike(points) {
+    const now = performance.now();
+
+    for (const point of points) {
+        recentLightningStrikes.push({ x: point.x, y: point.y, time: now });
+        markNearbyLightningEntities(point, now);
+    }
+
+    while (recentLightningStrikes.length > 0 && now - recentLightningStrikes[0].time > 500) {
+        recentLightningStrikes.shift();
+    }
+
+    for (const [entityId, time] of recentLightningEntities.entries()) {
+        if (now - time > 500) {
+            recentLightningEntities.delete(entityId);
+        }
+    }
+}
+
+function wasRecentlyLightningDamaged(entityId, worldX, worldY) {
+    const now = performance.now();
+    const entityTime = recentLightningEntities.get(entityId);
+
+    if (entityTime !== undefined && now - entityTime < 450) {
+        return true;
+    }
+
+    const thresholdSq = 120 * 120;
+
+    return recentLightningStrikes.some((strike) => {
+        const dx = strike.x - worldX;
+        const dy = strike.y - worldY;
+        return now - strike.time < 450 && dx * dx + dy * dy <= thresholdSq;
+    });
+}
+
+function removeFloatingTextEntry(entry) {
+    const index = state.floatingTexts.indexOf(entry);
+    if (index !== -1) {
+        state.floatingTexts.splice(index, 1);
+    }
+}
+
+function trackFloatingText(entityId, type, amount, worldX, worldY) {
+    if (!util.options.showDamageNumbers) return;
+
+    const key = `${entityId}-${type}`;
+    const now = performance.now();
+    const spawnY = getFloatingTextSpawnY(worldY, entityId, type);
+    const spawnX = worldX + (FLOATING_TEXT_X_OFFSET[type] || 0) * getFloatingTextEntitySize(entityId);
+    const tracker = floatingTextTrackers.get(key);
+
+    if (tracker && now - tracker.createdAt < FLOATING_TEXT_STACK_WINDOW_MS) {
+        tracker.amount += amount;
+        tracker.lastHit = now;
+        tracker.entry.x = spawnX;
+
+        if (tracker.entry.animation !== "static") {
+            tracker.entry.y = spawnY;
+        }
+
+        tracker.entry.value = formatFloatingTextValue(tracker.type, tracker.amount);
+        tracker.entry.expiresAt = now + FLOATING_TEXT_TRACK_MS;
+        return;
+    }
+
+    const entry = {
+        id: entityId,
+        x: spawnX,
+        y: spawnY,
+        value: formatFloatingTextValue(type, amount),
+        color: FLOATING_TEXT_COLORS[type],
+        creation: now,
+        expiresAt: now + FLOATING_TEXT_TRACK_MS,
+        type,
+        ...getFloatingTextAnimation(type),
+    };
+
+    state.floatingTexts.push(entry);
+    floatingTextTrackers.set(key, { amount, lastHit: now, createdAt: now, entry, type });
+}
+
+export function pruneFloatingTextTrackers(now) {
+    for (const [key, tracker] of floatingTextTrackers.entries()) {
+        if (now - tracker.lastHit >= FLOATING_TEXT_TRACK_MS) {
+            removeFloatingTextEntry(tracker.entry);
+            floatingTextTrackers.delete(key);
+        }
+    }
+}
+
+/** @type {{entityId: number, oldRatio: number, newRatio: number, worldX: number, worldY: number, isPoison: boolean, maxHealth: number}[]} */
+const pendingHealthChanges = [];
+
+function queueHealthChange(entityId, oldRatio, newRatio, worldX, worldY, isPoison = false, maxHealth = 100) {
+    pendingHealthChanges.push({ entityId, oldRatio, newRatio, worldX, worldY, isPoison, maxHealth });
+}
+
+function flushPendingHealthChanges() {
+    for (const change of pendingHealthChanges) {
+        handleHealthChange(change.entityId, change.oldRatio, change.newRatio, change.worldX, change.worldY, change.isPoison, change.maxHealth);
+    }
+
+    pendingHealthChanges.length = 0;
+}
+
+function handleHealthChange(entityId, oldRatio, newRatio, worldX, worldY, isPoison = false, maxHealth = 100) {
+    if (!util.options.showDamageNumbers) return;
+
+    const deltaRatio = newRatio - oldRatio;
+    if (Math.abs(deltaRatio) < (isPoison ? 0.00001 : 0.0005)) return;
+
+    const effectiveMax = maxHealth ?? 100;
+    const amount = Math.max(1, Math.round(Math.abs(deltaRatio) * effectiveMax));
+
+    if (deltaRatio < 0) {
+        if (wasRecentlyLightningDamaged(entityId, worldX, worldY)) {
+            trackFloatingText(entityId, "lightning", amount, worldX, worldY);
+        } else if (isPoison) {
+            trackFloatingText(entityId, "poison", amount, worldX, worldY);
+        } else {
+            trackFloatingText(entityId, "damage", amount, worldX, worldY);
+        }
+    } else {
+        trackFloatingText(entityId, "heal", amount, worldX, worldY);
+    }
+}
 
 function getBrowserInfo() {
     const userAgent = navigator.userAgent;
@@ -549,13 +778,6 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
         socket.onopen = () => {
             console.log("Connected to server");
 
-            // Setup ping
-            const PING_INTERVAL = 30000; // 30 seconds
-            const ping = () => {
-                if (socket.readyState === WebSocket.OPEN) socket.ping();
-            };
-            const intervalId = setInterval(ping, PING_INTERVAL);
-
             const worker = new Worker("./server/index.js", { type: "module" });
             worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
 
@@ -592,7 +814,6 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
             };
 
             socket.onclose = () => {
-                clearInterval(intervalId);
                 console.log("Disconnected from server");
                 worker.terminate();
             };
@@ -831,6 +1052,109 @@ export class ChatMessage {
 
 new ChatMessage(1, "Welcome to the game!", "#FFFFFF");
 
+const _chatListeners = new Set();
+const _captureQueue = [];
+
+export function sendChatMessage(m) {
+    if (typeof m !== "string") return false;
+    m = m.trim();
+    if (!m.length) return false;
+    if (!state.socket || state.socket.readyState !== WebSocket.OPEN) return false;
+    state.socket.talk(SERVER_BOUND.CHAT_MESSAGE, m);
+    for (let i = 0; i < _captureQueue.length; i++) {
+        const entry = _captureQueue[i];
+        if (typeof entry.idleMs === "number" && entry.idleTimer) {
+            clearTimeout(entry.idleTimer);
+            entry.idleTimer = setTimeout(entry.finalize, Math.max(entry.idleMs, 1500));
+        }
+    }
+    return true;
+}
+
+export function onChatMessage(cb) {
+    if (typeof cb !== "function") return function () {};
+    _chatListeners.add(cb);
+    return function () { _chatListeners.delete(cb); };
+}
+
+export function captureChatMessage(predicate, opts) {
+    if (typeof opts === "number") opts = { timeoutMs: opts };
+    opts = opts || {};
+    const timeoutMs = opts.timeoutMs || 3000;
+    const isMulti =
+        (typeof opts.count === "number" && opts.count > 1) ||
+        typeof opts.idleMs === "number";
+
+    return new Promise(function (resolve) {
+        const entry = {
+            predicate: predicate,
+            isMulti: isMulti,
+            count: opts.count,
+            idleMs: opts.idleMs,
+            collected: [],
+        };
+        const finalize = function () {
+            clearTimeout(entry.overallTimer);
+            clearTimeout(entry.idleTimer);
+            const idx = _captureQueue.indexOf(entry);
+            if (idx !== -1) _captureQueue.splice(idx, 1);
+            if (isMulti) resolve(entry.collected.slice());
+            else resolve(entry.collected[0] || null);
+        };
+        entry.finalize = finalize;
+        entry.overallTimer = setTimeout(finalize, timeoutMs);
+        _captureQueue.push(entry);
+    });
+}
+
+const _origAllMessagesPush = ChatMessage.allMessages.push.bind(ChatMessage.allMessages);
+ChatMessage.allMessages.push = function () {
+    const r = _origAllMessagesPush.apply(ChatMessage.allMessages, arguments);
+    for (let i = 0; i < arguments.length; i++) {
+        const m = arguments[i];
+        if (!m) continue;
+        const evt = { type: m.type, username: m.username, message: m.message, color: m.color };
+
+        let captured = false;
+        for (let f = 0; f < _captureQueue.length; f++) {
+            const entry = _captureQueue[f];
+            try {
+                if (entry.predicate(evt)) {
+                    entry.collected.push(evt);
+                    captured = true;
+                    if (!entry.isMulti) {
+                        entry.finalize();
+                    } else {
+                        if (typeof entry.idleMs === "number") {
+                            clearTimeout(entry.idleTimer);
+                            entry.idleTimer = setTimeout(entry.finalize, entry.idleMs);
+                        }
+                        if (typeof entry.count === "number" && entry.collected.length >= entry.count) {
+                            entry.finalize();
+                        }
+                    }
+                    break;
+                }
+            } catch (e) {
+                console.error("[captureChatMessage] predicate error:", e);
+            }
+        }
+
+        if (captured) {
+            const ai = ChatMessage.allMessages.indexOf(m);
+            if (ai !== -1) ChatMessage.allMessages.splice(ai, 1);
+            const mi = ChatMessage.messages.indexOf(m);
+            if (mi !== -1) ChatMessage.messages.splice(mi, 1);
+            continue;
+        }
+
+        _chatListeners.forEach(function (fn) {
+            try { fn(evt); } catch (e) { console.error("[onChatMessage] listener error:", e); }
+        });
+    }
+    return r;
+};
+
 export class ClientSocket extends WebSocket {
     static Listener = class Listener {
         /** @param {ClientSocket} socket */
@@ -1000,6 +1324,7 @@ export class ClientSocket extends WebSocket {
                 state.usesNewInventory = false;
                 break;
             case CLIENT_BOUND.WORLD_UPDATE:
+                pendingHealthChanges.length = 0;
                 state.updatesCounter++;
                 state.camera.realX = reader.getFloat32();
                 state.camera.realY = reader.getFloat32();
@@ -1089,8 +1414,13 @@ export class ClientSocket extends WebSocket {
                     }
 
                     if (flags & ENTITY_FLAGS.HEALTH) {
+                        const oldHealthRatio = player.realHealthRatio;
                         player.realHealthRatio = reader.getUint8() / 255;
                         player.realShieldRatio = reader.getUint8() / 255;
+
+                        if (oldHealthRatio !== player.realHealthRatio) {
+                            queueHealthChange(player.id, oldHealthRatio, player.realHealthRatio, player.realX, player.realY, player.poisoned);
+                        }
                     }
 
                     if (flags & ENTITY_FLAGS.DISPLAY) {
@@ -1228,7 +1558,13 @@ export class ClientSocket extends WebSocket {
                     }
 
                     if (flags & ENTITY_FLAGS.HEALTH) {
+                        const oldHealthRatio = mob.realHealthRatio;
                         mob.realHealthRatio = reader.getUint8() / 255;
+
+                        if (oldHealthRatio !== mob.realHealthRatio) {
+                            const mobMaxHealth = state.mobConfigs[mob.index]?.tiers[mob.rarity]?.health ?? 100;
+                            queueHealthChange(mob.id, oldHealthRatio, mob.realHealthRatio, mob.realX, mob.realY, mob.poisoned, mobMaxHealth);
+                        }
                     }
 
                     if (flags & ENTITY_FLAGS.ROPE_BODIES) {
@@ -1315,10 +1651,13 @@ export class ClientSocket extends WebSocket {
                         });
                     }
 
+                    registerLightningStrike(lightning.points);
                     lightning.improvePoints();
 
                     state.lightning.set(id, lightning);
                 }
+
+                flushPendingHealthChanges();
 
                 {
                     // Main slots
@@ -1433,6 +1772,8 @@ export class ClientSocket extends WebSocket {
                             state.inventory[tier.name][petalId] = amount;
                         }
                     }
+
+                    state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 }
                 break;
             case 250: {
@@ -1482,6 +1823,7 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
+                state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 break;
             }
             case 111: {
@@ -1605,56 +1947,96 @@ export class ClientSocket extends WebSocket {
                     state.minimapPlayers.set(id, { id, x, y });
                 }
 
-                break;
-            }
-            case CLIENT_BOUND.ROOM_UPDATE:
-                state.room.width = reader.getFloat32();
-                state.room.height = reader.getFloat32();
-                state.room.isRadial = reader.getUint8() === 1;
-                state.room.biome = reader.getUint8();
-                break;
-            case CLIENT_BOUND.DEATH:
-                state.isDead = true;
-                state.killMessage = reader.getStringUTF8();
-                break;
-            case CLIENT_BOUND.UPDATE_ASSETS:
-                console.warn("Server is asking us to update assets");
-                loadAssets(this.lobbyID);
-                break;
-            case CLIENT_BOUND.JSON_MESSAGE:
-                if (this.devCheatListener) {
-                    const data = JSON.parse(reader.getStringUTF8());
-                    if (
-                        !this.devCheatListener.handle(
-                            data.promiseID,
-                            (() => {
-                                delete data.promiseID;
-                                return data;
-                            })(),
-                        )
-                    ) {
-                        console.warn("Unhandled JSON message", data);
-                    }
-                } else {
-                    console.warn("Received JSON message without a listener:", reader.getStringUTF8());
-                }
-                break;
-            case CLIENT_BOUND.PONG:
-                state.ping = performance.now() - this.pingStart;
-                setTimeout(() => this.ping(), 1e3);
-                break;
-            case CLIENT_BOUND.TERRAIN:
-                state.terrain = {
-                    width: reader.getUint16(),
-                    height: reader.getUint16(),
-                    blocks: ((blocks = []) => {
-                        for (let i = reader.getUint16(); i > 0; i--) {
-                            blocks.push({
-                                x: reader.getInt16(),
-                                y: reader.getInt16(),
-                                type: [reader.getUint8(), reader.getUint8()],
-                                terrain: [],
-                            });
+        break;
+      }
+case 113: {
+    if (!state.terrain?.blocks) {
+        break;
+    }
+
+    const count = reader.getUint32();
+
+    state.terrainScores = new Map();
+
+    for (let i = 0; i < count; i++) {
+        const x = reader.getUint16();
+        const y = reader.getUint16();
+        const score = reader.getFloat32();
+
+        state.terrainScores.set(`${x},${y}`, score);
+    }
+
+    state.minimapImgWalls = renderTerrainForMap(
+        state.terrain.width,
+        state.terrain.blocks,
+        state.tiers,
+        state.terrainScores,
+        false,
+    );
+
+    state.minimapImgTerrain = renderTerrainForMap(
+        state.terrain.width,
+        state.terrain.blocks,
+        state.tiers,
+        state.terrainScores,
+        true,
+    );
+
+    state.minimapImg = state.minimapImgWalls;
+
+    break;
+}
+      case CLIENT_BOUND.ROOM_UPDATE:
+        state.room.width = reader.getFloat32();
+        state.room.height = reader.getFloat32();
+        state.room.isRadial = reader.getUint8() === 1;
+        state.room.biome = reader.getUint8();
+        break;
+      case CLIENT_BOUND.DEATH:
+        state.isDead = true;
+        state.killMessage = reader.getStringUTF8();
+        break;
+      case CLIENT_BOUND.UPDATE_ASSETS:
+        console.warn("Server is asking us to update assets");
+        loadAssets(this.lobbyID);
+        break;
+      case CLIENT_BOUND.JSON_MESSAGE:
+        if (this.devCheatListener) {
+          const data = JSON.parse(reader.getStringUTF8());
+          if (
+            !this.devCheatListener.handle(
+              data.promiseID,
+              (() => {
+                delete data.promiseID;
+                return data;
+              })(),
+            )
+          ) {
+            console.warn("Unhandled JSON message", data);
+          }
+        } else {
+          console.warn(
+            "Received JSON message without a listener:",
+            reader.getStringUTF8(),
+          );
+        }
+        break;
+      case CLIENT_BOUND.PONG:
+        state.ping = performance.now() - this.pingStart;
+        setTimeout(() => this.ping(), 1e3);
+        break;
+      case CLIENT_BOUND.TERRAIN:
+        state.terrain = {
+          width: reader.getUint16(),
+          height: reader.getUint16(),
+          blocks: ((blocks = []) => {
+            for (let i = reader.getUint16(); i > 0; i--) {
+              blocks.push({
+                x: reader.getInt16(),
+                y: reader.getInt16(),
+                type: [reader.getUint8(), reader.getUint8()],
+                terrain: [],
+              });
 
                             blocks[blocks.length - 1].terrain = terrains[blocks[blocks.length - 1].type[0]][blocks[blocks.length - 1].type[1]];
                         }
@@ -1966,6 +2348,8 @@ export const state = {
     terrainImg: null,
     /** @type {OffscreenCanvas|null} */
     minimapImg: null,
+    /** @type {{id:number,x:number,y:number,value:string,color:string,creation:number,lifetime:number,velocityY:number}[]} */
+    floatingTexts: [],
 };
 
 export const keyMap = new Set();

@@ -206,6 +206,7 @@ bindCheckbox("hideEntityUI", "hide-entity-ui");
 bindCheckbox("disableTiledBackground", "disable-tiled-background");
 bindCheckbox("fancyGraphics", "extra-graphics");
 bindCheckbox("showHitboxes", "show-hitboxes");
+bindCheckbox("showDamageNumbers", "show-damage-numbers");
 bindCheckbox("cacheMobAssets", "cache-mob-assets");
 bindCheckbox("cachePetalAssets", "cache-petal-assets");
 
