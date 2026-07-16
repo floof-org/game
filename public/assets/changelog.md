@@ -1,3 +1,6 @@
+# Update (7/16/2026)
+- Discord logins are now required to join lobbies.
+
 # Update (7/2/2026)
 - Added Show Damage Numbers
 
