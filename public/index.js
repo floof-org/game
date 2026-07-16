@@ -25,14 +25,14 @@ import "./lib/craftMenu.js";
 
 if (location.hash) {
     fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1))
-        .then((response) => response.json())
-        .then((json) => {
+        .then(response => response.json())
+        .then(json => {
             if (json == null) {
                 console.warn("Invalid party URL");
                 location.hash = "";
                 history.replaceState(null, null, location.pathname + location.search);
             } else {
-                getUsername().then(async (u) => {
+                getUsername().then(async username => {
                     const res = await fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1));
                     const text = await res.text();
 
@@ -45,11 +45,10 @@ if (location.hash) {
 
                     const lobby = JSON.parse(text);
 
-                    net.beginState(location.hash.slice(1), u, lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
+                    net.beginState(location.hash.slice(1), username, lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
                 });
             }
-        })
-        .catch(() => {
+        }).catch(() => {
             console.warn("Invalid party URL");
             location.hash = "";
             history.replaceState(null, null, location.pathname + location.search);
@@ -110,25 +109,30 @@ document.querySelectorAll("button").forEach((button) => {
 });
 
 async function getUsername() {
-    changeMenu("usernameInput");
+    const user = await getUserFromSession();
+    
+    if (user) {
+        localStorage.setItem("username", user.username);
+        changeMenu("thisshouldntexistsoletshopeitdoesnt");
+        return user.username;
+    }
 
-    return new Promise((resolve) => {
-        const usernameInputInput = document.getElementById("usernameInputInput");
-        const button = document.getElementById("usernameButton");
+    window.location.href = `${process.env.DISCORD_OAUTH2_REDIRECT_URL}&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
 
-        button.onclick = () => {
-            const value = usernameInputInput.value.trim() || "guest";
+    // changeMenu("usernameInput");
+    
+    // return new Promise(resolve => {
+    //     const usernameInputInput = document.getElementById("usernameInputInput");
+    //     const button = document.getElementById("usernameButton");
 
-            if (value.length > 24) {
-                shakeElement(usernameInputInput);
-                return;
-            }
-
-            button.onclick = null;
-            changeMenu("thisshouldntexistsoletshopeitdoesnt");
-            resolve(value);
-        };
-    });
+    //     button.onclick = () => {
+    //         const value = usernameInputInput.value.trim() || "guest";
+    //         if (value.length > 24) return shakeElement(usernameInputInput);
+    //         button.onclick = null;
+    //         changeMenu("thisshouldntexistsoletshopeitdoesnt");
+    //         resolve(value);
+    //     };
+    // });
 }
 
 let hasCreatedLobby = false;
@@ -3246,7 +3250,7 @@ if (isHalloween) {
     document.getElementById("biomeSelect").appendChild(new Option("Halloween", "halloween"));
 }
 
-document.getElementById("usernameInputInput").value = localStorage.getItem("username") || "guest";
+// document.getElementById("usernameInputInput").value = localStorage.getItem("username") || "guest";
 document.getElementById("gamemodeSelect").value = localStorage.getItem("gamemode") || "ffa";
 document.getElementById("biomeSelect").value = localStorage.getItem("biome") || "default";
 document.getElementById("enableMods").checked = localStorage.getItem("enableMods") === "true";
