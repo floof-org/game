@@ -978,7 +978,8 @@ export const BIOME_TYPES = {
     HELL: 5,
     SEWERS: 6,
     DARK_FOREST: 7,
-    HALLOWEEN: 8
+    HALLOWEEN: 8,
+    CRYPT: 9
 };
 
 export const BIOME_BACKGROUNDS = {
@@ -1027,6 +1028,11 @@ export const BIOME_BACKGROUNDS = {
     [BIOME_TYPES.HALLOWEEN]: {
         name: "Halloween",
         color: "#CF5704",
+        tile: "tiles/pumpkin.svg"
+    },
+    [BIOME_TYPES.CRYPT]: {
+        name: "Crypt",
+        color: "#000000",
         tile: "tiles/pumpkin.svg"
     }
 };
@@ -2019,5 +2025,6 @@ export const GAMEMODES = {
     TDM: 1,
     WAVES: 2,
     LINE: 3,
-    MAZE: 4
+    MAZE: 4,
+    MMO: 5
 };
