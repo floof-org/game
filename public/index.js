@@ -1,21 +1,7 @@
-import {
-  canvas,
-  ctx,
-  drawBackground,
-  drawBackgroundOverlay,
-  renderTerrainForMap,
-  drawBar,
-  drawFace,
-  drawWrappedText,
-  gameScale,
-  mixColors,
-  setStyle,
-  text,
-  uiScale,
-} from "./lib/canvas.js";
+import { canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
 import * as net from "./lib/net.js";
 import { mouse, keyMap, pruneFloatingTextTrackers } from "./lib/net.js";
-import { colors, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
+import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
@@ -959,83 +945,83 @@ function drawWaveMobIcon(ctx, entry) {
     drawUIMob(entry.index, entry.rarity, ctx);
 }
 
-        const m = {
-            0: 4,
-            1: 4,
-            2: 4,
-            3: 5.5,
-            4: 4,
-            5: 3,
-            6: 4,
-            7: 4,
-            8: 3.25,
-            9: 4,
-            10: 3.25,
-            11: 3.25,
-            12: 3.25,
-            13: 4,
-            14: 4,
-            15: 6.25,
-            16: 6.25,
-            17: 6.25,
-            18: 6.25,
-            19: 4,
-            20: 6.25,
-            21: 6.25,
-            22: 6.25,
-            23: 6.25,
-            24: 4,
-            25: 6.25,
-            26: 6.25,
-            27: 6.25,
-            28: 4,
-            29: 4,
-            30: 5.25,
-            31: 5.25,
-            32: 5.25,
-            33: 5.25,
-            34: 5.25,
-            35: 4,
-            36: 4,
-            37: 4,
-            38: 4.5,
-            39: 4.5,
-            40: 4.5,
-            41: 4.5,
-            42: 4.5,
-            43: 4.5,
-            44: 4.5,
-            45: 3,
-            46: 4,
-            47: 3.25,
-            48: 5.25,
-            49: 3.35,
-            50: 3,
-            51: 5.25,
-            52: 4,
-            53: 4.5,
-            54: 4.5,
-            55: 4,
-            56: 4,
-            57: 4,
-            58: 4,
-            59: 5.5,
-            60: 4,
-            61: 4.5,
-            62: 4,
-            63: 4,
-            64: 6.5,
-            65: 4,
-            66: 4.5,
-            67: 4.5,
-            68: 4,
-            69: 4,
-            70: 4,
-            71: 4,
-            72: 4.5,
-            73: 4.5,
-            255: 4,
-        };
+const waveIconSizes = {
+    0: 4,
+    1: 4,
+    2: 4,
+    3: 5.5,
+    4: 4,
+    5: 3,
+    6: 4,
+    7: 4,
+    8: 3.25,
+    9: 4,
+    10: 3.25,
+    11: 3.25,
+    12: 3.25,
+    13: 4,
+    14: 4,
+    15: 6.25,
+    16: 6.25,
+    17: 6.25,
+    18: 6.25,
+    19: 4,
+    20: 6.25,
+    21: 6.25,
+    22: 6.25,
+    23: 6.25,
+    24: 4,
+    25: 6.25,
+    26: 6.25,
+    27: 6.25,
+    28: 4,
+    29: 4,
+    30: 5.25,
+    31: 5.25,
+    32: 5.25,
+    33: 5.25,
+    34: 5.25,
+    35: 4,
+    36: 4,
+    37: 4,
+    38: 4.5,
+    39: 4.5,
+    40: 4.5,
+    41: 4.5,
+    42: 4.5,
+    43: 4.5,
+    44: 4.5,
+    45: 3,
+    46: 4,
+    47: 3.25,
+    48: 5.25,
+    49: 3.35,
+    50: 3,
+    51: 5.25,
+    52: 4,
+    53: 4.5,
+    54: 4.5,
+    55: 4,
+    56: 4,
+    57: 4,
+    58: 4,
+    59: 5.5,
+    60: 4,
+    61: 4.5,
+    62: 4,
+    63: 4,
+    64: 6.5,
+    65: 4,
+    66: 4.5,
+    67: 4.5,
+    68: 3.5,
+    69: 4.25,
+    70: 4,
+    71: 4,
+    72: 4.5,
+    73: 4.5,
+    255: 4,
+};
 
 function makeWaveIcon(entry, mode, key) {
   const size = Math.ceil(entry.size + 12);
@@ -1079,7 +1065,7 @@ function makeWaveIcon(entry, mode, key) {
     ctx.translate(cx, cy);
 
     const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
-    const scale = m[entry.index] ? a / m[entry.index] : a / f;
+    const scale = waveIconSizes[entry.index] ? a / waveIconSizes[entry.index] : a / f;
 
         ctx.scale(scale, scale);
         drawWaveMobIcon(ctx, entry);
@@ -1722,6 +1708,36 @@ window.addEventListener("keyup", e => {
     );
 });
 
+function convert(g) {
+    const start = g.indexOf("(");
+    const end = g.lastIndexOf(")");
+
+    if (start === -1 || end === -1) return null;
+
+    const args = g
+        .slice(start + 1, end)
+        .split(",")
+        .map(v => v.trim());
+
+    return {
+        speed: parseFloat(args[0]),
+        type: parseInt(args[1]),
+        c1: args[2] || "#000000",
+        c2: args[3] || "#ffffff"
+    };
+}
+
+function chatColor(color) {
+    if (typeof color === "string" && color.startsWith("gradient")) {
+        const c = convert(color);
+        if (!c) return "#ffffff";
+
+        return chatGradient(c.speed, c.type, c.c1, c.c2);
+    }
+
+    return color;
+}
+
 function draw() {
     net.state.petalHover = null;
     net.state.mobHover = null;
@@ -2084,13 +2100,23 @@ function draw() {
         if (entry.animation === "bounce") {
             entry.velocityY += entry.gravity;
             entry.y += entry.velocityY;
+            if (entry.velocityX) entry.x += entry.velocityX;
         } else if (entry.animation === "rise") {
             entry.y += entry.velocityY;
         }
 
         const drawX = entry.x * scale - cameraX + halfWidth;
         const drawY = entry.y * scale - cameraY + halfHeight;
-        const alpha = timeUntilExpiry < 200 ? timeUntilExpiry / 200 : 1;
+
+        let alpha;
+        if (entry.fade) {
+            const totalLife = entry.expiresAt - entry.creation;
+            const elapsed = now - entry.creation;
+            alpha = totalLife > 0 ? Math.max(0, 1 - elapsed / totalLife) : 0;
+        } else {
+            alpha = timeUntilExpiry < 200 ? timeUntilExpiry / 200 : 1;
+        }
+
         const oldAlpha = ctx.globalAlpha;
         const oldTextAlign = ctx.textAlign;
         const oldTextBaseline = ctx.textBaseline;
@@ -2135,8 +2161,6 @@ function draw() {
             drawY = halfHeight;
         }
 
-        setStyle(mixColors([colors.playerYellow, colors.team1, colors.team2][entity.team] ?? colors.crafting, colors.legendary, entity.hit * 0.5), 5 * scale);
-
         const size = entity.size * scale;
 
         if (entity.wearing & WEARABLES.AMULET) {
@@ -2161,7 +2185,7 @@ function draw() {
 
             // ctx.translate(xTrans, size * 2.5);
             // ctx.scale(size * .6, size * .6);
-            ctx.setTransform(size * 0.6, 0, 0, size * 0.6, xTrans, size * 2.5);
+            ctx.setTransform(size * 0.6, 0, 0, size * 0.6, drawX + xTrans, drawY + size * 2.5);
             ctx.rotate(performance.now() / 1000 + entity.id * 5);
             drawAmulet(ctx, false);
             // ctx.restore();
@@ -2182,6 +2206,8 @@ function draw() {
             // ctx.restore();
             ctx.setTransform(oldTransform);
         }
+
+        setStyle(mixColors([colors.playerYellow, colors.team1, colors.team2][entity.team] ?? colors.crafting, colors.legendary, entity.hit * 0.5), 5 * scale);
 
         ctx.beginPath();
         ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
@@ -2561,87 +2587,9 @@ function draw() {
 
                 ctx.translate(x + boxSize / 2, y + boxSize / 2);
 
-                const m = {
-                    0: 4,
-                    1: 4,
-                    2: 4,
-                    3: 5.5,
-                    4: 4,
-                    5: 3,
-                    6: 4,
-                    7: 4,
-                    8: 3.25,
-                    9: 4,
-                    10: 3.25,
-                    11: 3.25,
-                    12: 3.25,
-                    13: 4,
-                    14: 4,
-                    15: 6.25,
-                    16: 6.25,
-                    17: 6.25,
-                    18: 6.25,
-                    19: 4,
-                    20: 6.25,
-                    21: 6.25,
-                    22: 6.25,
-                    23: 6.25,
-                    24: 4,
-                    25: 6.25,
-                    26: 6.25,
-                    27: 6.25,
-                    28: 4,
-                    29: 4,
-                    30: 5.25,
-                    31: 5.25,
-                    32: 5.25,
-                    33: 5.25,
-                    34: 5.25,
-                    35: 4,
-                    36: 4,
-                    37: 4,
-                    38: 4.5,
-                    39: 4.5,
-                    40: 4.5,
-                    41: 4.5,
-                    42: 4.5,
-                    43: 4.5,
-                    44: 4.5,
-                    45: 3,
-                    46: 4,
-                    47: 3.25,
-                    48: 5.25,
-                    49: 3.35,
-                    50: 3,
-                    51: 5.25,
-                    52: 4,
-                    53: 4.5,
-                    54: 4.5,
-                    55: 4,
-                    56: 4,
-                    57: 4,
-                    58: 4,
-                    59: 5.5,
-                    60: 4,
-                    61: 4.5,
-                    62: 4,
-                    63: 4,
-                    64: 6.5,
-                    65: 4,
-                    66: 4.5,
-                    67: 4.5,
-                    68: 4,
-                    69: 4,
-                    70: 4,
-                    71: 4,
-                    72: 4.5,
-                    73: 4.5,
-                    255: 4,
-                };
-
                 const f = net.state.mobConfigs?.[entity.index]?.wavesIconSize ?? 3.5;
 
-                const scale = m[entity.index] ? boxSize / m[entity.index] : boxSize / f;
+                const scale = waveIconSizes[entity.index] ? boxSize / waveIconSizes[entity.index] : boxSize / f;
 
                 ctx.scale(scale, scale);
 
@@ -2706,13 +2654,18 @@ function draw() {
     }
 
     if (net.state.waveInfo) {
+        let barWidth = (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs) * 400
+        net.state.waveInfoBarWidth ??= 0;
+        net.state.waveInfoBarWidth = lerp(net.state.waveInfoBarWidth, barWidth, 0.15);
+        let size = 22.5 * Math.min(1, net.state.waveInfoBarWidth / 15);
+        
         ctx.textBaseline = "middle";
 
         text("Wave " + net.state.waveInfo.wave, width / 2, 30, 35);
 
         drawBar(width / 2 - 200, width / 2 + 200, 65, 30, colors["???"]);
 
-        drawBar(width / 2 - 200, width / 2 - 200 + 400 * (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs), 65, 22.5, mixColors(BIOME_BACKGROUNDS[net.state.room.biome].color, colors.white, 0.2));
+        drawBar(width / 2 - 200, width / 2 - 200 + net.state.waveInfoBarWidth, 65, size, mixColors(BIOME_BACKGROUNDS[net.state.room.biome].color, colors.white, 0.2));
 
         text(net.state.waveInfo.livingMobs + " / " + net.state.waveInfo.maxMobs, width / 2, 65, 22.5);
 
@@ -3169,16 +3122,17 @@ function draw() {
 
             for (let i = net.ChatMessage.allMessages.length - 1; i >= 0; i--) {
                 const msg = net.ChatMessage.allMessages[i];
+                const color = chatColor(msg.color);
                 let msgHeight;
 
                 switch (msg.type) {
                     case 0: // Chat
-                        const nameWidth = text(msg.username, overlayX + 7, 50000, 14, msg.color);
+                        const nameWidth = text(msg.username, overlayX + 7, 50000, 14, color);
                         msgHeight = drawWrappedText(": " + msg.message, overlayX + 7 + nameWidth, 50000, 14, overlayWidth - 20 - nameWidth, "#FFFFFF", ctx, 73);
                         msgHeight = Math.max(msgHeight, 14);
                         break;
                     case 1: // System
-                        msgHeight = drawWrappedText(msg.message, overlayX + 7, 50000, 14, overlayWidth - 20, msg.color, ctx, 73);
+                        msgHeight = drawWrappedText(msg.message, overlayX + 7, 50000, 14, overlayWidth - 20, color, ctx, 73);
                         break;
                 }
 
@@ -3191,11 +3145,11 @@ function draw() {
 
                 switch (msg.type) {
                     case 0:
-                        const nameWidth2 = text(msg.username, overlayX + 7, y, 14, msg.color);
+                        const nameWidth2 = text(msg.username, overlayX + 7, y, 14, color);
                         drawWrappedText(": " + msg.message, overlayX + 7 + nameWidth2, y, 14, overlayWidth - 20 - nameWidth2, "#FFFFFF", ctx, 73);
                         break;
                     case 1:
-                        drawWrappedText(msg.message, overlayX + 7, y, 14, overlayWidth - 20, msg.color, ctx, 73);
+                        drawWrappedText(msg.message, overlayX + 7, y, 14, overlayWidth - 20, color, ctx, 73);
                         break;
                 }
             }
@@ -3214,6 +3168,7 @@ function draw() {
         if (!net.ChatMessage.showInput) {
             for (let i = messages.length - 1; i >= 0; i--) {
                 const message = messages[i];
+                const color = chatColor(message.color);
 
                 message.y = lerp(message.y, y, 0.2);
                 message.ticker++;
@@ -3225,11 +3180,11 @@ function draw() {
 
                 switch (message.type) {
                     case 0: // Chat
-                        const nameWidth = text(message.username, 66, message.y, 15, message.color);
+                        const nameWidth = text(message.username, 66, message.y, 15, color);
                         drawWrappedText(": " + message.message, nameWidth + 66, message.y, 15, 235, "#FFFFFF", ctx, 66);
                         break;
                     case 1: // System
-                        drawWrappedText(message.message, 66, message.y, 15, 235, message.color, ctx, 66);
+                        drawWrappedText(message.message, 66, message.y, 15, 235, color, ctx, 66);
                         break;
                 }
 
