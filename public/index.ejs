@@ -625,36 +625,27 @@
                 const logoutBtn = document.getElementById("logoutButton");
 
                 try {
-                    const res = await fetch(`${AUTH_SERVER}/api/me`, {
-                        credentials: "include",
-                    });
+                    const res = await fetch(`${AUTH_SERVER}/api/me`, { credentials: "include" });
                     if (!res.ok) throw new Error();
-
                     const user = await res.json();
                     const name = user.global_name || user.username || "User";
                     const tag = user.discriminator === "0" ? "" : `#${user.discriminator}`;
-
                     username.textContent = `${name}${tag}`;
 
                     // GIF SUPPORT + FALLBACK
-                    if (user.avatar?.startsWith("a_")) {
-                        avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.gif?size=128`;
-                    } else if (user.avatar) {
-                        avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=128`;
-                    } else {
-                        avatar.src = `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) >> 22n) % 6n}.png`;
-                    }
+                    if (user.avatar?.startsWith("a_")) avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.gif?size=128`;
+                    else if (user.avatar) avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=128`;
+                    else avatar.src = `https://cdn.discordapp.com/embed/avatars/${user.id}.png`;
 
                     loggedIn.style.display = "block";
                     loggedOut.style.display = "none";
 
-                    logoutBtn.onclick = async () => {
-                        await fetch(`${AUTH_SERVER}/api/logout`, {
+                    logoutBtn.onclick = () => {
+                        fetch(`${AUTH_SERVER}/api/logout`, {
                             method: "POST",
                             credentials: "include",
                             headers: { "Content-Type": "application/json" },
-                        });
-                        location.reload();
+                        }).then(() => window.location.href = "/");
                     };
                 } catch (e) {
                     loggedIn.style.display = "none";
