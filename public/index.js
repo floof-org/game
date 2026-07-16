@@ -1,22 +1,24 @@
-import { canvas, ctx, drawBackground, drawBackgroundOverlay, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
+import { canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
 import * as net from "./lib/net.js";
-import { mouse, keyMap } from "./lib/net.js";
-import { colors, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
+import { mouse, keyMap, pruneFloatingTextTrackers } from "./lib/net.js";
+import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
+import { getUserFromSession } from "./lib/auth.js";
+import "./lib/craftMenu.js";
 
 if (location.hash) {
     fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1))
-        .then((response) => response.json())
-        .then((json) => {
+        .then(response => response.json())
+        .then(json => {
             if (json == null) {
                 console.warn("Invalid party URL");
                 location.hash = "";
                 history.replaceState(null, null, location.pathname + location.search);
             } else {
-                getUsername().then(async (u) => {
+                getUsername().then(async username => {
                     const res = await fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1));
                     const text = await res.text();
 
@@ -29,11 +31,10 @@ if (location.hash) {
 
                     const lobby = JSON.parse(text);
 
-                    net.beginState(location.hash.slice(1), u, lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
+                    net.beginState(location.hash.slice(1), username, lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
                 });
             }
-        })
-        .catch(() => {
+        }).catch(() => {
             console.warn("Invalid party URL");
             location.hash = "";
             history.replaceState(null, null, location.pathname + location.search);
@@ -94,25 +95,30 @@ document.querySelectorAll("button").forEach((button) => {
 });
 
 async function getUsername() {
-    changeMenu("usernameInput");
+    const user = await getUserFromSession();
+    
+    if (user) {
+        localStorage.setItem("username", user.username);
+        changeMenu("thisshouldntexistsoletshopeitdoesnt");
+        return user.username;
+    }
 
-    return new Promise((resolve) => {
-        const usernameInputInput = document.getElementById("usernameInputInput");
-        const button = document.getElementById("usernameButton");
+    window.location.href = `${process.env.DISCORD_OAUTH2_REDIRECT_URL}&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
 
-        button.onclick = () => {
-            const value = usernameInputInput.value.trim() || "guest";
+    // changeMenu("usernameInput");
+    
+    // return new Promise(resolve => {
+    //     const usernameInputInput = document.getElementById("usernameInputInput");
+    //     const button = document.getElementById("usernameButton");
 
-            if (value.length > 24) {
-                shakeElement(usernameInputInput);
-                return;
-            }
-
-            button.onclick = null;
-            changeMenu("thisshouldntexistsoletshopeitdoesnt");
-            resolve(value);
-        };
-    });
+    //     button.onclick = () => {
+    //         const value = usernameInputInput.value.trim() || "guest";
+    //         if (value.length > 24) return shakeElement(usernameInputInput);
+    //         button.onclick = null;
+    //         changeMenu("thisshouldntexistsoletshopeitdoesnt");
+    //         resolve(value);
+    //     };
+    // });
 }
 
 let hasCreatedLobby = false;
@@ -614,22 +620,14 @@ function processDrop() {
     return true;
 }
 
-function formatAmount(v) {
-    if (!isFinite(v)) return "∞";
-    if (isNaN(v)) return "0";
-    if (!isFinite(v)) return "∞";
-    if (isNaN(v)) return "0";
+export function formatAmount(v) {
+  if (!isFinite(v)) return "∞";
+  if (isNaN(v)) return "0";
 
     const f = (num, div, suffix) => {
         const val = num / div;
         if (!isFinite(val)) return "∞";
-    const f = (num, div, suffix) => {
-        const val = num / div;
-        if (!isFinite(val)) return "∞";
 
-        const str = val.toFixed(1);
-        return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
-    };
         const str = val.toFixed(1);
         return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
     };
@@ -640,14 +638,7 @@ function formatAmount(v) {
     if (v >= 1e9) return f(v, 1e9, "b");
     if (v >= 1e6) return f(v, 1e6, "m");
     if (v >= 1e3) return f(v, 1e3, "k");
-    if (v >= 1e18) return f(v, 1e18, "Qt");
-    if (v >= 1e15) return f(v, 1e15, "Qd");
-    if (v >= 1e12) return f(v, 1e12, "t");
-    if (v >= 1e9) return f(v, 1e9, "b");
-    if (v >= 1e6) return f(v, 1e6, "m");
-    if (v >= 1e3) return f(v, 1e3, "k");
 
-    return Math.floor(v).toString();
     return Math.floor(v).toString();
 }
 
@@ -738,6 +729,16 @@ inventoryTooltipLayer.style.display = "none";
 
 document.body.appendChild(inventoryTooltipLayer);
 
+function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
+  const bw = 350;
+  const bh = (350 * img.height) / img.width;
+  let x = anchorX - 150;
+  let y = anchorY - bh - 10;
+  x = Math.max(0, Math.min(x, boundW - bw));
+  y = Math.max(0, Math.min(y, boundH - bh));
+  return { x, y, bw, bh };
+}
+
 function drawInventory() {
     net.state.petalElements = [];
     menu.innerHTML = "";
@@ -786,7 +787,7 @@ function drawInventory() {
             .forEach(([petalIndex, count]) => {
                 if (count <= 0) return;
 
-        const petalCanvas = getPetalIcon(Number(petalIndex), rarityIndex, "oneshot");
+                const petalCanvas = getPetalIcon(Number(petalIndex), rarityIndex, "oneshot");
 
                 const icon = document.createElement("canvas");
 
@@ -803,12 +804,7 @@ function drawInventory() {
                 icon.addEventListener("pointerleave", () => {
                     net.state.inventoryPetalHover = null;
                 });
-                icon.addEventListener("pointerleave", () => {
-                    net.state.inventoryPetalHover = null;
-                });
 
-                icon.width = petalSize;
-                icon.height = petalSize;
                 icon.width = petalSize;
                 icon.height = petalSize;
 
@@ -860,23 +856,14 @@ window.addEventListener("keydown", (e) => {
 
 function hashAliveMobs(list) {
     const grouped = {};
-    const grouped = {};
 
-    for (const m of list) {
-        const key = m.index + "_" + m.rarity;
-        grouped[key] = (grouped[key] || 0) + 1;
-    }
     for (const m of list) {
         const key = m.index + "_" + m.rarity;
         grouped[key] = (grouped[key] || 0) + 1;
     }
 
     let h = 0;
-    let h = 0;
 
-    for (const key in grouped) {
-        const [index, rarity] = key.split("_").map(Number);
-        const count = grouped[key];
     for (const key in grouped) {
         const [index, rarity] = key.split("_").map(Number);
         const count = grouped[key];
@@ -885,12 +872,7 @@ function hashAliveMobs(list) {
         h = (h * 31 + rarity) | 0;
         h = (h * 31 + count) | 0;
     }
-        h = (h * 31 + index) | 0;
-        h = (h * 31 + rarity) | 0;
-        h = (h * 31 + count) | 0;
-    }
 
-    return h;
     return h;
 }
 
@@ -898,10 +880,32 @@ const mobIconCanvas = document.createElement("canvas");
 const mobIconCtx = mobIconCanvas.getContext("2d");
 
 // Mob icons gradient
+const __ANIMATED_WAVE_ICONS__ = new Set();
+let __WAVE_RAF_RUNNING__ = false;
+
+function startWaveRAF() {
+  if (__WAVE_RAF_RUNNING__) return;
+  __WAVE_RAF_RUNNING__ = true;
+
+  const loop = () => {
+    if (__ANIMATED_WAVE_ICONS__.size === 0) {
+      __WAVE_RAF_RUNNING__ = false;
+      return;
+    }
+
+    for (const draw of __ANIMATED_WAVE_ICONS__) {
+      draw();
+    }
+
+    requestAnimationFrame(loop);
+  };
+
+  requestAnimationFrame(loop);
+}
+
 const WAVE_CACHE = (globalThis.__WAVE_CACHE__ ||= Object.create(null));
 
 function getGradientMinRarity() {
-    return options.minimumGradientRarity;
     return options.minimumGradientRarity;
 }
 
@@ -912,12 +916,9 @@ const GLOW_PARTICLE_SPEED = 0.011;
 function rand01(n) {
     const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
     return x - Math.floor(x);
-    const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
-    return x - Math.floor(x);
 }
 
 function wavesGradientOn() {
-    return !options.disableGradients;
     return !options.disableGradients;
 }
 
@@ -936,261 +937,139 @@ function drawWaveMobIcon(ctx, entry) {
         drawFace(0.35, -Math.PI / 4, 1.7, 1.7, 1, false, ctx);
         return;
     }
-    if (entry.index === 255) {
-        setStyle(colors.crafting, 0.135, 0.2, ctx);
-        ctx.beginPath();
-        ctx.arc(0, 0, 1, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        drawFace(0.35, -Math.PI / 4, 1.7, 1.7, 1, false, ctx);
-        return;
-    }
 
     if (![46, 49, 55].includes(entry.index)) {
         ctx.rotate(-Math.PI / 4);
     }
-    if (![46, 49, 55].includes(entry.index)) {
-        ctx.rotate(-Math.PI / 4);
-    }
 
-    drawUIMob(entry.index, entry.rarity, ctx);
     drawUIMob(entry.index, entry.rarity, ctx);
 }
+
+const waveIconSizes = {
+    0: 4,
+    1: 4,
+    2: 4,
+    3: 5.5,
+    4: 4,
+    5: 3,
+    6: 4,
+    7: 4,
+    8: 3.25,
+    9: 4,
+    10: 3.25,
+    11: 3.25,
+    12: 3.25,
+    13: 4,
+    14: 4,
+    15: 6.25,
+    16: 6.25,
+    17: 6.25,
+    18: 6.25,
+    19: 4,
+    20: 6.25,
+    21: 6.25,
+    22: 6.25,
+    23: 6.25,
+    24: 4,
+    25: 6.25,
+    26: 6.25,
+    27: 6.25,
+    28: 4,
+    29: 4,
+    30: 5.25,
+    31: 5.25,
+    32: 5.25,
+    33: 5.25,
+    34: 5.25,
+    35: 4,
+    36: 4,
+    37: 4,
+    38: 4.5,
+    39: 4.5,
+    40: 4.5,
+    41: 4.5,
+    42: 4.5,
+    43: 4.5,
+    44: 4.5,
+    45: 3,
+    46: 4,
+    47: 3.25,
+    48: 5.25,
+    49: 3.35,
+    50: 3,
+    51: 5.25,
+    52: 4,
+    53: 4.5,
+    54: 4.5,
+    55: 4,
+    56: 4,
+    57: 4,
+    58: 4,
+    59: 5.5,
+    60: 4,
+    61: 4.5,
+    62: 4,
+    63: 4,
+    64: 6.5,
+    65: 4,
+    66: 4.5,
+    67: 4.5,
+    68: 3.5,
+    69: 4.25,
+    70: 4,
+    71: 4,
+    72: 4.5,
+    73: 4.5,
+    255: 4,
+};
 
 function makeWaveIcon(entry, mode, key) {
-    const size = Math.ceil(entry.size + 12);
-    const canvas = new OffscreenCanvas(size, size);
-    const ctx = canvas.getContext("2d");
-    const size = Math.ceil(entry.size + 12);
-    const canvas = new OffscreenCanvas(size, size);
-    const ctx = canvas.getContext("2d");
+  const size = Math.ceil(entry.size + 12);
+  const canvas = new OffscreenCanvas(size, size);
+  const ctx = canvas.getContext("2d");
 
-    function render(now, entryOverride) {
-        const e = entryOverride || entry;
-        now = Number.isFinite(now) ? now : performance.now();
-    function render(now, entryOverride) {
-        const e = entryOverride || entry;
-        now = Number.isFinite(now) ? now : performance.now();
+  function render(now, entryOverride) {
+  ctx.clearRect(0, 0, size, size);
+    const e = entryOverride || entry;
+    now = Number.isFinite(now) ? now : performance.now();
 
-        const a = e.size;
-        const g = 6;
-        const u = 6;
-        const r = 5;
-        const a = e.size;
-        const g = 6;
-        const u = 6;
-        const r = 5;
+    const a = e.size;
+    const g = 6;
+    const u = 6;
+    const r = 5;
 
-        const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
-        const cx = g + a / 2;
-        const cy = u + a / 2;
-        const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
-        const cx = g + a / 2;
-        const cy = u + a / 2;
+    const base = net.state.tiers?.[entry.rarity]?.color ?? "#ffffff";
+    const cx = g + a / 2;
+    const cy = u + a / 2;
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(g, u, a, a, r);
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(g, u, a, a, r);
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(g, u, a, a, r);
 
-        const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
-        const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
+    const fill = wavesFillStyle(ctx, entry.rarity, base, null, now, g, u, a);
 
-        if (fill !== null) {
-            ctx.fillStyle = fill;
-            ctx.fill();
-        }
-        if (fill !== null) {
-            ctx.fillStyle = fill;
-            ctx.fill();
-        }
+    if (fill !== null) {
+      ctx.fillStyle = fill;
+      ctx.fill();
+    }
 
-        ctx.restore();
-        ctx.restore();
+    ctx.restore();
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(g, u, a, a, r);
-        ctx.clip();
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(g, u, a, a, r);
-        ctx.clip();
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(g, u, a, a, r);
+    ctx.clip();
 
-        drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
-        drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
+    drawGlowParticles(ctx, entry.rarity, a, g, u, a, a, r, now);
 
-        ctx.translate(cx, cy);
-        ctx.translate(cx, cy);
+    ctx.translate(cx, cy);
 
-        const m = {
-            0: 4,
-            1: 4,
-            2: 4,
-            3: 5.5,
-            4: 4,
-            5: 3,
-            6: 4,
-            7: 4,
-            8: 3.25,
-            9: 4,
-            10: 3.25,
-            11: 3.25,
-            12: 3.25,
-            13: 4,
-            14: 4,
-            15: 6.25,
-            16: 6.25,
-            17: 6.25,
-            18: 6.25,
-            19: 4,
-            20: 6.25,
-            21: 6.25,
-            22: 6.25,
-            23: 6.25,
-            24: 4,
-            25: 6.25,
-            26: 6.25,
-            27: 6.25,
-            28: 4,
-            29: 4,
-            30: 5.25,
-            31: 5.25,
-            32: 5.25,
-            33: 5.25,
-            34: 5.25,
-            35: 4,
-            36: 4,
-            37: 4,
-            38: 4.5,
-            39: 4.5,
-            40: 4.5,
-            41: 4.5,
-            42: 4.5,
-            43: 4.5,
-            44: 4.5,
-            45: 3,
-            46: 4,
-            47: 3.25,
-            48: 5.25,
-            49: 3.35,
-            50: 3,
-            51: 5.25,
-            52: 4,
-            53: 4.5,
-            54: 4.5,
-            55: 4,
-            56: 4,
-            57: 4,
-            58: 4,
-            59: 5.5,
-            60: 4,
-            61: 4.5,
-            62: 4,
-            63: 4,
-            64: 6.5,
-            65: 4,
-            66: 4.5,
-            67: 4.5,
-            68: 4,
-            69: 4,
-            70: 4,
-            71: 4,
-            72: 4.5,
-            73: 4.5,
-            255: 4,
-        };
-        const m = {
-            0: 4,
-            1: 4,
-            2: 4,
-            3: 5.5,
-            4: 4,
-            5: 3,
-            6: 4,
-            7: 4,
-            8: 3.25,
-            9: 4,
-            10: 3.25,
-            11: 3.25,
-            12: 3.25,
-            13: 4,
-            14: 4,
-            15: 6.25,
-            16: 6.25,
-            17: 6.25,
-            18: 6.25,
-            19: 4,
-            20: 6.25,
-            21: 6.25,
-            22: 6.25,
-            23: 6.25,
-            24: 4,
-            25: 6.25,
-            26: 6.25,
-            27: 6.25,
-            28: 4,
-            29: 4,
-            30: 5.25,
-            31: 5.25,
-            32: 5.25,
-            33: 5.25,
-            34: 5.25,
-            35: 4,
-            36: 4,
-            37: 4,
-            38: 4.5,
-            39: 4.5,
-            40: 4.5,
-            41: 4.5,
-            42: 4.5,
-            43: 4.5,
-            44: 4.5,
-            45: 3,
-            46: 4,
-            47: 3.25,
-            48: 5.25,
-            49: 3.35,
-            50: 3,
-            51: 5.25,
-            52: 4,
-            53: 4.5,
-            54: 4.5,
-            55: 4,
-            56: 4,
-            57: 4,
-            58: 4,
-            59: 5.5,
-            60: 4,
-            61: 4.5,
-            62: 4,
-            63: 4,
-            64: 6.5,
-            65: 4,
-            66: 4.5,
-            67: 4.5,
-            68: 4,
-            69: 4,
-            70: 4,
-            71: 4,
-            72: 4.5,
-            73: 4.5,
-            255: 4,
-        };
-
-        const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
-        const scale = m[entry.index] ? a / m[entry.index] : a / f;
-        const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
-        const scale = m[entry.index] ? a / m[entry.index] : a / f;
+    const f = net.state.mobConfigs?.[entry.index]?.wavesIconSize ?? 3.5;
+    const scale = waveIconSizes[entry.index] ? a / waveIconSizes[entry.index] : a / f;
 
         ctx.scale(scale, scale);
         drawWaveMobIcon(ctx, entry);
-        ctx.scale(scale, scale);
-        drawWaveMobIcon(ctx, entry);
 
-        ctx.restore();
         ctx.restore();
 
         ctx.save();
@@ -1202,52 +1081,51 @@ function makeWaveIcon(entry, mode, key) {
         ctx.stroke();
         ctx.restore();
     }
-        ctx.save();
-        ctx.beginPath();
-        ctx.roundRect(g, u, a, a, r);
-        ctx.globalCompositeOperation = "source-over";
-        ctx.strokeStyle = wavesBorderStyle(entry.rarity);
-        ctx.lineWidth = 5;
-        ctx.stroke();
-        ctx.restore();
-    }
 
-    canvas._render = (now, entry) => render(now, entry);
-    render(performance.now(), entry);
-    return canvas;
-    canvas._render = (now, entry) => render(now, entry);
-    render(performance.now(), entry);
-    return canvas;
+    const draw = () => {
+          const animated =
+          wavesGradientOn() &&
+          entry.rarity >= getGradientMinRarity();
+
+          if (!animated) {
+          __ANIMATED_WAVE_ICONS__.delete(draw);
+          }
+
+          render(performance.now(), entry);
+      };
+
+      canvas._draw = draw;
+      draw();
+      return canvas;
 }
 
-function getWaveIcon(entry, now) {
-    const mode = wavesGradientOn() ? 1 : 0;
-    const sizeKey = Math.round(entry.size * 100) / 100;
-    const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
-    const mode = wavesGradientOn() ? 1 : 0;
-    const sizeKey = Math.round(entry.size * 100) / 100;
-    const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
+function getWaveIcon(entry) {
+  const animated =
+  wavesGradientOn() &&
+  entry.rarity >= getGradientMinRarity();
 
-    let icon = WAVE_CACHE[key];
+  const mode = animated ? 1 : 0;
+  const sizeKey = Math.round(entry.size * 100) / 100;
+  const key = `${entry.index}_${entry.rarity}_${sizeKey}_${mode}`;
+
     let icon = WAVE_CACHE[key];
 
     if (!icon) {
         icon = makeWaveIcon(entry, mode, key);
         WAVE_CACHE[key] = icon;
     }
-    if (!icon) {
-        icon = makeWaveIcon(entry, mode, key);
-        WAVE_CACHE[key] = icon;
-    }
 
-    if (mode === 1 && icon._render) {
-        icon._render(now);
-    }
-    if (mode === 1 && icon._render) {
-        icon._render(now);
-    }
+  const draw = icon._draw;
 
-    return icon;
+  if (animated && draw) {
+    if (!__ANIMATED_WAVE_ICONS__.has(draw)) {
+      __ANIMATED_WAVE_ICONS__.add(draw);
+      startWaveRAF();
+    }
+  } else if (draw) {
+    __ANIMATED_WAVE_ICONS__.delete(draw);
+  }
+
     return icon;
 }
 
@@ -1256,12 +1134,7 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
     if (t < getGradientMinRarity()) return;
 
     const custom = wavesTierVisual(t);
-    const custom = wavesTierVisual(t);
 
-    const count = custom.particlecount ?? GLOW_PARTICLE_COUNT;
-    const glowColor = custom.particleglowcolor || "rgba(255,255,255,0.25)";
-    const dotColor = custom.particledotcolor || "rgba(255,255,255,0.95)";
-    const shadowColor = custom.particleshadowcolor || "rgba(0,0,0,0.35)";
     const count = custom.particlecount ?? GLOW_PARTICLE_COUNT;
     const glowColor = custom.particleglowcolor || "rgba(255,255,255,0.25)";
     const dotColor = custom.particledotcolor || "rgba(255,255,255,0.95)";
@@ -1270,31 +1143,19 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
     const span = size + GLOW_PARTICLE_MARGIN * 2;
     const scale = size / 128;
     const pulse = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(now * 0.002 + t));
-    const span = size + GLOW_PARTICLE_MARGIN * 2;
-    const scale = size / 128;
-    const pulse = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(now * 0.002 + t));
 
-    ctx.save();
     ctx.save();
 
     ctx.beginPath();
     ctx.roundRect(clipX, clipY, clipW, clipH, clipR);
     ctx.clip();
-    ctx.beginPath();
-    ctx.roundRect(clipX, clipY, clipW, clipH, clipR);
-    ctx.clip();
 
-    ctx.globalCompositeOperation = "screen";
     ctx.globalCompositeOperation = "screen";
 
     for (let p = 0; p < count; p++) {
         const seed = t * 1000 + p * 97;
         const sideMode = rand01(seed + 10);
-    for (let p = 0; p < count; p++) {
-        const seed = t * 1000 + p * 97;
-        const sideMode = rand01(seed + 10);
 
-        let startX, startY;
         let startX, startY;
 
         if (sideMode < 0.5) {
@@ -1304,18 +1165,7 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
             startX = rand01(seed) * (18 * scale);
             startY = rand01(seed + 1) * (18 * scale);
         }
-        if (sideMode < 0.5) {
-            startX = -GLOW_PARTICLE_MARGIN;
-            startY = rand01(seed + 1) * span;
-        } else {
-            startX = rand01(seed) * (18 * scale);
-            startY = rand01(seed + 1) * (18 * scale);
-        }
 
-        const angle = -0.35 + rand01(seed + 2) * 1.2;
-        const vx = Math.cos(angle);
-        const vy = Math.sin(angle);
-        const travel = now * GLOW_PARTICLE_SPEED;
         const angle = -0.35 + rand01(seed + 2) * 1.2;
         const vx = Math.cos(angle);
         const vy = Math.sin(angle);
@@ -1327,21 +1177,11 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
         const glowR = 20 * scale * pulse;
         const shadowR = 30 * scale * pulse;
         const coreR = Math.max(0.8, 1 * scale);
-        const glowR = 20 * scale * pulse;
-        const shadowR = 30 * scale * pulse;
-        const coreR = Math.max(0.8, 1 * scale);
 
         const shadow = ctx.createRadialGradient(x, y, 0, x, y, shadowR);
         shadow.addColorStop(0, shadowColor);
         shadow.addColorStop(1, "rgba(0,0,0,0)");
-        const shadow = ctx.createRadialGradient(x, y, 0, x, y, shadowR);
-        shadow.addColorStop(0, shadowColor);
-        shadow.addColorStop(1, "rgba(0,0,0,0)");
 
-        ctx.fillStyle = shadow;
-        ctx.beginPath();
-        ctx.arc(x, y, shadowR, 0, Math.PI * 2);
-        ctx.fill();
         ctx.fillStyle = shadow;
         ctx.beginPath();
         ctx.arc(x, y, shadowR, 0, Math.PI * 2);
@@ -1351,15 +1191,7 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
         g.addColorStop(0, glowColor);
         g.addColorStop(0.22, glowColor);
         g.addColorStop(1, "rgba(255,255,255,0)");
-        const g = ctx.createRadialGradient(x, y, 0, x, y, glowR);
-        g.addColorStop(0, glowColor);
-        g.addColorStop(0.22, glowColor);
-        g.addColorStop(1, "rgba(255,255,255,0)");
 
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(x, y, glowR, 0, Math.PI * 2);
-        ctx.fill();
         ctx.fillStyle = g;
         ctx.beginPath();
         ctx.arc(x, y, glowR, 0, Math.PI * 2);
@@ -1370,25 +1202,15 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
         ctx.arc(x, y, coreR, 0, Math.PI * 2);
         ctx.fill();
     }
-        ctx.fillStyle = dotColor;
-        ctx.beginPath();
-        ctx.arc(x, y, coreR, 0, Math.PI * 2);
-        ctx.fill();
-    }
 
-    ctx.restore();
     ctx.restore();
 }
 
 function wavesSweepGradient(ctx, t, base, now) {
     now = Number.isFinite(now) ? now : performance.now();
-    now = Number.isFinite(now) ? now : performance.now();
 
     const custom = wavesTierVisual(t);
-    const custom = wavesTierVisual(t);
 
-    const time = (now * 0.07) % 512;
-    const offset = time - 256;
     const time = (now * 0.07) % 512;
     const offset = time - 256;
 
@@ -1398,10 +1220,6 @@ function wavesSweepGradient(ctx, t, base, now) {
     const main = custom.base ?? base;
     const mid = custom.mid ?? mixColors(base, "#ffffff", 0.14);
     const glow = custom.glow ?? mixColors(base, "#ffffff", 0.24);
-    const soft = custom.soft ?? mixColors(base, "#ffffff", 0.06);
-    const main = custom.base ?? base;
-    const mid = custom.mid ?? mixColors(base, "#ffffff", 0.14);
-    const glow = custom.glow ?? mixColors(base, "#ffffff", 0.24);
 
     g.addColorStop(0.0, soft);
     g.addColorStop(0.18, main);
@@ -1410,92 +1228,55 @@ function wavesSweepGradient(ctx, t, base, now) {
     g.addColorStop(0.64, mid);
     g.addColorStop(0.82, main);
     g.addColorStop(1.0, soft);
-    g.addColorStop(0.0, soft);
-    g.addColorStop(0.18, main);
-    g.addColorStop(0.36, mid);
-    g.addColorStop(0.5, glow);
-    g.addColorStop(0.64, mid);
-    g.addColorStop(0.82, main);
-    g.addColorStop(1.0, soft);
 
-    return g;
     return g;
 }
 
 function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
     const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
-    const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
 
-    const custom = wavesTierVisual(t);
     const custom = wavesTierVisual(t);
 
     const lines = custom.lines ?? 1;
-    const lines = custom.lines ?? 1;
 
-    const sizeMul = custom.size ?? 0.08;
     const sizeMul = custom.size ?? 0.08;
 
     const delay = custom.delay ?? 300;
-    const delay = custom.delay ?? 300;
 
-    const cycleDelay = custom.cycleDelay ?? 0;
     const cycleDelay = custom.cycleDelay ?? 0;
 
     const speed = custom.speed ?? 1;
-    const speed = custom.speed ?? 1;
 
-    const reversed = custom.reversed_animation ?? false;
     const reversed = custom.reversed_animation ?? false;
 
     const lineColor = custom.linecolor ?? mixColors(tierColor, "#000000", 0.15);
-    const lineColor = custom.linecolor ?? mixColors(tierColor, "#000000", 0.15);
 
     const lineGlow = custom.lineglow ?? mixColors(tierColor, "#ffffff", 0.25);
-    const lineGlow = custom.lineglow ?? mixColors(tierColor, "#ffffff", 0.25);
 
-    ctx.save();
     ctx.save();
 
     ctx.beginPath();
     ctx.rect(x, y + size - clipHeight, size, clipHeight);
     ctx.clip();
-    ctx.beginPath();
-    ctx.rect(x, y + size - clipHeight, size, clipHeight);
-    ctx.clip();
 
-    const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
     const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
 
     ctx.fillStyle = back;
     ctx.fillRect(x, y, size, size);
-    ctx.fillStyle = back;
-    ctx.fillRect(x, y, size, size);
 
-    const now = performance.now();
     const now = performance.now();
 
     const band = size * sizeMul;
-    const band = size * sizeMul;
 
-    const travelDistance = size + band * 2;
     const travelDistance = size + band * 2;
 
     const pxPerMs = Math.max(speed, 0.001) * 0.05;
-    const pxPerMs = Math.max(speed, 0.001) * 0.05;
 
-    const lineDuration = travelDistance / pxPerMs;
     const lineDuration = travelDistance / pxPerMs;
 
     function drawLine(elapsed) {
         let pos;
-    function drawLine(elapsed) {
-        let pos;
 
-        if (!reversed) {
-            pos = -band + elapsed * pxPerMs;
-        } else {
-            pos = size + band - elapsed * pxPerMs;
-        }
         if (!reversed) {
             pos = -band + elapsed * pxPerMs;
         } else {
@@ -1505,52 +1286,33 @@ function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
         const grad = ctx.createLinearGradient(x + pos - band, y + pos - band, x + pos + band, y + pos + band);
 
         grad.addColorStop(0, "rgba(0,0,0,0)");
-        grad.addColorStop(0, "rgba(0,0,0,0)");
 
-        grad.addColorStop(0.15, lineGlow);
         grad.addColorStop(0.15, lineGlow);
 
         grad.addColorStop(0.5, lineColor);
-        grad.addColorStop(0.5, lineColor);
 
-        grad.addColorStop(0.85, lineGlow);
         grad.addColorStop(0.85, lineGlow);
 
         grad.addColorStop(1, "rgba(0,0,0,0)");
-        grad.addColorStop(1, "rgba(0,0,0,0)");
 
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, y, size, size);
-    }
         ctx.fillStyle = grad;
         ctx.fillRect(x, y, size, size);
     }
 
     if (cycleDelay <= 0) {
         const firstIndex = Math.floor(now / delay);
-    if (cycleDelay <= 0) {
-        const firstIndex = Math.floor(now / delay);
 
-        const maxAlive = Math.ceil(lineDuration / delay);
         const maxAlive = Math.ceil(lineDuration / delay);
 
         for (let i = 0; i < maxAlive; i++) {
             const spawnIndex = firstIndex - i;
-        for (let i = 0; i < maxAlive; i++) {
-            const spawnIndex = firstIndex - i;
 
-            if (spawnIndex < 0) continue;
             if (spawnIndex < 0) continue;
 
             const spawnTime = spawnIndex * delay;
-            const spawnTime = spawnIndex * delay;
 
             const elapsed = now - spawnTime;
-            const elapsed = now - spawnTime;
 
-            if (elapsed < 0 || elapsed > lineDuration) {
-                continue;
-            }
             if (elapsed < 0 || elapsed > lineDuration) {
                 continue;
             }
@@ -1559,56 +1321,33 @@ function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
         }
     } else {
         const spawnCycleLength = lines * delay + cycleDelay;
-            drawLine(elapsed);
-        }
-    } else {
-        const spawnCycleLength = lines * delay + cycleDelay;
 
         const currentCycle = Math.floor(now / spawnCycleLength);
-        const currentCycle = Math.floor(now / spawnCycleLength);
 
-        const cycleStart = currentCycle * spawnCycleLength;
         const cycleStart = currentCycle * spawnCycleLength;
 
         for (let nLine = 0; nLine < lines; nLine++) {
             const spawnTime = cycleStart + nLine * delay;
-        for (let nLine = 0; nLine < lines; nLine++) {
-            const spawnTime = cycleStart + nLine * delay;
 
-            if (now < spawnTime) continue;
             if (now < spawnTime) continue;
 
             const elapsed = now - spawnTime;
-            const elapsed = now - spawnTime;
 
-            if (elapsed < 0 || elapsed > lineDuration) {
-                continue;
-            }
             if (elapsed < 0 || elapsed > lineDuration) {
                 continue;
             }
 
             drawLine(elapsed);
         }
-            drawLine(elapsed);
-        }
 
-        const previousCycleStart = cycleStart - spawnCycleLength;
         const previousCycleStart = cycleStart - spawnCycleLength;
 
         if (previousCycleStart >= 0) {
             for (let nLine = 0; nLine < lines; nLine++) {
                 const spawnTime = previousCycleStart + nLine * delay;
-        if (previousCycleStart >= 0) {
-            for (let nLine = 0; nLine < lines; nLine++) {
-                const spawnTime = previousCycleStart + nLine * delay;
 
                 const elapsed = now - spawnTime;
-                const elapsed = now - spawnTime;
 
-                if (elapsed < 0 || elapsed > lineDuration) {
-                    continue;
-                }
                 if (elapsed < 0 || elapsed > lineDuration) {
                     continue;
                 }
@@ -1617,20 +1356,13 @@ function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
             }
         }
     }
-                drawLine(elapsed);
-            }
-        }
-    }
 
-    ctx.restore();
     ctx.restore();
 }
 
 function wavesGetGradient3Rings(t) {
     const custom = wavesTierVisual(t);
-    const custom = wavesTierVisual(t);
 
-    const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
     const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
 
     const fallback = [
@@ -1653,198 +1385,115 @@ function wavesGetGradient3Rings(t) {
             color: mixColors(tierColor, "#ffffff", 0.42),
         },
     ];
-    const fallback = [
-        {
-            color: mixColors(tierColor, "#ffffff", 0.12),
-        },
-        {
-            color: mixColors(tierColor, "#ffffff", 0.18),
-        },
-        {
-            color: mixColors(tierColor, "#ffffff", 0.24),
-        },
-        {
-            color: mixColors(tierColor, "#ffffff", 0.3),
-        },
-        {
-            color: mixColors(tierColor, "#ffffff", 0.36),
-        },
-        {
-            color: mixColors(tierColor, "#ffffff", 0.42),
-        },
-    ];
 
-    const input = Array.isArray(custom.rings) ? custom.rings : [];
     const input = Array.isArray(custom.rings) ? custom.rings : [];
 
     const count = input.length || 1;
-    const count = input.length || 1;
 
-    const rings = new Array(count);
     const rings = new Array(count);
 
     for (let i = 0; i < count; i++) {
         const src = input[i] || {};
-    for (let i = 0; i < count; i++) {
-        const src = input[i] || {};
 
         const def = fallback[i % fallback.length];
-        const def = fallback[i % fallback.length];
 
-        rings[i] = {
-            color: src.color ?? def.color,
         rings[i] = {
             color: src.color ?? def.color,
 
             glow: src.glow ?? src.ringglow ?? src.color ?? def.color,
         };
     }
-            glow: src.glow ?? src.ringglow ?? src.color ?? def.color,
-        };
-    }
 
-    return rings;
     return rings;
 }
 
 function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
     const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
-    const tierColor = net.state.tiers?.[t]?.color ?? "#ffffff";
 
-    const custom = wavesTierVisual(t);
     const custom = wavesTierVisual(t);
 
     const rings = wavesGetGradient3Rings(t);
-    const rings = wavesGetGradient3Rings(t);
 
-    const delay = custom.delay ?? 180;
     const delay = custom.delay ?? 180;
 
     const cycleDelay = custom.cycleDelay ?? 0;
-    const cycleDelay = custom.cycleDelay ?? 0;
 
-    const speed = Math.max(custom.speed ?? 1.9, 0.001);
     const speed = Math.max(custom.speed ?? 1.9, 0.001);
 
     const reversed = custom.reversed_animation ?? custom.revert_animation ?? false;
 
     const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
-    const back = custom.back ?? mixColors(tierColor, "#000000", 0.08);
 
-    const now = performance.now();
     const now = performance.now();
 
     const cx = x + size * 0.5;
-    const cx = x + size * 0.5;
 
-    const cy = y + size * 0.5;
     const cy = y + size * 0.5;
 
     ctx.save();
-    ctx.save();
 
-    ctx.beginPath();
-    ctx.rect(x, y + size - clipHeight, size, clipHeight);
-    ctx.clip();
     ctx.beginPath();
     ctx.rect(x, y + size - clipHeight, size, clipHeight);
     ctx.clip();
 
     ctx.fillStyle = back;
     ctx.fillRect(x, y, size, size);
-    ctx.fillStyle = back;
-    ctx.fillRect(x, y, size, size);
 
-    ctx.save();
-    ctx.globalCompositeOperation = "screen";
     ctx.save();
     ctx.globalCompositeOperation = "screen";
 
     const pxPerMs = 0.04 * speed;
-    const pxPerMs = 0.04 * speed;
 
-    const MAX_RADIUS = (Math.hypot(size * 0.5, size * 0.5) + 40) * 3;
     const MAX_RADIUS = (Math.hypot(size * 0.5, size * 0.5) + 40) * 3;
 
     const ringCount = rings.length || 1;
-    const ringCount = rings.length || 1;
 
-    const cycleSpawnTime = ringCount * delay;
     const cycleSpawnTime = ringCount * delay;
 
     const cycleLength = cycleSpawnTime + cycleDelay;
-    const cycleLength = cycleSpawnTime + cycleDelay;
 
-    const maxAlive = Math.min(25, Math.ceil(MAX_RADIUS / (pxPerMs * delay)) + 4);
     const maxAlive = Math.min(25, Math.ceil(MAX_RADIUS / (pxPerMs * delay)) + 4);
 
     if (!reversed) {
         const infiniteLoop = cycleDelay <= 0;
-    if (!reversed) {
-        const infiniteLoop = cycleDelay <= 0;
 
-        const firstIndex = Math.floor(now / delay);
         const firstIndex = Math.floor(now / delay);
 
         for (let i = maxAlive - 1; i >= 0; i--) {
             const index = firstIndex - i;
-        for (let i = maxAlive - 1; i >= 0; i--) {
-            const index = firstIndex - i;
 
-            if (index < 0) continue;
             if (index < 0) continue;
 
             const linearSpawnTime = index * delay;
-            const linearSpawnTime = index * delay;
 
-            let spawnTime = linearSpawnTime;
             let spawnTime = linearSpawnTime;
 
             if (!infiniteLoop) {
                 const cycleIndex = Math.floor(linearSpawnTime / cycleLength);
-            if (!infiniteLoop) {
-                const cycleIndex = Math.floor(linearSpawnTime / cycleLength);
 
                 const cycleStart = cycleIndex * cycleLength;
-                const cycleStart = cycleIndex * cycleLength;
 
-                const timeInCycle = linearSpawnTime - cycleStart;
                 const timeInCycle = linearSpawnTime - cycleStart;
 
                 if (timeInCycle >= cycleSpawnTime) {
                     continue;
                 }
-                if (timeInCycle >= cycleSpawnTime) {
-                    continue;
-                }
 
                 const ringOrder = Math.floor(timeInCycle / delay);
-                const ringOrder = Math.floor(timeInCycle / delay);
 
-                if (ringOrder < 0 || ringOrder >= ringCount) {
-                    continue;
-                }
                 if (ringOrder < 0 || ringOrder >= ringCount) {
                     continue;
                 }
 
                 spawnTime = cycleStart + ringOrder * delay;
             }
-                spawnTime = cycleStart + ringOrder * delay;
-            }
 
-            const elapsed = now - spawnTime;
             const elapsed = now - spawnTime;
 
             if (elapsed < 0) continue;
-            if (elapsed < 0) continue;
 
             const radius = 1 + elapsed * pxPerMs;
-            const radius = 1 + elapsed * pxPerMs;
 
-            if (radius <= 0 || radius > MAX_RADIUS) {
-                continue;
-            }
             if (radius <= 0 || radius > MAX_RADIUS) {
                 continue;
             }
@@ -1855,44 +1504,26 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
         }
     } else {
         const START_RADIUS = MAX_RADIUS * 0.22 * 1.15;
-            wavesDrawGradient3Ring(ctx, ring, radius, cx, cy);
-        }
-    } else {
-        const START_RADIUS = MAX_RADIUS * 0.22 * 1.15;
 
-        const shrinkDuration = START_RADIUS / pxPerMs;
         const shrinkDuration = START_RADIUS / pxPerMs;
 
         const stepDelay = Math.max(delay, 1);
-        const stepDelay = Math.max(delay, 1);
 
-        const activeDuration = (ringCount - 1) * stepDelay + shrinkDuration;
         const activeDuration = (ringCount - 1) * stepDelay + shrinkDuration;
 
         const infiniteLoop = cycleDelay <= 0;
-        const infiniteLoop = cycleDelay <= 0;
 
-        const totalCycleLength = activeDuration + cycleDelay;
         const totalCycleLength = activeDuration + cycleDelay;
 
         const cycleTime = infiniteLoop ? now : now % totalCycleLength;
-        const cycleTime = infiniteLoop ? now : now % totalCycleLength;
 
-        const drawList = [];
         const drawList = [];
 
         for (let ringId = 0; ringId < ringCount; ringId++) {
             const startTime = ringId * stepDelay;
-        for (let ringId = 0; ringId < ringCount; ringId++) {
-            const startTime = ringId * stepDelay;
 
             let radius = START_RADIUS;
-            let radius = START_RADIUS;
 
-            if (cycleTime < startTime) {
-                radius = START_RADIUS;
-            } else {
-                let elapsed = cycleTime - startTime;
             if (cycleTime < startTime) {
                 radius = START_RADIUS;
             } else {
@@ -1908,18 +1539,7 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
                     radius = START_RADIUS;
                 }
             }
-                if (elapsed < shrinkDuration) {
-                    radius = Math.max(0.001, START_RADIUS - elapsed * pxPerMs);
-                } else {
-                    radius = START_RADIUS;
-                }
-            }
 
-            drawList.push({
-                ringId,
-                radius,
-            });
-        }
             drawList.push({
                 ringId,
                 radius,
@@ -1930,13 +1550,7 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
             if (b.radius !== a.radius) {
                 return b.radius - a.radius;
             }
-        drawList.sort((a, b) => {
-            if (b.radius !== a.radius) {
-                return b.radius - a.radius;
-            }
 
-            return b.ringId - a.ringId;
-        });
             return b.ringId - a.ringId;
         });
 
@@ -1944,69 +1558,42 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
             wavesDrawGradient3Ring(ctx, rings[item.ringId], item.radius, cx, cy);
         }
     }
-        for (const item of drawList) {
-            wavesDrawGradient3Ring(ctx, rings[item.ringId], item.radius, cx, cy);
-        }
-    }
 
-    ctx.restore();
-    ctx.restore();
     ctx.restore();
     ctx.restore();
 }
 
 function wavesDrawGradient3Ring(ctx, ring, radius, cx, cy) {
     const coreColor = ring.color;
-    const coreColor = ring.color;
 
-    const glowColor = ring.glow;
     const glowColor = ring.glow;
 
     const GLOW_WIDTH = 20;
     const GLOW_OFFSET = -7;
-    const GLOW_WIDTH = 20;
-    const GLOW_OFFSET = -7;
 
-    const innerR = Math.max(0, radius + GLOW_OFFSET);
     const innerR = Math.max(0, radius + GLOW_OFFSET);
 
     const outerR = innerR + GLOW_WIDTH;
-    const outerR = innerR + GLOW_WIDTH;
 
-    const time = (performance.now() * 0.05) % 128;
     const time = (performance.now() * 0.05) % 128;
 
     const sweep = (time / 128) * Math.PI * 2;
-    const sweep = (time / 128) * Math.PI * 2;
 
-    const segments = 64;
     const segments = 64;
 
     for (let s = 0; s < segments; s++) {
         const t0 = s / segments;
-    for (let s = 0; s < segments; s++) {
-        const t0 = s / segments;
 
-        const t1 = (s + 1) / segments;
         const t1 = (s + 1) / segments;
 
         const a0 = sweep + t0 * Math.PI * 2;
-        const a0 = sweep + t0 * Math.PI * 2;
 
-        const a1 = sweep + t1 * Math.PI * 2;
         const a1 = sweep + t1 * Math.PI * 2;
 
         const mid = (t0 + t1) * 0.5;
-        const mid = (t0 + t1) * 0.5;
 
         let alpha = 0.25;
-        let alpha = 0.25;
 
-        if (mid >= 0.4 && mid <= 0.5) {
-            alpha = 0.25 + ((mid - 0.4) / 0.1) * 0.75;
-        } else if (mid > 0.5 && mid <= 0.6) {
-            alpha = 1.0 - ((mid - 0.5) / 0.1) * 0.75;
-        }
         if (mid >= 0.4 && mid <= 0.5) {
             alpha = 0.25 + ((mid - 0.4) / 0.1) * 0.75;
         } else if (mid > 0.5 && mid <= 0.6) {
@@ -2021,37 +1608,25 @@ function wavesDrawGradient3Ring(ctx, ring, radius, cx, cy) {
             : glowColor.replace("rgb(", "rgba(").replace(")", `,${alpha})`);
 
         ctx.beginPath();
-        ctx.beginPath();
 
         ctx.arc(cx, cy, outerR, a0, a1);
-        ctx.arc(cx, cy, outerR, a0, a1);
 
-        ctx.arc(cx, cy, innerR, a1, a0, true);
         ctx.arc(cx, cy, innerR, a1, a0, true);
 
         ctx.closePath();
         ctx.fill();
     }
-        ctx.closePath();
-        ctx.fill();
-    }
 
-    ctx.globalCompositeOperation = "source-over";
     ctx.globalCompositeOperation = "source-over";
 
     ctx.fillStyle = coreColor;
-    ctx.fillStyle = coreColor;
 
-    ctx.beginPath();
     ctx.beginPath();
 
     ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
 
     ctx.fill();
-    ctx.fill();
 
-    ctx.globalCompositeOperation = "screen";
     ctx.globalCompositeOperation = "screen";
 }
 
@@ -2059,14 +1634,9 @@ function wavesFillStyle(ctx, rarity, base, ratio = null, now, x, y, size) {
     if (!wavesGradientOn() || rarity < getGradientMinRarity()) {
         return base;
     }
-    if (!wavesGradientOn() || rarity < getGradientMinRarity()) {
-        return base;
-    }
 
     const custom = wavesTierVisual(rarity);
-    const custom = wavesTierVisual(rarity);
 
-    const hasGradient3 = Array.isArray(custom.rings) || custom.type === 3;
     const hasGradient3 = Array.isArray(custom.rings) || custom.type === 3;
 
     const hasGradient2 = custom.lines !== undefined || custom.linecolor !== undefined;
@@ -2076,47 +1646,96 @@ function wavesFillStyle(ctx, rarity, base, ratio = null, now, x, y, size) {
 
         return null;
     }
-        return null;
-    }
 
     if (hasGradient2) {
         wavesDrawGradient2(ctx, rarity, x, y, size, ratio === null ? size : size * ratio);
 
         return null;
     }
-        return null;
-    }
 
     const safeNow = Number.isFinite(now) ? now : performance.now();
-    const safeNow = Number.isFinite(now) ? now : performance.now();
 
-    return wavesSweepGradient(ctx, rarity, base, safeNow);
     return wavesSweepGradient(ctx, rarity, base, safeNow);
 }
 
 function wavesBorderStyle(rarity) {
-    const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
-    const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
+  const base = net.state.tiers?.[rarity]?.color ?? "#ffffff";
 
-    if (!wavesGradientOn() || rarity < getGradientMinRarity()) {
-        return mixColors(base, "#000000", 0.2);
-    }
-    if (!wavesGradientOn() || rarity < getGradientMinRarity()) {
-        return mixColors(base, "#000000", 0.2);
-    }
-
-    const custom = wavesTierVisual(rarity);
     const custom = wavesTierVisual(rarity);
 
     if (custom.border !== undefined) {
         return custom.border;
     }
-    if (custom.border !== undefined) {
-        return custom.border;
-    }
 
     return mixColors(base, "#000000", 0.2);
-    return mixColors(base, "#000000", 0.2);
+}
+
+let isJDown = false;
+
+window.addEventListener("keydown", e => {
+    if (document.activeElement?.id === "chatInput")
+        return;
+
+    if (e.code !== "KeyJ" || isJDown)
+        return;
+
+    isJDown = true;
+
+    net.state.minimapImg = renderTerrainForMap(
+        net.state.terrain.width,
+        net.state.terrain.blocks,
+        net.state.tiers,
+        net.state.terrainScores,
+        true
+    );
+});
+
+window.addEventListener("keyup", e => {
+    if (document.activeElement?.id === "chatInput")
+        return;
+
+    if (e.code !== "KeyJ")
+        return;
+
+    isJDown = false;
+
+    net.state.minimapImg = renderTerrainForMap(
+        net.state.terrain.width,
+        net.state.terrain.blocks,
+        net.state.tiers,
+        net.state.terrainScores,
+        false
+    );
+});
+
+function convert(g) {
+    const start = g.indexOf("(");
+    const end = g.lastIndexOf(")");
+
+    if (start === -1 || end === -1) return null;
+
+    const args = g
+        .slice(start + 1, end)
+        .split(",")
+        .map(v => v.trim());
+
+    return {
+        speed: parseFloat(args[0]),
+        type: parseInt(args[1]),
+        c1: args[2] || "#000000",
+        c2: args[3] || "#ffffff"
+    };
+}
+
+function chatColor(color) {
+    if (typeof color === "string" && color.startsWith("gradient")) {
+        const c = convert(color);
+        if (!c) return "#ffffff";
+
+        return chatGradient(c.speed, c.type, c.c1, c.c2);
+    }
+
+    return color;
 }
 
 function draw() {
@@ -2364,13 +1983,6 @@ function draw() {
         if (n >= 1e3) return "x" + (n / 1e3).toFixed(1) + "k";
         return "x" + n;
     }
-    function formatAmount(n) {
-        if (n >= 1e12) return "x" + (n / 1e12).toFixed(1) + "t";
-        if (n >= 1e9) return "x" + (n / 1e9).toFixed(1) + "b";
-        if (n >= 1e6) return "x" + (n / 1e6).toFixed(1) + "m";
-        if (n >= 1e3) return "x" + (n / 1e3).toFixed(1) + "k";
-        return "x" + n;
-    }
 
     net.state.drops.forEach((entity) => {
         const oldTransform = ctx.getTransform();
@@ -2401,15 +2013,7 @@ function draw() {
 
         if ((entity.amount ?? 1) > 1) {
             const text = formatAmount(entity.amount);
-        if ((entity.amount ?? 1) > 1) {
-            const text = formatAmount(entity.amount);
 
-            ctx.font = "bold 0.35px Ubuntu";
-            ctx.fillStyle = "#ffffff";
-            ctx.strokeStyle = "#000000";
-            ctx.lineWidth = 0.06;
-            ctx.textAlign = "right";
-            ctx.textBaseline = "top";
             ctx.font = "bold 0.35px Ubuntu";
             ctx.fillStyle = "#ffffff";
             ctx.strokeStyle = "#000000";
@@ -2419,12 +2023,7 @@ function draw() {
 
             const offsetX = 0.6;
             const offsetY = -0.7;
-            const offsetX = 0.6;
-            const offsetY = -0.7;
 
-            ctx.strokeText(text, offsetX, offsetY);
-            ctx.fillText(text, offsetX, offsetY);
-        }
             ctx.strokeText(text, offsetX, offsetY);
             ctx.fillText(text, offsetX, offsetY);
         }
@@ -2492,6 +2091,47 @@ function draw() {
         }
     });
 
+    const now = performance.now();
+    pruneFloatingTextTrackers(now);
+    net.state.floatingTexts = net.state.floatingTexts.filter((entry) => {
+        const timeUntilExpiry = entry.expiresAt - now;
+        if (timeUntilExpiry <= 0) return false;
+
+        if (entry.animation === "bounce") {
+            entry.velocityY += entry.gravity;
+            entry.y += entry.velocityY;
+            if (entry.velocityX) entry.x += entry.velocityX;
+        } else if (entry.animation === "rise") {
+            entry.y += entry.velocityY;
+        }
+
+        const drawX = entry.x * scale - cameraX + halfWidth;
+        const drawY = entry.y * scale - cameraY + halfHeight;
+
+        let alpha;
+        if (entry.fade) {
+            const totalLife = entry.expiresAt - entry.creation;
+            const elapsed = now - entry.creation;
+            alpha = totalLife > 0 ? Math.max(0, 1 - elapsed / totalLife) : 0;
+        } else {
+            alpha = timeUntilExpiry < 200 ? timeUntilExpiry / 200 : 1;
+        }
+
+        const oldAlpha = ctx.globalAlpha;
+        const oldTextAlign = ctx.textAlign;
+        const oldTextBaseline = ctx.textBaseline;
+
+        ctx.globalAlpha = alpha;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        text(entry.value, drawX, drawY, 12 * scale, entry.color);
+
+        ctx.globalAlpha = oldAlpha;
+        ctx.textAlign = oldTextAlign;
+        ctx.textBaseline = oldTextBaseline;
+        return true;
+    });
+
     ctx.textAlign = "center";
 
     net.state.players.forEach((entity) => {
@@ -2521,8 +2161,6 @@ function draw() {
             drawY = halfHeight;
         }
 
-        setStyle(mixColors([colors.playerYellow, colors.team1, colors.team2][entity.team] ?? colors.crafting, colors.legendary, entity.hit * 0.5), 5 * scale);
-
         const size = entity.size * scale;
 
         if (entity.wearing & WEARABLES.AMULET) {
@@ -2547,7 +2185,7 @@ function draw() {
 
             // ctx.translate(xTrans, size * 2.5);
             // ctx.scale(size * .6, size * .6);
-            ctx.setTransform(size * 0.6, 0, 0, size * 0.6, xTrans, size * 2.5);
+            ctx.setTransform(size * 0.6, 0, 0, size * 0.6, drawX + xTrans, drawY + size * 2.5);
             ctx.rotate(performance.now() / 1000 + entity.id * 5);
             drawAmulet(ctx, false);
             // ctx.restore();
@@ -2568,6 +2206,8 @@ function draw() {
             // ctx.restore();
             ctx.setTransform(oldTransform);
         }
+
+        setStyle(mixColors([colors.playerYellow, colors.team1, colors.team2][entity.team] ?? colors.crafting, colors.legendary, entity.hit * 0.5), 5 * scale);
 
         ctx.beginPath();
         ctx.arc(drawX, drawY, size, 0, Math.PI * 2);
@@ -2912,13 +2552,6 @@ function draw() {
                 if (b[0].index === 255) return 1;
                 return a[0].index - b[0].index;
             });
-        const mobStacks = Object.entries(groupedByIndex)
-            .map(([index, rarities]) => Object.values(rarities).sort((a, b) => a.rarity - b.rarity))
-            .sort((a, b) => {
-                if (a[0].index === 255) return -1;
-                if (b[0].index === 255) return 1;
-                return a[0].index - b[0].index;
-            });
 
         boxSize -= mobStacks.length / 1.1;
         gapX -= mobStacks.length;
@@ -2954,89 +2587,10 @@ function draw() {
 
                 ctx.translate(x + boxSize / 2, y + boxSize / 2);
 
-                const m = {
-                    0: 4,
-                    1: 4,
-                    2: 4,
-                    3: 5.5,
-                    4: 4,
-                    5: 3,
-                    6: 4,
-                    7: 4,
-                    8: 3.25,
-                    9: 4,
-                    10: 3.25,
-                    11: 3.25,
-                    12: 3.25,
-                    13: 4,
-                    14: 4,
-                    15: 6.25,
-                    16: 6.25,
-                    17: 6.25,
-                    18: 6.25,
-                    19: 4,
-                    20: 6.25,
-                    21: 6.25,
-                    22: 6.25,
-                    23: 6.25,
-                    24: 4,
-                    25: 6.25,
-                    26: 6.25,
-                    27: 6.25,
-                    28: 4,
-                    29: 4,
-                    30: 5.25,
-                    31: 5.25,
-                    32: 5.25,
-                    33: 5.25,
-                    34: 5.25,
-                    35: 4,
-                    36: 4,
-                    37: 4,
-                    38: 4.5,
-                    39: 4.5,
-                    40: 4.5,
-                    41: 4.5,
-                    42: 4.5,
-                    43: 4.5,
-                    44: 4.5,
-                    45: 3,
-                    46: 4,
-                    47: 3.25,
-                    48: 5.25,
-                    49: 3.35,
-                    50: 3,
-                    51: 5.25,
-                    52: 4,
-                    53: 4.5,
-                    54: 4.5,
-                    55: 4,
-                    56: 4,
-                    57: 4,
-                    58: 4,
-                    59: 5.5,
-                    60: 4,
-                    61: 4.5,
-                    62: 4,
-                    63: 4,
-                    64: 6.5,
-                    65: 4,
-                    66: 4.5,
-                    67: 4.5,
-                    68: 4,
-                    69: 4,
-                    70: 4,
-                    71: 4,
-                    72: 4.5,
-                    73: 4.5,
-                    255: 4,
-                };
-
                 const f = net.state.mobConfigs?.[entity.index]?.wavesIconSize ?? 3.5;
 
-                const scale = m[entity.index] ? boxSize / m[entity.index] : boxSize / f;
+                const scale = waveIconSizes[entity.index] ? boxSize / waveIconSizes[entity.index] : boxSize / f;
 
-                ctx.scale(scale, scale);
                 ctx.scale(scale, scale);
 
                 if (entity.index !== 255) {
@@ -3064,13 +2618,6 @@ function draw() {
                 ctx.lineWidth = 5;
                 ctx.stroke();
                 ctx.restore();
-                ctx.save();
-                ctx.beginPath();
-                ctx.roundRect(x, y, boxSize, boxSize, 5);
-                ctx.strokeStyle = wavesBorderStyle(entity.rarity);
-                ctx.lineWidth = 5;
-                ctx.stroke();
-                ctx.restore();
 
                 if (entity.count > 1) {
                     ctx.save();
@@ -3085,22 +2632,13 @@ function draw() {
 
     function renderWaveIcons() {
         if (!net.state.iconStuff?.length) return;
-    function renderWaveIcons() {
-        if (!net.state.iconStuff?.length) return;
 
-        mobIconCanvas.width = width;
-        mobIconCanvas.height = height;
         mobIconCanvas.width = width;
         mobIconCanvas.height = height;
 
         const ctx = mobIconCtx;
         ctx.clearRect(0, 0, width, height);
-        const ctx = mobIconCtx;
-        ctx.clearRect(0, 0, width, height);
 
-        net.state.iconStuff.forEach((e) => {
-            const icon = getWaveIcon(e);
-            ctx.drawImage(icon, e.x - 6, e.y - 6);
         net.state.iconStuff.forEach((e) => {
             const icon = getWaveIcon(e);
             ctx.drawImage(icon, e.x - 6, e.y - 6);
@@ -3116,13 +2654,18 @@ function draw() {
     }
 
     if (net.state.waveInfo) {
+        let barWidth = (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs) * 400
+        net.state.waveInfoBarWidth ??= 0;
+        net.state.waveInfoBarWidth = lerp(net.state.waveInfoBarWidth, barWidth, 0.15);
+        let size = 22.5 * Math.min(1, net.state.waveInfoBarWidth / 15);
+        
         ctx.textBaseline = "middle";
 
         text("Wave " + net.state.waveInfo.wave, width / 2, 30, 35);
 
         drawBar(width / 2 - 200, width / 2 + 200, 65, 30, colors["???"]);
 
-        drawBar(width / 2 - 200, width / 2 - 200 + 400 * (net.state.waveInfo.livingMobs / net.state.waveInfo.maxMobs), 65, 22.5, mixColors(BIOME_BACKGROUNDS[net.state.room.biome].color, colors.white, 0.2));
+        drawBar(width / 2 - 200, width / 2 - 200 + net.state.waveInfoBarWidth, 65, size, mixColors(BIOME_BACKGROUNDS[net.state.room.biome].color, colors.white, 0.2));
 
         text(net.state.waveInfo.livingMobs + " / " + net.state.waveInfo.maxMobs, width / 2, 65, 22.5);
 
@@ -3130,24 +2673,16 @@ function draw() {
             const gradientState = wavesGradientOn() ? 1 : 0;
 
             const gradientChanged = net.state.lastGradientState !== gradientState;
-            const gradientChanged = net.state.lastGradientState !== gradientState;
 
             net.state.lastGradientState = gradientState;
-            net.state.lastGradientState = gradientState;
 
-            const newHash = hashAliveMobs(net.state.waveInfo.aliveMobs);
             const newHash = hashAliveMobs(net.state.waveInfo.aliveMobs);
 
             const mobsChanged = newHash !== net.state._aliveMobsHash;
             net.state._aliveMobsHash = newHash;
-            const mobsChanged = newHash !== net.state._aliveMobsHash;
-            net.state._aliveMobsHash = newHash;
 
             const resized = net.state._lastW !== width || net.state._lastH !== height;
-            const resized = net.state._lastW !== width || net.state._lastH !== height;
 
-            net.state._lastW = width;
-            net.state._lastH = height;
             net.state._lastW = width;
             net.state._lastH = height;
 
@@ -3157,15 +2692,7 @@ function draw() {
                         delete WAVE_CACHE[k];
                     }
                 }
-            if (mobsChanged || gradientChanged || resized) {
-                if (gradientChanged) {
-                    for (const k in WAVE_CACHE) {
-                        delete WAVE_CACHE[k];
-                    }
-                }
 
-                drawIconsToOffscreen(net.state.waveInfo.aliveMobs);
-            }
                 drawIconsToOffscreen(net.state.waveInfo.aliveMobs);
             }
 
@@ -3223,8 +2750,6 @@ function draw() {
 
             const radius = biggestSize * (doTerrain ? 0.0225 : 0.025);
             const blueDot = "#2F80FF";
-            const radius = biggestSize * (doTerrain ? 0.0225 : 0.025);
-            const blueDot = "#2F80FF";
 
             const selfX = (net.state.camera.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
 
@@ -3234,15 +2759,7 @@ function draw() {
             ctx.beginPath();
             ctx.arc(selfX, selfY, radius, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = doTerrain ? colors.peaGreen : colors.playerYellow;
-            ctx.beginPath();
-            ctx.arc(selfX, selfY, radius, 0, Math.PI * 2);
-            ctx.fill();
 
-            if (net.state.minimapPlayers) {
-                for (const player of net.state.minimapPlayers.values()) {
-                    if (!player) continue;
-                    if (player.id === net.state.playerID) continue;
             if (net.state.minimapPlayers) {
                 for (const player of net.state.minimapPlayers.values()) {
                     if (!player) continue;
@@ -3264,9 +2781,6 @@ function draw() {
             // Level
             net.state.levelProgress = lerp(net.state.levelProgress, net.state.levelProgressTarget, 0.1);
 
-            if (net.state.levelProgressTarget < net.state.levelProgress || isNaN(net.state.levelProgress)) {
-                net.state.levelProgress = 0;
-            }
             if (net.state.levelProgressTarget < net.state.levelProgress || isNaN(net.state.levelProgress)) {
                 net.state.levelProgress = 0;
             }
@@ -3361,7 +2875,7 @@ function draw() {
     net.state._foundHover = false;
 
     if (menu.classList.contains("active") && net.state.petalElements) {
-        net.state.petalElements.forEach(petal => {
+        net.state.petalElements.forEach((petal) => {
             const rect = petal.icon.getBoundingClientRect();
             const menuRect = menu.getBoundingClientRect();
             const mouseX = mouse.x / window.devicePixelRatio;
@@ -3373,8 +2887,6 @@ function draw() {
 
             if (hovered) {
                 net.state._foundHover = true;
-            if (hovered) {
-                net.state._foundHover = true;
 
                 net.state.inventoryPetalHover = [petal.index, petal.rarity, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
 
@@ -3382,11 +2894,7 @@ function draw() {
                     beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petal.index, petal.rarity);
 
                     menu.classList.toggle("active");
-                    menu.classList.toggle("active");
 
-                    inventoryDragConfig.index = petal.index;
-                    inventoryDragConfig.rarity = petal.rarity;
-                    inventoryDragConfig.item.stableSize = rect.width;
                     inventoryDragConfig.index = petal.index;
                     inventoryDragConfig.rarity = petal.rarity;
                     inventoryDragConfig.item.stableSize = rect.width;
@@ -3399,18 +2907,7 @@ function draw() {
             }
         });
     }
-                    inventoryDragConfig.onDrop = () => {
-                        processInventoryDrop();
-                        menu.classList.toggle("active");
-                    };
-                }
-            }
-        });
-    }
 
-    if (!net.state._foundHover) {
-        net.state.inventoryPetalHover = null;
-    }
     if (!net.state._foundHover) {
         net.state.inventoryPetalHover = null;
     }
@@ -3427,64 +2924,31 @@ function draw() {
 
         if (inventoryHover) {
             const img = petalTooltip(...inventoryHover);
-        if (inventoryHover) {
-            const img = petalTooltip(...inventoryHover);
 
-            const maxW = 300;
-            const minW = 180;
-            const maxW = 300;
-            const minW = 180;
+      const { x, y, bw, bh } = petalTooltipBox(
+        img,
+        inventoryHover[2],
+        inventoryHover[3],
+        window.innerWidth,
+        window.innerHeight,
+      );
 
-            let w = Math.min(maxW, Math.max(minW, window.innerWidth * 0.22));
-            let h = (w * img.height) / img.width;
-            let w = Math.min(maxW, Math.max(minW, window.innerWidth * 0.22));
-            let h = (w * img.height) / img.width;
+      const box = document.createElement("div");
+      box.style.position = "fixed";
+      box.style.left = `${x}px`;
+      box.style.top = `${y}px`;
 
-            const box = document.createElement("div");
-            box.style.position = "fixed";
-            const box = document.createElement("div");
-            box.style.position = "fixed";
+      const cv = document.createElement("canvas");
+      cv.width = bw;
+      cv.height = bh;
 
-            let left = inventoryHover[2] - w / 2;
-            let top = inventoryHover[3] - h - 12;
-            let left = inventoryHover[2] - w / 2;
-            let top = inventoryHover[3] - h - 12;
-
-            left = Math.max(0, Math.min(left, window.innerWidth - w));
-            top = Math.max(0, Math.min(top, window.innerHeight - h));
-            left = Math.max(0, Math.min(left, window.innerWidth - w));
-            top = Math.max(0, Math.min(top, window.innerHeight - h));
-
-            box.style.left = `${left}px`;
-            box.style.top = `${top}px`;
-            box.style.left = `${left}px`;
-            box.style.top = `${top}px`;
-
-            const cv = document.createElement("canvas");
-            cv.width = w;
-            cv.height = h;
-            const cv = document.createElement("canvas");
-            cv.width = w;
-            cv.height = h;
-
-            const cx = cv.getContext("2d");
-            cx.imageSmoothingEnabled = true;
-            cx.imageSmoothingQuality = "high";
-            cx.drawImage(img, 0, 0, w, h);
-            const cx = cv.getContext("2d");
-            cx.imageSmoothingEnabled = true;
-            cx.imageSmoothingQuality = "high";
-            cx.drawImage(img, 0, 0, w, h);
+      const cx = cv.getContext("2d");
+      cx.imageSmoothingEnabled = true;
+      cx.imageSmoothingQuality = "high";
+      cx.drawImage(img, 0, 0, bw, bh);
 
             box.appendChild(cv);
-            box.appendChild(cv);
 
-            inventoryTooltipLayer.replaceChildren(box);
-            inventoryTooltipLayer.style.display = "block";
-        } else {
-            inventoryTooltipLayer.replaceChildren();
-            inventoryTooltipLayer.style.display = "none";
-        }
             inventoryTooltipLayer.replaceChildren(box);
             inventoryTooltipLayer.style.display = "block";
         } else {
@@ -3506,15 +2970,15 @@ function draw() {
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = "high";
 
-            if (net.state.petalHoverAlpha > 0) {
-                ctx.globalAlpha = net.state.petalHoverAlpha;
-                let bw = 350;
-                let bh = (350 * img.height) / img.width;
-
-                let x = net.state.lastPetalHover[2] - 150;
-                let y = net.state.lastPetalHover[3] - bh - 10;
-
-                x = Math.max(0, Math.min(x, width - bw));
+      if (net.state.petalHoverAlpha > 0) {
+        ctx.globalAlpha = net.state.petalHoverAlpha;
+        const { x, y, bw, bh } = petalTooltipBox(
+          img,
+          net.state.lastPetalHover[2],
+          net.state.lastPetalHover[3],
+          width,
+          height,
+        );
 
                 ctx.drawImage(img, x, y, bw, bh);
             }
@@ -3592,11 +3056,6 @@ function draw() {
         } else {
             text("Not connected", width - 10, 40, 15);
         }
-        if (net.state.socket) {
-            text(`B(I/O): ${net.state.socket.bandWidth.in}/${net.state.socket.bandWidth.out} KB/s`, width - 10, 40, 15);
-        } else {
-            text("Not connected", width - 10, 40, 15);
-        }
 
         text(`X: ${net.state.camera?.x?.toFixed(0) ?? 0} | Y: ${net.state.camera?.y?.toFixed(0) ?? 0}`, width - 10, 55, 15);
 
@@ -3663,16 +3122,17 @@ function draw() {
 
             for (let i = net.ChatMessage.allMessages.length - 1; i >= 0; i--) {
                 const msg = net.ChatMessage.allMessages[i];
+                const color = chatColor(msg.color);
                 let msgHeight;
 
                 switch (msg.type) {
                     case 0: // Chat
-                        const nameWidth = text(msg.username, overlayX + 7, 50000, 14, msg.color);
+                        const nameWidth = text(msg.username, overlayX + 7, 50000, 14, color);
                         msgHeight = drawWrappedText(": " + msg.message, overlayX + 7 + nameWidth, 50000, 14, overlayWidth - 20 - nameWidth, "#FFFFFF", ctx, 73);
                         msgHeight = Math.max(msgHeight, 14);
                         break;
                     case 1: // System
-                        msgHeight = drawWrappedText(msg.message, overlayX + 7, 50000, 14, overlayWidth - 20, msg.color, ctx, 73);
+                        msgHeight = drawWrappedText(msg.message, overlayX + 7, 50000, 14, overlayWidth - 20, color, ctx, 73);
                         break;
                 }
 
@@ -3685,11 +3145,11 @@ function draw() {
 
                 switch (msg.type) {
                     case 0:
-                        const nameWidth2 = text(msg.username, overlayX + 7, y, 14, msg.color);
+                        const nameWidth2 = text(msg.username, overlayX + 7, y, 14, color);
                         drawWrappedText(": " + msg.message, overlayX + 7 + nameWidth2, y, 14, overlayWidth - 20 - nameWidth2, "#FFFFFF", ctx, 73);
                         break;
                     case 1:
-                        drawWrappedText(msg.message, overlayX + 7, y, 14, overlayWidth - 20, msg.color, ctx, 73);
+                        drawWrappedText(msg.message, overlayX + 7, y, 14, overlayWidth - 20, color, ctx, 73);
                         break;
                 }
             }
@@ -3708,6 +3168,7 @@ function draw() {
         if (!net.ChatMessage.showInput) {
             for (let i = messages.length - 1; i >= 0; i--) {
                 const message = messages[i];
+                const color = chatColor(message.color);
 
                 message.y = lerp(message.y, y, 0.2);
                 message.ticker++;
@@ -3719,11 +3180,11 @@ function draw() {
 
                 switch (message.type) {
                     case 0: // Chat
-                        const nameWidth = text(message.username, 66, message.y, 15, message.color);
+                        const nameWidth = text(message.username, 66, message.y, 15, color);
                         drawWrappedText(": " + message.message, nameWidth + 66, message.y, 15, 235, "#FFFFFF", ctx, 66);
                         break;
                     case 1: // System
-                        drawWrappedText(message.message, 66, message.y, 15, 235, message.color, ctx, 66);
+                        drawWrappedText(message.message, 66, message.y, 15, 235, color, ctx, 66);
                         break;
                 }
 
@@ -3744,7 +3205,7 @@ if (isHalloween) {
     document.getElementById("biomeSelect").appendChild(new Option("Halloween", "halloween"));
 }
 
-document.getElementById("usernameInputInput").value = localStorage.getItem("username") || "guest";
+// document.getElementById("usernameInputInput").value = localStorage.getItem("username") || "guest";
 document.getElementById("gamemodeSelect").value = localStorage.getItem("gamemode") || "ffa";
 document.getElementById("biomeSelect").value = localStorage.getItem("biome") || "default";
 document.getElementById("enableMods").checked = localStorage.getItem("enableMods") === "true";
@@ -3752,26 +3213,4 @@ document.getElementById("privateLobby").checked = localStorage.getItem("privateL
 
 showMenus();
 loadAndRenderChangelogs();
-
-async function getUserFromSession() {
-    try {
-        const res = await fetch(`${process.env.AUTH_SERVER}/api/me`, {
-            method: "GET",
-            credentials: "include",
-            headers: { Accept: "application/json" },
-        });
-
-        if (!res.ok) throw new Error("Not logged in");
-
-        const user = await res.json();
-        console.log("Logged in as:", user.username + "#" + user.discriminator);
-        return user;
-    } catch (e) {
-        console.error(e);
-        console.log("Not logged in");
-        return null;
-    }
-}
-
-// Call it anywhere
 getUserFromSession();

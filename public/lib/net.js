@@ -3,6 +3,235 @@ import { Reader, Writer, SERVER_BOUND, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFI
 import { StarfishData } from "./renders.js";
 import { joystick } from ".././index.js";
 import * as util from "./util.js";
+import { formatLargeNumber } from "./util.js";
+
+const floatingTextTrackers = new Map();
+/** @type {Map<number, number>} */
+const recentLightningEntities = new Map();
+/** @type {{x: number, y: number, time: number}[]} */
+const recentLightningStrikes = [];
+
+const FLOATING_TEXT_TRACK_MS = 1000;
+const FLOATING_TEXT_STACK_WINDOW_MS = 100;
+const FLOATING_TEXT_COLORS = {
+    damage: "#FF4D4D",
+    poison: "#9B4DFF",
+    lightning: "#00FFFF",
+    heal: "#FF85A1",
+};
+const FLOATING_TEXT_X_OFFSET = {
+    damage: 0,
+    poison: -0.6,
+    lightning: 0.6,
+    heal: 0,
+};
+
+function formatFloatingTextValue(type, amount) {
+    const rounded = Math.round(amount);
+    return formatLargeNumber(rounded, 1);
+}
+
+function getFloatingTextAnimation(type) {
+    switch (type) {
+        case "heal":
+            return { animation: "rise", velocityY: -2, gravity: -0.10, fade: true };
+        case "lightning":
+            return { animation: "static", velocityY: 0, gravity: 0 };
+        case "poison":
+            return { animation: "rise", velocityY: -0.08, gravity: 0, fade: true };
+        case "damage":
+        default: {
+            const dir = Math.random() < 0.5 ? -1 : 1;
+            return {
+                animation: "bounce",
+                velocityY: -2,
+                gravity: 0.10,
+                velocityX: dir * (0.50 + Math.random() * 0.50),
+            };
+        }
+    }
+}
+
+const FLOATING_TEXT_SPAWN_Y_OFFSET = {
+    damage: -0.75,
+    poison: 0,
+    lightning: -0.75,
+    heal: -0.75,
+};
+
+function getFloatingTextSpawnY(worldY, entityId, type = "damage") {
+    const yOffset = FLOATING_TEXT_SPAWN_Y_OFFSET[type] ?? -0.75;
+
+    const player = state.players.get(entityId);
+    if (player) {
+        return worldY + yOffset * (player.realSize ?? player.size ?? 50);
+    }
+
+    const mob = state.mobs.get(entityId);
+    if (mob) {
+        return worldY + yOffset * (mob.realSize ?? mob.size ?? 50);
+    }
+
+    return worldY + yOffset * 50;
+}
+
+function getFloatingTextEntitySize(entityId) {
+    const player = state.players.get(entityId);
+    if (player) return player.realSize ?? player.size ?? 50;
+
+    const mob = state.mobs.get(entityId);
+    if (mob) return mob.realSize ?? mob.size ?? 50;
+
+    return 50;
+}
+
+function markNearbyLightningEntities(point, now) {
+    const thresholdSq = 160 * 160;
+
+    state.players.forEach((player) => {
+        const dx = point.x - player.realX;
+        const dy = point.y - player.realY;
+        if (dx * dx + dy * dy <= thresholdSq) {
+            recentLightningEntities.set(player.id, now);
+        }
+    });
+
+    state.mobs.forEach((mob) => {
+        const dx = point.x - mob.realX;
+        const dy = point.y - mob.realY;
+        if (dx * dx + dy * dy <= thresholdSq) {
+            recentLightningEntities.set(mob.id, now);
+        }
+    });
+}
+
+function registerLightningStrike(points) {
+    const now = performance.now();
+
+    for (const point of points) {
+        recentLightningStrikes.push({ x: point.x, y: point.y, time: now });
+        markNearbyLightningEntities(point, now);
+    }
+
+    while (recentLightningStrikes.length > 0 && now - recentLightningStrikes[0].time > 500) {
+        recentLightningStrikes.shift();
+    }
+
+    for (const [entityId, time] of recentLightningEntities.entries()) {
+        if (now - time > 500) {
+            recentLightningEntities.delete(entityId);
+        }
+    }
+}
+
+function wasRecentlyLightningDamaged(entityId, worldX, worldY) {
+    const now = performance.now();
+    const entityTime = recentLightningEntities.get(entityId);
+
+    if (entityTime !== undefined && now - entityTime < 450) {
+        return true;
+    }
+
+    const thresholdSq = 120 * 120;
+
+    return recentLightningStrikes.some((strike) => {
+        const dx = strike.x - worldX;
+        const dy = strike.y - worldY;
+        return now - strike.time < 450 && dx * dx + dy * dy <= thresholdSq;
+    });
+}
+
+function removeFloatingTextEntry(entry) {
+    const index = state.floatingTexts.indexOf(entry);
+    if (index !== -1) {
+        state.floatingTexts.splice(index, 1);
+    }
+}
+
+function trackFloatingText(entityId, type, amount, worldX, worldY) {
+    if (!util.options.showDamageNumbers) return;
+
+    const key = `${entityId}-${type}`;
+    const now = performance.now();
+    const spawnY = getFloatingTextSpawnY(worldY, entityId, type);
+    const spawnX = worldX + (FLOATING_TEXT_X_OFFSET[type] || 0) * getFloatingTextEntitySize(entityId);
+    const tracker = floatingTextTrackers.get(key);
+
+    if (tracker && now - tracker.createdAt < FLOATING_TEXT_STACK_WINDOW_MS) {
+        tracker.amount += amount;
+        tracker.lastHit = now;
+        tracker.entry.x = spawnX;
+
+        if (tracker.entry.animation !== "static") {
+            tracker.entry.y = spawnY;
+        }
+
+        tracker.entry.value = formatFloatingTextValue(tracker.type, tracker.amount);
+        tracker.entry.expiresAt = now + FLOATING_TEXT_TRACK_MS;
+        return;
+    }
+
+    const entry = {
+        id: entityId,
+        x: spawnX,
+        y: spawnY,
+        value: formatFloatingTextValue(type, amount),
+        color: FLOATING_TEXT_COLORS[type],
+        creation: now,
+        expiresAt: now + FLOATING_TEXT_TRACK_MS,
+        type,
+        ...getFloatingTextAnimation(type),
+    };
+
+    state.floatingTexts.push(entry);
+    floatingTextTrackers.set(key, { amount, lastHit: now, createdAt: now, entry, type });
+}
+
+export function pruneFloatingTextTrackers(now) {
+    for (const [key, tracker] of floatingTextTrackers.entries()) {
+        if (now - tracker.lastHit >= FLOATING_TEXT_TRACK_MS) {
+            removeFloatingTextEntry(tracker.entry);
+            floatingTextTrackers.delete(key);
+        }
+    }
+}
+
+/** @type {{entityId: number, oldRatio: number, newRatio: number, worldX: number, worldY: number, isPoison: boolean, maxHealth: number}[]} */
+const pendingHealthChanges = [];
+
+function queueHealthChange(entityId, oldRatio, newRatio, worldX, worldY, isPoison = false, maxHealth = 100) {
+    pendingHealthChanges.push({ entityId, oldRatio, newRatio, worldX, worldY, isPoison, maxHealth });
+}
+
+function flushPendingHealthChanges() {
+    for (const change of pendingHealthChanges) {
+        handleHealthChange(change.entityId, change.oldRatio, change.newRatio, change.worldX, change.worldY, change.isPoison, change.maxHealth);
+    }
+
+    pendingHealthChanges.length = 0;
+}
+
+function handleHealthChange(entityId, oldRatio, newRatio, worldX, worldY, isPoison = false, maxHealth = 100) {
+    if (!util.options.showDamageNumbers) return;
+
+    const deltaRatio = newRatio - oldRatio;
+    if (Math.abs(deltaRatio) < (isPoison ? 0.00001 : 0.0005)) return;
+
+    const effectiveMax = maxHealth ?? 100;
+    const amount = Math.max(1, Math.round(Math.abs(deltaRatio) * effectiveMax));
+
+    if (deltaRatio < 0) {
+        if (wasRecentlyLightningDamaged(entityId, worldX, worldY)) {
+            trackFloatingText(entityId, "lightning", amount, worldX, worldY);
+        } else if (isPoison) {
+            trackFloatingText(entityId, "poison", amount, worldX, worldY);
+        } else {
+            trackFloatingText(entityId, "damage", amount, worldX, worldY);
+        }
+    } else {
+        trackFloatingText(entityId, "heal", amount, worldX, worldY);
+    }
+}
 
 function getBrowserInfo() {
     const userAgent = navigator.userAgent;
@@ -35,30 +264,30 @@ function getOSInfo() {
     const platform = navigator.platform;
 
     const platformRegex = {
-        "Windows": /Win/i,
+        Windows: /Win/i,
         "Mac OS": /Mac/i,
-        "iOS": /iPhone|iPad|iPod/i,
-        "Android": /Android/i,
-        "Linux": /Linux/i,
-        "Unix": /X11/i
+        iOS: /iPhone|iPad|iPod/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /X11/i,
     };
 
     const agentRegex = {
-        "Windows": /Windows/i,
+        Windows: /Windows/i,
         "Mac OS": /Mac OS/i,
-        "iOS": /like Mac OS/i,
-        "Android": /Android/i,
-        "Linux": /Linux/i,
-        "Unix": /Unix/i
+        iOS: /like Mac OS/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /Unix/i,
     };
 
     const userAgentDataRegex = {
-        "Windows": /Windows/i,
+        Windows: /Windows/i,
         "Mac OS": /Mac OS/i,
-        "iOS": /like Mac OS/i,
-        "Android": /Android/i,
-        "Linux": /Linux/i,
-        "Unix": /Unix/i
+        iOS: /like Mac OS/i,
+        Android: /Android/i,
+        Linux: /Linux/i,
+        Unix: /Unix/i,
     };
 
     let os = "Unknown";
@@ -145,23 +374,23 @@ async function getAnalyticsData() {
             minMem: navigator.deviceMemory ?? 0,
             gpu: extractImportantGPUInfo(debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "unknown"),
             os: getOSInfo(),
-            bench: await benchmarkTest()
+            bench: await benchmarkTest(),
         },
         browser: {
             name: browserInfo.name,
-            version: browserInfo.version
+            version: browserInfo.version,
         },
         locale: navigator.language,
         tzOff: -(new Date().getTimezoneOffset() / 60),
         dst: +(new Date().getTimezoneOffset() < Math.max(new Date(new Date().getFullYear(), 0, 1).getTimezoneOffset(), new Date(new Date().getFullYear(), 6, 1).getTimezoneOffset())),
-        isMobile: +(/Android|webOS|iPhone|iPad|iPod|BlackBerry|android|mobi/i.test(navigator.userAgent))
+        isMobile: +/Android|webOS|iPhone|iPad|iPod|BlackBerry|android|mobi/i.test(navigator.userAgent),
     };
 
     const userAgentData = navigator.userAgentData;
 
     if (userAgentData) {
         if (userAgentData.brands.length > 0) {
-            const brand = userAgentData.brands.find(b => b.version == output.browser.version)?.brand;
+            const brand = userAgentData.brands.find((b) => b.version == output.browser.version)?.brand;
 
             if (brand) {
                 output.browser.name = brand;
@@ -192,9 +421,9 @@ export async function loadUUID() {
         }
     }
 
-    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then(r => r.json());
+    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then((r) => r.json());
     if (!data.ok) throw new Error("Failed to get UUID data");
-    localStorage.setItem("uuid", data.uuid + ":" + (Date.now() + 1E3 * 60 * 60 * 24));
+    localStorage.setItem("uuid", data.uuid + ":" + (Date.now() + 1e3 * 60 * 60 * 24));
     return data.uuid;
 }
 
@@ -216,7 +445,7 @@ class ModdingAPI {
 
     constructor() {
         this.#channel = new BroadcastChannel("floofModdingAPI");
-        this.#channel.onmessage = e => this.#handleFloofModdingAPI(e.data);
+        this.#channel.onmessage = (e) => this.#handleFloofModdingAPI(e.data);
 
         console.log("Modding API initialized");
 
@@ -230,7 +459,8 @@ class ModdingAPI {
             throw new Error("Invalid job ID");
         }
 
-        if (data[2] !== null) { // transferrable type
+        if (data[2] !== null) {
+            // transferrable type
             let obj = new PetalConfig("", 0, 0, 0);
 
             switch (data[2]) {
@@ -261,7 +491,7 @@ class ModdingAPI {
     }
 
     #askModdingAPI(...args) {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const id = this.#jobID++;
             this.#jobs.set(id, resolve);
             this.#channel.postMessage([id, ...args]);
@@ -269,15 +499,15 @@ class ModdingAPI {
     }
 
     syncPetalIndex(name) {
-        return state.petalConfigs.findIndex(p => p.name === name);
+        return state.petalConfigs.findIndex((p) => p.name === name);
     }
 
     syncMobIndex(name) {
-        return state.mobConfigs.findIndex(m => m.name === name);
+        return state.mobConfigs.findIndex((m) => m.name === name);
     }
 
     syncRarityIndex(name) {
-        return state.tiers.findIndex(t => t.name === name);
+        return state.tiers.findIndex((t) => t.name === name);
     }
 
     syncNextAvailablePetalIndex() {
@@ -312,7 +542,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid mob name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -324,7 +554,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid rarity name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -356,7 +586,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid petal name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -365,7 +595,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Index must be a number pointing to an existing petal",
-                data: null
+                data: null,
             };
         }
 
@@ -377,7 +607,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Options must be a PetalConfig object",
-                data: null
+                data: null,
             };
         }
 
@@ -387,7 +617,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Drawing is a required option",
-                data: null
+                data: null,
             };
         }
 
@@ -399,7 +629,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Options must be a PetalConfig object",
-                data: null
+                data: null,
             };
         }
 
@@ -418,7 +648,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid petal name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -427,7 +657,7 @@ class ModdingAPI {
             return {
                 ok: false,
                 message: "Index must be a number pointing to an existing petal",
-                data: null
+                data: null,
             };
         }
 
@@ -442,7 +672,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid petal name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -454,7 +684,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid rarity name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -467,7 +697,6 @@ class ModdingAPI {
     }
 
     async spawnAIPlayer(rarity, level) {
-
         if (typeof rarity === "string") {
             rarity = this.syncRarityIndex(rarity);
 
@@ -475,7 +704,7 @@ class ModdingAPI {
                 return {
                     ok: false,
                     message: "Invalid rarity name",
-                    data: null
+                    data: null,
                 };
             }
         }
@@ -514,83 +743,85 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
                 biomeInt = BIOME_TYPES.HALLOWEEN;
                 break;
             } else {
-                return new Promise(resolve => resolve({
-                    ok: false,
-                    error: "Halloween biome is not available"
-                }));
+                return new Promise((resolve) =>
+                    resolve({
+                        ok: false,
+                        error: "Halloween biome is not available",
+                    }),
+                );
             }
         case "dark_forest":
-            biomeInt = BIOME_TYPES.DARK_FOREST
+            biomeInt = BIOME_TYPES.DARK_FOREST;
             break;
         default:
-            return new Promise(resolve => resolve({
-                ok: false,
-                error: "Invalid biome"
-            }));
+            return new Promise((resolve) =>
+                resolve({
+                    ok: false,
+                    error: "Invalid biome",
+                }),
+            );
     }
 
-    return new Promise(resolve => {
-        const timeout = setTimeout(() => resolve({
-            ok: false,
-            error: "Timeout error"
-        }), 10000);
+    return new Promise((resolve) => {
+        const timeout = setTimeout(
+            () =>
+                resolve({
+                    ok: false,
+                    error: "Timeout error",
+                }),
+            10000,
+        );
 
         const socket = new WebSocket(`${util.SERVER_URL.replace("http", "ws")}/ws/lobby?gameName=${name}&isModded=${modded ? "yes" : "no"}&isPrivate=${isPrivate ? "yes" : "no"}&gamemode=${gamemode}&biome=${biomeInt}&analytics=${analyticalData}`);
         socket.binaryType = "arraybuffer";
 
         socket.onopen = () => {
             console.log("Connected to server");
-            
-            // Setup ping
-            const PING_INTERVAL = 30000; // 30 seconds
-            const ping = () => {if (socket.readyState === WebSocket.OPEN) socket.ping()};
-            const intervalId = setInterval(ping, PING_INTERVAL);
 
             const worker = new Worker("./server/index.js", { type: "module" });
             worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
-            
-            socket.onmessage = event => {
+
+            socket.onmessage = (event) => {
                 const data = new Uint8Array(event.data);
-                
+
                 if (data[0] === 255) {
                     clearTimeout(timeout);
-                    
+
                     const ok = data[1] === 1;
-                    
+
                     if (!ok) {
                         resolve({
                             ok: false,
-                            error: "Request rejected by server: " + new TextDecoder().decode(data.slice(2, -1))
+                            error: "Request rejected by server: " + new TextDecoder().decode(data.slice(2, -1)),
                         });
                     }
-                    
+
                     resolve({
                         ok: true,
                         party: new TextDecoder().decode(data.slice(2, -1)),
                         worker: worker,
-                        socket: socket
+                        socket: socket,
                     });
                     return;
                 }
-                
+
                 worker.postMessage(data);
-            }
-            
+            };
+
             worker.onmessage = ({ data }) => {
                 if (socket.readyState !== WebSocket.OPEN) return;
                 socket.send(data);
-            }
-            
+            };
+
             socket.onclose = () => {
-                clearInterval(intervalId);
                 console.log("Disconnected from server");
                 worker.terminate();
-            }
+            };
 
             if (modded) {
                 new ModdingAPI();
             }
-        }
+        };
     });
 }
 
@@ -648,14 +879,14 @@ export class ClientPlayer extends ClientEntity {
     interpolate() {
         super.interpolate();
 
-        if (Math.abs(this.realHealthRatio - this.healthRatio) > .01 && this.healthRatio > this.realHealthRatio) {
+        if (Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 && this.healthRatio > this.realHealthRatio) {
             this.lastHealthLoweredAt = performance.now();
         }
 
         this.secondaryHealthBar = Math.max(this.healthRatio, this.secondaryHealthBar);
 
         if (performance.now() - this.lastHealthLoweredAt > 256) {
-            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * .75);
+            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * 0.75);
         }
 
         this.healthRatio = util.lerp(this.healthRatio, this.realHealthRatio, state.interpolationFactor);
@@ -691,14 +922,14 @@ export class ClientMob extends ClientEntity {
     interpolate() {
         super.interpolate();
 
-        if (Math.abs(this.realHealthRatio - this.healthRatio) > .01 && this.healthRatio > this.realHealthRatio) {
+        if (Math.abs(this.realHealthRatio - this.healthRatio) > 0.01 && this.healthRatio > this.realHealthRatio) {
             this.lastHealthLoweredAt = performance.now();
         }
 
         this.secondaryHealthBar = Math.max(this.healthRatio, this.secondaryHealthBar);
 
         if (performance.now() - this.lastHealthLoweredAt > 256) {
-            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * .75);
+            this.secondaryHealthBar = util.lerp(this.secondaryHealthBar, this.healthRatio, state.interpolationFactor * 0.75);
         }
 
         this.healthRatio = util.lerp(this.healthRatio, this.realHealthRatio, state.interpolationFactor);
@@ -732,7 +963,7 @@ export class ClientMarker {
 }
 
 export class ClientLightning {
-    static TIME_ALIVE = 1E3;
+    static TIME_ALIVE = 1e3;
 
     constructor(id) {
         this.id = id;
@@ -755,8 +986,8 @@ export class ClientLightning {
 
             for (let j = 1; j < pointsBetweenPoints; j++) {
                 // Add some jaggedness
-                const x = util.lerp(p1.x, p2.x, j / pointsBetweenPoints) + (Math.random() - .5) * 50;
-                const y = util.lerp(p1.y, p2.y, j / pointsBetweenPoints) + (Math.random() - .5) * 50;
+                const x = util.lerp(p1.x, p2.x, j / pointsBetweenPoints) + (Math.random() - 0.5) * 50;
+                const y = util.lerp(p1.y, p2.y, j / pointsBetweenPoints) + (Math.random() - 0.5) * 50;
                 points.push({ x, y });
             }
         }
@@ -821,6 +1052,109 @@ export class ChatMessage {
 
 new ChatMessage(1, "Welcome to the game!", "#FFFFFF");
 
+const _chatListeners = new Set();
+const _captureQueue = [];
+
+export function sendChatMessage(m) {
+    if (typeof m !== "string") return false;
+    m = m.trim();
+    if (!m.length) return false;
+    if (!state.socket || state.socket.readyState !== WebSocket.OPEN) return false;
+    state.socket.talk(SERVER_BOUND.CHAT_MESSAGE, m);
+    for (let i = 0; i < _captureQueue.length; i++) {
+        const entry = _captureQueue[i];
+        if (typeof entry.idleMs === "number" && entry.idleTimer) {
+            clearTimeout(entry.idleTimer);
+            entry.idleTimer = setTimeout(entry.finalize, Math.max(entry.idleMs, 1500));
+        }
+    }
+    return true;
+}
+
+export function onChatMessage(cb) {
+    if (typeof cb !== "function") return function () {};
+    _chatListeners.add(cb);
+    return function () { _chatListeners.delete(cb); };
+}
+
+export function captureChatMessage(predicate, opts) {
+    if (typeof opts === "number") opts = { timeoutMs: opts };
+    opts = opts || {};
+    const timeoutMs = opts.timeoutMs || 3000;
+    const isMulti =
+        (typeof opts.count === "number" && opts.count > 1) ||
+        typeof opts.idleMs === "number";
+
+    return new Promise(function (resolve) {
+        const entry = {
+            predicate: predicate,
+            isMulti: isMulti,
+            count: opts.count,
+            idleMs: opts.idleMs,
+            collected: [],
+        };
+        const finalize = function () {
+            clearTimeout(entry.overallTimer);
+            clearTimeout(entry.idleTimer);
+            const idx = _captureQueue.indexOf(entry);
+            if (idx !== -1) _captureQueue.splice(idx, 1);
+            if (isMulti) resolve(entry.collected.slice());
+            else resolve(entry.collected[0] || null);
+        };
+        entry.finalize = finalize;
+        entry.overallTimer = setTimeout(finalize, timeoutMs);
+        _captureQueue.push(entry);
+    });
+}
+
+const _origAllMessagesPush = ChatMessage.allMessages.push.bind(ChatMessage.allMessages);
+ChatMessage.allMessages.push = function () {
+    const r = _origAllMessagesPush.apply(ChatMessage.allMessages, arguments);
+    for (let i = 0; i < arguments.length; i++) {
+        const m = arguments[i];
+        if (!m) continue;
+        const evt = { type: m.type, username: m.username, message: m.message, color: m.color };
+
+        let captured = false;
+        for (let f = 0; f < _captureQueue.length; f++) {
+            const entry = _captureQueue[f];
+            try {
+                if (entry.predicate(evt)) {
+                    entry.collected.push(evt);
+                    captured = true;
+                    if (!entry.isMulti) {
+                        entry.finalize();
+                    } else {
+                        if (typeof entry.idleMs === "number") {
+                            clearTimeout(entry.idleTimer);
+                            entry.idleTimer = setTimeout(entry.finalize, entry.idleMs);
+                        }
+                        if (typeof entry.count === "number" && entry.collected.length >= entry.count) {
+                            entry.finalize();
+                        }
+                    }
+                    break;
+                }
+            } catch (e) {
+                console.error("[captureChatMessage] predicate error:", e);
+            }
+        }
+
+        if (captured) {
+            const ai = ChatMessage.allMessages.indexOf(m);
+            if (ai !== -1) ChatMessage.allMessages.splice(ai, 1);
+            const mi = ChatMessage.messages.indexOf(m);
+            if (mi !== -1) ChatMessage.messages.splice(mi, 1);
+            continue;
+        }
+
+        _chatListeners.forEach(function (fn) {
+            try { fn(evt); } catch (e) { console.error("[onChatMessage] listener error:", e); }
+        });
+    }
+    return r;
+};
+
 export class ClientSocket extends WebSocket {
     static Listener = class Listener {
         /** @param {ClientSocket} socket */
@@ -832,7 +1166,7 @@ export class ClientSocket extends WebSocket {
         }
 
         wait(data) {
-            return new Promise(resolve => {
+            return new Promise((resolve) => {
                 const id = this.jobID++;
                 this.socket.talk(SERVER_BOUND.DEV_CHEAT, { promiseID: id, ...data });
                 this.jobs.set(id, resolve);
@@ -848,7 +1182,7 @@ export class ClientSocket extends WebSocket {
             this.jobs.delete(id);
             return true;
         }
-    }
+    };
 
     constructor(url, username) {
         super(url);
@@ -866,59 +1200,82 @@ export class ClientSocket extends WebSocket {
             this.devCheatListener = new ClientSocket.Listener(this);
 
             window.floof_dev = {
-                spawnMob:  (index, rarity) => {
+                spawnMob: (index, rarity) => {
                     if (typeof index === "string") {
-                        index = state.mobConfigs.findIndex(m => m.name === index);
+                        index = state.mobConfigs.findIndex((m) => m.name === index);
 
                         if (index === -1) {
-                            return new Promise(resolve => resolve({
-                                ok: false,
-                                message: "Invalid mob name"
-                            }));
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid mob name",
+                                }),
+                            );
                         }
                     }
 
                     if (typeof rarity === "string") {
-                        rarity = state.tiers.findIndex(t => t.name === rarity);
+                        rarity = state.tiers.findIndex((t) => t.name === rarity);
 
                         if (rarity === -1) {
-                            return new Promise(resolve => resolve({
-                                ok: false,
-                                message: "Invalid rarity name"
-                            }));
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid rarity name",
+                                }),
+                            );
                         }
                     }
 
-                    return this.devCheatListener.wait({ id: DEV_CHEAT_IDS.SPAWN_MOB, index, rarity });
+                    return this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SPAWN_MOB,
+                        index,
+                        rarity,
+                    });
                 },
                 setPetal: (clientID, slotID, index, rarity) => {
                     if (typeof index === "string") {
-                        index = state.petalConfigs.findIndex(p => p.name === index);
+                        index = state.petalConfigs.findIndex((p) => p.name === index);
 
                         if (index === -1) {
-                            return new Promise(resolve => resolve({
-                                ok: false,
-                                message: "Invalid petal name"
-                            }));
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid petal name",
+                                }),
+                            );
                         }
                     }
 
                     if (typeof rarity === "string") {
-                        rarity = state.tiers.findIndex(t => t.name === rarity);
+                        rarity = state.tiers.findIndex((t) => t.name === rarity);
 
                         if (rarity === -1) {
-                            return new Promise(resolve => resolve({
-                                ok: false,
-                                message: "Invalid rarity name"
-                            }));
+                            return new Promise((resolve) =>
+                                resolve({
+                                    ok: false,
+                                    message: "Invalid rarity name",
+                                }),
+                            );
                         }
                     }
 
                     console.log(clientID, slotID, index, rarity);
 
-                    return this.devCheatListener.wait({ id: DEV_CHEAT_IDS.SET_PETAL, clientID, slotID, index, rarity });
+                    return this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SET_PETAL,
+                        clientID,
+                        slotID,
+                        index,
+                        rarity,
+                    });
                 },
-                setXP: (clientID, xp) => this.devCheatListener.wait({ id: DEV_CHEAT_IDS.SET_XP, clientID, xp }),
+                setXP: (clientID, xp) =>
+                    this.devCheatListener.wait({
+                        id: DEV_CHEAT_IDS.SET_XP,
+                        clientID,
+                        xp,
+                    }),
                 infoDump: () => this.devCheatListener.wait({ id: DEV_CHEAT_IDS.INFO_DUMP }),
             };
         }
@@ -928,7 +1285,7 @@ export class ClientSocket extends WebSocket {
 
         this.bandWidth = {
             in: 0,
-            out: 0
+            out: 0,
         };
 
         this.bandwidthTracker = setInterval(() => {
@@ -936,13 +1293,15 @@ export class ClientSocket extends WebSocket {
             this.bandWidth.out = (this._dataOut / 1024).toFixed(2);
             this._dataIn = 0;
             this._dataOut = 0;
-        }, 1E3);
+        }, 1e3);
     }
 
     onOpen() {
         console.log("Connected to lobby.");
         this.verify(this.username);
-        setTimeout(() => {this.ping(), console.log("Pinging websocket server.")}, 1E3);
+        setTimeout(() => {
+            (this.ping(), console.log("Pinging websocket server."));
+        }, 1e3);
     }
 
     onClose() {
@@ -952,7 +1311,7 @@ export class ClientSocket extends WebSocket {
 
     onMessage(event) {
         state.pendingDropAmounts ??= new Map();
-        const reader = new Reader(new DataView(new Uint8Array(event.data).buffer), 0,  true);
+        const reader = new Reader(new DataView(new Uint8Array(event.data).buffer), 0, true);
         this._dataIn += event.data.byteLength;
 
         switch (reader.getUint8()) {
@@ -965,6 +1324,7 @@ export class ClientSocket extends WebSocket {
                 state.usesNewInventory = false;
                 break;
             case CLIENT_BOUND.WORLD_UPDATE:
+                pendingHealthChanges.length = 0;
                 state.updatesCounter++;
                 state.camera.realX = reader.getFloat32();
                 state.camera.realY = reader.getFloat32();
@@ -973,7 +1333,7 @@ export class ClientSocket extends WebSocket {
                 state.playerID = reader.getUint32();
 
                 let id;
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const flags = reader.getUint8();
                     let player = state.players.get(id);
 
@@ -1054,8 +1414,13 @@ export class ClientSocket extends WebSocket {
                     }
 
                     if (flags & ENTITY_FLAGS.HEALTH) {
+                        const oldHealthRatio = player.realHealthRatio;
                         player.realHealthRatio = reader.getUint8() / 255;
                         player.realShieldRatio = reader.getUint8() / 255;
+
+                        if (oldHealthRatio !== player.realHealthRatio) {
+                            queueHealthChange(player.id, oldHealthRatio, player.realHealthRatio, player.realX, player.realY, player.poisoned);
+                        }
                     }
 
                     if (flags & ENTITY_FLAGS.DISPLAY) {
@@ -1066,7 +1431,7 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const flags = reader.getUint8();
                     let petal = state.petals.get(id);
 
@@ -1117,7 +1482,7 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const flags = reader.getUint8();
                     let mob = state.mobs.get(id);
 
@@ -1153,12 +1518,14 @@ export class ClientSocket extends WebSocket {
                                 mob.extraData = new StarfishData();
                                 break;
                             case "Leech":
-                                mob.extraData = [{
-                                    x: 0,
-                                    y: 0,
-                                    realX: 0,
-                                    realY: 0
-                                }];
+                                mob.extraData = [
+                                    {
+                                        x: 0,
+                                        y: 0,
+                                        realX: 0,
+                                        realY: 0,
+                                    },
+                                ];
                                 break;
                         }
                         continue;
@@ -1191,7 +1558,13 @@ export class ClientSocket extends WebSocket {
                     }
 
                     if (flags & ENTITY_FLAGS.HEALTH) {
+                        const oldHealthRatio = mob.realHealthRatio;
                         mob.realHealthRatio = reader.getUint8() / 255;
+
+                        if (oldHealthRatio !== mob.realHealthRatio) {
+                            const mobMaxHealth = state.mobConfigs[mob.index]?.tiers[mob.rarity]?.health ?? 100;
+                            queueHealthChange(mob.id, oldHealthRatio, mob.realHealthRatio, mob.realX, mob.realY, mob.poisoned, mobMaxHealth);
+                        }
                     }
 
                     if (flags & ENTITY_FLAGS.ROPE_BODIES) {
@@ -1203,7 +1576,7 @@ export class ClientSocket extends WebSocket {
                             for (let i = 0; i < count; i++) {
                                 mob.extraData.push({
                                     x: reader.getFloat32(),
-                                    y: reader.getFloat32()
+                                    y: reader.getFloat32(),
                                 });
 
                                 mob.extraData[i].realX = mob.extraData[i].x;
@@ -1239,11 +1612,11 @@ export class ClientSocket extends WebSocket {
                     state.drops.set(id, drop);
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     state.drops.delete(id);
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const flags = reader.getUint8();
                     let marker = state.markers.get(id);
 
@@ -1267,23 +1640,27 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
-                while (id = reader.getUint32(), id > 0) {
+                while (((id = reader.getUint32()), id > 0)) {
                     const lightning = new ClientLightning(id);
                     const count = reader.getUint16();
 
                     for (let i = 0; i < count; i++) {
                         lightning.points.push({
                             x: reader.getFloat32(),
-                            y: reader.getFloat32()
+                            y: reader.getFloat32(),
                         });
                     }
 
+                    registerLightningStrike(lightning.points);
                     lightning.improvePoints();
 
                     state.lightning.set(id, lightning);
                 }
 
-                { // Main slots
+                flushPendingHealthChanges();
+
+                {
+                    // Main slots
                     const count = reader.getUint8();
 
                     if (count !== state.slots.length) {
@@ -1306,8 +1683,9 @@ export class ClientSocket extends WebSocket {
                         }
                     }
                 }
-                
-                { // Secondary slots
+
+                {
+                    // Secondary slots
                     const count = reader.getUint8();
 
                     if (count !== state.secondarySlots.length) {
@@ -1332,27 +1710,28 @@ export class ClientSocket extends WebSocket {
                     const wave = reader.getUint16();
                     const livingMobs = reader.getUint16();
                     const maxMobs = reader.getUint16();
-                
+
                     const mobCount = reader.getUint16();
                     const aliveMobs = [];
-                
+
                     for (let i = 0; i < mobCount; i++) {
                         const index = reader.getUint8();
                         const rarity = reader.getUint8();
-                        aliveMobs.push({index, rarity});
+                        aliveMobs.push({ index, rarity });
                     }
-                
+
                     state.waveInfo = {
                         wave,
                         livingMobs,
                         maxMobs,
-                        aliveMobs
+                        aliveMobs,
                     };
                 } else {
                     state.waveInfo = null;
                 }
 
-                { // Players
+                {
+                    // Players
                     const count = reader.getUint8();
                     const alivePlayers = [];
 
@@ -1361,28 +1740,30 @@ export class ClientSocket extends WebSocket {
                         const highestRarity = reader.getUint8();
                         const xp = reader.getFloat32() * 10000;
                         const username = reader.getStringUTF8();
-                        alivePlayers.push({xp, username, team, highestRarity});
+                        alivePlayers.push({ xp, username, team, highestRarity });
                     }
-                    
-                    state.alivePlayers = alivePlayers
+
+                    state.alivePlayers = alivePlayers;
                 }
 
                 state.playerCount = reader.getUint8();
 
                 state.level = reader.getUint16();
                 state.levelProgressTarget = reader.getFloat32();
-                
+
                 const TIER_COUNT = state.tiers?.length ?? 29;
 
                 for (let ti = 0; ti < TIER_COUNT; ti++) {
                     const tier = state.tiers?.[ti];
                     if (!tier?.name) continue;
+
                     const petalCount = reader.getUint16();
 
                     if (!state.usesNewInventory) {
                         state.inventory ??= {};
                         state.inventory[tier.name] ??= {};
                     }
+
                     for (let i = 0; i < petalCount; i++) {
                         const petalId = reader.getUint16();
                         const amount = reader.getUint16();
@@ -1391,6 +1772,8 @@ export class ClientSocket extends WebSocket {
                             state.inventory[tier.name][petalId] = amount;
                         }
                     }
+
+                    state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 }
                 break;
             case 250: {
@@ -1418,8 +1801,8 @@ export class ClientSocket extends WebSocket {
                     state.usesNewInventory = true;
                     state.inventory = {};
                 }
-                
-                        const count = reader.getUint16();
+
+                const count = reader.getUint16();
                 const tiers = state.tiers ?? [];
 
                 for (let i = 0; i < count; i++) {
@@ -1440,6 +1823,7 @@ export class ClientSocket extends WebSocket {
                     }
                 }
 
+                state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 break;
             }
             case 111: {
@@ -1545,9 +1929,7 @@ export class ClientSocket extends WebSocket {
                     __RAF_RUNNING__ = false;
                 }
 
-                console.log(
-                    "Client: Gradient cache cleared. Special Gradients received.",
-                );
+                console.log("Client: Gradient cache cleared. Special Gradients received.");
 
                 break;
             }
@@ -1565,61 +1947,106 @@ export class ClientSocket extends WebSocket {
                     state.minimapPlayers.set(id, { id, x, y });
                 }
 
-                break;
-            }
-            case CLIENT_BOUND.ROOM_UPDATE:
-                state.room.width = reader.getFloat32();
-                state.room.height = reader.getFloat32();
-                state.room.isRadial = reader.getUint8() === 1;
-                state.room.biome = reader.getUint8();
-                break;
-            case CLIENT_BOUND.DEATH:
-                state.isDead = true;
-                state.killMessage = reader.getStringUTF8();
-                break;
-            case CLIENT_BOUND.UPDATE_ASSETS:
-                console.warn("Server is asking us to update assets");
-                loadAssets(this.lobbyID);
-                break;
-            case CLIENT_BOUND.JSON_MESSAGE:
-                if (this.devCheatListener) {
-                    const data = JSON.parse(reader.getStringUTF8());
-                    if (!this.devCheatListener.handle(data.promiseID, (() => {
-                        delete data.promiseID;
-                        return data;
-                    })())) {
-                        console.warn("Unhandled JSON message", data);
-                    }
-                } else {
-                    console.warn("Received JSON message without a listener:", reader.getStringUTF8());
-                }
-                break;
-            case CLIENT_BOUND.PONG:
-                state.ping = performance.now() - this.pingStart;
-                setTimeout(() => this.ping(), 1E3);
-                break;
-            case CLIENT_BOUND.TERRAIN:
-                state.terrain = {
-                    width: reader.getUint16(),
-                    height: reader.getUint16(),
-                    blocks: ((blocks = []) => {
-                        for (let i = reader.getUint16(); i > 0; i--) {
-                            blocks.push({
-                                x: reader.getInt16(),
-                                y: reader.getInt16(),
-                                type: [reader.getUint8(), reader.getUint8()],
-                                terrain: []
-                            });
+        break;
+      }
+case 113: {
+    if (!state.terrain?.blocks) {
+        break;
+    }
+
+    const count = reader.getUint32();
+
+    state.terrainScores = new Map();
+
+    for (let i = 0; i < count; i++) {
+        const x = reader.getUint16();
+        const y = reader.getUint16();
+        const score = reader.getFloat32();
+
+        state.terrainScores.set(`${x},${y}`, score);
+    }
+
+    state.minimapImgWalls = renderTerrainForMap(
+        state.terrain.width,
+        state.terrain.blocks,
+        state.tiers,
+        state.terrainScores,
+        false,
+    );
+
+    state.minimapImgTerrain = renderTerrainForMap(
+        state.terrain.width,
+        state.terrain.blocks,
+        state.tiers,
+        state.terrainScores,
+        true,
+    );
+
+    state.minimapImg = state.minimapImgWalls;
+
+    break;
+}
+      case CLIENT_BOUND.ROOM_UPDATE:
+        state.room.width = reader.getFloat32();
+        state.room.height = reader.getFloat32();
+        state.room.isRadial = reader.getUint8() === 1;
+        state.room.biome = reader.getUint8();
+        break;
+      case CLIENT_BOUND.DEATH:
+        state.isDead = true;
+        state.killMessage = reader.getStringUTF8();
+        break;
+      case CLIENT_BOUND.UPDATE_ASSETS:
+        console.warn("Server is asking us to update assets");
+        loadAssets(this.lobbyID);
+        break;
+      case CLIENT_BOUND.JSON_MESSAGE:
+        if (this.devCheatListener) {
+          const data = JSON.parse(reader.getStringUTF8());
+          if (
+            !this.devCheatListener.handle(
+              data.promiseID,
+              (() => {
+                delete data.promiseID;
+                return data;
+              })(),
+            )
+          ) {
+            console.warn("Unhandled JSON message", data);
+          }
+        } else {
+          console.warn(
+            "Received JSON message without a listener:",
+            reader.getStringUTF8(),
+          );
+        }
+        break;
+      case CLIENT_BOUND.PONG:
+        state.ping = performance.now() - this.pingStart;
+        setTimeout(() => this.ping(), 1e3);
+        break;
+      case CLIENT_BOUND.TERRAIN:
+        state.terrain = {
+          width: reader.getUint16(),
+          height: reader.getUint16(),
+          blocks: ((blocks = []) => {
+            for (let i = reader.getUint16(); i > 0; i--) {
+              blocks.push({
+                x: reader.getInt16(),
+                y: reader.getInt16(),
+                type: [reader.getUint8(), reader.getUint8()],
+                terrain: [],
+              });
 
                             blocks[blocks.length - 1].terrain = terrains[blocks[blocks.length - 1].type[0]][blocks[blocks.length - 1].type[1]];
                         }
 
                         return blocks;
                     })(),
-                    overlay: null
+                    overlay: null,
                 };
 
-                state.terrainImg = renderTerrain(state.room.width * .5, state.room.height * .5, state.terrain.width, state.terrain.blocks, state.room.biome);
+                state.terrainImg = renderTerrain(state.room.width * 0.5, state.room.height * 0.5, state.terrain.width, state.terrain.blocks, state.room.biome);
                 state.minimapImg = renderTerrainForMap(state.terrain.width, state.terrain.blocks);
                 console.log(state.terrain.blocks);
                 if (util.isHalloween && state.terrain.blocks.length >= 8) {
@@ -1628,18 +2055,20 @@ export class ClientSocket extends WebSocket {
                     state.terrain.overlay = null;
                 }
                 break;
-            case CLIENT_BOUND.CHAT_MESSAGE: {
-                const type = reader.getUint8();
+            case CLIENT_BOUND.CHAT_MESSAGE:
+                {
+                    const type = reader.getUint8();
 
-                switch (type) {
-                    case 0: // Chat Message
-                        new ChatMessage(0, reader.getStringUTF8(), reader.getStringUTF8(), reader.getStringUTF8());
-                        break;
-                    case 1: // System Message
-                        new ChatMessage(1, reader.getStringUTF8(), reader.getStringUTF8());
-                        break;
+                    switch (type) {
+                        case 0: // Chat Message
+                            new ChatMessage(0, reader.getStringUTF8(), reader.getStringUTF8(), reader.getStringUTF8());
+                            break;
+                        case 1: // System Message
+                            new ChatMessage(1, reader.getStringUTF8(), reader.getStringUTF8());
+                            break;
+                    }
                 }
-            } break;
+                break;
         }
     }
 
@@ -1677,100 +2106,104 @@ export class ClientSocket extends WebSocket {
                     const x = mouse.x - canvas.width / 2;
                     const y = mouse.y - canvas.height / 2;
                     const angle = Math.atan2(y, x);
-                    const dist = util.quickDiff({ x: 0, y: 0, }, { x, y });
-                    const deadzone = .1
+                    const dist = util.quickDiff({ x: 0, y: 0 }, { x, y });
+                    const deadzone = 0.1;
 
                     writer.setFloat32(angle);
-                    writer.setFloat32(Math.max(0, (dist / (canvas.width / 2)) - deadzone) / (1 - deadzone));
+                    writer.setFloat32(Math.max(0, dist / (canvas.width / 2) - deadzone) / (1 - deadzone));
                 }
                 if (data & 0x80) {
                     writer.setFloat32(joystick.angle);
                     writer.setFloat32(joystick.distance);
                 }
                 break;
-            case SERVER_BOUND.CHANGE_LOADOUT: {
-                const { drag, drop } = data; // { type, index }
-                writer.setUint8(drag.type);
-                writer.setUint8(drag.index);
-                writer.setUint8(drop.type);
-                writer.setUint8(drop.index);
-            }
-            break;
-            case SERVER_BOUND.DEV_CHEAT: {
-                const type = Number.isInteger(data) ? data : data.id;
-                writer.setUint8(type);
-
-                switch (type) {
-                    case DEV_CHEAT_IDS.TELEPORT:
-                        const tpUScale = gameScale(state.camera.fov);
-                        writer.setFloat32((mouse.x - canvas.width / 2) / tpUScale);
-                        writer.setFloat32((mouse.y - canvas.height / 2) / tpUScale);
-                        break;
-                    case DEV_CHEAT_IDS.CHANGE_TEAM:
-                        let id = 0,
-                            sc = gameScale(state.camera.fov),
-                            x = state.camera.x + (mouse.x - canvas.width / 2) / sc,
-                            y = state.camera.y + (mouse.y - canvas.height / 2) / sc;
-
-                        for (const mob of state.mobs.values()) {
-                            let dx = mob.x - x,
-                                dy = mob.y - y,
-                                dist = Math.sqrt(dx * dx + dy * dy);
-
-                            if (dist < mob.size) {
-                                id = mob.id;
-                                break;
-                            }
-                        }
-
-                        for (const player of state.players.values()) {
-                            let dx = player.x - x,
-                                dy = player.y - y,
-                                dist = Math.sqrt(dx * dx + dy * dy);
-
-                            if (dist < player.size) {
-                                id = player.id;
-                                break;
-                            }
-                        }
-
-                        writer.setUint32(id);
-                        break;
-                    case DEV_CHEAT_IDS.SPAWN_MOB:
-                        writer.setUint32(data.promiseID);
-                        writer.setUint8(data.index);
-                        writer.setUint8(data.rarity);
-                        break;
-                    case DEV_CHEAT_IDS.SET_PETAL:
-                        writer.setUint32(data.promiseID);
-                        writer.setUint32(data.clientID);
-                        writer.setUint8(data.slotID);
-                        writer.setUint8(data.index);
-                        writer.setUint8(data.rarity);
-                        break;
-                    case DEV_CHEAT_IDS.SET_XP:
-                        writer.setUint32(data.promiseID);
-                        writer.setUint32(data.clientID);
-                        writer.setUint32(data.xp);
-                        break;
-                    case DEV_CHEAT_IDS.INFO_DUMP:
-                        writer.setUint32(data.promiseID);
-                        break;
+            case SERVER_BOUND.CHANGE_LOADOUT:
+                {
+                    const { drag, drop } = data; // { type, index }
+                    writer.setUint8(drag.type);
+                    writer.setUint8(drag.index);
+                    writer.setUint8(drop.type);
+                    writer.setUint8(drop.index);
                 }
-            } break;
+                break;
+            case SERVER_BOUND.DEV_CHEAT:
+                {
+                    const type = Number.isInteger(data) ? data : data.id;
+                    writer.setUint8(type);
+
+                    switch (type) {
+                        case DEV_CHEAT_IDS.TELEPORT:
+                            const tpUScale = gameScale(state.camera.fov);
+                            writer.setFloat32((mouse.x - canvas.width / 2) / tpUScale);
+                            writer.setFloat32((mouse.y - canvas.height / 2) / tpUScale);
+                            break;
+                        case DEV_CHEAT_IDS.CHANGE_TEAM:
+                            let id = 0,
+                                sc = gameScale(state.camera.fov),
+                                x = state.camera.x + (mouse.x - canvas.width / 2) / sc,
+                                y = state.camera.y + (mouse.y - canvas.height / 2) / sc;
+
+                            for (const mob of state.mobs.values()) {
+                                let dx = mob.x - x,
+                                    dy = mob.y - y,
+                                    dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < mob.size) {
+                                    id = mob.id;
+                                    break;
+                                }
+                            }
+
+                            for (const player of state.players.values()) {
+                                let dx = player.x - x,
+                                    dy = player.y - y,
+                                    dist = Math.sqrt(dx * dx + dy * dy);
+
+                                if (dist < player.size) {
+                                    id = player.id;
+                                    break;
+                                }
+                            }
+
+                            writer.setUint32(id);
+                            break;
+                        case DEV_CHEAT_IDS.SPAWN_MOB:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint8(data.index);
+                            writer.setUint8(data.rarity);
+                            break;
+                        case DEV_CHEAT_IDS.SET_PETAL:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint32(data.clientID);
+                            writer.setUint8(data.slotID);
+                            writer.setUint8(data.index);
+                            writer.setUint8(data.rarity);
+                            break;
+                        case DEV_CHEAT_IDS.SET_XP:
+                            writer.setUint32(data.promiseID);
+                            writer.setUint32(data.clientID);
+                            writer.setUint32(data.xp);
+                            break;
+                        case DEV_CHEAT_IDS.INFO_DUMP:
+                            writer.setUint32(data.promiseID);
+                            break;
+                    }
+                }
+                break;
             case SERVER_BOUND.CHAT_MESSAGE:
                 writer.setStringUTF8(data);
                 break;
-            case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT: {
-                const { drag, drop } = data; // { type, index }
-                writer.setUint8(drag.index);
-                writer.setUint8(drag.rarity);
-                writer.setUint8(drop.type);
-                writer.setUint8(drop.index);
-                writer.setUint8(drop.rarity);
-                writer.setUint8(drop.petalIndex);
-            }
-            break;
+            case SERVER_BOUND.INVENTORY_CHANGE_LOADOUT:
+                {
+                    const { drag, drop } = data; // { type, index }
+                    writer.setUint8(drag.index);
+                    writer.setUint8(drag.rarity);
+                    writer.setUint8(drop.type);
+                    writer.setUint8(drop.index);
+                    writer.setUint8(drop.rarity);
+                    writer.setUint8(drop.petalIndex);
+                }
+                break;
         }
 
         const output = writer.build();
@@ -1790,14 +2223,14 @@ export class IconItem {
     realSize = 0;
 
     interpolate() {
-        this.x = util.lerp(this.x, this.realX, .2);
-        this.y = util.lerp(this.y, this.realY, .2);
-        this.size = util.lerp(this.size, this.realSize, .2);
+        this.x = util.lerp(this.x, this.realX, 0.2);
+        this.y = util.lerp(this.y, this.realY, 0.2);
+        this.size = util.lerp(this.size, this.realSize, 0.2);
     }
 }
 
 export const state = {
-    interpolationFactor: .2,
+    interpolationFactor: 0.2,
     username: "",
 
     camera: {
@@ -1814,7 +2247,7 @@ export const state = {
             state.camera.x = util.lerp(state.camera.x, state.camera.realX, state.interpolationFactor);
             state.camera.y = util.lerp(state.camera.y, state.camera.realY, state.interpolationFactor);
             state.camera.fov = util.lerp(state.camera.fov, state.camera.realFov, state.interpolationFactor);
-        }
+        },
     },
 
     room: {
@@ -1844,11 +2277,11 @@ export const state = {
                         return BIOME_TYPES.DEFAULT;
                     }
                 case "dark_forest":
-                    return BIOME_TYPES.DARK_FOREST
+                    return BIOME_TYPES.DARK_FOREST;
                 default:
                     return BIOME_TYPES.DEFAULT;
             }
-        })()
+        })(),
     },
 
     playerID: 0,
@@ -1914,7 +2347,9 @@ export const state = {
     /** @type {OffscreenCanvas|null} */
     terrainImg: null,
     /** @type {OffscreenCanvas|null} */
-    minimapImg: null
+    minimapImg: null,
+    /** @type {{id:number,x:number,y:number,value:string,color:string,creation:number,lifetime:number,velocityY:number}[]} */
+    floatingTexts: [],
 };
 
 export const keyMap = new Set();
@@ -1922,7 +2357,7 @@ export const mouse = {
     x: 0,
     y: 0,
     left: false,
-    right: false
+    right: false,
 };
 
 export async function loadAssets(lobbyID) {
