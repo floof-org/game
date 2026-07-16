@@ -39,9 +39,11 @@ export const colors = {
     // RENDER COLORS
     white: "#FFFFFF",
     peach: "#FFF0B7",
+    sponge: "#FFD09F",
     cumWhite: "#ffffC9",
     black: "#000000",
     rosePink: "#FC93C5",
+    jellyPink: "#e3b8df",
     irisPurple: "#CD75DE",
     pollenGold: "#FEE86B",
     peaGreen: "#8CC05B",
@@ -74,25 +76,75 @@ export const colors = {
     ants: "#555555",
     fireAnt: "#a82a01",
     termite: "#d3a35b",
-    wasp: "#9f4627",
-    waspDark: "#34221c",
+    wasp: "#c8803c",
     jellyfish: "#EFEFEF",
     spider: "#4f412e",
     darkGreen: "#118240",
     beetlePurple: "#915db0",
     roach: "#9D4F23",
     roachHead: "#6C3419",
-    fireFlyLight: "#EFDECC",
     sand: "#E1C85D",
     jelly: "#D5B5D3",
     orange: "#F1BC48",
-    starfish: "#AA403F",
+    starfish: "#c74a48",
     book: "#c28043",
-    bookSpine: "#c28043",
     shrubGreen: "#0b7240",
     crabBodyOrange: "#dc704b",
-    crabLimbBrown: "#4d2621"
+    crabLimbBrown: "#4d2621",
+    jelly: "#D5B5D3",
+    stickBrown: "#6A4923",
+
+    defaultGray: "#718083",
+    gardenGreen: "#1EA660",
+    desertYellow: "#ECDCB8",
+    oceanBlue: "#6D96BE",
+    antHellBrown: "#8E603F",
+    hellRed: "#973332",
+    sewersGreen: "#676733",
+    darkForestGreen: "#2C5037",
+    halloweenOrange: "#CF5704"
 };
+export function rgbToHex(r, g, b) {
+    return (
+        "#" +
+        [r, g, b]
+            .map(v => v.toString(16).padStart(2, "0"))
+            .join("")
+    );
+}
+export function hexToRGB(h) {
+    h = h.replace("#", "");
+
+    return {
+        r: parseInt(h.substring(0, 2), 16),
+        g: parseInt(h.substring(2, 4), 16),
+        b: parseInt(h.substring(4, 6), 16)
+    };
+}
+export function chatGradient(speed, type, c1 = "#000000", c2 = "#ffffff") {
+    const a = performance.now() * speed;
+    switch (type) {
+        case 0: {
+            const t = hexToRGB(c1);
+            const e = hexToRGB(c2);
+
+            const mix = (Math.sin(a) + 1) / 2;
+
+            const r = Math.round(t.r + (e.r - t.r) * mix);
+            const g = Math.round(t.g + (e.g - t.g) * mix);
+            const b = Math.round(t.b + (e.b - t.b) * mix);
+
+            return rgbToHex(r, g, b);
+        }
+        case 1: {
+            const hue = a % 360;
+            return `hsl(${hue}, 100%, 60%)`;
+        }
+        default:
+            return "#ffffff";
+    }
+}
+
 export function formatLargeNumber(number, type = 0) {
     let returnedNumber = number;
     if (type === 1) {
@@ -209,10 +261,11 @@ export const options = {
     useTileBackground: false,
     fancyGraphics: false,
     showHitboxes: false,
+    showDamageNumbers: true,
     cacheMobAssets: false,
     cachePetalAssets: false,
 
-    disableGradients: false,
+    disableGradients: true,
     minimumGradientRarity: 6
 };
 
