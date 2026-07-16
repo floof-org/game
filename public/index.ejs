@@ -215,11 +215,15 @@
                 height: 20px;
             }
 
-            #bottomButtons {
-                background-color: rgba(0, 0, 0, 0.15);
-                border-radius: 5px;
-                padding: 5px;
-            }
+      #bottomButtons {
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        gap: 5px;
+        background-color: rgba(0, 0, 0, 0.15);
+        border-radius: 5px;
+        padding: 5px;
+      }
 
             #bottomButtons button {
                 width: 40px;
@@ -495,6 +499,9 @@
                     <label for="show-hitboxes">Show Hitboxes:</label>
                     <input type="checkbox" id="show-hitboxes" name="show-hitboxes" value="show-hitboxes" /><br />
 
+                    <label for="show-damage-numbers">Show Damage Numbers:</label>
+                    <input type="checkbox" id="show-damage-numbers" name="show-damage-numbers" value="show-damage-numbers" checked /><br />
+
                     <label for="cache-mob-assets">Cache Mob Assets:</label>
                     <input type="checkbox" id="cache-mob-assets" name="cache-mob-assets" value="cache-mob-assets" /><br />
 
@@ -514,7 +521,7 @@
 
                     <!-- Logged Out -->
                     <div id="accountLoggedOut" style="text-align: center; padding: 4vmin 2vmin">
-                        <div style="color: #888; margin-bottom: 3vmin; font-size: 2.2vmin">Sign in to save progress</div>
+                        <!-- <div style="color: #888; margin-bottom: 3vmin; font-size: 2.2vmin">Sign in to save progress</div> -->
                         <a
                             href="<%= DISCORD_OAUTH2_REDIRECT_URL %>"
                             id="discordLoginBtn"
@@ -618,36 +625,27 @@
                 const logoutBtn = document.getElementById("logoutButton");
 
                 try {
-                    const res = await fetch(`${AUTH_SERVER}/api/me`, {
-                        credentials: "include",
-                    });
+                    const res = await fetch(`${AUTH_SERVER}/api/me`, { credentials: "include" });
                     if (!res.ok) throw new Error();
-
                     const user = await res.json();
                     const name = user.global_name || user.username || "User";
                     const tag = user.discriminator === "0" ? "" : `#${user.discriminator}`;
-
                     username.textContent = `${name}${tag}`;
 
                     // GIF SUPPORT + FALLBACK
-                    if (user.avatar?.startsWith("a_")) {
-                        avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.gif?size=128`;
-                    } else if (user.avatar) {
-                        avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=128`;
-                    } else {
-                        avatar.src = `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) >> 22n) % 6n}.png`;
-                    }
+                    if (user.avatar?.startsWith("a_")) avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.gif?size=128`;
+                    else if (user.avatar) avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=128`;
+                    else avatar.src = `https://cdn.discordapp.com/embed/avatars/${user.id}.png`;
 
                     loggedIn.style.display = "block";
                     loggedOut.style.display = "none";
 
-                    logoutBtn.onclick = async () => {
-                        await fetch(`${AUTH_SERVER}/api/logout`, {
+                    logoutBtn.onclick = () => {
+                        fetch(`${AUTH_SERVER}/api/logout`, {
                             method: "POST",
                             credentials: "include",
                             headers: { "Content-Type": "application/json" },
-                        });
-                        location.reload();
+                        }).then(() => window.location.href = "/");
                     };
                 } catch (e) {
                     loggedIn.style.display = "none";
