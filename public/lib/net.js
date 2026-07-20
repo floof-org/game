@@ -421,20 +421,15 @@ export async function loadUUID() {
         }
     }
 
-    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then((r) => r.json());
+    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then(r => r.json());
     if (!data.ok) throw new Error("Failed to get UUID data");
     localStorage.setItem("uuid", data.uuid + ":" + (Date.now() + 1e3 * 60 * 60 * 24));
     return data.uuid;
 }
 
 export const UUID = await loadUUID();
-console.log("UUID", UUID);
 
-export async function findLobbies() {
-    const response = await fetch(util.SERVER_URL + "/lobby/list");
-    const lobbies = await response.json();
-    return lobbies;
-}
+export async function findLobbies() { return await fetch(util.SERVER_URL + "/lobby/list").then(response => response.json()) };
 
 class ModdingAPI {
     #jobs = new Map();
@@ -1299,9 +1294,7 @@ export class ClientSocket extends WebSocket {
     onOpen() {
         console.log("Connected to lobby.");
         this.verify(this.username);
-        setTimeout(() => {
-            (this.ping(), console.log("Pinging websocket server."));
-        }, 1e3);
+        setTimeout(() => (this.ping(), console.log("Pinging websocket server.")), 1e3);
     }
 
     onClose() {
