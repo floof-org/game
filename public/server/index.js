@@ -330,7 +330,14 @@ switch (globalThis.environmentName) {
         const bunSendMap = new Map();
         const ipCounts = new Map();
         const server = Bun.serve({
-            fetch(req) {
+            async fetch(req) {
+                const cookies = req.headers.get('cookie') || '';
+                const sessionIdCookie = cookies.split('; ').find(cookie => cookie.startsWith('sessionId='));
+                if (!sessionIdCookie) return new Response(":(");
+                const sessionId = sessionIdCookie.split('=')[1]; 
+                const body = JSON.stringify({ sessionId });
+                const { ok } = await fetch(`${process.env.AUTH_SERVER}/api/session/verify`, { body, method: 'POST' });
+                if (!ok) return new Response(":(");
                 const ip = server.requestIP(req);
                 if (!ip?.address) return new Response(":(");
 
