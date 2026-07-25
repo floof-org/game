@@ -6,10 +6,9 @@ import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
 
-// Dev runtime setup (bun.js wrapper provides this in production)
-// globalThis.environmentName = "bun";
 // Override fetch to prepend a base URL to relative paths (bun.js wrapper does this)
 if (typeof Bun !== "undefined") {
+    globalThis.environmentName = "bun";
     const _fetch = globalThis.fetch;
     globalThis.fetch = async (...args) => {
         if (typeof args[0] === "string" && !args[0].startsWith("http")) {
@@ -134,16 +133,8 @@ setInterval(() => {
 
     state.spatialHash.clear();
     state.viewsSpatialHash.clear();
-
-    state.entities.forEach(entity => {
-        entity.update();
-    });
-
-    state.entities.forEach(entity => {
-        if (entity._AABB) {
-            entity.collide();
-        }
-    });
+    state.entities.forEach(entity => entity.update());
+    state.entities.forEach(entity => { if (entity._AABB) entity.collide() });
 
     switch (state.gamemode) {
         case GAMEMODES.FFA:
@@ -338,12 +329,16 @@ switch (globalThis.environmentName) {
         const bunSendMap = new Map();
         const ipCounts = new Map();
         const server = Bun.serve({
-            fetch(req) {
+            async fetch(req) {
+                const cookies = req.headers.get('cookie') || '';
+                const sessionIdCookie = cookies.split('; ').find(cookie => cookie.startsWith('sessionId='));
+                if (!sessionIdCookie) return new Response(":(");
+                const sessionId = sessionIdCookie.split('=')[1]; 
+                const body = JSON.stringify({ sessionId });
+                const { ok } = await fetch(`${process.env.AUTH_SERVER}/api/session/verify`, { body, method: 'POST' });
+                if (!ok) return new Response(":(");
                 const ip = server.requestIP(req);
-
-                if (!ip?.address) {
-                    return new Response(":(");
-                }
+                if (!ip?.address) return new Response(":(");
 
                 const success = server.upgrade(req, {
                     data: {
@@ -354,10 +349,7 @@ switch (globalThis.environmentName) {
                     }
                 });
 
-                if (success) {
-                    return undefined;
-                }
-
+                if (success) return undefined;
                 return new Response("Hello world");
             },
 
@@ -444,7 +436,6 @@ switch (globalThis.environmentName) {
 
         lobbySocket.onopen = () => {
             console.log("Connected to server");
-
             state.router.begin(["start", Bun.env.GAMEMODE, Bun.env.MODDED == "true", crypto.randomUUID(), +Bun.env.BIOME]);
 
             lobbySocket.onmessage = event => {
@@ -453,9 +444,7 @@ switch (globalThis.environmentName) {
                 if (data[0] === 255) {
                     const ok = data[1] === 1;
 
-                    if (!ok) {
-                        throw new Error("Request rejected by server");
-                    }
+                    if (!ok) throw new Error("Request rejected by server");
 
                     console.log("Lobby Verified", new TextDecoder().decode(data.slice(2, -1)));
                     return;
