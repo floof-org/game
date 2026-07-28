@@ -893,6 +893,7 @@ export class ClientPetal extends ClientEntity {
     constructor(id) {
         super(id);
         this.index = 0;
+        this.owner = 0;
     }
 }
 
@@ -1448,6 +1449,7 @@ export class ClientSocket extends WebSocket {
                         petal.y = petal.realY;
                         petal.size = petal.realSize;
                         petal.facing = petal.realFacing;
+                        petal.owner = reader.getUint32();
                         continue;
                     }
 

@@ -217,6 +217,7 @@ export class PetalClientCache {
     id = 0;
     index = 0;
     rarity = 0;
+    owner = 0;
     isNew = true;
 
     x = 0;
@@ -252,6 +253,8 @@ export class PetalClientCache {
             this.hit = real.hit > 0;
             this.updateFlags = true;
         }
+
+        this.owner = real.parent?.type === ENTITY_TYPES.PLAYER ? real.parent.id : 0;
     }
 
     /** @param {Writer} writer */
@@ -276,6 +279,7 @@ export class PetalClientCache {
             writer.setFloat32(this.size);
             writer.setFloat32(this.facing);
             writer.setUint8(this.hit ? ENTITY_MODIFIER_FLAGS.HIT : 0x00);
+            writer.setUint32(this.owner);
             return;
         }
 

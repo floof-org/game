@@ -1,3 +1,6 @@
+# Update (7/28/2026)
+- Added Show Other Petals.
+
 # Update (7/16/2026)
 - Discord logins are now required to join lobbies.
 

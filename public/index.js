@@ -1821,6 +1821,7 @@ function draw() {
 
     net.state.dyingPetals.forEach((data, id) => {
         const entity = data.petal;
+        if (!options.showOtherPetals && entity.owner !== 0 && entity.owner !== net.state.playerID) return;
         data.progress += 0.2;
         if (data.progress >= 1) return net.state.dyingPetals.delete(id);
         const fade = 1 - data.progress;
@@ -1927,6 +1928,7 @@ function draw() {
     net.state.previousPlayers = currentPlayers;
 
     net.state.petals.forEach((entity) => {
+        if (!options.showOtherPetals && entity.owner !== 0 && entity.owner !== net.state.playerID) return;
         entity.interpolate();
         entity.size2 ??= entity.index === 24 || entity.index === 64 ? entity.size / 1.4 : entity.size;
         if (entity.index === 24 || entity.index === 64) entity.size2 += (entity.size - entity.size2) * 0.25;

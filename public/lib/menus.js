@@ -209,6 +209,7 @@ bindCheckbox("showHitboxes", "show-hitboxes");
 bindCheckbox("showDamageNumbers", "show-damage-numbers");
 bindCheckbox("cacheMobAssets", "cache-mob-assets");
 bindCheckbox("cachePetalAssets", "cache-petal-assets");
+bindCheckbox("showOtherPetals", "show-other-petals");
 
 bindCheckbox("disableGradients", "disable-gradients");
 

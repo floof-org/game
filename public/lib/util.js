@@ -264,6 +264,7 @@ export const options = {
     showDamageNumbers: true,
     cacheMobAssets: false,
     cachePetalAssets: false,
+    showOtherPetals: true,
 
     disableGradients: true,
     minimumGradientRarity: 6
