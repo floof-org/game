@@ -45,8 +45,9 @@ const config = {
          }),
         new HtmlWebpackPlugin({
             template: './public/index.ejs',
-            filename: 'index.html',
             inject: true,
+            chunks: ['bundle'],
+            filename: 'index.html',
             templateParameters: { 
                 DISCORD_OAUTH2_REDIRECT_URL: process.env.DISCORD_OAUTH2_REDIRECT_URL,
                 AUTH_SERVER: process.env.AUTH_SERVER
