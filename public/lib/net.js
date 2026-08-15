@@ -776,7 +776,7 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
             const worker = new Worker("./server/index.js", { type: "module" });
             worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
 
-            socket.onmessage = (event) => {
+            socket.onmessage = event => {
                 const data = new Uint8Array(event.data);
 
                 if (data[0] === 255) {
@@ -794,8 +794,8 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
                     resolve({
                         ok: true,
                         party: new TextDecoder().decode(data.slice(2, -1)),
-                        worker: worker,
-                        socket: socket,
+                        worker,
+                        socket,
                     });
                     return;
                 }
@@ -808,8 +808,9 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
                 socket.send(data);
             };
 
-            socket.onclose = () => {
-                console.log("Disconnected from server");
+            socket.onclose = ev => {
+                const { code, reason, wasClean, timestamp } = ev;
+                console.log("Disconnected from server:", JSON.stringify({ code, reason, wasClean, timestamp }));
                 worker.terminate();
             };
 
@@ -1297,9 +1298,10 @@ export class ClientSocket extends WebSocket {
         setTimeout(() => (this.ping(), console.log("Pinging websocket server.")), 1e3);
     }
 
-    onClose() {
-        console.log("Disconnected from lobby");
-        state.disconnected = true;
+    onClose(ev) {
+        const { code, reason, wasClean, timeStamp } = ev;
+        console.log("Disconnected from lobby:", JSON.stringify({ code, reason, wasClean, timeStamp }));
+        state.disconnected = true;    
     }
 
     onMessage(event) {
@@ -2333,12 +2335,8 @@ export async function loadAssets(lobbyID) {
 
 let clientSocketDone = false;
 export async function beginState(lobbyID, username, serverURL = util.SERVER_URL.replace("http", "ws")) {
-    if (clientSocketDone) {
-        return;
-    }
-
+    if (clientSocketDone) return;
     clientSocketDone = true;
-
     state.username = username;
 
     // Load resources
