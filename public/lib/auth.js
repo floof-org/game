@@ -1,7 +1,6 @@
 export async function getUserFromSession() {
     try {
         const res = await fetch(`${process.env.AUTH_SERVER}/api/me`, {
-            method: "GET",
             credentials: "include",
             headers: { Accept: "application/json" },
         });
