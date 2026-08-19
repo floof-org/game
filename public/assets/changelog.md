@@ -31,6 +31,8 @@
 - Added gradients for both Petal icons and Mob icons
 - Petals in the inventory can now show their stats
 - You can now view everyone in the minimap in certain lobbies
+- Petals in the inventory can now show their stats
+- You can now view everyone in the minimap in certain lobbies
 
 # Update (5/9/2026)
 - Updated Pumpkin and Jack O' Lantern Drawings (Thanks to @Fubuki and @Dwajl)
