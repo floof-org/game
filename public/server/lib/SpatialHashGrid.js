@@ -1,5 +1,14 @@
 const shiftA = 6;
-const shiftB = 6;
+// Cell coords are packed into a single numeric key with an offset so that negative
+// coordinates cannot collide (the old `x | (y << 6)` mapping merged distinct cells,
+// which made lookups degrade badly on large maps). Supports cell coords in
+// [-2048, +2047] => world range of +/-131072 units at the current 64px cell size.
+const CELL_OFFSET = 1 << 11;
+const CELL_STRIDE = 1 << 12;
+
+function cellKey(x, y) {
+    return (x + CELL_OFFSET) * CELL_STRIDE + (y + CELL_OFFSET);
+}
 
 export default class SpatialHashGrid {
     constructor() {
@@ -18,7 +27,7 @@ export default class SpatialHashGrid {
 
         for (let y = startY; y <= endY; y++) {
             for (let x = startX; x <= endX; x++) {
-                const key = x | (y << shiftB);
+                const key = cellKey(x, y);
 
                 if (!this.grid.has(key)) {
                     this.grid.set(key, [object]);
@@ -38,7 +47,7 @@ export default class SpatialHashGrid {
 
         for (let y = startY; y <= endY; y++) {
             for (let x = startX; x <= endX; x++) {
-                const key = x | (y << shiftB);
+                const key = cellKey(x, y);
 
                 if (!this.grid.has(key)) {
                     continue;
