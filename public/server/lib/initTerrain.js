@@ -69,15 +69,24 @@ export default async function initTerrain(type) {
 
     globalThis._MAP_CELLS = map.cells;
 
+    // O(1) lookup index over cells, built once at load. The JSON map format on disk
+    // is unchanged; this only adds an in-memory structure derived from it.
+    const cellLookup = new Map();
+
+    for (let i = 0; i < map.cells.length; i++) {
+        const c = map.cells[i];
+        cellLookup.set(c.y * map.width + c.x, c);
+    }
+
+    state.mapCellLookup = cellLookup;
+
     const generator = {
         width: map.width,
         height: map.height,
         mobSpawners: map.mobSpawners,
         maxRarity: map.maxRarity,
         cells: map.cells,
-        get: (x, y) => map.cells.filter((cell)=>{
-            if (cell.x == x && cell.y == y) return true
-        })[0]
+        get: (x, y) => cellLookup.get(y * map.width + x) ?? null
     };
 
     state.terrainGridWidth = generator.width;

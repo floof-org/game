@@ -116,9 +116,7 @@ const state = {
             return null;
         }
 
-        return state.mapData.cells.filter((cell) => {
-            if (cell.x == gridX && cell.y == gridY) return true
-        })[0];
+        return state.mapCellLookup?.get(gridY * state.terrainGridWidth + gridX) ?? null;
     },
 
     mapSpawnClosestTo: (x, y) => {
@@ -287,6 +285,9 @@ const state = {
     spatialHash: new SpatialHashGrid(),
     viewsSpatialHash: new SpatialHashGrid(),
     terrainSpatialHash: new SpatialHashGrid(),
+
+    /** @type {Map<number, {x:number,y:number,type?:number,score?:number}>|null} */
+    mapCellLookup: null,
 
     /** @type {Map<number, import("./Entity.js").Entity>} */
     entities: new Map(),
