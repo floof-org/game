@@ -233,14 +233,14 @@ function updateButtons() {
 updateButtons();
 window.addEventListener("resize", updateButtons);
 
-let resizeTimeout;
+// let resizeTimeout;
 
-window.addEventListener("resize", () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-        drawIconsToOffscreen(net.state.waveInfo.aliveMobs);
-    }, 150);
-});
+// window.addEventListener("resize", () => {
+//     clearTimeout(resizeTimeout);
+//     resizeTimeout = setTimeout(() => {
+//         drawIconsToOffscreen(net.state.waveInfo.aliveMobs);
+//     }, 150);
+// });
 
 function drawButtons(ctx) {
     ctx.globalAlpha = 0.2;
