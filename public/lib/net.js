@@ -2043,7 +2043,7 @@ case 113: {
 
                 state.terrainImg = renderTerrain(state.room.width * 0.5, state.room.height * 0.5, state.terrain.width, state.terrain.blocks, state.room.biome);
                 state.minimapImg = renderTerrainForMap(state.terrain.width, state.terrain.blocks);
-                console.log(state.terrain.blocks);
+
                 if (util.isHalloween && state.terrain.blocks.length >= 8) {
                     state.terrain.overlay = new SpookyOverlay(state.terrain.blocks, state.terrain.width, state.terrain.height);
                 } else {
