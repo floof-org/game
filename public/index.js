@@ -1932,7 +1932,7 @@ function draw() {
             ctx.stroke();
             ctx.closePath();
         }
-        if (keyMap.has("g")) {
+        if (keyMap.has("KeyG")) {
             ctx.globalAlpha = 0.3;
             ctx.beginPath();
             ctx.arc(drawX, drawY, entity.size * scale * 1.4, 0, Math.PI * 2);

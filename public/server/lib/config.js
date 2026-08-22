@@ -248,7 +248,7 @@ export const petalConfigs = [
         .setDescription("A leg of a starfish. It will heal you quite effectively while you are under 70% health."),
     new PetalConfig("Fang", 22.5 * 1.25, 8, 10)
         .setSize(1.15)
-        .setHealBack([.2, .25, .3, .35, .4, .45, -.5, .55, .6, .65, .7, .75])
+        .setHealBack([.2, .25, .3, .35, .4, .45, .5, .55, .6, .65, .7, .75])
         .setDescription("The fang of a dangerous Leech. It will heal back the damage it causes."),
     new PetalConfig("Goo", 22.5 * 1.75, 10, 10)
         .setSize(1.3)

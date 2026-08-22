@@ -1,6 +1,7 @@
-import { BIOME_BACKGROUNDS, BIOME_TYPES, GAMEMODES, loadTerrains, Reader } from "../../lib/protocol.js";
+import { stringToU8 } from "../../lib/lobbyProtocol.js";
+import { BIOME_BACKGROUNDS, BIOME_TYPES, Drawing, encodeEverything, GAMEMODES, loadTerrains, PetalConfig, Reader } from "../../lib/protocol.js";
 import Client from "./Client.js";
-import { mobConfigs, mobIDOf } from "./config.js";
+import { mobConfigs, mobIDOf, petalConfigs, petalIDOf, tiers } from "./config.js";
 import initTerrain from "./initTerrain.js";
 import state from "./state.js";
 
@@ -175,6 +176,10 @@ export default class Router {
     static getText = (u8, o, l) => Router.decoder.decode(u8.slice(o, o + l));
     static setText = t => Router.encoder.encode(t);
 
+    constructor() {
+        this.hasSentMockupsBefore = false;
+    }
+
     addClient(numericID, userId, isAdmin) {
         let kick = false;
         if (!isAdmin) {
@@ -218,6 +223,34 @@ export default class Router {
 
         if (message[1] === "maze" && message[2]) {
             state.isBiomeGrid = true;
+
+            // Add a petal that lets the player view mob descriptions
+            petalConfigs.push(
+                new PetalConfig("Gallery", 22.5 * 1, 1, 0)
+                    .setDescription("Hit a mob with this petal to view its stats.")
+                    .setIsGallery(true)
+                    .setDoNotRotate(true)
+                    .setDrawing(new Drawing()
+                        .addAction("beginPath")
+                        .addAction("arc", 0, -0.5, 0.5, -2.1, Math.PI / 2)
+                        .addAction("line", 0, 0, 0, 0.2)
+                        .addAction("stroke", "#000000", 0.4, 0)
+                        .addAction("stroke", "#00db2f", 0.3, 0)
+                        .addAction("beginPath")
+                        .addAction("line", 0, 0.8, 0, 0.8)
+                        .addAction("stroke", "#000000", 0.4, 0)
+                        .addAction("stroke", "#00db2f", 0.3, 0)
+                    )
+            );
+
+            // Set healing and armor for garden mobs
+            mobConfigs[mobIDOf("Shrub")].setHealing(0.02);
+            mobConfigs[mobIDOf("Leafbug")].setHealing(0.005);
+
+            // TODO: Make poison block healing
+
+            // Send everything new to the client
+            this.sendMockups();
         }
 
         applyBiome(message[4]);
@@ -294,4 +327,14 @@ export default class Router {
     }
 
     postMessage(message) {}
+
+    sendMockups() {
+        this.postMessage(new Uint8Array([0x02, ...stringToU8(JSON.stringify(encodeEverything(tiers, petalConfigs, mobConfigs)))]));
+
+        if (this.hasSentMockupsBefore) {
+            setTimeout(() => state.clients.forEach(c => c.talk(CLIENT_BOUND.UPDATE_ASSETS)), 250);
+        }
+
+        this.hasSentMockupsBefore = true;
+    }
 }

@@ -147,7 +147,25 @@ export function chatGradient(speed, type, c1 = "#000000", c2 = "#ffffff") {
 
 export function formatLargeNumber(number, type = 0) {
     let returnedNumber = number;
-    if (type === 1) {
+    if (type === 2) {
+        if (number >= 1e15) {
+            returnedNumber = (number / 1e15).toFixed(2) + "q";
+        } else if (number >= 1e12) {
+            returnedNumber = (number / 1e12).toFixed(2) + "t";
+        } else if (number >= 1e9) {
+            returnedNumber = (number / 1e9).toFixed(2) + "b";
+        } else if (number >= 1e6) {
+            returnedNumber = (number / 1e6).toFixed(2) + "m";
+        } else if (number >= 1e3) {
+            returnedNumber = (number / 1e3).toFixed(2) + "k";
+        } else if (number % 1 === 0) {
+            returnedNumber = number.toFixed(0);
+        } else if ((number * 10) % 1 === 0) {
+            returnedNumber = number.toFixed(1);
+        } else {
+            returnedNumber = number.toFixed(2);
+        }
+    } else if (type === 1) {
         if (number >= 1e15) {
             returnedNumber = (number / 1e15).toFixed(1) + "q";
         } else if (number >= 1e12) {

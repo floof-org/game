@@ -1,8 +1,8 @@
 import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES } from "../../lib/protocol.js";
-import { mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
-import { xpForLevel } from "../../lib/util.js";
+import { mobConfigs, mobIDOf, petalConfigs, petalIDOf, tiers } from "./config.js";
+import { colors, xpForLevel } from "../../lib/util.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -749,6 +749,9 @@ export default class Client {
         this.slots = new Array(5).fill(null).map(() => ({ id: 0, rarity: 0 }));
         this.slotRatios = new Array(5).fill(0).map(() => 0);
         this.secondarySlots = new Array(5).fill(null).map(() => null);
+        if (state.isBiomeGrid) {
+            this.secondarySlots[0] = { id: petalIDOf("Gallery"), rarity: 0 };
+        }
         this.level = 1;
         this.xp = 1;
 
@@ -1280,6 +1283,24 @@ export default class Client {
                 }
 
                 const message = reader.getStringUTF8();
+
+                if (state.isBiomeGrid) {
+                    // Just for testing purposes
+                    if (message.startsWith("/damage")) {
+                        this.body.health.lastDamaged = Date.now();
+                        this.body.health.health = 1;
+                        this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
+                        return;
+                    } else if (message.startsWith("/poison")) {
+                        this.body.health.lastDamaged = Date.now();
+                        this.body.health.health = this.body.health.maxHealth;
+                        this.body.poison.timer = 22.5 * 1;
+                        this.body.poison.damage = (this.body.health.maxHealth - 1) / 23;
+                        this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
+                        return;
+                    }
+                }
+
                 if (!/^[\w\s,.!?'"@#%^&*()_\-+=:;<>\/\\|[\]{}~`\u00A0-\uFFFF]{1,128}$/.test(message)) {
                     this.systemMessage("That message is too long or contains invalid characters.", "#CACA22");
                     this.frownyMessages++;

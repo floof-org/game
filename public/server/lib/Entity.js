@@ -1,5 +1,5 @@
 import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
-import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
+import { angleDiff, applyArticle, applyPlural, formatLargeNumber, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
@@ -13,6 +13,27 @@ export class HealthComponent {
         this.invulnerable = false;
         this.onDamage = null;
         this.shield = 0;
+
+        if (state.isBiomeGrid) {
+            // Accumulated by taking poison damage
+            // When this is active, the player cannot heal
+            // Instead, healing decreases healBlock until healBlock reaches 0
+            this.healBlock = 0;
+        }
+    }
+    
+    get shield() {
+        if (state.isBiomeGrid) {
+            // We use the player's shield to indicate healBlock, as a bandaid
+            // fix for the fact that we cannot display a second healBlock bar
+            // without being able to access the client-side code.
+            return Math.min(this.maxHealth, this.healBlock);
+        } else {
+            return this._shield;
+        }
+    }
+    set shield(x) {
+        this._shield = x;
     }
 
     set(x, preserve = true) {
@@ -22,7 +43,11 @@ export class HealthComponent {
         this.shield = Math.min(this.shield, this.maxHealth);
     }
 
-    damage(x) {
+    damage(x, isPoison = false) {
+        if (x < 0) {
+            console.warn("Entity is being damaged by a negative amount!", this, x);
+        }
+
         if (this.invulnerable) {
             return 0;
         }
@@ -32,15 +57,18 @@ export class HealthComponent {
 
         let damageDone = 0;
 
-        if (this.shield > 0) {
+        if (this.shield > 0 && !state.isBiomeGrid) {
             damageDone = Math.min(this.shield, x);
             this.shield -= damageDone;
         }
 
-        if (this.shield <= 0) {
+        if (this.shield <= 0 || state.isBiomeGrid) {
             const dmg = Math.max(0, Math.min(this.health, (x - damageDone) - (x - damageDone) * Math.min(.75, this.damageReduction)));
             this.health = this.health - dmg;
             damageDone += dmg;
+            if (state.isBiomeGrid && isPoison) {
+                this.healBlock += dmg;
+            }
         }
 
         this.lastDamaged = Date.now();
@@ -50,6 +78,20 @@ export class HealthComponent {
         }
 
         return damageDone;
+    }
+
+    heal(x) {
+        if (x < 0) {
+            console.warn("Entity is being healed by a negative amount!", this, x);
+        }
+
+        if (this.healBlock > 0) {
+            const blocked = Math.max(0, Math.min(this.healBlock, x));
+            this.healBlock -= blocked;
+            x -= blocked;
+        }
+
+        this.health = Math.min(this.maxHealth, this.health + x);
     }
 
     deteriorateShield() {
@@ -212,7 +254,7 @@ export class PetalSlot {
             const petal = this.petals[j];
             if (petal) {
                 if (this.config.tiers[this.rarity].constantHeal !== 0 && this.player.health.ratio <= this.config.healWhenUnder && this.player.health.ratio > 0 && (!this.config.healsInDefense || (!this.player.attack && this.player.defend))) {
-                    this.player.health.health = Math.min(this.player.health.maxHealth, this.player.health.health + this.config.tiers[this.rarity].constantHeal);
+                    this.player.health.heal(this.config.tiers[this.rarity].constantHeal);
                 }
 
                 if (this.config.healSpit) {
@@ -229,11 +271,11 @@ export class PetalSlot {
                                 y2: this.player.y + this.config.healSpit.range
                             }
                         }).forEach(entity => {
-                            if (entity.parent.id !== this.player.id || entity.type !== ENTITY_TYPES.PLAYER || entity.health.ratio >= 1) {
+                            if (entity.parent.id === this.player.id || entity.type !== ENTITY_TYPES.PLAYER || entity.health.ratio >= 1) {
                                 return;
                             }
 
-                            entity.health.health = Math.min(entity.health.maxHealth, entity.health.health + this.config.healSpit.heal * Math.pow(PetalTier.HEALTH_SCALE, this.rarity));
+                            entity.health.heal(this.config.healSpit.heal * Math.pow(PetalTier.HEALTH_SCALE, this.rarity));
                         });
                     }
                 }
@@ -329,7 +371,7 @@ export class PetalSlot {
                     
                         if (petal.range <= 0) {
                             if (quickDiff(petal, target) < target.size) {
-                                target.health.health = Math.min(target.health.maxHealth, target.health.health + this.config.tiers[this.rarity].healing);
+                                target.health.heal(this.config.tiers[this.rarity].healing);
                                 petal.destroy();
                             }
                             continue;
@@ -494,7 +536,7 @@ export class PetalSlot {
                 if (state.isBiomeGrid) {
                     // Make leaf-like petals still heal while reloading, like they always should
                     if (this.config.tiers[this.rarity].constantHeal !== 0 && this.player.health.ratio <= this.config.healWhenUnder && this.player.health.ratio > 0 && (!this.config.healsInDefense || (!this.player.attack && this.player.defend))) {
-                        this.player.health.health = Math.min(this.player.health.maxHealth, this.player.health.health + this.config.tiers[this.rarity].constantHeal);
+                        this.player.health.heal(this.config.tiers[this.rarity].constantHeal);
                     }
                 }
                 if (this.boundMobs[j].length > 0) {
@@ -766,7 +808,7 @@ export class Entity {
         }
 
         if (this.poison.timer > 0) {
-            this.health.damage(this.poison.damage);
+            this.health.damage(this.poison.damage, true);
             this.poison.timer--;
         }
 
@@ -911,7 +953,7 @@ export class Entity {
                         other.health.damage(thisDamageDone);
                     }
 
-                    if (this.config?.name === "Starfish" && this.type === ENTITY_TYPES.MOB && other.config?.name === "Dandelion") {
+                    if (!state.isBiomeGrid && this.config?.name === "Starfish" && this.type === ENTITY_TYPES.MOB && other.config?.name === "Dandelion") {
                         this.dandelionCooldown = 1 + (0.5 * other.rarity)
                     }
 
@@ -932,11 +974,11 @@ export class Entity {
                     }
 
                     if (this.healBack !== 0) {
-                        this.parent.health.health = Math.min(this.parent.health.maxHealth, this.parent.health.health + this.healBack * thisDamageDone);
+                        this.parent.health.heal(this.healBack * thisDamageDone);
                     }
 
                     if (other.healBack !== 0) {
-                        other.parent.health.health = Math.min(other.parent.health.maxHealth, other.parent.health.health + other.healBack * otherDamageDone);
+                        other.parent.health.heal(other.healBack * otherDamageDone);
                     }
 
                     if (Number.isFinite(this.health?.health) && Number.isFinite(other.health?.health)) {
@@ -1041,6 +1083,20 @@ export class Entity {
                 if (other.poison.toApply.timer > 0) {
                     this.poison.damage = other.poison.toApply.damage;
                     this.poison.timer = other.poison.toApply.timer;
+                }
+
+                if (this.isGallery && other instanceof Mob) {
+                    for (let line of other.getStatsDescription().split("\n")) {
+                        this.parent.client.systemMessage(line, tiers[other.rarity].color);
+                    }
+                    this.destroy();
+                }
+
+                if (other.isGallery && this instanceof Mob) {
+                    for (let line of this.getStatsDescription().split("\n")) {
+                        other.parent.client.systemMessage(line, tiers[this.rarity].color);
+                    }
+                    other.destroy();
                 }
             }
 
@@ -1231,7 +1287,7 @@ export class Petal extends Entity {
         this.config = config;
         this.size *= config.sizeRatio;
         this.index = config.id;
-        this.spinSpeed = config.launchable ? 0 : .1;
+        this.spinSpeed = (config.launchable || config.doNotRotate) ? 0 : .1;
         this.armor = 0;
 
         if (config.enemySpeedDebuff) {
@@ -1304,6 +1360,8 @@ export class Petal extends Entity {
         }
 
         this.ignoreWalls = config.ignoreWalls;
+
+        this.isGallery = config.isGallery;
     }
 
     findTargetAngleWithinRadianArc(myAngle, arc) {
@@ -1513,7 +1571,7 @@ export class Player extends Entity {
         super.update();
 
         if (this.health.lastDamaged + 1.5E4 < Date.now()) {
-            this.health.health = Math.min(this.health.maxHealth, this.health.health + this.health.maxHealth * .0025);
+            this.health.heal(this.health.maxHealth * .0025);
         }
     }
 
@@ -2238,7 +2296,7 @@ export class Mob extends Entity {
         }
 
         if (this.healing > 0 && this.health.ratio > 0 && !this.dandelionCooldown) {
-            this.health.health = Math.min(this.health.maxHealth, this.health.health + this.health.maxHealth * this.healing);
+            this.health.heal(this.health.maxHealth * this.healing);
         }
 
         if (this.hatchable !== null) {
@@ -2652,6 +2710,59 @@ export class Mob extends Entity {
             }
             state.clients.forEach(c => c.systemMessage(killText, tiers[this.rarity].color));
         }
+    }
+
+    getStatsDescription() {
+        let description = `Mob: ${tiers[this.rarity].name} ${this.config.name}\n`
+        description += `Health: ${formatLargeNumber(this.health.maxHealth, 2)}\n`
+        description += `Damage: ${formatLargeNumber(this.damage, 2)}\n`;
+        
+        const lightning = this.config.tiers[this.rarity].lightning?.damage ?? 0;
+        if (lightning > 0) {
+            description += `Lightning: ${formatLargeNumber(lightning, 2)}\n`;
+        }
+
+        const poison = this.poison.toApply;
+        if (poison.timer > 0) {
+            description += `Poison: ${formatLargeNumber(poison.damage * 22.5, 2)}/s`
+                + ` for ${formatLargeNumber(poison.timer / 22.5, 2)}s`
+                + ` (${formatLargeNumber(1 * poison.damage * poison.timer, 2)} total)\n`;
+        }
+
+        if (this.armor > 0) {
+            description += `Armor: ${formatLargeNumber(this.armor, 2)}\n`
+        }
+
+        if (this.healing > 0) {
+            description += `Healing: ${formatLargeNumber(this.health.maxHealth * this.healing * 22.5, 2)}/s\n`
+        }
+
+        description += `Speed: ${formatLargeNumber(this.speed, 2)}\n`;
+
+        if (this.projectile) {
+            const projectile = new Petal(this, -1, -1);
+            projectile.define(petalConfigs[this.projectile.petalIndex], this.rarity);
+
+            description += `\nProjectile: ${projectile.config.name}\n`;
+            description += `Health: ${formatLargeNumber(this.projectile.health, 2)}\n`;
+            description += `Damage: ${formatLargeNumber(this.projectile.damage, 2)}\n`;
+
+            const poison = projectile.poison.toApply;
+            if (poison.timer > 0) {
+                description += `Poison: ${formatLargeNumber(poison.damage * 22.5, 2)}/s`
+                    + ` for ${formatLargeNumber(poison.timer / 22.5, 2)}s`
+                    + ` (${formatLargeNumber(1 * poison.damage * poison.timer, 2)} total)\n`;
+            }
+
+            description += `Speed: ${formatLargeNumber(this.projectile.speed, 2)}\n`;
+            description += `Range: ${formatLargeNumber(this.projectile.range / 22.5, 2)}s\n`;
+            
+            projectile.destroy();
+        }
+
+        description += "\n";
+
+        return description;
     }
 }
 

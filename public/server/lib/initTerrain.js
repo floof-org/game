@@ -70,11 +70,11 @@ export default async function initTerrain(type) {
     if (state.isBiomeGrid) {
         // Generate a grid pattern
         map.maxRarity = 11;
-        map.height = 8 + 12 * (map.maxRarity - 1) / 2;
-        map.width = 8 + 12 * (map.maxRarity - 1) / 2;
-        const mapStartHeight = map.height / 2 - 16;
-        state.height = map.height * 384;
-        state.width = map.width * 384;
+        map.height = 16 + 24 * (map.maxRarity - 1) / 2;
+        map.width = 16 + 24 * (map.maxRarity - 1) / 2;
+        const mapStartHeight = map.height / 2 - 32;
+        state.height = map.height * 192;
+        state.width = map.width * 192;
         map.cells = [];
 
         function getIndex(x, y) {
@@ -84,27 +84,27 @@ export default async function initTerrain(type) {
         for (let y = -mapStartHeight; y < map.height - mapStartHeight; y++) {
             for (let x = 0; x < map.width; x++) {
                 const cell = {x, y: y + mapStartHeight, type: 0};
-                if (x === 0 && (y === 3 || y === 4)) { // Top left spawn
+                if ((x === 0 || x === 1) && (y === 7 || y === 8)) { // Top left spawn
                     cell.type = 1;
                     cell.score = 0;
-                } else if (y === -1 || y === 32) { // Walls for out-of-bounds
+                } else if (y === -1 || y === 64) { // Walls for out-of-bounds
                     cell.type = 0;
-                } else if (y < -1 || y > 32) { // Empty space out-of-bounds
+                } else if (y < -1 || y > 64) { // Empty space out-of-bounds
                     cell.type = 3;
                     cell.spawn = SPAWN_TYPES.NONE;
                     cell.score = 0;
                 } else if (
-                    (x % 12 < 8 && y % 12 < 8) // Grid squares
-                    || (x % 12 <= 4 && x % 12 >= 3) // Vertical halls
-                    || (y % 12 <= 4 && y % 12 >= 3) // Horizontal halls
+                    (x % 24 < 16 && y % 24 < 16) // Grid squares
+                    || (x % 24 <= 9 && x % 12 >= 6) // Vertical halls
+                    || (y % 24 <= 9 && y % 12 >= 6) // Horizontal halls
                 ) {
-                    const rarity = Math.max(0.001, Math.min(map.maxRarity, (x - 0.5) / 6))
+                    const rarity = Math.max(0.001, Math.min(map.maxRarity, (x - 1.5) / 12))
                     cell.type = 3;
                     cell.score = rarity / map.maxRarity;
 
-                    if (y < 10) {
+                    if (y < 20) {
                         cell.spawn = SPAWN_TYPES.GARDEN;
-                    } else if (y < 22) {
+                    } else if (y < 44) {
                         cell.spawn = SPAWN_TYPES.OCEAN;
                     } else {
                         cell.spawn = SPAWN_TYPES.DESERT;

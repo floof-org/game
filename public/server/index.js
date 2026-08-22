@@ -1,5 +1,5 @@
 import state from "./lib/state.js";
-import { BIOME_TYPES, CLIENT_BOUND, Drawing, encodeEverything, ENTITY_TYPES, GAMEMODES, PetalTier, ROUTER_PACKET_TYPES, SPAWN_TYPES } from "../lib/protocol.js";
+import { BIOME_TYPES, CLIENT_BOUND, Drawing, ENTITY_TYPES, GAMEMODES, PetalTier, ROUTER_PACKET_TYPES, SPAWN_TYPES } from "../lib/protocol.js";
 import { DEFAULT_PETAL_COUNT, GRID_DESERT_MOBS, GRID_GARDEN_MOBS, GRID_OCEAN_MOBS, mobConfigs, PetalConfig, petalConfigs, tiers } from "./lib/config.js";
 import { AIPlayer, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
@@ -474,18 +474,7 @@ switch (globalThis.environmentName) {
         throw new Error("Invalid environment");
 }
 
-let hasDoneItBefore = false;
-function sendMockups() {
-    state.router.postMessage(new Uint8Array([0x02, ...stringToU8(JSON.stringify(encodeEverything(tiers, petalConfigs, mobConfigs)))]));
-
-    if (hasDoneItBefore) {
-        setTimeout(() => state.clients.forEach(c => c.talk(CLIENT_BOUND.UPDATE_ASSETS)), 250);
-    }
-
-    hasDoneItBefore = true;
-}
-
-sendMockups();
+state.router.sendMockups();
 
 class ModdingAPI {
     static TRANSFERRABLE_TYPES = {
@@ -740,7 +729,7 @@ class ModdingAPI {
 
                 petalConfigs.push(ModdingAPI.assignTransferrableType(options, ModdingAPI.TRANSFERRABLE_TYPES.PetalConfig));
 
-                sendMockups();
+                state.router.sendMockups();
 
                 this.floofModdingResponse(jobID, true, "Custom petal created successfully", options, ModdingAPI.TRANSFERRABLE_TYPES.PetalConfig);
             } break;
@@ -762,7 +751,7 @@ class ModdingAPI {
 
                 petalConfigs[options.id] = ModdingAPI.assignTransferrableType(options, ModdingAPI.TRANSFERRABLE_TYPES.PetalConfig);
 
-                sendMockups();
+                state.router.sendMockups();
 
                 state.entities.forEach(e => {
                     if (e.type !== ENTITY_TYPES.PLAYER) {
@@ -865,7 +854,7 @@ class ModdingAPI {
                     });
                 });
 
-                sendMockups();
+                state.router.sendMockups();
 
                 this.floofModdingResponse(jobID, true, "Petal deleted successfully", {
                     index: args[0]

@@ -179,6 +179,7 @@ export class PetalConfig {
         this.huddles = false;
         this.ignoreWalls = false;
         this.extraLighting = 0;
+        this.doNotRotate = false;
     }
 
     setName(name) {
@@ -570,6 +571,16 @@ export class PetalConfig {
             }
         }
 
+        return this;
+    }
+
+    setIsGallery(isGallery) {
+        this.isGallery = isGallery;
+        return this;
+    }
+
+    setDoNotRotate(doNotRotate) {
+        this.doNotRotate = doNotRotate;
         return this;
     }
 }
