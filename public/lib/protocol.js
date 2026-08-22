@@ -982,6 +982,13 @@ export const BIOME_TYPES = {
     CRYPT: 9
 };
 
+export const SPAWN_TYPES = {
+    NONE: 0,
+    GARDEN: 1,
+    OCEAN: 2,
+    DESERT: 3,
+};
+
 export const BIOME_BACKGROUNDS = {
     [BIOME_TYPES.DEFAULT]: {
         name: "Default",

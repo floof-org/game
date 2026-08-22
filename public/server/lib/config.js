@@ -838,6 +838,24 @@ export const mobConfigs = [
 
 export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 
+export const GRID_GARDEN_MOBS = [
+    mobIDOf("Shrub"),
+    mobIDOf("Leafbug"),
+    mobIDOf("Evil Ladybug"),
+];
+
+export const GRID_OCEAN_MOBS = [
+    mobIDOf("Jellyfish"),
+    mobIDOf("Leech"),
+    mobIDOf("Sponge"),
+];
+
+export const GRID_DESERT_MOBS = [
+    mobIDOf("Scorpion"),
+    mobIDOf("Worker Fire Ant"),
+    mobIDOf("Baby Fire Ant"),
+];
+
 petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
 petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
 petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);

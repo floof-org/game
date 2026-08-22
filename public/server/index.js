@@ -1,6 +1,6 @@
 import state from "./lib/state.js";
-import { BIOME_TYPES, CLIENT_BOUND, Drawing, encodeEverything, ENTITY_TYPES, GAMEMODES, PetalTier, ROUTER_PACKET_TYPES } from "../lib/protocol.js";
-import { DEFAULT_PETAL_COUNT, mobConfigs, PetalConfig, petalConfigs, tiers } from "./lib/config.js";
+import { BIOME_TYPES, CLIENT_BOUND, Drawing, encodeEverything, ENTITY_TYPES, GAMEMODES, PetalTier, ROUTER_PACKET_TYPES, SPAWN_TYPES } from "../lib/protocol.js";
+import { DEFAULT_PETAL_COUNT, GRID_DESERT_MOBS, GRID_GARDEN_MOBS, GRID_OCEAN_MOBS, mobConfigs, PetalConfig, petalConfigs, tiers } from "./lib/config.js";
 import { AIPlayer, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
@@ -176,23 +176,45 @@ setInterval(() => {
             // No mob spawning in MMO mode until we have proper PvE zones
         } else if (state.gamemode === GAMEMODES.MAZE) {
             let cfg = mobConfigs[getMobIndex()];
+            let doNotSpawn = false;
             const info = state.spawnNearPlayer(cfg);
-            if (info.tile?.spawn !== undefined) {
-                const spawner = state.mapData.mobSpawners.find(spawner => { spawner.id == info.tile?.spawn });
-                if (spawner && spawner.availableMobs.length) {
-                    const spawn = spawner.availableMobs[spawner.availableMobs.length * Math.random() | 0]
-                    cfg = mobConfigs[spawn[0]]
-                    if (spawn[1] !== true) {
-                        info.rarity = Math.min(spawn[1], spawner.maxRarity);
+            if (state.isBiomeGrid && info.tile?.type !== 3) {
+                // In grid mode, do not spawn mobs outside of proper spawn zones
+                doNotSpawn = true;
+            } else if (info.tile?.spawn !== undefined) {
+                if (state.isBiomeGrid) {
+                    if (info.tile.spawn === SPAWN_TYPES.NONE) {
+                        doNotSpawn = true;
+                    } else if (info.tile.spawn === SPAWN_TYPES.GARDEN) {
+                        const spawn = GRID_GARDEN_MOBS[Math.floor(GRID_GARDEN_MOBS.length * Math.random())];
+                        cfg = mobConfigs[spawn];
+                    } else if (info.tile.spawn === SPAWN_TYPES.OCEAN) {
+                        const spawn = GRID_OCEAN_MOBS[Math.floor(GRID_OCEAN_MOBS.length * Math.random())];
+                        cfg = mobConfigs[spawn];
+                    } else if (info.tile.spawn === SPAWN_TYPES.DESERT) {
+                        const spawn = GRID_DESERT_MOBS[Math.floor(GRID_DESERT_MOBS.length * Math.random())];
+                        cfg = mobConfigs[spawn];
+                    }
+                } else {
+                    const spawner = state.mapData.mobSpawners.find(spawner => { spawner.id == info.tile?.spawn });
+                    if (spawner && spawner.availableMobs.length) {
+                        const spawn = spawner.availableMobs[spawner.availableMobs.length * Math.random() | 0]
+                        cfg = mobConfigs[spawn[0]]
+                        if (spawn[1] !== true) {
+                            info.rarity = Math.min(spawn[1], spawner.maxRarity);
+                        }
                     }
                 }
             }
-            const mob = new Mob(info.position);
-            mob.define(cfg, info.rarity);
+            
+            if (!doNotSpawn) {
+                const mob = new Mob(info.position);
+                mob.define(cfg, info.rarity);
 
-            if (info.rarity >= state.announceRarity && state.announceRarity > -1) {
-                if (!tiers[info.rarity]) console.error(`Rarity returns undefined: ${info.rarity}`);
-                else state.clients.forEach(c => c.systemMessage(applyArticle(tiers[info.rarity].name, true) + " " + cfg.name + " has spawned!", tiers[info.rarity].color));
+                if (info.rarity >= state.announceRarity && state.announceRarity > -1) {
+                    if (!tiers[info.rarity]) console.error(`Rarity returns undefined: ${info.rarity}`);
+                    else state.clients.forEach(c => c.systemMessage(applyArticle(tiers[info.rarity].name, true) + " " + cfg.name + " has spawned!", tiers[info.rarity].color));
+                }
             }
         } else if (state.isLineMap) {
             const cfg = mobConfigs[getMobIndex()];
@@ -311,7 +333,7 @@ switch (globalThis.environmentName) {
         const server = Bun.serve({
             async fetch(req) {
                 const cookie = req.headers.get('cookie');
-                const userId = await fetch(`${process.env.AUTH_SERVER}/api/user/id`, { headers: { cookie } }).then(response => response.json());
+                const userId = await fetch(`https://supercord.lol/api/user/id`, { headers: { cookie } }).then(response => response.json());
                 if (userId?.error) return new Response(":(");
                 const ip = server.requestIP(req);
                 if (!ip?.address) return new Response(":(");

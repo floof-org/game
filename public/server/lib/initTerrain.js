@@ -1,4 +1,4 @@
-import { BIOME_TYPES, ENTITY_TYPES, SIDE_FLAGS } from "../../lib/protocol.js";
+import { BIOME_TYPES, ENTITY_TYPES, SIDE_FLAGS, SPAWN_TYPES } from "../../lib/protocol.js";
 import { Terrain } from "./Entity.js";
 import state from "./state.js";
 import { isHalloween } from "../../lib/util.js";
@@ -67,6 +67,54 @@ export default async function initTerrain(type) {
         }
     }
 
+    if (state.isBiomeGrid) {
+        // Generate a grid pattern
+        map.maxRarity = 11;
+        map.height = 8 + 12 * (map.maxRarity - 1) / 2;
+        map.width = 8 + 12 * (map.maxRarity - 1) / 2;
+        const mapStartHeight = map.height / 2 - 16;
+        state.height = map.height * 384;
+        state.width = map.width * 384;
+        map.cells = [];
+
+        function getIndex(x, y) {
+            return y * map.width + x;
+        }
+
+        for (let y = -mapStartHeight; y < map.height - mapStartHeight; y++) {
+            for (let x = 0; x < map.width; x++) {
+                const cell = {x, y: y + mapStartHeight, type: 0};
+                if (x === 0 && (y === 3 || y === 4)) { // Top left spawn
+                    cell.type = 1;
+                    cell.score = 0;
+                } else if (y === -1 || y === 32) { // Walls for out-of-bounds
+                    cell.type = 0;
+                } else if (y < -1 || y > 32) { // Empty space out-of-bounds
+                    cell.type = 3;
+                    cell.spawn = SPAWN_TYPES.NONE;
+                    cell.score = 0;
+                } else if (
+                    (x % 12 < 8 && y % 12 < 8) // Grid squares
+                    || (x % 12 <= 4 && x % 12 >= 3) // Vertical halls
+                    || (y % 12 <= 4 && y % 12 >= 3) // Horizontal halls
+                ) {
+                    const rarity = Math.max(0.001, Math.min(map.maxRarity, (x - 0.5) / 6))
+                    cell.type = 3;
+                    cell.score = rarity / map.maxRarity;
+
+                    if (y < 10) {
+                        cell.spawn = SPAWN_TYPES.GARDEN;
+                    } else if (y < 22) {
+                        cell.spawn = SPAWN_TYPES.OCEAN;
+                    } else {
+                        cell.spawn = SPAWN_TYPES.DESERT;
+                    }
+                }
+                map.cells.push(cell);
+            }
+        }
+    }
+
     globalThis._MAP_CELLS = map.cells;
 
     // O(1) lookup index over cells, built once at load. The JSON map format on disk
@@ -127,7 +175,7 @@ export default async function initTerrain(type) {
 
                 const object = new Terrain({
                     x: (i - state.terrainGridWidth / 2 + .5) * size * 2,
-                    y: (j - state.terrainGridWidth / 2 + .5) * size * 2
+                    y: (j - state.terrainGridHeight / 2 + .5) * size * 2
                 }, size, flags);
 
                 object.gridX = i;

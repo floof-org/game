@@ -1550,8 +1550,12 @@ export default class Client {
         }
     }
 
-    sendRoom() {
-        this.talk(CLIENT_BOUND.ROOM_UPDATE, state);
+    sendRoom(biomeOverride) {
+        if (biomeOverride !== undefined) {
+            this.talk(CLIENT_BOUND.ROOM_UPDATE, { ...state, biome: biomeOverride });
+        } else {
+            this.talk(CLIENT_BOUND.ROOM_UPDATE, state);
+        }
     }
 
     /** @param {Drop} drop */

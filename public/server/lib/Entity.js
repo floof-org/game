@@ -491,6 +491,12 @@ export class PetalSlot {
                     }
                 }
             } else {
+                if (state.isBiomeGrid) {
+                    // Make leaf-like petals still heal while reloading, like they always should
+                    if (this.config.tiers[this.rarity].constantHeal !== 0 && this.player.health.ratio <= this.config.healWhenUnder && this.player.health.ratio > 0 && (!this.config.healsInDefense || (!this.player.attack && this.player.defend))) {
+                        this.player.health.health = Math.min(this.player.health.maxHealth, this.player.health.health + this.config.tiers[this.rarity].constantHeal);
+                    }
+                }
                 if (this.boundMobs[j].length > 0) {
                     this.boundMobs[j] = this.boundMobs[j].filter(mob => mob && !mob.health.isDead);
 

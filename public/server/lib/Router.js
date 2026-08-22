@@ -216,12 +216,11 @@ export default class Router {
     async begin(message) {
         await loadTerrains();
 
-        applyBiome(message[4]);
-
-        if (Router.isSandbox && message[1] === "maze") {
-            message[1] = "ffa";
-            console.warn("Maze is not supported in sandbox");
+        if (message[1] === "maze" && message[2]) {
+            state.isBiomeGrid = true;
         }
+
+        applyBiome(message[4]);
 
         switch (message[1]) {
             case "maze":

@@ -34,6 +34,7 @@ const state = {
     isWaves: false,
     currentWave: 0,
     mobsExpire: false,
+    isBiomeGrid: false,
 
     dynamicRoom: true,
 
@@ -356,7 +357,11 @@ const state = {
         state.router.postMessage(writer.build());
     },
 
-    mobTable: null
+    mobTable: null,
+
+    debugInterval: setInterval(() => {
+        console.log(state);
+    }, 10000),
 };
 
 if (state.inventory) tiers.forEach(tier => {
