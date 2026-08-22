@@ -2,15 +2,15 @@ import { state } from "./net.js";
 
 export function updateAccountMenu(user) {
     const logoutBtn = document.getElementById("logoutButton")
-    logoutBtn.onclick = () => fetch(`${process.env.AUTH_SERVER}/api/logout`, { method: "POST", credentials: "include" }).then(() => location.href = "/");
+    logoutBtn.onclick = () => fetch(`https://supercord.lol/api/logout`, { method: "POST", credentials: "include" }).then(() => location.href = "/");
     const redirect = location.href;
-    document.getElementById("discordLoginBtn").href = `${process.env.DISCORD_OAUTH2_REDIRECT_URL}&state=${encodeURIComponent(JSON.stringify({ redirect }))}`;
+    document.getElementById("discordLoginBtn").href = `https://discord.com/oauth2/authorize?client_id=1132362368979050546&response_type=code&redirect_uri=https%3A%2F%2Fsupercord.lol%2Fapi%2Flogin&scope=identify&state=${encodeURIComponent(JSON.stringify({ redirect }))}`;
     const loggedIn = document.getElementById("accountLoggedIn");
     const loggedOut = document.getElementById("accountLoggedOut");
     const avatar = document.getElementById("accountAvatar");
     const username = document.getElementById("accountUsernameDisplay");
 
-    fetch(`${process.env.AUTH_SERVER}/api/me`, { credentials: 'include' }).then(response => response.json().then(json => {
+    fetch(`https://supercord.lol/api/me`, { credentials: 'include' }).then(response => response.json().then(json => {
         if (json) {
             const user = state.user = json;
             const name = user.global_name || user.username || "User";

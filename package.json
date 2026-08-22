@@ -6,17 +6,20 @@
     "type": "module",
     "scripts": {
         "build": "webpack --config ./webpack.config.js",
-        "deploy": "bun run build && rsync -av --delete ./build/ /var/www/floof.supercord.dev/",
+        "build-and-override": "webpack --config ./webpack.config.js && cpy ./build/server/index.js ./build/floof.supercord.dev/server/index.js && cpy ./build/bundle.js ./build/floof.supercord.dev/bundle.js",
+        "deploy": "npm run build && rsync -av --delete ./build/ /var/www/floof.supercord.dev",
         "deploy:dev": "bun run build && rsync -av --delete ./build/ /var/www/dev.floof.supercord.dev/",
         "watch": "webpack --watch --mode development"
     },
     "dependencies": {
+        "cpy-cli": "^7.0.0",
+        "dotenv": "^17.2.3",
+        "html-webpack-plugin": "^5.6.4",
         "js-beautify": "latest",
+        "terser-webpack-plugin": "^5.6.1",
         "uglify-js": "latest",
         "webpack": "^5.78.0",
-        "webpack-cli": "^4.8.0",
-        "dotenv": "^17.2.3",
-        "html-webpack-plugin": "^5.6.4"
+        "webpack-cli": "^4.8.0"
     },
     "engines": {
         "node": ">=16.0.0"

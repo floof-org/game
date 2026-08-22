@@ -88,7 +88,7 @@ function getUsername() {
         return user.username;
     }
 
-    window.location.href = `${process.env.DISCORD_OAUTH2_REDIRECT_URL}&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
+    window.location.href = `https://discord.com/oauth2/authorize?client_id=1132362368979050546&response_type=code&redirect_uri=https%3A%2F%2Fsupercord.lol%2Fapi%2Flogin&scope=identify&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
 }
 
 let hasCreatedLobby = false;
@@ -319,27 +319,27 @@ canvas.addEventListener("touchend", (e) => {
 function processInputs() {
     let newFlags = 0;
 
-    if (keyMap.has("w") || keyMap.has("arrowup")) {
+    if (keyMap.has("KeyW") || keyMap.has("ArrowUp")) {
         newFlags |= 0x01;
     }
 
-    if (keyMap.has("a") || keyMap.has("arrowleft")) {
+    if (keyMap.has("KeyA") || keyMap.has("ArrowLeft")) {
         newFlags |= 0x02;
     }
 
-    if (keyMap.has("s") || keyMap.has("arrowdown")) {
+    if (keyMap.has("KeyS") || keyMap.has("ArrowDown")) {
         newFlags |= 0x04;
     }
 
-    if (keyMap.has("d") || keyMap.has("arrowright")) {
+    if (keyMap.has("KeyD") || keyMap.has("ArrowRight")) {
         newFlags |= 0x08;
     }
 
-    if (keyMap.has(" ") || attackButton.on || (mouse.left && !isMobile)) {
+    if (keyMap.has("Space") || attackButton.on || (mouse.left && !isMobile)) {
         newFlags |= 0x10;
     }
 
-    if (keyMap.has("shift") || defendButton.on || mouse.right) {
+    if (keyMap.has("ShiftLeft") || keyMap.has("ShiftRight") || defendButton.on || mouse.right) {
         newFlags |= 0x20;
     }
 
@@ -359,7 +359,7 @@ function processInputs() {
     }
 }
 window.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !net.ChatMessage.showInput && !net.state.isDead) {
+    if (e.code === "Enter" && !net.ChatMessage.showInput && !net.state.isDead) {
         net.ChatMessage.showInput = !net.ChatMessage.showInput;
 
         setTimeout(() => {
@@ -370,7 +370,7 @@ window.addEventListener("keydown", (e) => {
     }
 
     if (net.ChatMessage.showInput && net.ChatMessage.element === document.activeElement) {
-        if (e.key === "Enter") {
+        if (e.code === "Enter") {
             net.ChatMessage.send();
         }
 
@@ -383,17 +383,17 @@ window.addEventListener("keydown", (e) => {
         return;
     }
     if (net.state.socket?.readyState === WebSocket.OPEN) {
-        switch (e.key.toLowerCase()) {
-            case ";":
+        switch (e.code) {
+            case "Semicolon":
                 net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.GODMODE);
                 break;
-            case "t":
+            case "KeyT":
                 net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.TELEPORT);
                 break;
-            case "z":
+            case "KeyZ":
                 net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.CHANGE_TEAM);
                 break;
-            case "r":
+            case "KeyR":
                 if (net.state.socket?.readyState === WebSocket.OPEN) {
                     for (let i = 0; i < net.state.slots.length; i++) {
                         if (net.state.slots[i].index > -1 && net.state.secondarySlots[i]?.index > -1) {
@@ -411,39 +411,42 @@ window.addEventListener("keydown", (e) => {
                     }
                 }
                 break;
-            /* case "k":
+            /* case "KeyK":
                 net.state.isInDestroy = true;
                 break;
             */
         }
 
-        if (e.key >= "0" && e.key <= "9") {
-            const index = e.key === "0" ? 9 : parseInt(e.key) - 1;
+        if (e.code.startsWith("Digit")) {
+            const digit = parseInt(e.code.substring(5));
+            if (digit >= 0 && digit <= 9) {
+                const index = (digit + 9) % 10;
 
-            if (net.state.socket?.readyState === WebSocket.OPEN && index < net.state.slots.length && net.state.slots[index].index > -1 && net.state.secondarySlots[index]?.index > -1) {
-                net.state.socket.talk(SERVER_BOUND.CHANGE_LOADOUT, {
-                    drag: {
-                        type: net.state.isInDestroy ? DRAG_TYPE_SECONDARYDOCKER : DRAG_TYPE_MAINDOCKER,
-                        index,
-                    },
-                    drop: {
-                        type: net.state.isInDestroy ? DRAG_TYPE_DESTROY : DRAG_TYPE_SECONDARYDOCKER,
-                        index,
-                    },
-                });
+                if (net.state.socket?.readyState === WebSocket.OPEN && index < net.state.slots.length && net.state.slots[index].index > -1 && net.state.secondarySlots[index]?.index > -1) {
+                    net.state.socket.talk(SERVER_BOUND.CHANGE_LOADOUT, {
+                        drag: {
+                            type: net.state.isInDestroy ? DRAG_TYPE_SECONDARYDOCKER : DRAG_TYPE_MAINDOCKER,
+                            index,
+                        },
+                        drop: {
+                            type: net.state.isInDestroy ? DRAG_TYPE_DESTROY : DRAG_TYPE_SECONDARYDOCKER,
+                            index,
+                        },
+                    });
+                }
             }
         }
 
-        keyMap.add(e.key.toLowerCase());
+        keyMap.add(e.code);
 
         processInputs();
     }
 });
 
 window.addEventListener("keyup", (e) => {
-    keyMap.delete(e.key.toLowerCase());
+    keyMap.delete(e.code);
 
-    if (e.key === "k") {
+    if (e.code === "KeyK") {
         net.state.isInDestroy = false;
     }
 
@@ -807,13 +810,13 @@ function drawInventory() {
 }
 
 window.addEventListener("keydown", (e) => {
-    if (e.key === " " || e.key === "Enter") {
+    if (e.code === "Space" || e.code === "Enter") {
         if (e.target.closest("button")) {
             e.preventDefault();
             return false;
         }
     }
-    if (e.key === "z" && !net.ChatMessage.showInput) {
+    if (e.code === "KeyZ" && !net.ChatMessage.showInput) {
         menu.classList.toggle("active");
         drawInventory();
     }

@@ -1,4 +1,4 @@
-export const SERVER_URL = process.env.ROUTING_SERVER;
+export const SERVER_URL = "https://routing.floof.supercord.lol";
 export function lerp(a, b, t) {
     return a + (b - a) * t;
 }

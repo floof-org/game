@@ -661,7 +661,7 @@ var craftRef = null;
       c.appendChild(craft.btn);
 
       document.addEventListener('keydown', function (e) {
-        if (e.key !== 'c' && e.key !== 'C') return;
+        if (e.code !== "KeyC") return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
         if (!craft.btn || craft.btn.style.display === 'none') return;
         var ae = document.activeElement;
