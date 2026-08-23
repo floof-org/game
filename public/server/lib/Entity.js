@@ -2281,6 +2281,19 @@ export class Mob extends Entity {
         }
 
         this.pushability = config.pushability
+
+        if (config.periodicHeal) {
+            this.periodicHeal = {
+                ...config.periodicHeal,
+                state: {
+                    timer: config.periodicHeal.cooldown
+                        + (2 * config.periodicHeal.petalCount + 1) * config.periodicHeal.eatCooldown,
+                    healPetals: [],
+                    x: this.x,
+                    y: this.y,
+                }
+            }
+        }
     }
 
     update() {
@@ -2602,6 +2615,79 @@ export class Mob extends Entity {
         this.bindToRoom();
 
         super.update();
+
+        if (this.periodicHeal && this.health.health > 0) {
+            this.periodicHeal.state.timer--;
+
+            // Reset state when timer hits 0
+            if (this.periodicHeal.state.timer < 0) {
+                this.periodicHeal.state = {
+                    timer: this.config.periodicHeal.cooldown
+                        + (2 * this.config.periodicHeal.petalCount + 1) * this.config.periodicHeal.eatCooldown,
+                    healPetals: [],
+                    x: this.x,
+                    y: this.y,
+                }
+            }
+
+            if (this.periodicHeal.state.timer < (2 * this.periodicHeal.petalCount + 1) * this.periodicHeal.eatCooldown) {
+                const decimalPetalCount = this.periodicHeal.state.timer / 2 / this.periodicHeal.eatCooldown + 0.5;
+                const petalCount = Math.floor(decimalPetalCount);
+                const biteCycle = (2 * decimalPetalCount + 0.2) % 1;
+                const healPetals = this.periodicHeal.state.healPetals;
+
+                while (healPetals.length < petalCount) {
+                    // Spawn in new healing petals
+                    const petal = new Petal(this, -1, -1);
+                    petal.define(petalConfigs[this.periodicHeal.petalIndex], this.rarity);
+                    petal.health.health = petal.health.maxHealth = Infinity;
+                    petal.damage = 0;
+                    petal.spinSpeed = 0;
+                    petal.speed = 0;
+                    healPetals.push(petal);
+                }
+
+                while (healPetals.length > petalCount) {
+                    // Heal by eating 1 petal
+                    const eatenPetal = healPetals.splice(healPetals.length - 1)[0];
+                    if (eatenPetal) {
+                        eatenPetal.destroy();
+                    }
+                    this.health.heal(this.health.maxHealth * this.periodicHeal.healPercent);
+                }
+
+                // Mob stays at "anchor" position while eating
+                this.x = this.periodicHeal.state.x;
+                this.y = this.periodicHeal.state.y;
+
+                // Perform bite animations by lunging into the petals
+                if (biteCycle < 0.25 && decimalPetalCount < this.periodicHeal.petalCount + .75 && decimalPetalCount > .25) {
+                    let r = 0;
+                    if (biteCycle > 0.2) {
+                        r = 4 * (0.25 - biteCycle) * this.size;
+                    } else {
+                        r = biteCycle * this.size;
+                    }
+                    this.x += r * Math.cos(this.facing);
+                    this.y += r * Math.sin(this.facing);
+                }
+
+                // Place petals relative to "anchor" position
+                for (let i = 0; i < healPetals.length; i++) {
+                    const petal = healPetals[i];
+                    const r1 = 1.1 * this.size;
+                    const angle1 = this.facing;
+                    const r2 = petal.size;
+                    const angle2 = angle1 + 2 * Math.PI * i / this.periodicHeal.petalCount;
+                    petal.x = this.periodicHeal.state.x + r1 * Math.cos(angle1) + r2 * Math.cos(angle2);
+                    petal.y = this.periodicHeal.state.y + r1 * Math.sin(angle1) + r2 * Math.sin(angle2);
+                }
+            } else {
+                // Update the mob's "anchor" position while the mob is moving normally
+                this.periodicHeal.state.x = this.x;
+                this.periodicHeal.state.y = this.y;
+            }
+        }
     }
 
     collide() {
@@ -2636,6 +2722,12 @@ export class Mob extends Entity {
         }
 
         super.destroy();
+
+        if (this.periodicHeal) {
+            for (let petal of this.periodicHeal.state.healPetals) {
+                petal.destroy();
+            }
+        }
 
         if (!this.friendly && this.countsTowardsMobCount) {
             state.livingMobCount--;
@@ -2714,6 +2806,11 @@ export class Mob extends Entity {
 
     getStatsDescription() {
         let description = `Mob: ${tiers[this.rarity].name} ${this.config.name}\n`
+
+        if (this.config.description) {
+            description += `Description: ${this.config.description}\n`;
+        }
+
         description += `Health: ${formatLargeNumber(this.health.maxHealth, 2)}\n`
         description += `Damage: ${formatLargeNumber(this.damage, 2)}\n`;
         
@@ -2724,20 +2821,36 @@ export class Mob extends Entity {
 
         const poison = this.poison.toApply;
         if (poison.timer > 0) {
-            description += `Poison: ${formatLargeNumber(poison.damage * 22.5, 2)}/s`
-                + ` for ${formatLargeNumber(poison.timer / 22.5, 2)}s`
-                + ` (${formatLargeNumber(1 * poison.damage * poison.timer, 2)} total)\n`;
+            const dps = formatLargeNumber(poison.damage * 22.5, 2);
+            const timer = formatLargeNumber(poison.timer / 22.5, 2);
+            const total = formatLargeNumber(poison.damage * poison.timer, 2);
+            description += `Poison: ${dps}/s for ${timer}s (${total} total)\n`;
+        }
+
+        if (this.health.damageReduction > 0) {
+            description += `Damage reduction: ${formatLargeNumber(Math.min(75, 100 * this.health.damageReduction), 2)}%\n`;
         }
 
         if (this.armor > 0) {
-            description += `Armor: ${formatLargeNumber(this.armor, 2)}\n`
+            description += `Armor: ${formatLargeNumber(this.armor, 2)}\n`;
         }
 
         if (this.healing > 0) {
-            description += `Healing: ${formatLargeNumber(this.health.maxHealth * this.healing * 22.5, 2)}/s\n`
+            description += `Healing: ${formatLargeNumber(this.health.maxHealth * this.healing * 22.5, 2)}/s\n`;
+        }
+
+        if (this.periodicHeal) {
+            const petalCount = formatLargeNumber(this.periodicHeal.petalCount, 2);
+            const amount = formatLargeNumber(this.periodicHeal.healPercent * this.health.maxHealth, 2);
+            const timer = formatLargeNumber((this.periodicHeal.cooldown + (2 * this.periodicHeal.petalCount + 1) * this.periodicHeal.eatCooldown) / 22.5, 2);
+            description += `Periodic heal: ${petalCount} * ${amount} every ${timer}s\n`;
         }
 
         description += `Speed: ${formatLargeNumber(this.speed, 2)}\n`;
+
+        if (this.config.drops?.length > 0) {
+            description += `Drops: ${this.config.drops.map(drop => petalConfigs[drop.index].name).reduce((prev, curr) => prev + ", " + curr)}\n`;
+        }
 
         if (this.projectile) {
             const projectile = new Petal(this, -1, -1);
@@ -2749,9 +2862,10 @@ export class Mob extends Entity {
 
             const poison = projectile.poison.toApply;
             if (poison.timer > 0) {
-                description += `Poison: ${formatLargeNumber(poison.damage * 22.5, 2)}/s`
-                    + ` for ${formatLargeNumber(poison.timer / 22.5, 2)}s`
-                    + ` (${formatLargeNumber(1 * poison.damage * poison.timer, 2)} total)\n`;
+                const dps = formatLargeNumber(poison.damage * 22.5, 2);
+                const timer = formatLargeNumber(poison.timer / 22.5, 2);
+                const total = formatLargeNumber(poison.damage * poison.timer, 2);
+                description += `Poison: ${dps}/s for ${timer}s (${total} total)\n`;
             }
 
             description += `Speed: ${formatLargeNumber(this.projectile.speed, 2)}\n`;
@@ -2759,8 +2873,6 @@ export class Mob extends Entity {
             
             projectile.destroy();
         }
-
-        description += "\n";
 
         return description;
     }

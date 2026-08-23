@@ -1,7 +1,7 @@
 import { stringToU8 } from "../../lib/lobbyProtocol.js";
-import { BIOME_BACKGROUNDS, BIOME_TYPES, Drawing, encodeEverything, GAMEMODES, loadTerrains, PetalConfig, Reader } from "../../lib/protocol.js";
+import { BIOME_BACKGROUNDS, BIOME_TYPES, encodeEverything, GAMEMODES, loadTerrains, Reader } from "../../lib/protocol.js";
 import Client from "./Client.js";
-import { mobConfigs, mobIDOf, petalConfigs, petalIDOf, tiers } from "./config.js";
+import { applyGridBiomeConfigs, mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
 import initTerrain from "./initTerrain.js";
 import state from "./state.js";
 
@@ -224,31 +224,8 @@ export default class Router {
         if (message[1] === "maze" && message[2]) {
             state.isBiomeGrid = true;
 
-            // Add a petal that lets the player view mob descriptions
-            petalConfigs.push(
-                new PetalConfig("Gallery", 22.5 * 1, 1, 0)
-                    .setDescription("Hit a mob with this petal to view its stats.")
-                    .setIsGallery(true)
-                    .setDoNotRotate(true)
-                    .setDrawing(new Drawing()
-                        .addAction("beginPath")
-                        .addAction("arc", 0, -0.5, 0.5, -2.1, Math.PI / 2)
-                        .addAction("line", 0, 0, 0, 0.2)
-                        .addAction("stroke", "#000000", 0.4, 0)
-                        .addAction("stroke", "#00db2f", 0.3, 0)
-                        .addAction("beginPath")
-                        .addAction("line", 0, 0.8, 0, 0.8)
-                        .addAction("stroke", "#000000", 0.4, 0)
-                        .addAction("stroke", "#00db2f", 0.3, 0)
-                    )
-            );
-
-            // Set healing and armor for garden mobs
-            mobConfigs[mobIDOf("Shrub")].setHealing(0.02);
-            mobConfigs[mobIDOf("Leafbug")].setHealing(0.005);
-
-            // TODO: Make poison block healing
-
+            applyGridBiomeConfigs();
+            
             // Send everything new to the client
             this.sendMockups();
         }

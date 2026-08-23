@@ -604,9 +604,14 @@ export class MobConfig {
         return output;
     }
 
-    constructor(name, health, damage, size, speed) {
-        this.id = MobConfig.idAccumulator++;
+    constructor(name, health, damage, size, speed, idOverride = undefined) {
+        if (idOverride) {
+            this.id = idOverride;
+        } else {
+            this.id = MobConfig.idAccumulator++;
+        }
         this.name = name;
+        this.description = undefined;
 
         this.health = health;
         this.damage = damage;
@@ -648,6 +653,8 @@ export class MobConfig {
         };
 
         this.wavesIconSize = 3.5;
+
+        this.periodicHeal = undefined;
     }
 
     setSystem(isSystem) {
@@ -869,6 +876,11 @@ export class MobConfig {
         return this;
     }
 
+    setPeriodicHeal(petalIndex, petalCount, healPercent, cooldown, eatCooldown) {
+        this.periodicHeal = { petalIndex, petalCount, healPercent, cooldown, eatCooldown };
+        return this;
+    }
+
     setPushability(pushability) {
         this.pushability = pushability;
 
@@ -895,6 +907,11 @@ export class MobConfig {
 
     setWavesIconSize(wavesIconSize) {
         this.wavesIconSize = wavesIconSize;
+        return this;
+    }
+
+    setDescription(description) {
+        this.description = description;
         return this;
     }
 }

@@ -1,4 +1,5 @@
 import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig } from "../../lib/protocol.js";
+import { colors } from "../../lib/util.js";
 export const tiers = structuredClone(_tiers);
 export { Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig };
 
@@ -1027,4 +1028,87 @@ export const randomPossiblePetal = (rarity) => {
     });
 
     return possible[Math.random() * possible.length | 0];
+}
+
+export function applyGridBiomeConfigs() {
+    // Add a petal that lets the player view mob descriptions
+    petalConfigs.push(
+        new PetalConfig("Gallery", 22.5 * 1, 1, 0)
+            .setDescription("Hit a mob with this petal to view the mob's stats.")
+            .setIsGallery(true)
+            .setDoNotRotate(true)
+            .setDrawing(new Drawing()
+                .addAction("beginPath")
+                .addAction("arc", 0, -0.5, 0.5, -2.1, Math.PI / 2)
+                .addAction("line", 0, 0, 0, 0.2)
+                .addAction("stroke", "#000000", 0.4, 0)
+                .addAction("stroke", "#00db2f", 0.3, 0)
+                .addAction("beginPath")
+                .addAction("line", 0, 0.8, 0, 0.8)
+                .addAction("stroke", "#000000", 0.4, 0)
+                .addAction("stroke", "#00db2f", 0.3, 0)
+            )
+    );
+
+    /***********    GARDEN PETALS    ***********/
+
+    petalConfigs.push(new PetalConfig("Dahlia.projectile", 22.5 * 100, 1E5, 0)
+        .setDescription("[object null object]")
+        .setDrawing(new Drawing()
+            .addAction("beginPath")
+            .addAction("circle", 0, 0, 1)
+            .addAction("fill", colors.rosePink)
+            .addAction("stroke", colors.rosePink, 0.2, 0.2)
+        )
+    );
+
+    /***********     GARDEN MOBS     ***********/
+
+    mobConfigs[mobIDOf("Shrub")] = new MobConfig("Shrub", 25, 5, 30, 0, mobIDOf("Shrub"))
+        .setDescription("Poses no danger, but can heal itself very fast.")
+        .setPushability(0.5)
+        .setHealing(0.015)
+        .addDrop(petalIDOf("Powder"), .8)
+        // .addDrop(petalIDOf("Shrub"), .6)
+        // Todo: Rubber-like petal
+        .addDrop(petalIDOf("Leaf"));
+
+    mobConfigs[mobIDOf("Leafbug")] = new MobConfig("Leafbug", 35, 15, 30, 2, mobIDOf("Leafbug"))
+        .setDescription("Has a hard leaf body, and can also heal slightly via photosynthesis.")
+        .setNeutral(1)
+        .setDamageReduction(.13)
+        .setHealing(0.003)
+        .addDrop(petalIDOf("Leaf"))
+        // .addDrop(petalIDOf("Bone"), .5)
+        // Todo: Root-like petal
+        .addDrop(petalIDOf("Cactus"), .25);
+
+    mobConfigs[mobIDOf("Evil Ladybug")] = new MobConfig("Evil Ladybug", 30, 10, 25, 2, mobIDOf("Evil Ladybug"))
+        .setDescription("Will periodically stop to heal itself by eating Dahlias.")
+        .setAggressive(1)
+        .setPeriodicHeal(petalIDOf("Dahlia.projectile"), 3, 1 / 3, 3 * 22.5, 0.8 * 22.5)
+        // .setProjectile({
+        //     petalIndex: petalIDOf("Dahlia.projectile"),
+        //     cooldown: 22.5,
+        //     health: Infinity,
+        //     damage: 0,
+        //     speed: 0,
+        //     range: 175,
+        //     size: 0.2,
+        //     runs: true,
+        //     nullCollision: true
+        // })
+        .addDrop(petalIDOf("Dahlia"))
+        .addDrop(petalIDOf("Yin Yang"), .15);
+
+    // Regular ladybug, for reference:
+    new MobConfig("Ladybug", 25, 10, 25, 2.5)
+        .addDrop(petalIDOf("Light"))
+        .addDrop(petalIDOf("Rose"), .6);
+
+    // Todo: /tp command
+    // Todo: Updating biome backgrounds
+    // Todo: Biome indicators on the map
+    // Todo: Respawn player at their current biome
+    // Todo: Implement Adrenaline/Rage
 }

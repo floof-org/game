@@ -148,7 +148,9 @@ export function chatGradient(speed, type, c1 = "#000000", c2 = "#ffffff") {
 export function formatLargeNumber(number, type = 0) {
     let returnedNumber = number;
     if (type === 2) {
-        if (number >= 1e15) {
+        if (!Number.isFinite(number)) {
+            returnedNumber = "Infinity";
+        } else if (number >= 1e15) {
             returnedNumber = (number / 1e15).toFixed(2) + "q";
         } else if (number >= 1e12) {
             returnedNumber = (number / 1e12).toFixed(2) + "t";
