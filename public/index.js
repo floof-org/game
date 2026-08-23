@@ -728,6 +728,15 @@ inventoryTooltipLayer.style.overflow = "visible";
 inventoryTooltipLayer.style.display = "none";
 
 document.body.appendChild(inventoryTooltipLayer);
+const inventoryTooltipBox = document.createElement("div");
+inventoryTooltipBox.style.position = "fixed";
+inventoryTooltipBox.style.willChange = "transform";
+const inventoryTooltipCanvas = document.createElement("canvas");
+const c2d = inventoryTooltipCanvas.getContext("2d");
+c2d.imageSmoothingEnabled = true;
+c2d.imageSmoothingQuality = "high";
+inventoryTooltipBox.appendChild(inventoryTooltipCanvas);
+let _tooltipDrawKey = null;
 
 function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   const bw = 350;
