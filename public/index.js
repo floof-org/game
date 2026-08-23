@@ -2887,26 +2887,23 @@ function draw() {
     net.state._foundHover = false;
 
     if (menu.classList.contains("active") && net.state.petalElements) {
-        net.state.petalElements.forEach((petal) => {
-            const rect = petal.icon.getBoundingClientRect();
-            const menuRect = menu.getBoundingClientRect();
-            const mouseX = mouse.x / window.devicePixelRatio;
-            const mouseY = mouse.y / window.devicePixelRatio;
-
+        const menuRect = menu.getBoundingClientRect();
+        const petalRects = net.state.petalElements.map(petalElement => petalElement.icon.getBoundingClientRect());
+        const mouseX = mouse.x / window.devicePixelRatio;
+        const mouseY = mouse.y / window.devicePixelRatio;
+        
+        net.state.petalElements.forEach((petal, i) => {
+            const rect = petalRects[i]
             const visible = rect.top >= menuRect.top && rect.bottom <= menuRect.bottom && rect.left >= menuRect.left && rect.right <= menuRect.right;
-
             const hovered = visible && mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom;
 
             if (hovered) {
                 net.state._foundHover = true;
-
                 net.state.inventoryPetalHover = [petal.index, petal.rarity, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
 
                 if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
                     beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petal.index, petal.rarity);
-
                     menu.classList.toggle("active");
-
                     inventoryDragConfig.index = petal.index;
                     inventoryDragConfig.rarity = petal.rarity;
                     inventoryDragConfig.item.stableSize = rect.width;
