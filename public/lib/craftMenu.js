@@ -413,7 +413,7 @@ var craftRef = null;
     off.width = SIZE; off.height = SIZE;
     var octx = off.getContext('2d');
     try {
-      var src = getPetalIcon(petalIdx, rarIdx);
+      var src = getPetalIcon(petalIdx, rarIdx, "oneshot");
       if (src) octx.drawImage(src, 0, 0, SIZE, SIZE);
     } catch (_) {}
     if (displayed > 1) {

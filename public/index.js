@@ -2898,11 +2898,7 @@ function draw() {
                     inventoryDragConfig.index = petal.index;
                     inventoryDragConfig.rarity = petal.rarity;
                     inventoryDragConfig.item.stableSize = rect.width;
-
-                    inventoryDragConfig.onDrop = () => {
-                        processInventoryDrop();
-                        menu.classList.toggle("active");
-                    };
+                    inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
                 }
             }
         });
@@ -2914,9 +2910,7 @@ function draw() {
 
     ctx.restore();
 
-    {
-        // Hovers
-
+    {   // Hovers
         net.state.petalHoverAlpha ??= 0;
         net.state.lastPetalHover ??= null;
 
