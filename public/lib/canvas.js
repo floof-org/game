@@ -57,14 +57,13 @@ export function mixColors(primary, secondary, amount = .5) {
 }
 
 export function text(text, x, y, size, fill = "#FFFFFF", _ctx = ctx, lineWidth = .2) {
+    const font = `bold ${size}px Ubuntu`;
+    if (_ctx.font !== font) _ctx.font = font;
     _ctx.fillStyle = fill;
     _ctx.strokeStyle = mixColors(fill, "#000000", .8);
     _ctx.lineWidth = size * lineWidth;
-    _ctx.font = `bold ${size}px Ubuntu`;
-
     _ctx.strokeText(text, x, y);
     _ctx.fillText(text, x, y);
-
     return _ctx.measureText(text).width;
 }
 
