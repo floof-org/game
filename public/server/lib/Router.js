@@ -301,6 +301,8 @@ export default class Router {
             // "  - Admin UUID: " + state.secretKey,
             "  - Spawn Table: " + (state.mobTable ? mobTableIntoChances(state.mobTable) : "None")
         ].join("\n"));
+
+        state.initialized = true;
     }
 
     postMessage(message) {}

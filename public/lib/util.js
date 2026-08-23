@@ -268,8 +268,14 @@ export function quickDiff(a, b) {
     return dx * dx + dy * dy;
 }
 
-export function xpForLevel(level) {
-    return Math.pow(level, 2.35) + Math.exp(level / 25);
+export function xpForLevel(level, isBiomeGrid = false) {
+    if (isBiomeGrid) {
+        // Use a pure exponential scale, which should make balancing more consistent across rarities.
+        // Killing rarity n gives ~3^n xp, so farming rarity n brings the player to approximately level 10n.
+        return 50 * Math.pow(3, level / 8.5);
+    } else {
+        return Math.pow(level, 2.35) + Math.exp(level / 25);
+    }
 }
 
 export const options = {

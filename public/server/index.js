@@ -108,6 +108,11 @@ function getMobIndex() {
 
 // Game loop
 setInterval(() => {
+    // Do not run the game loop until the gamemode has been initialized
+    if (!state.initialized) {
+        return;
+    }
+
     const startTime = performance.now();
 
     state.spatialHash.clear();

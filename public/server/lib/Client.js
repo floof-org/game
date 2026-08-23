@@ -749,11 +749,12 @@ export default class Client {
         this.slots = new Array(5).fill(null).map(() => ({ id: 0, rarity: 0 }));
         this.slotRatios = new Array(5).fill(0).map(() => 0);
         this.secondarySlots = new Array(5).fill(null).map(() => null);
-        if (state.isBiomeGrid) {
-            this.secondarySlots[0] = { id: petalIDOf("Gallery"), rarity: 0 };
-        }
         this.level = 1;
         this.xp = 1;
+        if (state.isBiomeGrid) {
+            this.secondarySlots[0] = { id: petalIDOf("Gallery"), rarity: 0 };
+            this.xp = xpForLevel(1, state.isBiomeGrid) + 1;
+        }
 
         this.lastChat = 0;
         this.frownyMessages = 0;
@@ -766,7 +767,7 @@ export default class Client {
 
         this.xp += x;
 
-        while (this.xp < xpForLevel(this.level - 1)) {
+        while (this.xp < xpForLevel(this.level - 1, state.isBiomeGrid)) {
             this.level--;
 
             if (this.body && !this.body.health.isDead) {
@@ -775,7 +776,7 @@ export default class Client {
             }
         }
 
-        while (this.xp >= xpForLevel(this.level)) {
+        while (this.xp >= xpForLevel(this.level, state.isBiomeGrid)) {
             this.level++;
 
             if (this.body && !this.body.health.isDead) {
@@ -800,11 +801,16 @@ export default class Client {
             if (this.body && !this.body.health.isDead) this.body.initSlots(slots);
         }
 
-        this.levelProgress = this.level < 2 ? this.xp / xpForLevel(this.level) : (this.xp - xpForLevel(this.level - 1)) / (xpForLevel(this.level) - xpForLevel(this.level - 1));
+        this.levelProgress = this.level < 2 ? this.xp / xpForLevel(this.level, state.isBiomeGrid) : (this.xp - xpForLevel(this.level - 1, state.isBiomeGrid)) / (xpForLevel(this.level, state.isBiomeGrid) - xpForLevel(this.level - 1, state.isBiomeGrid));
     }
 
     get healthAdjustement() {
-        return 40 + 5 * Math.pow(this.level, 1.5);
+        if (state.isBiomeGrid) {
+            // Make health scale exponentially so it can actually keep up with enemies
+            return 100 * Math.pow(2, this.level / 10);
+        } else {
+            return 40 + 5 * Math.pow(this.level, 1.5);
+        }
     }
 
     get bodyDamageAdjustment() {

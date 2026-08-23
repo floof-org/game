@@ -145,8 +145,12 @@ export class PetalConfig {
         return output;
     }
 
-    constructor(name, cooldown, health, damage) {
-        this.id = PetalConfig.idAccumulator++;
+    constructor(name, cooldown, health, damage, idOverride) {
+        if (idOverride) {
+            this.id = idOverride;
+        } else {
+            this.id = PetalConfig.idAccumulator++;
+        }
         this.name = name;
 
         this.cooldown = cooldown;
@@ -489,7 +493,7 @@ export class PetalConfig {
     setAbsorbsDamage(maxDamage, period) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].absorbsDamage = {
-                maxDamage: maxDamage instanceof Array ? (maxDamage[i] ?? maxDamage[maxDamage.length - 1]) : (maxDamage * Math.pow(PetalTier.DAMAGE_SCALE, i)),
+                maxDamage: maxDamage instanceof Array ? (maxDamage[i] ?? maxDamage[maxDamage.length - 1]) : (maxDamage * Math.pow(PetalTier.HEALTH_SCALE, i)),
                 period: period instanceof Array ? (period[i] ?? period[period.length - 1]) : period
             };
         }
@@ -554,7 +558,7 @@ export class PetalConfig {
     }
     setArmor(armor) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].armor = armor * Math.pow(PetalTier.DAMAGE_SCALE, i);
+            this.tiers[i].armor = armor * Math.pow(PetalTier.HEALTH_SCALE, i);
         }
 
         return this;
@@ -729,8 +733,8 @@ export class MobConfig {
             this.tiers[i].projectile = {
                 petalIndex: projectile.petalIndex ?? 0,
                 cooldown: projectile.cooldown ?? 10,
-                health: (projectile.health ?? 1) * Math.pow(PetalTier.HEALTH_SCALE, i),
-                damage: (projectile.damage ?? 1) * Math.pow(PetalTier.DAMAGE_SCALE, i),
+                health: (projectile.health ?? 1) * Math.pow(MobTier.HEALTH_SCALE, i),
+                damage: (projectile.damage ?? 1) * Math.pow(MobTier.DAMAGE_SCALE, i),
                 speed: projectile.speed ?? 5,
                 range: (projectile.range ?? 50) * Math.pow(MobTier.SIZE_SCALE * .8, i),
                 size: projectile.size ?? .35,
@@ -761,7 +765,7 @@ export class MobConfig {
     setPoison(poisonDamage, duration) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].poison = {
-                damage: poisonDamage * Math.pow(PetalTier.DAMAGE_SCALE, i) / 22.5,
+                damage: poisonDamage * Math.pow(MobTier.DAMAGE_SCALE, i) / 22.5,
                 duration: duration * 22.5
             };
         }
@@ -775,7 +779,7 @@ export class MobConfig {
                 cooldown: cooldown instanceof Array ? (cooldown[i] ?? cooldown[cooldown.length - 1]) : cooldown,
                 bounces: bounces instanceof Array ? (bounces[i] ?? bounces[bounces.length - 1]) : bounces,
                 range: range * Math.pow(1.15, i),
-                damage: damage * Math.pow(PetalTier.DAMAGE_SCALE, i)
+                damage: damage * Math.pow(MobTier.DAMAGE_SCALE, i)
             };
         }
 

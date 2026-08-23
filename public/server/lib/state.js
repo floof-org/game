@@ -61,6 +61,8 @@ const state = {
     maxMapDistFromSpawn: 0,
     mapData: [],
 
+    initialized: false,
+
     mapBasedSpawn(type, client) {
         if (state.mapSpawns == null || state.mapSpawns[type] == null) {
             return state.random();

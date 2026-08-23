@@ -1031,6 +1031,10 @@ export const randomPossiblePetal = (rarity) => {
 }
 
 export function applyGridBiomeConfigs() {
+    // Make enemy damage scale slower to prevent player from unfairly getting one-shot
+    PetalTier.HEALTH_SCALE = 2;
+    MobTier.DAMAGE_SCALE = 2.1;
+
     // Add a petal that lets the player view mob descriptions
     petalConfigs.push(
         new PetalConfig("Gallery", 22.5 * 1, 1, 0)
@@ -1052,6 +1056,35 @@ export function applyGridBiomeConfigs() {
 
     /***********    GARDEN PETALS    ***********/
 
+    petalConfigs[petalIDOf("Powder")] = new PetalConfig("Powder", 22.5 * .75, 3, 5, petalIDOf("Powder"))
+        .setSize(1.65)
+        .setSpeedMultiplier(1.03)
+        .setHuddles(1)
+        .setDescription("This lightweight powder will make you go fast!");
+
+    petalConfigs[petalIDOf("Leaf")] = new PetalConfig("Leaf", 22.5 * 1, 8, 6, petalIDOf("Leaf"))
+        .setSize(1.2)
+        .setConstantHeal(5.5)
+        .setDescription("A petal that heals you over time by the power of photosynthesis.");
+
+    // Extra health: 35 -> 280
+    petalConfigs[petalIDOf("Cactus")] = new PetalConfig("Cactus", 22.5 * 2, 18, 6, petalIDOf("Cactus"))
+        .setSize(1.25)
+        .setExtraHealth(280)
+        .setHuddles(1)
+        .setDescription("A petal that gives you extra health. Pretty magical if you ask me.");
+
+    petalConfigs[petalIDOf("Dahlia")] = new PetalConfig("Dahlia", 22.5 * .75, 5, 5, petalIDOf("Dahlia"))
+        .setHealing(3)
+        .setSize(.5)
+        .setHuddles(1)
+        .setMulti(3, true)
+        .setDescription("A very consistent trickle heal.");
+
+    petalConfigs[petalIDOf("Yin Yang")] = new PetalConfig("Yin Yang", 22.5 * 1, 9, 11, petalIDOf("Yin Yang"))
+        .setYinYang(1)
+        .setDescription("The mysterious petal of balance.");
+
     petalConfigs.push(new PetalConfig("Dahlia.projectile", 22.5 * 100, 1E5, 0)
         .setDescription("[object null object]")
         .setDrawing(new Drawing()
@@ -1064,6 +1097,10 @@ export function applyGridBiomeConfigs() {
 
     /***********     GARDEN MOBS     ***********/
 
+    // Damage: 10 -> 5
+    // Poison: 3 * 5 -> 0
+    // Constant heal: 0 -> 0.015
+    // Drops: Iris 0.75, Shrub 0.6, Leaf 1.0 -> Powder 0.8, Leaf 1.0
     mobConfigs[mobIDOf("Shrub")] = new MobConfig("Shrub", 25, 5, 30, 0, mobIDOf("Shrub"))
         .setDescription("Poses no danger, but can heal itself very fast.")
         .setPushability(0.5)
@@ -1073,6 +1110,10 @@ export function applyGridBiomeConfigs() {
         // Todo: Rubber-like petal
         .addDrop(petalIDOf("Leaf"));
 
+    // Damage: 3.5 -> 15
+    // Speed: 2.5 -> 2
+    // Constant heal: 0 -> 0.003
+    // Drops: Leaf 1.0, Bone 0.5, Cactus 0.25 -> Leaf 1.0, Cactus 0.25
     mobConfigs[mobIDOf("Leafbug")] = new MobConfig("Leafbug", 35, 15, 30, 2, mobIDOf("Leafbug"))
         .setDescription("Has a hard leaf body, and can also heal slightly via photosynthesis.")
         .setNeutral(1)
@@ -1083,6 +1124,10 @@ export function applyGridBiomeConfigs() {
         // Todo: Root-like petal
         .addDrop(petalIDOf("Cactus"), .25);
 
+    // Health: 25 -> 30
+    // Damage: 15 -> 10
+    // Speed: 2.5 -> 2
+    // Periodic heal: None -> Dahlias
     mobConfigs[mobIDOf("Evil Ladybug")] = new MobConfig("Evil Ladybug", 30, 10, 25, 2, mobIDOf("Evil Ladybug"))
         .setDescription("Will periodically stop to heal itself by eating Dahlias.")
         .setAggressive(1)
@@ -1111,4 +1156,6 @@ export function applyGridBiomeConfigs() {
     // Todo: Biome indicators on the map
     // Todo: Respawn player at their current biome
     // Todo: Implement Adrenaline/Rage
+    // Todo: Probably add crafting
+    // Todo: Implement desert/ocean mobs
 }

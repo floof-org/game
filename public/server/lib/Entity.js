@@ -1,4 +1,4 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
+import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, MobTier, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, formatLargeNumber, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
 import state from "./state.js";
@@ -1085,14 +1085,14 @@ export class Entity {
                     this.poison.timer = other.poison.toApply.timer;
                 }
 
-                if (this.isGallery && other instanceof Mob) {
+                if (this instanceof Petal && this.isGallery && other instanceof Mob) {
                     for (let line of other.getStatsDescription().split("\n")) {
                         this.parent.client.systemMessage(line, tiers[other.rarity].color);
                     }
                     this.destroy();
                 }
 
-                if (other.isGallery && this instanceof Mob) {
+                if (other instanceof Petal && other.isGallery && this instanceof Mob) {
                     for (let line of this.getStatsDescription().split("\n")) {
                         other.parent.client.systemMessage(line, tiers[this.rarity].color);
                     }
@@ -1106,12 +1106,22 @@ export class Entity {
                 const strength = combinedSize - Math.sqrt(distSqr);
                 const mySizeRatio = this.size / combinedSize;
                 const otherSizeRatio = other.size / combinedSize;
-            
-                this.velocity.x += Math.cos(angle) * strength * this.pushability * other.density * otherSizeRatio;
-                this.velocity.y += Math.sin(angle) * strength * this.pushability * other.density * otherSizeRatio;
-            
-                other.velocity.x -= Math.cos(angle) * strength * other.pushability * this.density * mySizeRatio;
-                other.velocity.y -= Math.sin(angle) * strength * other.pushability * this.density * mySizeRatio;
+                
+                // Special case: Player takes knockback from mobs, regardless of pushability/density.
+                // This makes this genre's zero i-frame combat a bit more fair for the player.
+                if (state.isBiomeGrid && this instanceof Player && other instanceof Mob) {
+                    this.knockbackAngles.push(angle);
+                } else {
+                    this.velocity.x += Math.cos(angle) * strength * this.pushability * other.density * otherSizeRatio;
+                    this.velocity.y += Math.sin(angle) * strength * this.pushability * other.density * otherSizeRatio;
+                }
+
+                if (state.isBiomeGrid && other instanceof Player && this instanceof Mob) {
+                    other.knockbackAngles.push(angle + Math.PI);
+                } else {
+                    other.velocity.x -= Math.cos(angle) * strength * other.pushability * this.density * mySizeRatio;
+                    other.velocity.y -= Math.sin(angle) * strength * other.pushability * this.density * mySizeRatio;
+                }
             }
         });
     }
@@ -1498,6 +1508,8 @@ export class Player extends Entity {
         this.extraVision = 0;
 
         this.lightVision = 2;
+
+        this.knockbackAngles = [];
     }
 
     get level() {
@@ -1577,6 +1589,20 @@ export class Player extends Entity {
 
     collide() {
         super.collide();
+
+        // Process knockback from mob collisions here
+        if (this.knockbackAngles.length > 0) {
+            const knockbackVelocity = new Vector2D();
+
+            for (let angle of this.knockbackAngles) {
+                knockbackVelocity.x += 20 * Math.cos(angle);
+                knockbackVelocity.y += 20 * Math.sin(angle);
+            }
+
+            this.velocity = knockbackVelocity;
+        }
+        this.knockbackAngles = [];
+
         this.collideTerrain();
 
         let i = 0,
@@ -1694,7 +1720,7 @@ class FakeClient {
 
         this.xp += x;
 
-        while (this.xp < xpForLevel(this.level - 1)) {
+        while (this.xp < xpForLevel(this.level - 1, state.isBiomeGrid)) {
             this.level--;
 
             if (this.body && !this.body.health.isDead) {
@@ -1703,7 +1729,7 @@ class FakeClient {
             }
         }
 
-        while (this.xp >= xpForLevel(this.level)) {
+        while (this.xp >= xpForLevel(this.level, state.isBiomeGrid)) {
             this.level++;
 
             if (this.body && !this.body.health.isDead) {
@@ -1732,7 +1758,12 @@ class FakeClient {
     }
 
     get healthAdjustement() {
-        return 40 + 5 * Math.pow(this.level, 1.5);
+        if (state.isBiomeGrid) {
+            // Make health scale exponentially so it can actually keep up with enemies
+            return 100 * Math.pow(2, this.level / 10);
+        } else {
+            return 40 + 5 * Math.pow(this.level, 1.5);
+        }
     }
 
     get bodyDamageAdjustment() {
@@ -1797,7 +1828,7 @@ export class AIPlayer extends Player {
 
         this.client = new FakeClient(1024 + this.id);
         this.client.body = this;
-        this.client.addXP(xpForLevel(level) + 1);
+        this.client.addXP(xpForLevel(level, state.isBiomeGrid) + 1);
 
         this.index = 255
 
@@ -2285,12 +2316,13 @@ export class Mob extends Entity {
         if (config.periodicHeal) {
             this.periodicHeal = {
                 ...config.periodicHeal,
+                normalMobSpeed: this.speed,
+                normalMobFriction: this.friction,
                 state: {
                     timer: config.periodicHeal.cooldown
                         + (2 * config.periodicHeal.petalCount + 1) * config.periodicHeal.eatCooldown,
                     healPetals: [],
-                    x: this.x,
-                    y: this.y,
+                    facing: this.facing,
                 }
             }
         }
@@ -2612,10 +2644,6 @@ export class Mob extends Entity {
             }
         }
 
-        this.bindToRoom();
-
-        super.update();
-
         if (this.periodicHeal && this.health.health > 0) {
             this.periodicHeal.state.timer--;
 
@@ -2625,12 +2653,15 @@ export class Mob extends Entity {
                     timer: this.config.periodicHeal.cooldown
                         + (2 * this.config.periodicHeal.petalCount + 1) * this.config.periodicHeal.eatCooldown,
                     healPetals: [],
-                    x: this.x,
-                    y: this.y,
+                    facing: this.facing,
                 }
             }
 
             if (this.periodicHeal.state.timer < (2 * this.periodicHeal.petalCount + 1) * this.periodicHeal.eatCooldown) {
+                // Stop movement behaviours when the mob is eating
+                this.speed = 0;
+                this.friction = 0;
+
                 const decimalPetalCount = this.periodicHeal.state.timer / 2 / this.periodicHeal.eatCooldown + 0.5;
                 const petalCount = Math.floor(decimalPetalCount);
                 const biteCycle = (2 * decimalPetalCount + 0.2) % 1;
@@ -2644,6 +2675,8 @@ export class Mob extends Entity {
                     petal.damage = 0;
                     petal.spinSpeed = 0;
                     petal.speed = 0;
+                    petal.size *= Math.pow(MobTier.SIZE_SCALE, this.rarity);
+                    petal.nullCollision = true;
                     healPetals.push(petal);
                 }
 
@@ -2656,26 +2689,28 @@ export class Mob extends Entity {
                     this.health.heal(this.health.maxHealth * this.periodicHeal.healPercent);
                 }
 
-                // Mob stays at "anchor" position while eating
-                this.x = this.periodicHeal.state.x;
-                this.y = this.periodicHeal.state.y;
+                // Mob faces in the same direction while eating
+                this.facing = this.periodicHeal.state.facing;
 
                 // Perform bite animations by lunging into the petals
+                let rDelta = 0;
                 if (biteCycle < 0.25 && decimalPetalCount < this.periodicHeal.petalCount + .75 && decimalPetalCount > .25) {
-                    let r = 0;
-                    if (biteCycle > 0.2) {
-                        r = 4 * (0.25 - biteCycle) * this.size;
+                    let v = 0;
+                    if (biteCycle >= 0.2) {
+                        rDelta = 4 * (0.25 - biteCycle) * this.size;
+                        v = 4 * this.size / this.periodicHeal.eatCooldown;
                     } else {
-                        r = biteCycle * this.size;
+                        rDelta = biteCycle * this.size;
+                        v = -1 * this.size / this.periodicHeal.eatCooldown;
                     }
-                    this.x += r * Math.cos(this.facing);
-                    this.y += r * Math.sin(this.facing);
+                    this.velocity.x += v * Math.cos(this.facing);
+                    this.velocity.y += v * Math.sin(this.facing);
                 }
 
                 // Place petals relative to "anchor" position
                 for (let i = 0; i < healPetals.length; i++) {
                     const petal = healPetals[i];
-                    const r1 = 1.1 * this.size;
+                    const r1 = 1.1 * this.size - rDelta;
                     const angle1 = this.facing;
                     const r2 = petal.size;
                     const angle2 = angle1 + 2 * Math.PI * i / this.periodicHeal.petalCount;
@@ -2683,11 +2718,18 @@ export class Mob extends Entity {
                     petal.y = this.periodicHeal.state.y + r1 * Math.sin(angle1) + r2 * Math.sin(angle2);
                 }
             } else {
-                // Update the mob's "anchor" position while the mob is moving normally
-                this.periodicHeal.state.x = this.x;
-                this.periodicHeal.state.y = this.y;
+                // Resume the mob's movement behaviours when not eating
+                this.speed = this.periodicHeal.normalMobSpeed;
+                this.friction = this.periodicHeal.normalMobFriction;
+
+                // Update the mob's facing angle when moving normally
+                this.periodicHeal.state.facing = this.facing;
             }
         }
+
+        this.bindToRoom();
+
+        super.update();
     }
 
     collide() {
@@ -2849,7 +2891,9 @@ export class Mob extends Entity {
         description += `Speed: ${formatLargeNumber(this.speed, 2)}\n`;
 
         if (this.config.drops?.length > 0) {
-            description += `Drops: ${this.config.drops.map(drop => petalConfigs[drop.index].name).reduce((prev, curr) => prev + ", " + curr)}\n`;
+            description += `Drops: ${this.config.drops.map(
+                drop => `${petalConfigs[drop.index].name} (${drop.chance * 100}%)`
+            ).reduce((prev, curr) => prev + ", " + curr)}\n`;
         }
 
         if (this.projectile) {
