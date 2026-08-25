@@ -74,7 +74,7 @@ export class HealthComponent {
         this.lastDamaged = Date.now();
 
         if (this.onDamage) {
-            this.onDamage(damageDone);
+            this.onDamage(damageDone, isPoison);
         }
 
         return damageDone;
@@ -122,6 +122,7 @@ export class PetalSlot {
         /** @type {Petal[]} */
         this.petals = [];
         this.cooldowns = [];
+        this.adrenalineApplied = [];
 
         /** @type {Mob[][]} */
         this.boundMobs = [];
@@ -152,6 +153,7 @@ export class PetalSlot {
         this.clumps = this.config.tiers[rarityID].clumps && this.amount > 1;
         this.petals = new Array(this.amount).fill(null);
         this.cooldowns = new Array(this.amount).fill(0);
+        this.adrenalineApplied = new Array(this.amount).fill(0);
         this.boundMobs = new Array(this.amount).fill(null).map(() => []);
 
         this.player.health.set(Math.max(1e-10, this.player.health.maxHealth + this.config.tiers[rarityID].extraHealth));
@@ -1372,6 +1374,10 @@ export class Petal extends Entity {
         this.ignoreWalls = config.ignoreWalls;
 
         this.isGallery = config.isGallery;
+
+        if (state.isBiomeGrid && tier.healing) {
+            this.range = config.healTimer;
+        }
     }
 
     findTargetAngleWithinRadianArc(myAngle, arc) {
@@ -1469,6 +1475,9 @@ export class Petal extends Entity {
 
     destroy() {
         if (this.slotIndex > -1) {
+            if (state.isBiomeGrid) {
+                this.parent.petalSlots[this.slotIndex].adrenalineApplied[this.petalIndex] = 0;
+            }
             this.parent.petalSlots[this.slotIndex].petals[this.petalIndex] = null;
         }
 
@@ -1510,6 +1519,24 @@ export class Player extends Entity {
         this.lightVision = 2;
 
         this.knockbackAngles = [];
+
+        if (state.isBiomeGrid) {
+            this.health.onDamage = (_damageDone, isPoison) => {
+                if (!isPoison) {
+                    // Adrenaline mechanic: Every time the player takes non-poison
+                    // damage, every petal's cooldown gets reduced by 10%, capping
+                    // out at 50%.
+                    for (let slot of this.petalSlots) {
+                        for (let i = 0; i < slot.amount; i++) {
+                            if (!slot.petals[i] && slot.adrenalineApplied[i] < 5) {
+                                slot.cooldowns[i] += 0.1 * slot.config.cooldown;
+                                slot.adrenalineApplied[i]++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     get level() {
@@ -1767,7 +1794,11 @@ class FakeClient {
     }
 
     get bodyDamageAdjustment() {
-        return 5 + 1 * Math.pow(this.level, 1.5);
+        if (state.isBiomeGrid) {
+            return 5;
+        } else {
+            return 5 + 1 * Math.pow(this.level, 1.5);
+        }
     }
 
     get highestRarity() {

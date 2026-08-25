@@ -815,7 +815,11 @@ export default class Client {
     }
 
     get bodyDamageAdjustment() {
-        return 5 + 1 * Math.pow(this.level, 1.5);
+        if (state.isBiomeGrid) {
+            return 5;
+        } else {
+            return 5 + 1 * Math.pow(this.level, 1.5);
+        }
     }
 
     get highestRarity() {

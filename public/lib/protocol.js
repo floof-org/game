@@ -154,6 +154,7 @@ export class PetalConfig {
         this.name = name;
 
         this.cooldown = cooldown;
+        this.healTimer = 22.5 * 1.5;
         this.health = health;
         this.damage = damage;
         this.sizeRatio = 1;
@@ -318,7 +319,8 @@ export class PetalConfig {
         return this;
     }
 
-    setHealing(healing) {
+    setHealing(healing, healTimer = 22.5 * 1.5) {
+        this.healTimer = healTimer;
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].healing = healing * Math.pow(PetalTier.HEALTH_SCALE, i);
         }

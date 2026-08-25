@@ -1063,10 +1063,14 @@ export function applyGridBiomeConfigs() {
         .setHuddles(1)
         .setDescription("This lightweight powder will make you go fast!");
 
-    petalConfigs[petalIDOf("Leaf")] = new PetalConfig("Leaf", 22.5 * 1, 8, 6, petalIDOf("Leaf"))
+    // Reload: 1s -> 2.5s
+    // Health: 8 -> 10
+    // Damage: 6 -> 25
+    // Constant heal: 5.5/s -> 5/s
+    petalConfigs[petalIDOf("Leaf")] = new PetalConfig("Leaf", 22.5 * 2.5, 10, 25, petalIDOf("Leaf"))
         .setSize(1.2)
-        .setConstantHeal(5.5)
-        .setDescription("A petal that heals you over time by the power of photosynthesis.");
+        .setConstantHeal(5)
+        .setDescription("A petal that heals you over time using photosynthesis. It's also quite sharp.");
 
     // Extra health: 35 -> 280
     petalConfigs[petalIDOf("Cactus")] = new PetalConfig("Cactus", 22.5 * 2, 18, 6, petalIDOf("Cactus"))
@@ -1075,14 +1079,18 @@ export function applyGridBiomeConfigs() {
         .setHuddles(1)
         .setDescription("A petal that gives you extra health. Pretty magical if you ask me.");
 
-    petalConfigs[petalIDOf("Dahlia")] = new PetalConfig("Dahlia", 22.5 * .75, 5, 5, petalIDOf("Dahlia"))
-        .setHealing(3)
+    // Secondary heal timer: 1.5s -> 0.25s
+    // Damage: 5 -> 1
+    petalConfigs[petalIDOf("Dahlia")] = new PetalConfig("Dahlia", 22.5 * .75, 5, 1, petalIDOf("Dahlia"))
+        .setHealing(3, 22.5 * 0.25)
         .setSize(.5)
         .setHuddles(1)
         .setMulti(3, true)
         .setDescription("A very consistent trickle heal.");
 
-    petalConfigs[petalIDOf("Yin Yang")] = new PetalConfig("Yin Yang", 22.5 * 1, 9, 11, petalIDOf("Yin Yang"))
+    // Reload: 1s -> 3s
+    // Damage: 11 -> 36
+    petalConfigs[petalIDOf("Yin Yang")] = new PetalConfig("Yin Yang", 22.5 * 3, 9, 36, petalIDOf("Yin Yang"))
         .setYinYang(1)
         .setDescription("The mysterious petal of balance.");
 
@@ -1152,12 +1160,107 @@ export function applyGridBiomeConfigs() {
         .addDrop(petalIDOf("Light"))
         .addDrop(petalIDOf("Rose"), .6);
 
+    /***********    OCEAN PETALS    ***********/
+
+    petalConfigs[petalIDOf("Light")] = new PetalConfig("Light", 22.5 * .25, 6.5, 17, petalIDOf("Light"))
+        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 7, 7], 0, true)
+        .setSize(.75)
+        .setDescription("It's very light and recharges quickly, at the cost of damage.");
+
+    petalConfigs[petalIDOf("Faster")] = new PetalConfig("Faster", 22.5 * .65, 12, 7, petalIDOf("Faster"))
+        .setSize(.75)
+        .setExtraRadians(.03)
+        .setDescription("This one makes your petals spin faster.");
+
+    petalConfigs[petalIDOf("Lightning")] = new PetalConfig("Lightning", 22.5 * 1, 1e-15, 5, petalIDOf("Lightning"))
+        .setLightning([3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9], 32 * 8, 7)
+        .setDescription("Shockingly shocking!");
+
+    petalConfigs[petalIDOf("Jelly")] = new PetalConfig("Jelly", 23, 9, 7, petalIDOf("Jelly"))
+        .setDensity(20)
+        .setDescription("Super bouncy! Knocks all your enemies around. Very fun to use and cause problems with.");
+
+    // Todo: Add heal-block absorption to sponge
+    petalConfigs[petalIDOf("Sponge")] = new PetalConfig("Sponge", 22.5 * 1.5, 24, 0, petalIDOf("Sponge"))
+        .setSize(4 / 3)
+        .setHuddles(1)
+        .setAbsorbsDamage(35, [
+            3 * 22.5, 3 * 22.5, 3 * 22.5,
+            4 * 22.5, 4 * 22.5, 4 * 22.5,
+            5 * 22.5, 5 * 22.5, 5 * 22.5,
+            6 * 22.5, 7 * 22.5, 8 * 22.5
+        ])
+        .setDescription("It absorbs conventional damage done to your flower. If incoming damage is too great, you will suffer all of the damage the sponge has contained at once.");
+
+    /***********     OCEAN MOBS     ***********/
+
+    // Drops: Fang 1.0, Faster 1.0 -> Light 1.0, Faster 1.0
+    // Todo: Should it really drop light?
+    mobConfigs[mobIDOf("Leech")] = new MobConfig("Leech", 25, 3.5, 16, 5.5, mobIDOf("Leech"))
+        .setAggressive(1)
+        .addDrop(petalIDOf("Light"))
+        .addDrop(petalIDOf("Faster"));
+
+    // Body damage: 15 -> 5
+    mobConfigs[mobIDOf("Jellyfish")] = new MobConfig("Jellyfish", 40, 5, 30, 2.5, mobIDOf("Jellyfish"))
+        .setAggressive(1)
+        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2)
+        .addDrop(petalIDOf("Lightning"))
+        .addDrop(petalIDOf("Jelly"));
+
+    // Todo: Bubble blow ability
+    mobConfigs[mobIDOf("Sponge")] = new MobConfig("Sponge", 35, 3, 30, 0, mobIDOf("Sponge"))
+        .addDrop(petalIDOf("Sponge"));
+
+    /***********    DESERT PETALS    ***********/
+
+    petalConfigs[petalIDOf("Pincer")] = new PetalConfig("Pincer", 22.5 * 1, 7.5, 7.5, petalIDOf("Pincer"))
+        .setSize(1.2)
+        .setPoison(2, 5)
+        .setEnemySpeedMultiplier(.6, 5)
+        .setDescription("Poisonous, and it slows down your enemies. A perfect double whammy.");
+
+    petalConfigs[petalIDOf("Iris")] = new PetalConfig("Iris", 22.5 * 1, 10, 5, petalIDOf("Iris"))
+        .setSize(.8)
+        .setPoison(12.5, 5)
+        .setDescription("Packs an unexpected punch in its secret weapon: poison.");
+    
+    // Todo: Replace this drop, desert is not the healing type
+    petalConfigs[petalIDOf("Yucca")] = new PetalConfig("Yucca", 22.5 * 1.5, 8, 6, petalIDOf("Yucca"))
+        .setSize(1.2)
+        .setConstantHeal(7.5, true)
+        .setDescription("A strange leaf that heals you but only when you're in defensive mode.");
+
+    /***********     DESERT MOBS     ***********/
+    mobConfigs[mobIDOf("Scorpion")] = new MobConfig("Scorpion", 45, 7.5, 32.5, 3, mobIDOf("Scorpion"))
+        .setAggressive(1)
+        .setStrafes(30, 15, 1.25)
+        .setProjectile({
+            petalIndex: petalIDOf("Scorpion Missile.projectile"),
+            cooldown: 22.5 * 2,
+            health: 2,
+            damage: 2,
+            speed: 5,
+            range: 65,
+            size: .2
+        })
+        .addDrop(petalIDOf("Pincer"))
+        .addDrop(petalIDOf("Iris"));
+
+    mobConfigs[mobIDOf("Worker Fire Ant")] = new MobConfig("Worker Fire Ant", 15, 10, 15, 3.25, mobIDOf("Worker Fire Ant"))
+        .setNeutral(1)
+        .addDrop(petalIDOf("Light"), .5)
+        .addDrop(petalIDOf("Yucca"), .5);
+
+    mobConfigs[mobIDOf("Baby Fire Ant")] = new MobConfig("Baby Fire Ant", 10, 10, 15, 2, mobIDOf("Baby Fire Ant"))
+        .addDrop(petalIDOf("Light"), .5)
+        .addDrop(petalIDOf("Yucca"), .5);
+
+
     // Todo: /tp command
     // Todo: Updating biome backgrounds
     // Todo: Biome indicators on the map
     // Todo: Respawn player at their current biome
-    // Todo: Implement Adrenaline/Rage
     // Todo: Probably add crafting
     // Todo: Implement desert/ocean mobs
-    // Todo: Heavily reduce player's body damage, but let it deal extra damage to missiles
 }
