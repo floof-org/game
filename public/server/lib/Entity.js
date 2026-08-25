@@ -1760,7 +1760,7 @@ class FakeClient {
     get healthAdjustement() {
         if (state.isBiomeGrid) {
             // Make health scale exponentially so it can actually keep up with enemies
-            return 100 * Math.pow(2, this.level / 10);
+            return 80 * Math.pow(2, this.level / 10);
         } else {
             return 40 + 5 * Math.pow(this.level, 1.5);
         }
@@ -2714,8 +2714,8 @@ export class Mob extends Entity {
                     const angle1 = this.facing;
                     const r2 = petal.size;
                     const angle2 = angle1 + 2 * Math.PI * i / this.periodicHeal.petalCount;
-                    petal.x = this.periodicHeal.state.x + r1 * Math.cos(angle1) + r2 * Math.cos(angle2);
-                    petal.y = this.periodicHeal.state.y + r1 * Math.sin(angle1) + r2 * Math.sin(angle2);
+                    petal.x = this.x + r1 * Math.cos(angle1) + r2 * Math.cos(angle2);
+                    petal.y = this.y + r1 * Math.sin(angle1) + r2 * Math.sin(angle2);
                 }
             } else {
                 // Resume the mob's movement behaviours when not eating
@@ -2724,6 +2724,11 @@ export class Mob extends Entity {
 
                 // Update the mob's facing angle when moving normally
                 this.periodicHeal.state.facing = this.facing;
+
+                // Re-increment timer if the mob is close to full health
+                if (this.health.health >= this.health.maxHealth * 0.9) {
+                    this.periodicHeal.state.timer++;
+                }
             }
         }
 

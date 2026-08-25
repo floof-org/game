@@ -339,7 +339,7 @@ const state = {
         });
     },
 
-    sendTerrain: id => {
+    sendTerrain: (id, client) => {
         const writer = new Writer(true);
         writer.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
         writer.setUint16(id > 0 ? id : 0);
@@ -357,6 +357,34 @@ const state = {
         });
 
         state.router.postMessage(writer.build());
+        
+
+        if (globalThis._MAP_CELLS?.length) {
+            client.__sentTerrainScores ??= false;
+
+            if (!client.__sentTerrainScores) {
+                client.__sentTerrainScores = true;
+
+                const cells = globalThis._MAP_CELLS ?? [];
+
+                const terrainWriter = new Writer(true);
+
+                terrainWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+                terrainWriter.setUint16(id);
+                terrainWriter.setUint8(113);
+
+                terrainWriter.setUint32(cells.length);
+
+                for (const cell of cells) {
+                    terrainWriter.setUint16(cell.x);
+                    terrainWriter.setUint16(cell.y);
+                    terrainWriter.setFloat32(cell.score ?? 0);
+                }
+
+                state.router.postMessage(terrainWriter.build());
+            }
+        }
+        client.sentTerrain = true;
     },
 
     mobTable: null,

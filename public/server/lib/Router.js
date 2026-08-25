@@ -1,5 +1,5 @@
 import { stringToU8 } from "../../lib/lobbyProtocol.js";
-import { BIOME_BACKGROUNDS, BIOME_TYPES, encodeEverything, GAMEMODES, loadTerrains, Reader } from "../../lib/protocol.js";
+import { BIOME_BACKGROUNDS, BIOME_TYPES, CLIENT_BOUND, encodeEverything, GAMEMODES, loadTerrains, Reader } from "../../lib/protocol.js";
 import Client from "./Client.js";
 import { applyGridBiomeConfigs, mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
 import initTerrain from "./initTerrain.js";

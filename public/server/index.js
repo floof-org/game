@@ -257,7 +257,14 @@ setInterval(() => {
 }, 256);
 
 // World update loop
-setInterval(() => state.clients.forEach(c => c.worldUpdate()), 1000 / 25);
+setInterval(() => {
+    // Do not send world updates until client has received terrain data
+    state.clients.forEach(c => {
+        if (c.sentTerrain) {
+            c.worldUpdate();
+        }
+    });
+}, 1000 / 25);
 
 // Router server through worker through socket
 state.router = new Router();

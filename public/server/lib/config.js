@@ -1034,6 +1034,7 @@ export function applyGridBiomeConfigs() {
     // Make enemy damage scale slower to prevent player from unfairly getting one-shot
     PetalTier.HEALTH_SCALE = 2;
     MobTier.DAMAGE_SCALE = 2.1;
+    MobTier.SIZE_SCALE = Math.pow(4, 1 / 11);
 
     // Add a petal that lets the player view mob descriptions
     petalConfigs.push(
@@ -1158,4 +1159,5 @@ export function applyGridBiomeConfigs() {
     // Todo: Implement Adrenaline/Rage
     // Todo: Probably add crafting
     // Todo: Implement desert/ocean mobs
+    // Todo: Heavily reduce player's body damage, but let it deal extra damage to missiles
 }

@@ -731,6 +731,7 @@ export default class Client {
         this.masterPermissions = +masterPermissions;
         this.inventory = {};
         this.camera = new Camera();
+        this.sentTerrain = false;
 
         /** @type {Player|null} */
         this.body = null;
@@ -753,7 +754,7 @@ export default class Client {
         this.xp = 1;
         if (state.isBiomeGrid) {
             this.secondarySlots[0] = { id: petalIDOf("Gallery"), rarity: 0 };
-            this.xp = xpForLevel(1, state.isBiomeGrid) + 1;
+            this.xp = xpForLevel(0, state.isBiomeGrid) + 0.00001;
         }
 
         this.lastChat = 0;
@@ -801,13 +802,13 @@ export default class Client {
             if (this.body && !this.body.health.isDead) this.body.initSlots(slots);
         }
 
-        this.levelProgress = this.level < 2 ? this.xp / xpForLevel(this.level, state.isBiomeGrid) : (this.xp - xpForLevel(this.level - 1, state.isBiomeGrid)) / (xpForLevel(this.level, state.isBiomeGrid) - xpForLevel(this.level - 1, state.isBiomeGrid));
+        this.levelProgress = this.level < (state.isBiomeGrid ? 1 : 2) ? this.xp / xpForLevel(this.level, state.isBiomeGrid) : (this.xp - xpForLevel(this.level - 1, state.isBiomeGrid)) / (xpForLevel(this.level, state.isBiomeGrid) - xpForLevel(this.level - 1, state.isBiomeGrid));
     }
 
     get healthAdjustement() {
         if (state.isBiomeGrid) {
             // Make health scale exponentially so it can actually keep up with enemies
-            return 100 * Math.pow(2, this.level / 10);
+            return 80 * Math.pow(2, this.level / 10);
         } else {
             return 40 + 5 * Math.pow(this.level, 1.5);
         }
@@ -868,9 +869,6 @@ export default class Client {
                 const lowercase = this.username.toLowerCase();
                 this.verified = true;
                 console.log(`Client ${this.id} verified as ${this.username}`);
-                this.talk(CLIENT_BOUND.READY);
-                this.sendRoom();
-                state.sendTerrain(this.id);
                 tiers.forEach(tier => this.inventory[tier.name] = {});
 
                 if (this.userId === state.secretKey && this.masterPermissions < 1) this.nameColor = "#F5D230";
@@ -896,7 +894,21 @@ export default class Client {
 
                     console.log(`Client ${this.id} reconnected as ${this.username}`);
                 }
+
                 state.playerCount++;
+
+                const sendReadyInterval = setInterval(() => {
+                    // Do not tell client that we are ready until everything is initialized
+                    if (!state.initialized) {
+                        return;
+                    }
+
+                    clearInterval(sendReadyInterval);
+
+                    this.talk(CLIENT_BOUND.READY);
+                    this.sendRoom();
+                    state.sendTerrain(this.id, this);
+                }, 100);
                 break;
             case SERVER_BOUND.SPAWN:
                 if (!this.verified) {
@@ -1549,32 +1561,6 @@ export default class Client {
         }
 
         state.router.postMessage(minimapWriter.build());
-
-        if (globalThis._MAP_CELLS?.length) {
-            this.__sentTerrainScores ??= false;
-
-            if (!this.__sentTerrainScores) {
-                this.__sentTerrainScores = true;
-
-                const cells = globalThis._MAP_CELLS ?? [];
-
-                const terrainWriter = new Writer(true);
-
-                terrainWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
-                terrainWriter.setUint16(this.id);
-                terrainWriter.setUint8(113);
-
-                terrainWriter.setUint32(cells.length);
-
-                for (const cell of cells) {
-                    terrainWriter.setUint16(cell.x);
-                    terrainWriter.setUint16(cell.y);
-                    terrainWriter.setFloat32(cell.score ?? 0);
-                }
-
-                state.router.postMessage(terrainWriter.build());
-            }
-        }
     }
 
     sendRoom(biomeOverride) {
