@@ -13,6 +13,7 @@ export class HealthComponent {
         this.invulnerable = false;
         this.onDamage = null;
         this.shield = 0;
+        this.lastDamagedBy = undefined;
 
         if (state.isBiomeGrid) {
             // Accumulated by taking poison damage
@@ -43,13 +44,17 @@ export class HealthComponent {
         this.shield = Math.min(this.shield, this.maxHealth);
     }
 
-    damage(x, isPoison = false) {
+    damage(x, isPoison = false, source) {
         if (x < 0) {
             console.warn("Entity is being damaged by a negative amount!", this, x);
         }
 
         if (this.invulnerable) {
             return 0;
+        }
+
+        if (source) {
+            this.lastDamagedBy = source;
         }
 
         // const dmg = Math.max(0, Math.min(this.health, x - x * Math.min(.75, this.damageReduction)));
@@ -933,10 +938,10 @@ export class Entity {
                         });
 
                         if (!done) {
-                            this.health.damage(otherDamageDone);
+                            this.health.damage(otherDamageDone, false, other.parent);
                         }
                     } else {
-                        this.health.damage(otherDamageDone);
+                        this.health.damage(otherDamageDone, false, other.parent);
                     }
 
                     if (other.absorbStacks.size > 0) {
@@ -949,10 +954,10 @@ export class Entity {
                         });
 
                         if (!done) {
-                            other.health.damage(thisDamageDone);
+                            other.health.damage(thisDamageDone, false, this.parent);
                         }
                     } else {
-                        other.health.damage(thisDamageDone);
+                        other.health.damage(thisDamageDone, false, this.parent);
                     }
 
                     if (!state.isBiomeGrid && this.config?.name === "Starfish" && this.type === ENTITY_TYPES.MOB && other.config?.name === "Dandelion") {
@@ -961,17 +966,17 @@ export class Entity {
 
                     if (this.damageReflection?.reflection > 0 && !other.parent.spawnInvincibility) {
                         if (this.damageReflection.cap > 0) {
-                            other.parent.health.damage(Math.min(other.parent.health.maxHealth * this.damageReflection.cap, this.damageReflection.reflection * otherDamageDone));
+                            other.parent.health.damage(Math.min(other.parent.health.maxHealth * this.damageReflection.cap, this.damageReflection.reflection * otherDamageDone), false, this);
                         } else {
-                            other.parent.health.damage(this.damageReflection.reflection * otherDamageDone);
+                            other.parent.health.damage(this.damageReflection.reflection * otherDamageDone, false, this);
                         }
                     }
 
                     if (other.damageReflection?.reflection > 0 && !this.parent.spawnInvincibility) {
                         if (other.damageReflection.cap > 0) {
-                            this.parent.health.damage(Math.min(this.parent.health.maxHealth * other.damageReflection.cap, other.damageReflection.reflection * thisDamageDone));
+                            this.parent.health.damage(Math.min(this.parent.health.maxHealth * other.damageReflection.cap, other.damageReflection.reflection * thisDamageDone), false, other);
                         } else {
-                            this.parent.health.damage(other.damageReflection.reflection * thisDamageDone);
+                            this.parent.health.damage(other.damageReflection.reflection * thisDamageDone, false, other);
                         }
                     }
 
@@ -1989,6 +1994,8 @@ export class Mob extends Entity {
         this.extraTicker = 0;
 
         this.projectile = null;
+        this.totalOnDamageProjectiles = 0;
+        this.remainingOnDamageProjectiles = 0;
 
         this.givesXP = true;
 
@@ -2073,6 +2080,11 @@ export class Mob extends Entity {
                 ...tier.projectile,
                 tick: 0
             };
+        }
+
+        if (config.totalOnDamageProjectiles > 0) {
+            this.totalOnDamageProjectiles = config.totalOnDamageProjectiles;
+            this.remainingOnDamageProjectiles = config.totalOnDamageProjectiles;
         }
 
         if (tier.poison) {
@@ -2631,17 +2643,7 @@ export class Mob extends Entity {
                                 return;
                             }
 
-                            const petal = new Petal(this, -1, -1);
-                            petal.define(petalConfigs[this.projectile.petalIndex], this.rarity);
-                            petal.index = this.projectile.petalIndex;
-                            petal.size = this.size * this.projectile.size;
-                            petal.health.set(this.projectile.health);
-                            petal.damage = this.projectile.damage;
-                            petal.speed = this.projectile.speed;
-                            petal.launched = true;
-                            petal.range = this.projectile.range;
-                            petal.spinSpeed = 0;
-                            petal.nullCollision = this.projectile.nullCollision;
+                            const petal = this.shootProjectile();
 
                             let ang = this.facing;
 
@@ -2654,17 +2656,8 @@ export class Mob extends Entity {
                         }, i * this.projectile.multiShot.delay);
                     }
                 } else {
-                    const petal = new Petal(this, -1, -1);
-                    petal.define(petalConfigs[this.projectile.petalIndex], this.rarity);
-                    petal.index = this.projectile.petalIndex;
-                    petal.size = this.size * this.projectile.size;
-                    petal.health.set(this.projectile.health);
-                    petal.damage = this.projectile.damage;
-                    petal.speed = this.projectile.speed;
-                    petal.launched = true;
-                    petal.range = this.projectile.range;
-                    petal.spinSpeed = 0;
-                    petal.nullCollision = this.projectile.nullCollision;
+                    const petal = this.shootProjectile();
+
                     petal.facing = petal.moveAngle = this.facing;
                     
                     if (this.config.name === "Tank") {
@@ -2673,6 +2666,22 @@ export class Mob extends Entity {
                     }
                 }
             }
+        }
+
+        // Mob can spawn up to 1 "on-damage projectile" every tick
+        if (this.remainingOnDamageProjectiles > this.totalOnDamageProjectiles * this.health.ratio) {
+            if (this.health.lastDamagedBy instanceof Player) {
+                const petal = this.shootProjectile();
+                const targetAngle = Math.atan2(this.health.lastDamagedBy.y - this.y, this.health.lastDamagedBy.x - this.x);
+                const actualAngle = targetAngle + 0.6 * (Math.random() - 0.5);
+                petal.facing = petal.moveAngle = actualAngle;
+                petal.x += this.size * Math.cos(actualAngle);
+                petal.y += this.size * Math.sin(actualAngle);
+            } else {
+                console.warn("Mob's `lastDamagedBy` field is not a Player!", JSON.stringify(this.health.lastDamagedBy));
+            }
+
+            this.remainingOnDamageProjectiles--;
         }
 
         if (this.periodicHeal && this.health.health > 0) {
@@ -2700,14 +2709,7 @@ export class Mob extends Entity {
 
                 while (healPetals.length < petalCount) {
                     // Spawn in new healing petals
-                    const petal = new Petal(this, -1, -1);
-                    petal.define(petalConfigs[this.periodicHeal.petalIndex], this.rarity);
-                    petal.health.health = petal.health.maxHealth = Infinity;
-                    petal.damage = 0;
-                    petal.spinSpeed = 0;
-                    petal.speed = 0;
-                    petal.size *= Math.pow(MobTier.SIZE_SCALE, this.rarity);
-                    petal.nullCollision = true;
+                    const petal = this.shootProjectile();
                     healPetals.push(petal);
                 }
 
@@ -2932,7 +2934,7 @@ export class Mob extends Entity {
             ).reduce((prev, curr) => prev + ", " + curr)}\n`;
         }
 
-        if (this.projectile) {
+        if (this.projectile && !this.periodicHeal) {
             const projectile = new Petal(this, -1, -1);
             projectile.define(petalConfigs[this.projectile.petalIndex], this.rarity);
 
@@ -2955,6 +2957,25 @@ export class Mob extends Entity {
         }
 
         return description;
+    }
+
+    /**
+     * A helper function to spawn a projectile that is being shot out by this
+     * mob. This function also returns the spawned projectile.
+     */
+    shootProjectile() {
+        const petal = new Petal(this, -1, -1);
+        petal.define(petalConfigs[this.projectile.petalIndex], this.rarity);
+        petal.index = this.projectile.petalIndex;
+        petal.size = this.size * this.projectile.size;
+        petal.health.set(this.projectile.health);
+        petal.damage = this.projectile.damage;
+        petal.speed = this.projectile.speed;
+        petal.launched = true;
+        petal.range = this.projectile.range;
+        petal.spinSpeed = 0;
+        petal.nullCollision = this.projectile.nullCollision;
+        return petal;
     }
 }
 
@@ -3178,7 +3199,7 @@ export class Lightning {
                     }
                 }
 
-                ent.health.damage(this.damage);
+                ent.health.damage(this.damage, false, this.parent);
 
                 if (ent.parent && ent.config?.name === "Leech") {
                     ent.parent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];

@@ -1137,10 +1137,11 @@ export function applyGridBiomeConfigs() {
     // Damage: 15 -> 10
     // Speed: 2.5 -> 2
     // Periodic heal: None -> Dahlias
+    // Drops: Dahlia 1.0, Yin Yang 0.15 -> Dahlia 1.0, Yin Yang 0.25
     mobConfigs[mobIDOf("Evil Ladybug")] = new MobConfig("Evil Ladybug", 30, 10, 25, 2, mobIDOf("Evil Ladybug"))
         .setDescription("Will periodically stop to heal itself by eating Dahlias.")
         .setAggressive(1)
-        .setPeriodicHeal(petalIDOf("Dahlia.projectile"), 3, 1 / 3, 3 * 22.5, 0.8 * 22.5)
+        .setPeriodicHeal(petalIDOf("Dahlia"), 3, 1 / 3, 3 * 22.5, 0.8 * 22.5)
         // .setProjectile({
         //     petalIndex: petalIDOf("Dahlia.projectile"),
         //     cooldown: 22.5,
@@ -1153,7 +1154,7 @@ export function applyGridBiomeConfigs() {
         //     nullCollision: true
         // })
         .addDrop(petalIDOf("Dahlia"))
-        .addDrop(petalIDOf("Yin Yang"), .15);
+        .addDrop(petalIDOf("Yin Yang"), .25);
 
     // Regular ladybug, for reference:
     new MobConfig("Ladybug", 25, 10, 25, 2.5)
@@ -1162,7 +1163,10 @@ export function applyGridBiomeConfigs() {
 
     /***********    OCEAN PETALS    ***********/
 
-    petalConfigs[petalIDOf("Light")] = new PetalConfig("Light", 22.5 * .25, 6.5, 17, petalIDOf("Light"))
+    // Reload: 0.25s -> 0.5s
+    // Damage: 17 -> 10
+    // Health: 6.5 -> 5
+    petalConfigs[petalIDOf("Light")] = new PetalConfig("Light", 22.5 * .5, 5, 12, petalIDOf("Light"))
         .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 7, 7], 0, true)
         .setSize(.75)
         .setDescription("It's very light and recharges quickly, at the cost of damage.");
@@ -1197,19 +1201,32 @@ export function applyGridBiomeConfigs() {
     // Drops: Fang 1.0, Faster 1.0 -> Light 1.0, Faster 1.0
     // Todo: Should it really drop light?
     mobConfigs[mobIDOf("Leech")] = new MobConfig("Leech", 25, 3.5, 16, 5.5, mobIDOf("Leech"))
+        .setDescription("A very aggressive creature that will try to eat you at any cost.")
         .setAggressive(1)
         .addDrop(petalIDOf("Light"))
         .addDrop(petalIDOf("Faster"));
 
+    // Lightning reload: Around 3s -> 0.8s
     // Body damage: 15 -> 5
+    // Lightning damage: 2 -> 3
     mobConfigs[mobIDOf("Jellyfish")] = new MobConfig("Jellyfish", 40, 5, 30, 2.5, mobIDOf("Jellyfish"))
+        .setDescription("The master of fast electrical attacks.")
         .setAggressive(1)
-        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2)
+        .setLightning(22.5 * 0.8, [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 3)
         .addDrop(petalIDOf("Lightning"))
         .addDrop(petalIDOf("Jelly"));
 
-    // Todo: Bubble blow ability
+    // On-damage projectiles: None -> Bubbles
     mobConfigs[mobIDOf("Sponge")] = new MobConfig("Sponge", 35, 3, 30, 0, mobIDOf("Sponge"))
+        .setDescription("It was once harmless, but can now defend itself by spraying bubbles at attackers.")
+        .setOnDamageProjectile({
+            petalIndex: petalIDOf("Bubble"),
+            health: 1e-99,
+            damage: 2,
+            speed: 6,
+            range: 22.5 * 1,
+            size: .15,
+        }, 30)
         .addDrop(petalIDOf("Sponge"));
 
     /***********    DESERT PETALS    ***********/

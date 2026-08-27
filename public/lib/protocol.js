@@ -661,6 +661,8 @@ export class MobConfig {
         this.wavesIconSize = 3.5;
 
         this.periodicHeal = undefined;
+
+        this.totalOnDamageProjectiles = 0;
     }
 
     setSystem(isSystem) {
@@ -747,6 +749,16 @@ export class MobConfig {
             };
         }
 
+        return this;
+    }
+
+    /** @param {{aimbot: boolean, petalIndex: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number,spread:number}|null, runs: boolean, nullCollision: boolean}} projectile */
+    setOnDamageProjectile(projectile, count) {
+        this.setProjectile({
+            ...projectile,
+            cooldown: 1e99,
+        });
+        this.totalOnDamageProjectiles = count;
         return this;
     }
 
@@ -883,7 +895,17 @@ export class MobConfig {
     }
 
     setPeriodicHeal(petalIndex, petalCount, healPercent, cooldown, eatCooldown) {
-        this.periodicHeal = { petalIndex, petalCount, healPercent, cooldown, eatCooldown };
+        this.periodicHeal = { petalCount, healPercent, cooldown, eatCooldown };
+        this.setProjectile({
+            petalIndex,
+            cooldown: 1e99,
+            health: Infinity,
+            damage: 0,
+            speed: 0,
+            range: 1e99,
+            size: 0.3,
+            nullCollision: true,
+        });
         return this;
     }
 
