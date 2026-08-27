@@ -1,3 +1,12 @@
+# Update (8/23/2026)
+- Fixed a bug in the spatial hash grid, making collision detection more efficient.
+- Added lookup index for map cells, which can now be queried in O(1) time.
+- Fixed the annoying `drawIconsToOffscreen` bug.
+- Debug info has had de bug for a while. It is now far less likely to reduce frame rate or force synchronous layout.
+- Petal tooltips are now stored in a persistent context where they are much more efficiently rendered.
+- The inventory update tick is now 250 ms, providing roughly a 5× efficiency improvement.
+- Improved the render loop through optimisations such as batching expensive functions earlier in the loop.
+
 # Update (7/16/2026)
 - Discord logins are now required to join lobbies.
 
