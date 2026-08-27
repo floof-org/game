@@ -728,6 +728,15 @@ inventoryTooltipLayer.style.overflow = "visible";
 inventoryTooltipLayer.style.display = "none";
 
 document.body.appendChild(inventoryTooltipLayer);
+const inventoryTooltipBox = document.createElement("div");
+inventoryTooltipBox.style.position = "fixed";
+inventoryTooltipBox.style.willChange = "transform";
+const inventoryTooltipCanvas = document.createElement("canvas");
+const c2d = inventoryTooltipCanvas.getContext("2d");
+c2d.imageSmoothingEnabled = true;
+c2d.imageSmoothingQuality = "high";
+inventoryTooltipBox.appendChild(inventoryTooltipCanvas);
+let _tooltipDrawKey = null;
 
 function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   const bw = 350;
@@ -2865,44 +2874,41 @@ function draw() {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
+    if (now - (net.state._lastInventoryCheck ?? 0) >= 250) {
+        net.state._lastInventoryCheck = now;
     if (JSON.stringify(net.state.inventory2) !== JSON.stringify(net.state.inventory)) {
         if (menu.classList.contains("active")) {
             drawInventory();
         }
         net.state.inventory2 = JSON.parse(JSON.stringify(net.state.inventory));
     }
+    }
 
     net.state._foundHover = false;
 
     if (menu.classList.contains("active") && net.state.petalElements) {
-        net.state.petalElements.forEach((petal) => {
-            const rect = petal.icon.getBoundingClientRect();
-            const menuRect = menu.getBoundingClientRect();
-            const mouseX = mouse.x / window.devicePixelRatio;
-            const mouseY = mouse.y / window.devicePixelRatio;
-
+        const menuRect = menu.getBoundingClientRect();
+        const petalRects = net.state.petalElements.map(petalElement => petalElement.icon.getBoundingClientRect());
+        const mouseX = mouse.x / window.devicePixelRatio;
+        const mouseY = mouse.y / window.devicePixelRatio;
+        
+        net.state.petalElements.forEach((petal, i) => {
+            const rect = petalRects[i]
             const visible = rect.top >= menuRect.top && rect.bottom <= menuRect.bottom && rect.left >= menuRect.left && rect.right <= menuRect.right;
-
             const hovered = visible && mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom;
 
             if (hovered) {
                 net.state._foundHover = true;
-
                 net.state.inventoryPetalHover = [petal.index, petal.rarity, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
 
                 if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
                     beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petal.index, petal.rarity);
-
                     menu.classList.toggle("active");
 
                     inventoryDragConfig.index = petal.index;
                     inventoryDragConfig.rarity = petal.rarity;
                     inventoryDragConfig.item.stableSize = rect.width;
-
-                    inventoryDragConfig.onDrop = () => {
-                        processInventoryDrop();
-                        menu.classList.toggle("active");
-                    };
+                    inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
                 }
             }
         });
@@ -2914,9 +2920,7 @@ function draw() {
 
     ctx.restore();
 
-    {
-        // Hovers
-
+    {   // Hovers
         net.state.petalHoverAlpha ??= 0;
         net.state.lastPetalHover ??= null;
 

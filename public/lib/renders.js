@@ -2783,13 +2783,13 @@ function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
 
     const petalText = getUIPetalName(index);
 
-    function renderIcon() {
-        ctx.clearRect(0, 0, 128, 128);
+  function renderIcon() {
+    ctx.clearRect(0, 0, 128, 128);
 
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
         const iconPath = new Path2D();
         iconPath.roundRect(4, 4, 120, 120, 10);
@@ -2800,7 +2800,9 @@ function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
 
         const base = state.tiers[rarity].color;
 
-        const back = shouldAnimate ? (custom.back ?? custom.base ?? mixColors(base, "#000000", 0.1)) : mixColors(base, "#000000", 0.1);
+    const back = shouldAnimate
+            ? (custom.back ?? custom.base ?? mixColors(base, "#000000", 0.1))
+            : mixColors(base, "#000000", 0.1);
 
         ctx.fillStyle = back;
         ctx.fill(iconPath);
@@ -2817,7 +2819,7 @@ function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
 
         ctx.restore();
 
-        ctx.lineWidth = 12;
+    ctx.lineWidth = 12;
         ctx.strokeStyle = getBorderStyle(rarity);
         ctx.stroke(iconPath);
 
@@ -2833,17 +2835,17 @@ function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
         let size = 26;
         let k = 0;
 
-        while (true) {
-            ctx.font = `bold ${size}px Ubuntu`;
-
-            if (ctx.measureText(petalText).width < 96 || k++ > 512) {
-                break;
-            }
-
-            size--;
+    while (true) {
+        ctx.font = `bold ${size}px Ubuntu`;
+  
+        if (ctx.measureText(petalText).width < 96 || k++ > 512) {
+          break;
         }
+  
+        size--;
+    }
 
-        text(petalText, 64, 98, size, "#FFFFFF", ctx);
+    text(petalText, 64, 98, size, "#FFFFFF", ctx);
     }
 
     const draw = () => {
