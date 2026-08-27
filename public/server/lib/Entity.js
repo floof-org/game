@@ -1,4 +1,4 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, MobTier, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
+import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, formatLargeNumber, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
 import state from "./state.js";
@@ -1541,6 +1541,8 @@ export class Player extends Entity {
                     }
                 }
             }
+
+            this.tpCooldown = 0;
         }
     }
 
@@ -1676,6 +1678,23 @@ export class Player extends Entity {
 
             this.extraPickupRange = Math.max(this.extraPickupRange, slot.config.tiers[slot.rarity].extraPickupRange);
         });
+
+        if (state.isBiomeGrid) {
+            this.tpCooldown--;
+
+            let currentBiome = BIOME_TYPES.OCEAN;
+            if (this.y >= state.mapConstants.biomeTransition) {
+                currentBiome = BIOME_TYPES.DESERT;
+            } else if (this.y < -state.mapConstants.biomeTransition) {
+                currentBiome = BIOME_TYPES.GARDEN;
+            }
+
+            // Tell the client to display the current biome that the player is located in
+            if (currentBiome !== this.client.sentBiome) {
+                this.client.sendRoom(currentBiome);
+                this.client.sentBiome = currentBiome;
+            }
+        }
     }
 
     destroy() {

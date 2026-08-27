@@ -1264,6 +1264,7 @@ export function applyGridBiomeConfigs() {
         .addDrop(petalIDOf("Pincer"))
         .addDrop(petalIDOf("Iris"));
 
+    // Todo: Replace with privet + hopefully another idea
     mobConfigs[mobIDOf("Worker Fire Ant")] = new MobConfig("Worker Fire Ant", 15, 10, 15, 3.25, mobIDOf("Worker Fire Ant"))
         .setNeutral(1)
         .addDrop(petalIDOf("Light"), .5)
@@ -1274,10 +1275,9 @@ export function applyGridBiomeConfigs() {
         .addDrop(petalIDOf("Yucca"), .5);
 
 
-    // Todo: /tp command
-    // Todo: Updating biome backgrounds
-    // Todo: Biome indicators on the map
-    // Todo: Respawn player at their current biome
     // Todo: Probably add crafting
-    // Todo: Implement desert/ocean mobs
+    // Todo: Implement desert mobs
+    // Todo: Nerf basic?
+    // Todo: Make damaged mobs and players have weaker poison
+    // Todo: Welcome message (or at least a command) to explain mechanical changes
 }

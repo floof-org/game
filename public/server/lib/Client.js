@@ -732,6 +732,7 @@ export default class Client {
         this.inventory = {};
         this.camera = new Camera();
         this.sentTerrain = false;
+        this.sentBiome = undefined;
 
         /** @type {Player|null} */
         this.body = null;
@@ -1308,17 +1309,42 @@ export default class Client {
 
                 if (state.isBiomeGrid) {
                     // Just for testing purposes
-                    if (message.startsWith("/damage")) {
+                    if (message === "/damage") {
                         this.body.health.lastDamaged = Date.now();
                         this.body.health.health = 1;
                         this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
                         return;
-                    } else if (message.startsWith("/poison")) {
+                    } else if (message === "/poison") {
                         this.body.health.lastDamaged = Date.now();
                         this.body.health.health = this.body.health.maxHealth;
                         this.body.poison.timer = 22.5 * 1;
                         this.body.poison.damage = (this.body.health.maxHealth - 1) / 23;
                         this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
+                        return;
+                    } else if (message === "/health") {
+                        this.systemMessage("Your max health: " + this.body.health.maxHealth, colors.leafGreen);
+                        return;
+                    } else if (message === "/tp") {
+                        if (!this.body || this.body.health.isDead) {
+                            this.systemMessage("Error: Cannot teleport while you are dead.", colors.legendary);
+                        } else if (this.body.tpCooldown > 0) {
+                            const seconds = Math.ceil(this.body.tpCooldown / 22.5);
+                            if (seconds === 1) {
+                                this.systemMessage("Error: Your teleport is on cooldown. Please try again in 1 second.", colors.legendary);
+                            } else {
+                                this.systemMessage(`Error: Your teleport is on cooldown. Please try again in ${seconds} seconds.`, colors.legendary);
+                            }
+                        } else if (Math.abs(this.body.y) < state.mapConstants.tpThreshold) {
+                            this.systemMessage("Error: You are too far away from the wall to teleport.", colors.legendary);
+                        } else if (this.body.y < 0) {
+                            this.body.y = state.mapConstants.tpThreshold;
+                            this.body.tpCooldown = 22.5 * 20;
+                            this.systemMessage("Successfully teleported to Desert.", colors.leafGreen);
+                        } else {
+                            this.body.y = -state.mapConstants.tpThreshold;
+                            this.body.tpCooldown = 22.5 * 20;
+                            this.systemMessage("Successfully teleported to Garden.", colors.leafGreen);
+                        }
                         return;
                     }
                 }

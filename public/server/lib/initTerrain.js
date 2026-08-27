@@ -70,28 +70,25 @@ export default async function initTerrain(type) {
     if (state.isBiomeGrid) {
         // Generate a grid pattern
         map.maxRarity = 11;
-        map.height = 16 + 24 * (map.maxRarity - 1) / 2;
-        map.width = 16 + 24 * (map.maxRarity - 1) / 2;
+        map.height = 24 + 16 + 24 * (map.maxRarity - 1) / 2;
+        map.width = 24 + 16 + 24 * (map.maxRarity - 1) / 2;
         const mapStartHeight = map.height / 2 - 32;
         state.height = map.height * 192;
         state.width = map.width * 192;
         map.cells = [];
 
-        function getIndex(x, y) {
-            return y * map.width + x;
-        }
+        state.mapConstants = {
+            biomeTransition: 12 * 192,
+            tpThreshold: 31 * 192,
+        };
 
         for (let y = -mapStartHeight; y < map.height - mapStartHeight; y++) {
-            for (let x = 0; x < map.width; x++) {
-                const cell = {x, y: y + mapStartHeight, type: 0};
-                if ((x === 0 || x === 1) && (y === 7 || y === 8)) { // Top left spawn
-                    cell.type = 1;
-                    cell.score = 0;
-                } else if (y === -1 || y === 64) { // Walls for out-of-bounds
+            for (let x = -24; x < map.width - 24; x++) {
+                const cell = {x: x + 24, y: y + mapStartHeight, type: 0};
+                if (x < 0 || y <= -1 || y >= 64) { // Walls for out-of-bounds
                     cell.type = 0;
-                } else if (y < -1 || y > 64) { // Empty space out-of-bounds
-                    cell.type = 3;
-                    cell.spawn = SPAWN_TYPES.NONE;
+                } else if ((x === 0 || x === 1) && (y % 24 === 7 || y % 24 === 8)) { // Player spawns next to left wall
+                    cell.type = 1;
                     cell.score = 0;
                 } else if (
                     (x % 24 < 16 && y % 24 < 16) // Grid squares
@@ -111,6 +108,84 @@ export default async function initTerrain(type) {
                     }
                 }
                 map.cells.push(cell);
+            }
+        }
+
+        // Pixel art is stored as columns of non-wall pixels.
+        // Each entry has the following format: [x, starty, endy], with both y-bounds being inclusive.
+        const gardenIconData = [
+            [5, 13, 13],
+            [6, 13, 13],
+            [7, 7, 10],
+            [7, 12, 12],
+            [8, 6, 11],
+            [9, 5, 12],
+            [10, 4, 12],
+            [11, 4, 12],
+            [12, 3, 12],
+            [13, 3, 11],
+            [14, 3, 10],
+            [15, 2, 9],
+            [16, 2, 7],
+            [17, 2, 4],
+        ];
+
+        const oceanIconData = [
+            [7, 32, 35],
+            [8, 31, 36],
+            [9, 29, 37],
+            [10, 27, 38],
+            [11, 25, 38],
+            [12, 27, 38],
+            [13, 29, 37],
+            [14, 31, 36],
+            [15, 32, 35],
+        ];
+
+        const desertIconData = [
+            [4, 57, 58],
+            [5, 52, 53],
+            [5, 55, 59],
+            [6, 51, 52],
+            [6, 57, 58],
+            [7, 51, 52],
+            [8, 51, 52],
+            [9, 51, 53],
+            [10, 51, 53],
+            [11, 51, 54],
+            [12, 52, 55],
+            [13, 52, 56],
+            [14, 52, 57],
+            [15, 53, 58],
+            [16, 53, 59],
+            [17, 54, 60],
+            [18, 55, 59],
+        ];
+
+        for (let [x, starty, endy] of gardenIconData) {
+            for (let y = starty; y <= endy; y++) {
+                const cell = map.cells[x + map.width * (y + mapStartHeight)];
+                cell.type = 3;
+                cell.score = 7 / map.maxRarity; // Super: #2affa3
+                cell.spawn = SPAWN_TYPES.NONE;
+            }
+        }
+
+        for (let [x, starty, endy] of oceanIconData) {
+            for (let y = starty; y <= endy; y++) {
+                const cell = map.cells[x + map.width * (y + mapStartHeight)];
+                cell.type = 3;
+                cell.score = 2 / map.maxRarity; // Rare: #455fcf
+                cell.spawn = SPAWN_TYPES.NONE;
+            }
+        }
+
+        for (let [x, starty, endy] of desertIconData) {
+            for (let y = starty; y <= endy; y++) {
+                const cell = map.cells[x + map.width * (y + mapStartHeight)];
+                cell.type = 3;
+                cell.score = 3 / map.maxRarity; // Epic: #7633cb
+                cell.spawn = SPAWN_TYPES.NONE;
             }
         }
     }

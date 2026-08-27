@@ -1,4 +1,4 @@
-import { CLIENT_BOUND, ENTITY_TYPES, GAMEMODES, ROUTER_PACKET_TYPES, Writer, tiers } from "../../lib/protocol.js";
+import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, GAMEMODES, ROUTER_PACKET_TYPES, Writer, tiers } from "../../lib/protocol.js";
 import { quickDiff } from "../../lib/util.js";
 import SpatialHashGrid from "./SpatialHashGrid.js";
 
@@ -71,20 +71,40 @@ const state = {
         let spawns = state.mapSpawns[type];
 
         if (type == ENTITY_TYPES.PLAYER) {
-            let highestSpawnRarity = 0
-            spawns = spawns.filter((spawn) => {
-                if (spawn.rarity <= client.highestRarity) {
-                    return true
+            if (state.isBiomeGrid) {
+                // Player will spawn at the biome that they were most recently
+                // located in, with a default biome of Garden.
+                if (client?.sentBiome === undefined || client?.sentBiome === BIOME_TYPES.GARDEN) {
+                    spawns = spawns.filter(
+                        spawn => spawn.y * state.height <= -state.mapConstants.biomeTransition
+                    );
+                } else if (client?.sentBiome === BIOME_TYPES.OCEAN) {
+                    spawns = spawns.filter(
+                        spawn => Math.abs(spawn.y) * state.height < state.mapConstants.biomeTransition
+                    );
+                } else {
+                    spawns = spawns.filter(
+                        spawn => spawn.y * state.height >= state.mapConstants.biomeTransition
+                    );
                 }
-            })
+            } else {
+                // Player will spawn at a random checkpoint whose rarity
+                // is <= the player's highest-rarity petal.
+                let highestSpawnRarity = 0;
+                spawns = spawns.filter((spawn) => {
+                    if (spawn.rarity <= client.highestRarity) {
+                        return true
+                    }
+                })
 
-            spawns.forEach((data) => {
-                highestSpawnRarity = Math.max(data.rarity, highestSpawnRarity)
-            })
+                spawns.forEach((data) => {
+                    highestSpawnRarity = Math.max(data.rarity, highestSpawnRarity)
+                })
 
-            spawns = spawns.filter((data) => {
-                if (data.rarity >= highestSpawnRarity) return true
-            })
+                spawns = spawns.filter((data) => {
+                    if (data.rarity >= highestSpawnRarity) return true
+                })
+            }
         }
 
         const spawn = spawns[Math.floor(Math.random() * spawns.length)];
@@ -392,6 +412,12 @@ const state = {
     debugInterval: setInterval(() => {
         console.log(state);
     }, 10000),
+
+    // Only used in biome grid mode
+    mapConstants: {
+        biomeTransition: 0,
+        tpThreshold: 0,
+    },
 };
 
 if (state.inventory) tiers.forEach(tier => {
