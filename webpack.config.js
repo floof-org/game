@@ -9,15 +9,18 @@ import js_beautify from "js-beautify";
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import 'dotenv/config';
 
+const mode = process.env.NODE_ENV;
+const dev = mode === 'development';
+
 const ignoreFiles = [
     "moddingAPI/index.js",
     "moddingAPI/highlight.min.js"
 ];
 
 const config = {
-    devtool: process.env.NODE_ENV === 'development' ? "eval-cheap-module-source-map" : false,
+    devtool: dev ? "eval-cheap-module-source-map" : false,
     optimization: {
-        minimize: true,
+        minimize: !dev,
         minimizer: [
             new Terser({
                 parallel: true,
@@ -106,9 +109,7 @@ const config = {
 
                     function recursiveRemoveEmptyDirectories(directory) {
                         // If it doesn't exist, return
-                        if (!fs.existsSync(directory)) {
-                            return;
-                        }
+                        if (!fs.existsSync(directory)) return;
 
                         if (fs.statSync(directory).isDirectory()) {
                             const files = fs.readdirSync(directory);
@@ -116,11 +117,7 @@ const config = {
                             if (files.length === 0) {
                                 fs.rmdirSync(directory);
                                 recursiveRemoveEmptyDirectories(path.dirname(directory));
-                            } else {
-                                files.forEach((file) => {
-                                    recursiveRemoveEmptyDirectories(path.join(directory, file));
-                                });
-                            }
+                            } else files.forEach(file => recursiveRemoveEmptyDirectories(path.join(directory, file)));
                         }
                     }
 
@@ -283,7 +280,7 @@ ${serverCode}`.trim(), {
     resolve: {
         extensions: [".js", ".html"]
     },
-    mode: "production"
+    mode
 };
 
 export default config;

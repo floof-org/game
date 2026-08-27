@@ -1,4 +1,6 @@
 export async function getUserFromSession() {
+    if (process.env.NODE_ENV === 'development' && location.hostname === 'localhost') return { username: 'dev' };
+    
     try {
         const res = await fetch(`${process.env.AUTH_SERVER}/api/me`, {
             credentials: "include",
