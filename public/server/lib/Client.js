@@ -760,6 +760,10 @@ export default class Client {
 
         this.lastChat = 0;
         this.frownyMessages = 0;
+
+        if (state.isBiomeGrid) {
+            this.aliveTimer = 0;
+        }
     }
 
     addXP(x) {
@@ -949,6 +953,10 @@ export default class Client {
                         this.body.spawnInvincibility = false;
                     }
                 }, 2 * 1000);
+
+                if (state.isBiomeGrid) {
+                    this.aliveTimer = 0;
+                }
 
                 if (state.isTDM) {
                     this.body.team = -this.team;
@@ -1340,14 +1348,21 @@ export default class Client {
                             }
                         } else if (Math.abs(this.body.y) < state.mapConstants.tpThreshold) {
                             this.systemMessage("Error: You are too far away from the wall to teleport.", colors.legendary);
-                        } else if (this.body.y < 0) {
-                            this.body.y = state.mapConstants.tpThreshold;
-                            this.body.tpCooldown = 22.5 * 20;
-                            this.systemMessage("Successfully teleported to Desert.", colors.leafGreen);
                         } else {
-                            this.body.y = -state.mapConstants.tpThreshold;
+                            // Despawn the player's petals when teleporting
+                            for (let slot of this.body.petalSlots) {
+                                for (let petal of slot.petals) {
+                                    petal?.destroy();
+                                }
+                            }
+
+                            this.body.y = state.mapConstants.tpThreshold * Math.sign(this.body.y) * -1;
                             this.body.tpCooldown = 22.5 * 20;
-                            this.systemMessage("Successfully teleported to Garden.", colors.leafGreen);
+                            if (this.body.y > 0) {
+                                this.systemMessage("Successfully teleported to Desert.", colors.leafGreen);
+                            } else {
+                                this.systemMessage("Successfully teleported to Garden.", colors.leafGreen);
+                            }
                         }
                         return;
                     } else if (message === "/help") {
@@ -1379,16 +1394,20 @@ export default class Client {
                         this.systemMessage("(INFO 2/4)", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
-                            "- Poison Drain: If a player or mob gets hit with non-poison damage, the player/mob will " +
-                            "deal less poison damage afterward (capped at 25% poison damage).",
+                            "- Poison Drain: If a player or mob gets hit with non-poison damage, the player/mob's " +
+                            "poison attacks will be weaker afterwards (capped at -75%).",
                             damageColor,
                         );
                         this.systemMessage(
-                            "- Players lose 20% poison damage per hit and regain 5% poison damage per second.",
+                            "- For poisonous mobs, this debuff is indicated by an icon below the mob's HP bar.",
                             damageColor,
                         );
                         this.systemMessage(
-                            "- Mobs lose 5% poison damage per hit and regain 20% poison damage per second.",
+                            "- Players lose 20% poison damage per hit and regain 10% per second.",
+                            damageColor,
+                        );
+                        this.systemMessage(
+                            "- Mobs lose 4% poison damage per hit and regain 20% per second.",
                             damageColor,
                         );
                         this.systemMessage(

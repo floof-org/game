@@ -185,6 +185,7 @@ export class PetalConfig {
         this.ignoreWalls = false;
         this.extraLighting = 0;
         this.doNotRotate = false;
+        this.nullCollision = false;
     }
 
     setName(name) {
@@ -587,6 +588,11 @@ export class PetalConfig {
 
     setDoNotRotate(doNotRotate) {
         this.doNotRotate = doNotRotate;
+        return this;
+    }
+
+    setNullCollision(nullCollision) {
+        this.nullCollision = nullCollision;
         return this;
     }
 }

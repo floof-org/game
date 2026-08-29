@@ -853,7 +853,8 @@ export const GRID_OCEAN_MOBS = [
 
 export const GRID_DESERT_MOBS = [
     mobIDOf("Scorpion"),
-    mobIDOf("Worker Fire Ant"),
+    mobIDOf("Soldier Fire Ant"),
+    //mobIDOf("Worker Fire Ant"),
     mobIDOf("Baby Fire Ant"),
 ];
 
@@ -1058,8 +1059,8 @@ export function applyGridBiomeConfigs() {
     /***********    GARDEN PETALS    ***********/
 
     // Health: 10 -> 5
-    // Damage: 10 -> 8
-    petalConfigs[petalIDOf("Basic")] = new PetalConfig("Basic", 22.5 * 1, 5, 8, petalIDOf("Basic"))
+    // Damage: 10 -> 7
+    petalConfigs[petalIDOf("Basic")] = new PetalConfig("Basic", 22.5 * 1, 5, 7, petalIDOf("Basic"))
         .setDescription("A simple petal. Not too strong, not too weak.");
 
     petalConfigs[petalIDOf("Powder")] = new PetalConfig("Powder", 22.5 * .75, 3, 5, petalIDOf("Powder"))
@@ -1099,16 +1100,6 @@ export function applyGridBiomeConfigs() {
         .setYinYang(1)
         .setDescription("The mysterious petal of balance.");
 
-    petalConfigs.push(new PetalConfig("Dahlia.projectile", 22.5 * 100, 1E5, 0)
-        .setDescription("[object null object]")
-        .setDrawing(new Drawing()
-            .addAction("beginPath")
-            .addAction("circle", 0, 0, 1)
-            .addAction("fill", colors.rosePink)
-            .addAction("stroke", colors.rosePink, 0.2, 0.2)
-        )
-    );
-
     /***********     GARDEN MOBS     ***********/
 
     // Damage: 10 -> 5
@@ -1147,24 +1138,8 @@ export function applyGridBiomeConfigs() {
         .setDescription("Will periodically stop to heal itself by eating Dahlias.")
         .setAggressive(1)
         .setPeriodicHeal(petalIDOf("Dahlia"), 3, 1 / 3, 3 * 22.5, 0.8 * 22.5)
-        // .setProjectile({
-        //     petalIndex: petalIDOf("Dahlia.projectile"),
-        //     cooldown: 22.5,
-        //     health: Infinity,
-        //     damage: 0,
-        //     speed: 0,
-        //     range: 175,
-        //     size: 0.2,
-        //     runs: true,
-        //     nullCollision: true
-        // })
         .addDrop(petalIDOf("Dahlia"))
         .addDrop(petalIDOf("Yin Yang"), .25);
-
-    // Regular ladybug, for reference:
-    new MobConfig("Ladybug", 25, 10, 25, 2.5)
-        .addDrop(petalIDOf("Light"))
-        .addDrop(petalIDOf("Rose"), .6);
 
     /***********    OCEAN PETALS    ***********/
 
@@ -1256,15 +1231,97 @@ export function applyGridBiomeConfigs() {
 
     petalConfigs[petalIDOf("Scorpion Missile.projectile")] = new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 5, 2.5, petalIDOf("Scorpion Missile.projectile"))
         .setPoison(2.5, 5)
-        .setDescription("[object null object]")
+        .setDescription("[object null object]");
+    
+    petalConfigs.push(
+        new PetalConfig("Poison Drain Indicator 1", 1e99, 1e99, 0)
+            .setSize(.1 / 7.5)
+            .setNullCollision(true)
+            .setDoNotRotate(true)
+            .setDescription("[object null object]")
+            .setDrawing(new Drawing()
+                .addAction("beginPath")
+                .addAction("arc", -30, 45, 25, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 15, 0)
+                .addAction("beginPath")
+                .addAction("arc", 25, 80, 20, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 10, 0)
+                .addAction("beginPath")
+                .addAction("arc", -10, 120, 20, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 10, 0)
+                .addAction("beginPath")
+                .addAction("line", 60, 90, 60, 150)
+                .addAction("line", 35, 125, 60, 150)
+                .addAction("line", 85, 125, 60, 150)
+                .addAction("stroke", colors.legendary, 15, 0)
+                // .addAction("beginPath")
+                // .addAction("line", 0, 0.8, 0, 0.8)
+                // .addAction("stroke", "#000000", 0.4, 0)
+                // .addAction("stroke", "#00db2f", 0.3, 0)
+            ),
+        new PetalConfig("Poison Drain Indicator 2", 1e99, 1e99, 0)
+            .setSize(.1 / 7.5)
+            .setNullCollision(true)
+            .setDoNotRotate(true)
+            .setDescription("[object null object]")
+            .setDrawing(new Drawing()
+                .addAction("beginPath")
+                .addAction("beginPath")
+                .addAction("arc", -30, 45, 25, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 15, 0)
+                .addAction("beginPath")
+                .addAction("arc", 25, 80, 20, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 10, 0)
+                .addAction("beginPath")
+                .addAction("arc", -10, 120, 20, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 10, 0)
+                .addAction("beginPath")
+                .addAction("line", 60, 90, 60, 150)
+                .addAction("line", 35, 125, 60, 150)
+                .addAction("line", 85, 125, 60, 150)
+                .addAction("line", 95, 90, 95, 150)
+                .addAction("line", 70, 125, 95, 150)
+                .addAction("line", 120, 125, 95, 150)
+                .addAction("stroke", colors.legendary, 15, 0)
+            ),
+        new PetalConfig("Poison Drain Indicator 3", 1e99, 1e99, 0)
+            .setSize(.1 / 7.5)
+            .setNullCollision(true)
+            .setDoNotRotate(true)
+            .setDescription("[object null object]")
+            .setDrawing(new Drawing()
+                .addAction("beginPath")
+                .addAction("beginPath")
+                .addAction("arc", -30, 45, 25, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 15, 0)
+                .addAction("beginPath")
+                .addAction("arc", 25, 80, 20, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 10, 0)
+                .addAction("beginPath")
+                .addAction("arc", -10, 120, 20, 0, 2 * Math.PI)
+                .addAction("stroke", "#9B4DFF", 10, 0)
+                .addAction("beginPath")
+                .addAction("line", 60, 90, 60, 150)
+                .addAction("line", 35, 125, 60, 150)
+                .addAction("line", 85, 125, 60, 150)
+                .addAction("line", 95, 90, 95, 150)
+                .addAction("line", 70, 125, 95, 150)
+                .addAction("line", 120, 125, 95, 150)
+                .addAction("line", 130, 90, 130, 150)
+                .addAction("line", 105, 125, 130, 150)
+                .addAction("line", 155, 125, 130, 150)
+                .addAction("stroke", colors.legendary, 15, 0)
+            ),
+    );
 
     /***********     DESERT MOBS     ***********/
 
-    // Poison: 0 -> 3 * 5
+    // Body poison: 0 -> 3 * 5
     mobConfigs[mobIDOf("Scorpion")] = new MobConfig("Scorpion", 45, 7.5, 32.5, 3, mobIDOf("Scorpion"))
+        .setDescription("Everyone's most hated enemy. At least it won't kill you instantly this time...")
         .setAggressive(1)
         .setStrafes(30, 15, 1.25)
-        .setPoison(3, 22.5 * 5)
+        .setPoison(3, 5)
         .setProjectile({
             petalIndex: petalIDOf("Scorpion Missile.projectile"),
             cooldown: 22.5 * 2,
@@ -1276,11 +1333,22 @@ export function applyGridBiomeConfigs() {
         })
         .addDrop(petalIDOf("Pincer"))
         .addDrop(petalIDOf("Iris"));
+    
+    // Health: 25 -> 40
+    // Poison: 0 -> 3 * 5
+    // Size: 15 -> 20 (May revert if fire ant hole is added)
+    mobConfigs[mobIDOf("Soldier Fire Ant")] = new MobConfig("Soldier Fire Ant", 40, 10, 20, 3.5, mobIDOf("Soldier Fire Ant"))
+        .setDescription("It has a fiery temper.")
+        .setAggressive(1)
+        .setPoison(3, 5)
+        .addDrop(petalIDOf("Faster"), .5)
+        //.addDrop(petalIDOf("Glass"), .5);
 
-    // Todo: Replace with privet + hopefully another idea
+    // Todo: Replace drops with privet + hopefully another idea
     // Health: 15 -> 30
     // Poison: 0 -> 3 * 5
-    mobConfigs[mobIDOf("Worker Fire Ant")] = new MobConfig("Worker Fire Ant", 30, 10, 15, 3.25, mobIDOf("Worker Fire Ant"))
+    // Size: 15 -> 20 (May revert if fire ant hole is added)
+    mobConfigs[mobIDOf("Worker Fire Ant")] = new MobConfig("Worker Fire Ant", 30, 10, 20, 3.25, mobIDOf("Worker Fire Ant"))
         .setNeutral(1)
         .setPoison(3, 5);
         //.addDrop(petalIDOf("Light"), .5)
@@ -1288,7 +1356,10 @@ export function applyGridBiomeConfigs() {
 
     // Health: 10 -> 25
     // Poison: 0 -> 3 * 5
-    mobConfigs[mobIDOf("Baby Fire Ant")] = new MobConfig("Baby Fire Ant", 25, 10, 15, 2, mobIDOf("Baby Fire Ant"))
+    // Size: 15 -> 20 (May revert if fire ant hole is added)
+    // Todo: Poison spray ability
+    mobConfigs[mobIDOf("Baby Fire Ant")] = new MobConfig("Baby Fire Ant", 25, 10, 20, 2, mobIDOf("Baby Fire Ant"))
+        .setDescription("It spits out pools of poison to defend itself. Watch your step.")
         .setPoison(3, 5);
         //.addDrop(petalIDOf("Light"), .5)
         //.addDrop(petalIDOf("Yucca"), .5);
@@ -1296,7 +1367,11 @@ export function applyGridBiomeConfigs() {
 
     // Todo: Probably add crafting
     // Todo: Implement desert mobs
-    // Todo: Nerf basic?
-    // Todo: Make damaged mobs and players have weaker poison
     // Todo: Hopefully implement tutorial rooms
+    // Todo: Fix large Jellyfish ramming into player
+    // Todo: Give player more ways to deal with Toxic Remnants
+    // Todo: Replace ??? with Eternal
+    // Todo: Force spawning enemies when none are nearby
+    // Todo: Let evil ladybug heal faster?
+    // Todo: Knockback vs non-bubble projectiles
 }

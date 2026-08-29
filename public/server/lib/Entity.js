@@ -5,7 +5,8 @@ import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
 export class HealthComponent {
-    constructor(x) {
+    /** @param {Entity} entity  */
+    constructor(x, entity) {
         this.health = x;
         this.maxHealth = x;
         this.lastDamaged = 0;
@@ -21,6 +22,8 @@ export class HealthComponent {
             // Instead, healing decreases healBlock until healBlock reaches 0
             this.healBlock = 0;
         }
+
+        this.entity = entity;
     }
     
     get shield() {
@@ -73,6 +76,13 @@ export class HealthComponent {
             damageDone += dmg;
             if (state.isBiomeGrid && isPoison) {
                 this.healBlock += dmg;
+            } else if (state.isBiomeGrid && damageDone > 0 && !isPoison) {
+                // Apply Poison Drain: Entities' poison attacks become weaker after taking non-poison damage
+                if (this.entity instanceof Player) {
+                    this.entity.poisonDrain = Math.min(.75, this.entity.poisonDrain + .2);
+                } else {
+                    this.entity.poisonDrain = Math.min(.75, this.entity.poisonDrain + .04);
+                }
             }
         }
 
@@ -712,7 +722,7 @@ export class Entity {
         this.facing = 0;
         this.speed = 4;
         this.velocity = new Vector2D(0, 0);
-        this.health = new HealthComponent(10);
+        this.health = new HealthComponent(10, this);
         this.type = ENTITY_TYPES.STANDARD;
         this.friction = .5;
         this.damage = 5;
@@ -751,9 +761,24 @@ export class Entity {
 
             toApply: {
                 damage: 0,
-                timer: 0
+                timer: 0,
             }
         };
+
+        if (state.isBiomeGrid) {
+            this.poisonDrain = 0;
+            
+            if (this instanceof Mob || this instanceof Player) {
+                this.poisonDrainIndicators = [
+                    new Petal(this, -1, -1), new Petal(this, -1, -1), new Petal(this, -1, -1),
+                ];
+
+                for (let i = 0; i < 3; i++) {
+                    this.poisonDrainIndicators[i].define(petalConfigs[petalIDOf(`Poison Drain Indicator ${i + 1}`)], 0);
+                    this.poisonDrainIndicators[i].speed = 0;
+                }
+            }
+        }
 
         /** @type {Map<number,SpongeStack>} */
         this.absorbStacks = new Map();
@@ -853,6 +878,44 @@ export class Entity {
 
         if (this.dandelionCooldown > 0) {
             this.dandelionCooldown--
+        }
+
+        if (state.isBiomeGrid) {
+            // Poison Drain gets removed gradually over time
+            if (this instanceof Player) {
+                this.poisonDrain = Math.max(0, this.poisonDrain - .1 / 22.5);
+            } else {
+                this.poisonDrain = Math.max(0, this.poisonDrain - .2 / 22.5);
+            }
+
+            if (this.poisonDrainIndicators) {
+                const hpBarSize = (this instanceof Player) ? this.size : Math.max(this.size, 30);
+                const hpBarWidth = (this instanceof Player) ? 3 : 5 + 0.1 * this.size;
+
+                // If the entity is suffering from Poison Drain, make the corresponding indicator visible
+                // 0% - 15%: No indicator
+                // 15% - 40%: 1 arrow indicator
+                // 40% - 65%: 2 arrow indicator
+                // 65% - 75%: 3 arrow indicator
+                let arrows = Math.floor((this.poisonDrain + .1) / .25);
+                if (!this.isPoisonous()) {
+                    arrows = 0;
+                }
+                for (let i = 0; i < 3 ; i++) {
+                    const petal = this.poisonDrainIndicators[i];
+                    if (i === arrows - 1) {
+                        // Indicator is placed on the mob's HP bar to hide the indicator's hitbox
+                        petal.x = this.x - hpBarSize + 5;
+                        petal.y = this.y + hpBarSize + 12 + hpBarWidth / 2;
+                        if (this instanceof Player) {
+                            petal.y += 4;
+                        }
+                    } else {
+                        // Hide the indicator off-screen
+                        petal.x = petal.y = -.75 * state.width;
+                    }
+                }
+            }
         }
     }
 
@@ -1083,13 +1146,35 @@ export class Entity {
                 }
 
                 if (this.poison.toApply.timer > 0) {
-                    other.poison.damage = this.poison.toApply.damage;
-                    other.poison.timer = this.poison.toApply.timer;
+                    if (state.isBiomeGrid) {
+                        const poisonDrain = this.parent.poisonDrain;
+                        const poisonDmg = this.poison.toApply.damage * (1 - poisonDrain);
+
+                        // Do not overwrite poison with weaker poison
+                        if (other.poison.timer <= 0 || other.poison.damage <= poisonDmg) {
+                            other.poison.damage = poisonDmg;
+                            other.poison.timer = this.poison.toApply.timer;
+                        }
+                    } else {
+                        other.poison.damage = this.poison.toApply.damage;
+                        other.poison.timer = this.poison.toApply.timer;
+                    }
                 }
 
                 if (other.poison.toApply.timer > 0) {
-                    this.poison.damage = other.poison.toApply.damage;
-                    this.poison.timer = other.poison.toApply.timer;
+                    if (state.isBiomeGrid) {
+                        const poisonDrain = other.parent.poisonDrain;
+                        const poisonDmg = other.poison.toApply.damage * (1 - poisonDrain);
+
+                        // Do not overwrite poison with weaker poison
+                        if (this.poison.timer <= 0 || this.poison.damage <= poisonDmg) {
+                            this.poison.damage = poisonDmg;
+                            this.poison.timer = other.poison.toApply.timer;
+                        }
+                    } else {
+                        this.poison.damage = other.poison.toApply.damage;
+                        this.poison.timer = other.poison.toApply.timer;
+                    }
                 }
 
                 if (this instanceof Petal && this.isGallery && other instanceof Mob) {
@@ -1258,6 +1343,30 @@ export class Entity {
         if (state.isWaves) {
             state.aliveMobs = state.aliveMobs.filter(m => m.id !== this.id);
         }
+
+        if (this.poisonDrainIndicators) {
+            for (let ind of this.poisonDrainIndicators) {
+                ind.x = ind.y = -.75 * state.width;
+                ind.destroy();
+            }
+        }
+    }
+
+    isPoisonous() {
+        if (this instanceof Player) {
+            for (let slot of this.petalSlots) {
+                if (slot.config.tiers[slot.rarity].poison?.duration > 0) {
+                    return true;
+                }
+            }
+        } else if (this instanceof Mob) {
+            if (this.poison.toApply.timer > 0 
+                || petalConfigs[this.projectile?.petalIndex]?.tiers?.[this.rarity]?.poison?.duration > 0
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -1383,6 +1492,8 @@ export class Petal extends Entity {
         if (state.isBiomeGrid && tier.healing) {
             this.range = config.healTimer;
         }
+
+        this.nullCollision = config.nullCollision;
     }
 
     findTargetAngleWithinRadianArc(myAngle, arc) {
@@ -1618,6 +1729,10 @@ export class Player extends Entity {
 
         if (this.health.lastDamaged + 1.5E4 < Date.now()) {
             this.health.heal(this.health.maxHealth * .0025);
+        }
+
+        if (state.isBiomeGrid) {
+            this.client.aliveTimer++;
         }
     }
 

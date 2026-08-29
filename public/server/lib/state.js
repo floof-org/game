@@ -1,5 +1,5 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, GAMEMODES, ROUTER_PACKET_TYPES, Writer, tiers } from "../../lib/protocol.js";
-import { quickDiff } from "../../lib/util.js";
+import { colors, quickDiff } from "../../lib/util.js";
 import SpatialHashGrid from "./SpatialHashGrid.js";
 
 // Zone coords work on a [-1, 1] scale with [0, 0] being the center of the map
@@ -79,9 +79,16 @@ const state = {
                         spawn => spawn.y * state.height <= -state.mapConstants.biomeTransition
                     );
                 } else if (client?.sentBiome === BIOME_TYPES.OCEAN) {
-                    spawns = spawns.filter(
-                        spawn => Math.abs(spawn.y) * state.height < state.mapConstants.biomeTransition
-                    );
+                    if (client.aliveTimer < 10 * 22.5) {
+                        client.systemMessage("Softlock prevention: Respawning in Garden instead of Ocean.", colors.legendary);
+                        spawns = spawns.filter(
+                            spawn => spawn.y * state.height <= -state.mapConstants.biomeTransition
+                        );
+                    } else {
+                        spawns = spawns.filter(
+                            spawn => Math.abs(spawn.y) * state.height < state.mapConstants.biomeTransition
+                        );
+                    }
                 } else {
                     spawns = spawns.filter(
                         spawn => spawn.y * state.height >= state.mapConstants.biomeTransition
