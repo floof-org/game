@@ -105,7 +105,7 @@ export class MobTier {
 
         this.damageReduction = 0;
 
-        /** @type {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number}|null}|null} */
+        /** @type {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, nullCollision: boolean, slowdownPerTick: number, shootAtEndOfPassiveMove: boolean, multiShot: {count:number,delay:number}|null}|null} */
         this.projectile = null;
 
         /** @type {{speedMultiplier: number, duration: number}|null} */
@@ -736,7 +736,7 @@ export class MobConfig {
         return this;
     }
 
-    /** @param {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number,spread:number}|null, runs: boolean, nullCollision: boolean}} projectile */
+    /** @param {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number,spread:number}|null, runs: boolean, nullCollision: boolean, slowdownPerTick?: number, shootAtEndOfPassiveMove?: boolean, }} projectile */
     setProjectile(projectile = {}) {
         for (let i = 0; i < this.tiers.length; i++) {
         
@@ -751,7 +751,9 @@ export class MobConfig {
                 multiShot: projectile.multiShot ?? null,
                 runs: projectile.runs ?? false,
                 nullCollision: projectile.nullCollision ?? false,
-                aimbot: projectile.aimbot ?? false
+                aimbot: projectile.aimbot ?? false,
+                slowdownPerTick: projectile.slowdownPerTick ?? 0,
+                shootAtEndOfPassiveMove: projectile.shootAtEndOfPassiveMove ?? false,
             };
         }
 

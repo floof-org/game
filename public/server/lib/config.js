@@ -1037,6 +1037,11 @@ export function applyGridBiomeConfigs() {
     MobTier.DAMAGE_SCALE = 2.1;
     MobTier.SIZE_SCALE = Math.pow(4, 1 / 11);
 
+    // Some rarity name tweaks
+    tiers[1].name = "Unusual";
+    tiers[10].name = "Eternal";
+    tiers[10].color = "#e0d465"; // Ripped directly from dmaze
+
     // Add a petal that lets the player view mob descriptions
     petalConfigs.push(
         new PetalConfig("Gallery", 22.5 * 1, 1, 0)
@@ -1229,8 +1234,9 @@ export function applyGridBiomeConfigs() {
         .setConstantHeal(7.5, true)
         .setDescription("A strange leaf that heals you but only when you're in defensive mode.");
 
+    // Poison: 2.5 * 5 -> 2.5 * 3
     petalConfigs[petalIDOf("Scorpion Missile.projectile")] = new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 5, 2.5, petalIDOf("Scorpion Missile.projectile"))
-        .setPoison(2.5, 5)
+        .setPoison(2.5, 3)
         .setDescription("[object null object]");
     
     petalConfigs.push(
@@ -1357,21 +1363,38 @@ export function applyGridBiomeConfigs() {
     // Health: 10 -> 25
     // Poison: 0 -> 3 * 5
     // Size: 15 -> 20 (May revert if fire ant hole is added)
-    // Todo: Poison spray ability
-    mobConfigs[mobIDOf("Baby Fire Ant")] = new MobConfig("Baby Fire Ant", 25, 10, 20, 2, mobIDOf("Baby Fire Ant"))
+    // Speed: 2 -> 0.5
+    // Projectiles: None -> Poison spray
+    mobConfigs[mobIDOf("Baby Fire Ant")] = new MobConfig("Baby Fire Ant", 25, 10, 20, .5, mobIDOf("Baby Fire Ant"))
         .setDescription("It spits out pools of poison to defend itself. Watch your step.")
-        .setPoison(3, 5);
+        .setPoison(3, 5)
+        .setProjectile({
+            petalIndex: petalIDOf("Iris"),
+            cooldown: 22.5 * 7,
+            health: Infinity,
+            damage: 0,
+            speed: 6,
+            range: 22.5 * 20,
+            size: .2,
+            multiShot: {
+                count: 10,
+                delay: 0,
+                spread: .5
+            },
+            nullCollision: true,
+            slowdownPerTick: .2,
+            shootAtEndOfPassiveMove: true,
+        })
         //.addDrop(petalIDOf("Light"), .5)
         //.addDrop(petalIDOf("Yucca"), .5);
 
 
     // Todo: Probably add crafting
-    // Todo: Implement desert mobs
-    // Todo: Hopefully implement tutorial rooms
+    // Todo: Hopefully implement tutorial rooms?
     // Todo: Fix large Jellyfish ramming into player
     // Todo: Give player more ways to deal with Toxic Remnants
-    // Todo: Replace ??? with Eternal
-    // Todo: Force spawning enemies when none are nearby
     // Todo: Let evil ladybug heal faster?
     // Todo: Knockback vs non-bubble projectiles
+    // Todo: Adrenaline giving petals a small electric attack?
+    // Todo: Refinements to ocean and desert drops
 }

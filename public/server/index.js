@@ -176,17 +176,60 @@ setInterval(() => {
             break;
     }
 
-    if (!state.isWaves && state.livingMobCount < state.maxMobs && Math.random() > .9) {
+    // Force mobs to spawn next to players that have less than 2 nearby mobs, as long as mob cap has not been reached
+    let lonelyPlayers = [];
+    if (state.isBiomeGrid) {
+        state.clients.forEach(client => {
+            if (client.body) {
+                // Vertical range is narrower because screens are typically horizontal
+                const retrieved = state.viewsSpatialHash.retrieve({
+                    _AABB: {
+                        x1: client.body.x - 1024,
+                        y1: client.body.y - 512,
+                        x2: client.body.x + 1024,
+                        y2: client.body.y + 512,
+                    }
+                });
+                
+                let mobCount = 0;
+                retrieved.forEach(entity => {
+                    if (entity.type === ENTITY_TYPES.MOB && entity.team !== client.body.team) {
+                        mobCount++;
+                    }
+                });
+
+                if (mobCount < 2) {
+                    lonelyPlayers.push(client.body);
+                }
+            }
+        });
+    }
+
+    if (!state.isWaves && state.livingMobCount < state.maxMobs && (Math.random() > .9 || lonelyPlayers.length > 0)) {
         if (state.gamemode === GAMEMODES.MMO) {
             // No mob spawning in MMO mode until we have proper PvE zones
         } else if (state.gamemode === GAMEMODES.MAZE) {
             let cfg = mobConfigs[getMobIndex()];
             let doNotSpawn = false;
-            const info = state.spawnNearPlayer(cfg);
-            if (state.isBiomeGrid && info.tile?.type !== 3) {
-                // In grid mode, do not spawn mobs outside of proper spawn zones
-                doNotSpawn = true;
-            } else if (info.tile?.spawn !== undefined) {
+            let playerOverride = undefined;
+            if (lonelyPlayers.length > 0) {
+                playerOverride = lonelyPlayers[Math.floor(Math.random() * lonelyPlayers.length)];
+            }
+
+            const info = state.spawnNearPlayer(cfg, playerOverride);
+            if (state.isBiomeGrid) {
+                if (info.tile?.type !== 3) {
+                    // In grid mode, do not spawn mobs outside of proper spawn zones
+                    doNotSpawn = true;
+                }
+                if (!playerOverride && state.livingMobCount >= 2 / 3 * state.maxMobs && Math.random() > .01) {
+                    // In grid mode, slow down spawning when near mob cap,
+                    // so that there is room remaining to spawn mobs near "lonely players".
+                    doNotSpawn = true;
+                }
+            }
+
+            if (!doNotSpawn && info.tile?.spawn !== undefined) {
                 if (state.isBiomeGrid) {
                     if (info.tile.spawn === SPAWN_TYPES.NONE) {
                         doNotSpawn = true;

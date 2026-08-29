@@ -1150,8 +1150,9 @@ export class Entity {
                         const poisonDrain = this.parent.poisonDrain;
                         const poisonDmg = this.poison.toApply.damage * (1 - poisonDrain);
 
-                        // Do not overwrite poison with weaker poison
-                        if (other.poison.timer <= 0 || other.poison.damage <= poisonDmg) {
+                        // Do not overwrite poison with weaker poison.
+                        // Also, petals are immune to poison (mainly because of Baby Fire Ant).
+                        if ((other.poison.timer <= 0 || other.poison.damage <= poisonDmg) && other.type !== ENTITY_TYPES.PETAL) {
                             other.poison.damage = poisonDmg;
                             other.poison.timer = this.poison.toApply.timer;
                         }
@@ -1166,8 +1167,9 @@ export class Entity {
                         const poisonDrain = other.parent.poisonDrain;
                         const poisonDmg = other.poison.toApply.damage * (1 - poisonDrain);
 
-                        // Do not overwrite poison with weaker poison
-                        if (this.poison.timer <= 0 || this.poison.damage <= poisonDmg) {
+                        // Do not overwrite poison with weaker poison.
+                        // Also, petals are immune to poison (mainly because of Baby Fire Ant).
+                        if ((this.poison.timer <= 0 || this.poison.damage <= poisonDmg) && this.type !== ENTITY_TYPES.PETAL) {
                             this.poison.damage = poisonDmg;
                             this.poison.timer = other.poison.toApply.timer;
                         }
@@ -1401,6 +1403,9 @@ export class Petal extends Entity {
         this.burst = false;
         this.faceInRelation = false;
         this.ignoreWalls = false;
+
+        // Mainly used for projectiles that slow down to a stop
+        this.slowdownPerTick = 0;
     }
 
     /** @param {PetalConfig} config @param {number} rarity */
@@ -1570,6 +1575,10 @@ export class Petal extends Entity {
                 this.destroy();
                 return;
             }
+        }
+
+        if (this.slowdownPerTick > 0) {
+            this.speed *= 1 - this.slowdownPerTick;
         }
 
         super.update();
@@ -2767,27 +2776,48 @@ export class Mob extends Entity {
                 this.facing = Math.atan2(targetY - this.y, targetX - this.x);
             }
 
-            if ((this.config.name === "Bumblebee" || this.target?.health.ratio > 0) && this.projectile.tick >= this.projectile.cooldown) {
+            let hasTarget = false;
+            if (this.config.name === "Bumblebee") {
+                // Bumblebee lays pollen on the ground
+                hasTarget = true;
+            }
+            if (this.target?.health.ratio > 0) {
+                // Shooting projectile at `this.target`
+                hasTarget = true;
+            }
+            if (this.projectile.shootAtEndOfPassiveMove && this.tick <= 22.5) {
+                // Mob passively shoots in front of it before turning around
+                hasTarget = true;
+            }
+
+            if (hasTarget && this.projectile.tick >= this.projectile.cooldown) {
                 this.projectile.tick = 0;
 
                 if (this.projectile.multiShot) {
+                    const shootOneProjectile = () => {
+                        if (this.health.isDead ||
+                            (this.target === null || this.target.health.isDead) && !this.projectile.shootAtEndOfPassiveMove
+                        ) {
+                            return;
+                        }
+
+                        const petal = this.shootProjectile();
+
+                        let ang = this.facing;
+
+                        if (this.projectile.multiShot.spread > 0) {
+                            ang += (Math.random() - .5) * this.projectile.multiShot.spread;
+                            petal.speed *= 1 + (Math.random() - .5) * this.projectile.multiShot.spread;
+                        }
+
+                        petal.facing = petal.moveAngle = ang;
+                    }
                     for (let i = 0; i < this.projectile.multiShot.count; i++) {
-                        setTimeout(() => {
-                            if (this.health.isDead || this.target === null || this.target.health.isDead) {
-                                return;
-                            }
-
-                            const petal = this.shootProjectile();
-
-                            let ang = this.facing;
-
-                            if (this.projectile.multiShot.spread > 0) {
-                                ang += (Math.random() - .5) * this.projectile.multiShot.spread;
-                                petal.speed *= 1 + (Math.random() - .5) * this.projectile.multiShot.spread;
-                            }
-
-                            petal.facing = petal.moveAngle = ang;
-                        }, i * this.projectile.multiShot.delay);
+                        if (this.projectile.multiShot.delay > 0) {
+                            setTimeout(shootOneProjectile, i * this.projectile.multiShot.delay);
+                        } else {
+                            shootOneProjectile();
+                        }
                     }
                 } else {
                     const petal = this.shootProjectile();
@@ -3109,6 +3139,7 @@ export class Mob extends Entity {
         petal.range = this.projectile.range;
         petal.spinSpeed = 0;
         petal.nullCollision = this.projectile.nullCollision;
+        petal.slowdownPerTick = this.projectile.slowdownPerTick;
         return petal;
     }
 }

@@ -189,28 +189,33 @@ const state = {
         };
     },
 
-    spawnNearPlayer: config => {
-        const bodies = [];
+    spawnNearPlayer: (config, playerOverride) => {
+        let body;
+        if (playerOverride) {
+            body = playerOverride;
+        } else {
+            const bodies = [];
 
-        state.clients.forEach(c => {
-            if (c.body) {
-                bodies.push({
-                    highestRarity: c.highestRarity,
-                    x: c.body.x,
-                    y: c.body.y,
-                    size: c.body.size
-                });
+            state.clients.forEach(c => {
+                if (c.body) {
+                    bodies.push({
+                        highestRarity: c.highestRarity,
+                        x: c.body.x,
+                        y: c.body.y,
+                        size: c.body.size
+                    });
+                }
+            });
+
+            if (bodies.length === 0) {
+                return {
+                    position: state.mapBasedSpawn(ENTITY_TYPES.MOB),
+                    rarity: Math.random() * 3 | 0
+                };
             }
-        });
 
-        if (bodies.length === 0) {
-            return {
-                position: state.mapBasedSpawn(ENTITY_TYPES.MOB),
-                rarity: Math.random() * 3 | 0
-            };
+            body = bodies[Math.floor(Math.random() * bodies.length)];
         }
-
-        const body = bodies[Math.floor(Math.random() * bodies.length)];
 
         let position,
             k = 0,
@@ -218,6 +223,11 @@ const state = {
             distLength = 2048,
             isGood = false,
             rarity = 0;
+
+        if (playerOverride) {
+            // Force the mob to spawn closer to the desired player
+            distLength = 512;
+        }
 
         do {
             const angle = Math.random() * Math.PI * 2;
