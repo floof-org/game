@@ -146,7 +146,7 @@ export class PetalConfig {
     }
 
     constructor(name, cooldown, health, damage, idOverride) {
-        if (idOverride) {
+        if (idOverride !== undefined) {
             this.id = idOverride;
         } else {
             this.id = PetalConfig.idAccumulator++;

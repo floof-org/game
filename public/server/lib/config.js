@@ -1057,6 +1057,11 @@ export function applyGridBiomeConfigs() {
 
     /***********    GARDEN PETALS    ***********/
 
+    // Health: 10 -> 5
+    // Damage: 10 -> 8
+    petalConfigs[petalIDOf("Basic")] = new PetalConfig("Basic", 22.5 * 1, 5, 8, petalIDOf("Basic"))
+        .setDescription("A simple petal. Not too strong, not too weak.");
+
     petalConfigs[petalIDOf("Powder")] = new PetalConfig("Powder", 22.5 * .75, 3, 5, petalIDOf("Powder"))
         .setSize(1.65)
         .setSpeedMultiplier(1.03)
@@ -1166,8 +1171,9 @@ export function applyGridBiomeConfigs() {
     // Reload: 0.25s -> 0.5s
     // Damage: 17 -> 10
     // Health: 6.5 -> 5
+    // Number of pellets: Min 1, max 7 -> min 3, max 7
     petalConfigs[petalIDOf("Light")] = new PetalConfig("Light", 22.5 * .5, 5, 12, petalIDOf("Light"))
-        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 7, 7], 0, true)
+        .setMulti([3, 3, 3, 3, 3, 3, 4, 4, 5, 5, 7, 7], 0, true)
         .setSize(.75)
         .setDescription("It's very light and recharges quickly, at the cost of damage.");
 
@@ -1248,10 +1254,17 @@ export function applyGridBiomeConfigs() {
         .setConstantHeal(7.5, true)
         .setDescription("A strange leaf that heals you but only when you're in defensive mode.");
 
+    petalConfigs[petalIDOf("Scorpion Missile.projectile")] = new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 5, 2.5, petalIDOf("Scorpion Missile.projectile"))
+        .setPoison(2.5, 5)
+        .setDescription("[object null object]")
+
     /***********     DESERT MOBS     ***********/
+
+    // Poison: 0 -> 3 * 5
     mobConfigs[mobIDOf("Scorpion")] = new MobConfig("Scorpion", 45, 7.5, 32.5, 3, mobIDOf("Scorpion"))
         .setAggressive(1)
         .setStrafes(30, 15, 1.25)
+        .setPoison(3, 22.5 * 5)
         .setProjectile({
             petalIndex: petalIDOf("Scorpion Missile.projectile"),
             cooldown: 22.5 * 2,
@@ -1265,19 +1278,25 @@ export function applyGridBiomeConfigs() {
         .addDrop(petalIDOf("Iris"));
 
     // Todo: Replace with privet + hopefully another idea
-    mobConfigs[mobIDOf("Worker Fire Ant")] = new MobConfig("Worker Fire Ant", 15, 10, 15, 3.25, mobIDOf("Worker Fire Ant"))
+    // Health: 15 -> 30
+    // Poison: 0 -> 3 * 5
+    mobConfigs[mobIDOf("Worker Fire Ant")] = new MobConfig("Worker Fire Ant", 30, 10, 15, 3.25, mobIDOf("Worker Fire Ant"))
         .setNeutral(1)
-        .addDrop(petalIDOf("Light"), .5)
-        .addDrop(petalIDOf("Yucca"), .5);
+        .setPoison(3, 5);
+        //.addDrop(petalIDOf("Light"), .5)
+        //.addDrop(petalIDOf("Yucca"), .5);
 
-    mobConfigs[mobIDOf("Baby Fire Ant")] = new MobConfig("Baby Fire Ant", 10, 10, 15, 2, mobIDOf("Baby Fire Ant"))
-        .addDrop(petalIDOf("Light"), .5)
-        .addDrop(petalIDOf("Yucca"), .5);
+    // Health: 10 -> 25
+    // Poison: 0 -> 3 * 5
+    mobConfigs[mobIDOf("Baby Fire Ant")] = new MobConfig("Baby Fire Ant", 25, 10, 15, 2, mobIDOf("Baby Fire Ant"))
+        .setPoison(3, 5);
+        //.addDrop(petalIDOf("Light"), .5)
+        //.addDrop(petalIDOf("Yucca"), .5);
 
 
     // Todo: Probably add crafting
     // Todo: Implement desert mobs
     // Todo: Nerf basic?
     // Todo: Make damaged mobs and players have weaker poison
-    // Todo: Welcome message (or at least a command) to explain mechanical changes
+    // Todo: Hopefully implement tutorial rooms
 }

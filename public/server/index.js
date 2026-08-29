@@ -259,9 +259,9 @@ setInterval(() => {
 // World update loop
 setInterval(() => {
     // Do not send world updates until client has received terrain data
-    state.clients.forEach(c => {
-        if (c.sentTerrain) {
-            c.worldUpdate();
+    state.clients.forEach(client => {
+        if (client.sentTerrain) {
+            client.worldUpdate();
         }
     });
 }, 1000 / 25);

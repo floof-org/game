@@ -913,6 +913,8 @@ export default class Client {
                     this.talk(CLIENT_BOUND.READY);
                     this.sendRoom();
                     state.sendTerrain(this.id, this);
+
+                    this.sendWelcomeMessage();
                 }, 100);
                 break;
             case SERVER_BOUND.SPAWN:
@@ -1308,23 +1310,25 @@ export default class Client {
                 const message = reader.getStringUTF8();
 
                 if (state.isBiomeGrid) {
-                    // Just for testing purposes
-                    if (message === "/damage") {
+                    if (message === "/damage" && false) {
                         this.body.health.lastDamaged = Date.now();
                         this.body.health.health = 1;
                         this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
                         return;
                     } else if (message === "/poison") {
+                        // Do not poison if already at critically low HP
+                        if (this.body.health.health <= 1 || this.body.poison.timer > 0) {
+                            return;
+                        }
                         this.body.health.lastDamaged = Date.now();
-                        this.body.health.health = this.body.health.maxHealth;
                         this.body.poison.timer = 22.5 * 1;
-                        this.body.poison.damage = (this.body.health.maxHealth - 1) / 23;
+                        this.body.poison.damage = (this.body.health.health - 1) / 23;
                         this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
                         return;
-                    } else if (message === "/health") {
+                    } else if (message === "/hp" || message === "/health") {
                         this.systemMessage("Your max health: " + this.body.health.maxHealth, colors.leafGreen);
                         return;
-                    } else if (message === "/tp") {
+                    } else if (message === "/tp" || message === "/teleport") {
                         if (!this.body || this.body.health.isDead) {
                             this.systemMessage("Error: Cannot teleport while you are dead.", colors.legendary);
                         } else if (this.body.tpCooldown > 0) {
@@ -1345,6 +1349,113 @@ export default class Client {
                             this.body.tpCooldown = 22.5 * 20;
                             this.systemMessage("Successfully teleported to Garden.", colors.leafGreen);
                         }
+                        return;
+                    } else if (message === "/help") {
+                        this.systemMessage("Available commands:", colors.uncommon);
+                        this.systemMessage("/help - Shows you the list of available commands.", colors.uncommon);
+                        this.systemMessage("/info [1-4] - Info about this gamemode's unique mechanics.", colors.uncommon);
+                        this.systemMessage("/tp - Teleports you from the top of the map to the bottom of the map, and vice versa.", colors.username);
+                        this.systemMessage("/hp - Tells you your current max HP (including +HP petals).", colors.uncommon);
+                        this.systemMessage("/poison - Poisons you until you reach low HP. Mainly used for testing out Toxic Remnants.", colors.uncommon);
+                        return;
+                    } else if (message === "/info" || message === "/info 1") {
+                        this.systemMessage("(INFO 1/4)", colors.uncommon);
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage(
+                            "- Adrenaline: If your flower takes non-poison damage, all your petals skip 10% of their " +
+                            "reload time (capped at 50%).",
+                            colors.lightningTeal,
+                        );
+                        this.systemMessage(
+                            "- Garden petals provide healing and other defensive benefits. This lets you utilize " +
+                            "Adrenaline when killing Ocean mobs, which are aggressive and rapidly deal chip damage.",
+                            colors.lightningTeal,
+                        );
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage("(Use \"/info 2\" to continue...)", colors.uncommon);
+                        return;
+                    } else if (message === "/info 2") {
+                        const damageColor = "#FF4D4D";
+                        this.systemMessage("(INFO 2/4)", colors.uncommon);
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage(
+                            "- Poison Drain: If a player or mob gets hit with non-poison damage, the player/mob will " +
+                            "deal less poison damage afterward (capped at 25% poison damage).",
+                            damageColor,
+                        );
+                        this.systemMessage(
+                            "- Players lose 20% poison damage per hit and regain 5% poison damage per second.",
+                            damageColor,
+                        );
+                        this.systemMessage(
+                            "- Mobs lose 5% poison damage per hit and regain 20% poison damage per second.",
+                            damageColor,
+                        );
+                        this.systemMessage(
+                            "- Ocean petals deal rapid chip damage, which lets you quickly neutralize the " +
+                            "poisonous mobs found in the Desert.",
+                            damageColor,
+                        );
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage("(Use \"/info 3\" to continue...)", colors.uncommon);
+                        return;
+                    } else if (message === "/info 3") {
+                        const poisonColor = "#9B4DFF";
+                        this.systemMessage("(INFO 3/4)", colors.uncommon);
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage(
+                            "- Toxic Remnants: When a player or mob takes poison damage, it also inflicts Toxic " +
+                            "Remnants equal to the poison damage taken. If the player/mob tries to heal afterward, " +
+                            "the healing and the Toxic Remnants cancel each other out.",
+                            poisonColor,
+                        );
+                        this.systemMessage(
+                            "- Your current Toxic Remnants is displayed as a white bar inside your HP bar " +
+                            "(normally used to display shield in other gamemodes).",
+                            poisonColor,
+                        );
+                        this.systemMessage(
+                            "- Desert petals are poisonous and perfect for killing Garden mobs which try to " +
+                            "heal themselves.",
+                            poisonColor,
+                        );
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage("(Use \"/info 4\" to continue...)", colors.uncommon);
+                        return;
+                    } else if (message === "/info 4") {
+                        this.systemMessage("(INFO 4/4)", colors.uncommon);
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage("Here are some final tips for this gamemode:", colors.uncommon);
+                        this.systemMessage(
+                            "- This gamemode is unfinished and under active development. If you find any bugs or " +
+                            "issues, please report them to the gamemode's creator (@pigeonbar on Discord)",
+                            colors.uncommon,
+                        );
+                        this.systemMessage(
+                            "- You can teleport between Garden and Desert by moving to the top/bottom of the map " +
+                            "and then using \"/tp\".",
+                            colors.uncommon,
+                        );
+                        this.systemMessage(
+                            "- You start the game with a \"Gallery\" petal in your secondary row. You can hit a " +
+                            "mob with this petal to view the mob's stats.",
+                            colors.uncommon,
+                        );
+                        this.systemMessage(
+                            "- You can use \"/hp\" to view your current max HP, which can be useful for tank builds.",
+                            colors.uncommon,
+                        );
+                        this.systemMessage("Thank you for playing Biome Grid, and have fun!", colors.uncommon);
+                        return;
+                    } else if (message === "/info 5") {
+                        this.systemMessage("(INFO 5/4)", colors.uncommon);
+                        this.systemMessage("", colors.uncommon);
+                        let msg = "-You can hold the [J] key to vie Uncaught OutOfBoundsError ";
+                        let chars = "          ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()1234567890";
+                        for (let i = 0; i < 100; i++) {
+                            msg += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+                        this.systemMessage(msg, colors.legendary);
                         return;
                     }
                 }
@@ -1598,6 +1709,24 @@ export default class Client {
             this.talk(CLIENT_BOUND.ROOM_UPDATE, { ...state, biome: biomeOverride });
         } else {
             this.talk(CLIENT_BOUND.ROOM_UPDATE, state);
+        }
+    }
+
+    sendWelcomeMessage() {
+        if (state.isBiomeGrid) {
+            // Send welcome message for biome grid
+            this.systemMessage(
+                "Welcome to Biome Grid! In this gamemode, you will exploit type matchups to defeat enemies in a " +
+                "grid of 3 biomes!",
+                colors.uncommon,
+            );
+            this.systemMessage("", colors.uncommon);
+            this.systemMessage(
+                "This gamemode has several important mechanics not present in other gamemodes. To learn " +
+                "more about them, please use \"/info [1-4]\" .",
+                colors.uncommon,
+            );
+            this.systemMessage("", colors.uncommon);
         }
     }
 
