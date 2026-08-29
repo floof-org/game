@@ -1029,6 +1029,11 @@ export const BIOME_BACKGROUNDS = {
         name: "Crypt",
         color: "#000000",
         tile: "tiles/pumpkin.svg"
+    },
+    [BIOME_TYPES.CRYPT]: {
+        name: "Crypt",
+        color: "#000000",
+        tile: "tiles/pumpkin.svg"
     }
 };
 

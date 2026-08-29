@@ -2904,7 +2904,6 @@ function draw() {
                 if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
                     beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petal.index, petal.rarity);
                     menu.classList.toggle("active");
-
                     inventoryDragConfig.index = petal.index;
                     inventoryDragConfig.rarity = petal.rarity;
                     inventoryDragConfig.item.stableSize = rect.width;
