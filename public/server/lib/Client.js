@@ -1382,6 +1382,11 @@ export default class Client {
                             colors.lightningTeal,
                         );
                         this.systemMessage(
+                            "- Also, if a petal reaches the 50% cap, it also generates an electric spark for 20% " +
+                            "extra damage.",
+                            colors.lightningTeal,
+                        );
+                        this.systemMessage(
                             "- Garden petals provide healing and other defensive benefits. This lets you utilize " +
                             "Adrenaline when killing Ocean mobs, which are aggressive and rapidly deal chip damage.",
                             colors.lightningTeal,

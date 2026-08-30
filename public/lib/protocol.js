@@ -186,6 +186,8 @@ export class PetalConfig {
         this.extraLighting = 0;
         this.doNotRotate = false;
         this.nullCollision = false;
+
+        this.poisonBasedCap = undefined;
     }
 
     setName(name) {
@@ -593,6 +595,11 @@ export class PetalConfig {
 
     setNullCollision(nullCollision) {
         this.nullCollision = nullCollision;
+        return this;
+    }
+
+    setPoisonBasedCap(ratio) {
+        this.poisonBasedCap = ratio;
         return this;
     }
 }

@@ -569,6 +569,11 @@ export class PetalSlot {
                     this.petals[j] = new Petal(this.player, this.index, j);
                     this.petals[j].define(this.config, this.rarity);
                     this.cooldowns[j] = 0;
+
+                    // Give the petal a spark if it reached the adrenaline cap (5 uses / 50% reload)
+                    if (this.adrenalineApplied[j] >= 5) {
+                        this.petals[j].adrenalineSpark = true;
+                    }
                 }
             }
         }
@@ -956,12 +961,30 @@ export class Entity {
                     thisDamageDone += this.damage;
                     otherDamageDone += other.damage;
 
+                    // Apply Privet's damage cap
+                    if (this instanceof Petal && this.config.poisonBasedCap !== undefined) {
+                        if (other.poison.timer <= 0) {
+                            thisDamageDone = 0;
+                        } else {
+                            thisDamageDone = Math.min(thisDamageDone, this.config.poisonBasedCap * other.poison.damage * 22.5);
+                        }
+                    }
+
+                    if (other instanceof Petal && other.config.poisonBasedCap !== undefined) {
+                        if (this.poison.timer <= 0) {
+                            otherDamageDone = 0;
+                        } else {
+                            otherDamageDone = Math.min(otherDamageDone, other.config.poisonBasedCap * this.poison.damage * 22.5);
+                        }
+                    }
+
                     thisDamageDone = thisDamageDone - other.armor
                     otherDamageDone = otherDamageDone - this.armor
 
-                    if (this.type === ENTITY_TYPES.PETAL && this.parent?.type === ENTITY_TYPES.PLAYER) {
+                    if (this instanceof Petal && this.parent?.type === ENTITY_TYPES.PLAYER) {
+                        // Petals can randomly crit in non-grid modes based on velocity
                         let velocity = this.velocity.magnitude;
-                        if (velocity > 4.5) {
+                        if (velocity > 4.5 && !state.isBiomeGrid) {
                             let critChance = 1 - Math.exp(-(velocity - 4.5) * .008);
                             
                             critChance = Math.min(critChance, .2351);
@@ -969,17 +992,30 @@ export class Entity {
                                 thisDamageDone *= 1.45;
                             }
                         }
+
+                        // Petals can consume adrenaline spark in grid mode
+                        if (other instanceof Mob && this.adrenalineSpark) {
+                            new Lightning(this).define(this.damage * .2, 0, 1).bounce(other);
+                            this.adrenalineSpark = false;
+                        }
                     }
                     
-                    if (other.type === ENTITY_TYPES.PETAL && other.parent?.type === ENTITY_TYPES.PLAYER) {
+                    if (other instanceof Petal && other.parent?.type === ENTITY_TYPES.PLAYER) {
+                        // Petals can randomly crit in non-grid modes based on velocity
                         let velocity = other.velocity.magnitude;
-                        if (velocity > 4.5) {
+                        if (velocity > 4.5 && !state.isBiomeGrid) {
                             let critChance = 1 - Math.exp(-(velocity - 4.5) * .008);
                             
                             critChance = Math.min(critChance, .2351);
                             if (Math.random() < critChance) {
                                 otherDamageDone *= 1.45;
                             }
+                        }
+
+                        // Petals can consume adrenaline spark in grid mode
+                        if (this instanceof Mob && other.adrenalineSpark) {
+                            new Lightning(other).define(other.damage * .2, 0, 1).bounce(this);
+                            other.adrenalineSpark = false;
                         }
                     }
 
@@ -1399,6 +1435,8 @@ export class Petal extends Entity {
 
         /** @type {{damage:number,range:number,bounces:number,charges:number,chargesLeft:number}|null} */
         this.lightning = null;
+
+        this.adrenalineSpark = false;
 
         this.burst = false;
         this.faceInRelation = false;
@@ -3299,54 +3337,63 @@ export class Lightning {
         return this;
     }
 
-    bounce() {
-        for (let i = 0; i < this.bounces; i++) {
-            const last = this.points[this.points.length - 1];
-            const retrieved = state.spatialHash.retrieve({
-                _AABB: {
-                    x1: last.x - this.range,
-                    y1: last.y - this.range,
-                    x2: last.x + this.range,
-                    y2: last.y + this.range
-                }
-            });
-
-            let closest = null,
-                closestDist = Infinity;
-
-            retrieved.forEach(entity => {
-                if (entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || this.points.some(p => p.id === entity.id) || (entity.type === ENTITY_TYPES.PETAL && !entity.attractsLightning)) {
-                    return;
-                }
-
-                if (entity.type === ENTITY_TYPES.PETAL) {
-                    closest = entity;
-                    closestDist = 0;
-                    return;
-                }
-
-                const dx = last.x - entity.x;
-                const dy = last.y - entity.y;
-                const distSqr = dx * dx + dy * dy;
-
-                if (distSqr < closestDist) {
-                    closest = entity;
-                    closestDist = distSqr;
-                }
-            });
-
-            if (closest === null) {
-                break;
-            }
-
+    /** @param {Mob | undefined} targetOverride */
+    bounce(targetOverride) {
+        if (targetOverride) {
             this.points.push({
-                x: closest.x,
-                y: closest.y,
-                id: closest.id
+                x: targetOverride.x,
+                y: targetOverride.y,
+                id: targetOverride.id,
             });
+        } else {
+            for (let i = 0; i < this.bounces; i++) {
+                const last = this.points[this.points.length - 1];
+                const retrieved = state.spatialHash.retrieve({
+                    _AABB: {
+                        x1: last.x - this.range,
+                        y1: last.y - this.range,
+                        x2: last.x + this.range,
+                        y2: last.y + this.range
+                    }
+                });
 
-            if (closest.type === ENTITY_TYPES.PETAL) {
-                break;
+                let closest = null,
+                    closestDist = Infinity;
+
+                retrieved.forEach(entity => {
+                    if (entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || this.points.some(p => p.id === entity.id) || (entity.type === ENTITY_TYPES.PETAL && !entity.attractsLightning)) {
+                        return;
+                    }
+
+                    if (entity.type === ENTITY_TYPES.PETAL) {
+                        closest = entity;
+                        closestDist = 0;
+                        return;
+                    }
+
+                    const dx = last.x - entity.x;
+                    const dy = last.y - entity.y;
+                    const distSqr = dx * dx + dy * dy;
+
+                    if (distSqr < closestDist) {
+                        closest = entity;
+                        closestDist = distSqr;
+                    }
+                });
+
+                if (closest === null) {
+                    break;
+                }
+
+                this.points.push({
+                    x: closest.x,
+                    y: closest.y,
+                    id: closest.id
+                });
+
+                if (closest.type === ENTITY_TYPES.PETAL) {
+                    break;
+                }
             }
         }
 
@@ -3358,8 +3405,9 @@ export class Lightning {
                     this.points[i].x += Math.random() * ent.size * 2 - ent.size;
                     this.points[i].y += Math.random() * ent.size * 2 - ent.size;
 
+                    // Player can randomly dodge lightning outside of grid mode
                     const d = quickDiff(this.points[i], ent);
-                    if (d > ent.size * ent.size) {
+                    if (d > ent.size * ent.size && !state.isBiomeGrid) {
                         continue;
                     }
                 }

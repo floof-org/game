@@ -1107,42 +1107,44 @@ export function applyGridBiomeConfigs() {
 
     /***********     GARDEN MOBS     ***********/
 
+    // Health: 25 -> 50
     // Damage: 10 -> 5
     // Poison: 3 * 5 -> 0
-    // Constant heal: 0 -> 0.015
+    // Constant heal: 0 -> 0.0075
     // Drops: Iris 0.75, Shrub 0.6, Leaf 1.0 -> Powder 0.8, Leaf 1.0
-    mobConfigs[mobIDOf("Shrub")] = new MobConfig("Shrub", 25, 5, 30, 0, mobIDOf("Shrub"))
+    mobConfigs[mobIDOf("Shrub")] = new MobConfig("Shrub", 50, 5, 30, 0, mobIDOf("Shrub"))
         .setDescription("Poses no danger, but can heal itself very fast.")
         .setPushability(0.5)
-        .setHealing(0.015)
+        .setHealing(0.0075)
         .addDrop(petalIDOf("Powder"), .8)
         // .addDrop(petalIDOf("Shrub"), .6)
         // Todo: Rubber-like petal
         .addDrop(petalIDOf("Leaf"));
 
+    // Health: 35 -> 70
     // Damage: 3.5 -> 15
     // Speed: 2.5 -> 2
-    // Constant heal: 0 -> 0.003
+    // Constant heal: 0 -> 0.0015
     // Drops: Leaf 1.0, Bone 0.5, Cactus 0.25 -> Leaf 1.0, Cactus 0.25
-    mobConfigs[mobIDOf("Leafbug")] = new MobConfig("Leafbug", 35, 15, 30, 2, mobIDOf("Leafbug"))
+    mobConfigs[mobIDOf("Leafbug")] = new MobConfig("Leafbug", 70, 15, 30, 2, mobIDOf("Leafbug"))
         .setDescription("Has a hard leaf body, and can also heal slightly via photosynthesis.")
         .setNeutral(1)
         .setDamageReduction(.13)
-        .setHealing(0.003)
+        .setHealing(0.0015)
         .addDrop(petalIDOf("Leaf"))
         // .addDrop(petalIDOf("Bone"), .5)
         // Todo: Root-like petal
         .addDrop(petalIDOf("Cactus"), .25);
 
-    // Health: 25 -> 30
+    // Health: 25 -> 50
     // Damage: 15 -> 10
     // Speed: 2.5 -> 2
     // Periodic heal: None -> Dahlias
     // Drops: Dahlia 1.0, Yin Yang 0.15 -> Dahlia 1.0, Yin Yang 0.25
-    mobConfigs[mobIDOf("Evil Ladybug")] = new MobConfig("Evil Ladybug", 30, 10, 25, 2, mobIDOf("Evil Ladybug"))
+    mobConfigs[mobIDOf("Evil Ladybug")] = new MobConfig("Evil Ladybug", 50, 10, 25, 2, mobIDOf("Evil Ladybug"))
         .setDescription("Will periodically stop to heal itself by eating Dahlias.")
         .setAggressive(1)
-        .setPeriodicHeal(petalIDOf("Dahlia"), 3, 1 / 3, 3 * 22.5, 0.8 * 22.5)
+        .setPeriodicHeal(petalIDOf("Dahlia"), 3, 1 / 5, 3 * 22.5, 0.8 * 22.5)
         .addDrop(petalIDOf("Dahlia"))
         .addDrop(petalIDOf("Yin Yang"), .25);
 
@@ -1152,7 +1154,7 @@ export function applyGridBiomeConfigs() {
     // Damage: 17 -> 10
     // Health: 6.5 -> 5
     // Number of pellets: Min 1, max 7 -> min 3, max 7
-    petalConfigs[petalIDOf("Light")] = new PetalConfig("Light", 22.5 * .5, 5, 12, petalIDOf("Light"))
+    petalConfigs[petalIDOf("Light")] = new PetalConfig("Light", 22.5 * .5, 5, 10, petalIDOf("Light"))
         .setMulti([3, 3, 3, 3, 3, 3, 4, 4, 5, 5, 7, 7], 0, true)
         .setSize(.75)
         .setDescription("It's very light and recharges quickly, at the cost of damage.");
@@ -1170,6 +1172,13 @@ export function applyGridBiomeConfigs() {
         .setDensity(20)
         .setDescription("Super bouncy! Knocks all your enemies around. Very fun to use and cause problems with.");
 
+    // Reload: 0.45s -> 0.75s
+    // Damage: 32 -> 12
+    petalConfigs[petalIDOf("Sand")] = new PetalConfig("Sand", 22.5 * .75, 5, 12, petalIDOf("Sand"))
+        .setSize(.85)
+        .setMulti(4, true, true)
+        .setDescription("Some fine grains of sand. They recharge quickly and can pack a punch."),
+
     // Todo: Add heal-block absorption to sponge
     petalConfigs[petalIDOf("Sponge")] = new PetalConfig("Sponge", 22.5 * 1.5, 24, 0, petalIDOf("Sponge"))
         .setSize(4 / 3)
@@ -1184,25 +1193,27 @@ export function applyGridBiomeConfigs() {
 
     /***********     OCEAN MOBS     ***********/
 
-    // Drops: Fang 1.0, Faster 1.0 -> Light 1.0, Faster 1.0
+    // Drops: Fang 100%, Faster 100% -> Light 50%, Faster 100%
     // Todo: Should it really drop light?
     mobConfigs[mobIDOf("Leech")] = new MobConfig("Leech", 25, 3.5, 16, 5.5, mobIDOf("Leech"))
         .setDescription("A very aggressive creature that will try to eat you at any cost.")
         .setAggressive(1)
-        .addDrop(petalIDOf("Light"))
+        .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Faster"));
 
     // Lightning reload: Around 3s -> 0.8s
     // Body damage: 15 -> 5
     // Lightning damage: 2 -> 3
+    // Drops: Lightning 100%, Jelly 100% -> Lightning 100%
     mobConfigs[mobIDOf("Jellyfish")] = new MobConfig("Jellyfish", 40, 5, 30, 2.5, mobIDOf("Jellyfish"))
         .setDescription("The master of fast electrical attacks.")
         .setAggressive(1)
         .setLightning(22.5 * 0.8, [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 3)
-        .addDrop(petalIDOf("Lightning"))
-        .addDrop(petalIDOf("Jelly"));
+        .addDrop(petalIDOf("Lightning"));
+        //.addDrop(petalIDOf("Jelly"));
 
     // On-damage projectiles: None -> Bubbles
+    // Drops: Sponge 100% -> Sand 50%
     mobConfigs[mobIDOf("Sponge")] = new MobConfig("Sponge", 35, 3, 30, 0, mobIDOf("Sponge"))
         .setDescription("It was once harmless, but can now defend itself by spraying bubbles at attackers.")
         .setOnDamageProjectile({
@@ -1213,7 +1224,7 @@ export function applyGridBiomeConfigs() {
             range: 22.5 * 1,
             size: .15,
         }, 30)
-        .addDrop(petalIDOf("Sponge"));
+        .addDrop(petalIDOf("Sand"), .5);
 
     /***********    DESERT PETALS    ***********/
 
@@ -1228,11 +1239,25 @@ export function applyGridBiomeConfigs() {
         .setPoison(12.5, 5)
         .setDescription("Packs an unexpected punch in its secret weapon: poison.");
     
-    // Todo: Replace this drop, desert is not the healing type
-    petalConfigs[petalIDOf("Yucca")] = new PetalConfig("Yucca", 22.5 * 1.5, 8, 6, petalIDOf("Yucca"))
-        .setSize(1.2)
-        .setConstantHeal(7.5, true)
-        .setDescription("A strange leaf that heals you but only when you're in defensive mode.");
+    // Lightning protection: True -> false (may revert if changed to drop from Rock in Garden)
+    petalConfigs[petalIDOf("Magnet")] = new PetalConfig("Magnet", 22.5 * 2, 9, 6, petalIDOf("Magnet"))
+        .setSize(1.55)
+        .setExtraPickupRange(125)
+        .setHuddles(1)
+        .setDescription("This petal's magnetic field will attract nearby items. Does not stack. Also does NOT protect you from lightning."),
+
+    petalConfigs.push(
+        new PetalConfig("Privet", 22.5 * 1, 5, 20)
+            .setSize(.8)
+            .setPoisonBasedCap(2)
+            .setDescription("A strange berry. Its damage is capped by 2 times the poison DPS currently inflicted on the opponent.")
+            .setDrawing(new Drawing()
+                .addAction("beginPath")
+                .addAction("arc", 0, 0, .8, 0, 2 * Math.PI)
+                .addAction("fill", "#83048e")
+                .addAction("stroke", "#83048e", .3, .5)
+            ),
+    );
 
     // Poison: 2.5 * 5 -> 2.5 * 3
     petalConfigs[petalIDOf("Scorpion Missile.projectile")] = new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 5, 2.5, petalIDOf("Scorpion Missile.projectile"))
@@ -1343,11 +1368,13 @@ export function applyGridBiomeConfigs() {
     // Health: 25 -> 40
     // Poison: 0 -> 3 * 5
     // Size: 15 -> 20 (May revert if fire ant hole is added)
+    // Drops: Faster 50%, Glass 50% -> Powder 80%, Privet 100%
     mobConfigs[mobIDOf("Soldier Fire Ant")] = new MobConfig("Soldier Fire Ant", 40, 10, 20, 3.5, mobIDOf("Soldier Fire Ant"))
         .setDescription("It has a fiery temper.")
         .setAggressive(1)
         .setPoison(3, 5)
-        .addDrop(petalIDOf("Faster"), .5)
+        .addDrop(petalIDOf("Powder"), .8)
+        .addDrop(petalIDOf("Privet"));
         //.addDrop(petalIDOf("Glass"), .5);
 
     // Todo: Replace drops with privet + hopefully another idea
@@ -1365,6 +1392,8 @@ export function applyGridBiomeConfigs() {
     // Size: 15 -> 20 (May revert if fire ant hole is added)
     // Speed: 2 -> 0.5
     // Projectiles: None -> Poison spray
+    // Drops: Light 50%, Yucca 50% -> Magnet 50%, Privet 100%
+    // Todo: Find a different mob to drop magnet
     mobConfigs[mobIDOf("Baby Fire Ant")] = new MobConfig("Baby Fire Ant", 25, 10, 20, .5, mobIDOf("Baby Fire Ant"))
         .setDescription("It spits out pools of poison to defend itself. Watch your step.")
         .setPoison(3, 5)
@@ -1385,16 +1414,14 @@ export function applyGridBiomeConfigs() {
             slowdownPerTick: .2,
             shootAtEndOfPassiveMove: true,
         })
-        //.addDrop(petalIDOf("Light"), .5)
-        //.addDrop(petalIDOf("Yucca"), .5);
+        .addDrop(petalIDOf("Magnet"), .5)
+        .addDrop(petalIDOf("Privet"));
 
 
     // Todo: Probably add crafting
     // Todo: Hopefully implement tutorial rooms?
-    // Todo: Fix large Jellyfish ramming into player
     // Todo: Give player more ways to deal with Toxic Remnants
     // Todo: Let evil ladybug heal faster?
     // Todo: Knockback vs non-bubble projectiles
-    // Todo: Adrenaline giving petals a small electric attack?
-    // Todo: Refinements to ocean and desert drops
+    // Todo: Should Privet also inflict Toxic Remnants?
 }
