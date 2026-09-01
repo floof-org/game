@@ -71,9 +71,26 @@ const state = {
         let spawns = state.mapSpawns[type];
 
         if (type == ENTITY_TYPES.PLAYER) {
+            // Player will spawn at a random checkpoint whose rarity
+            // is <= the player's highest-rarity petal.
+            let highestSpawnRarity = 0;
+            spawns = spawns.filter((spawn) => {
+                if (spawn.rarity <= client.highestRarity) {
+                    return true
+                }
+            });
+
+            spawns.forEach((data) => {
+                highestSpawnRarity = Math.max(data.rarity, highestSpawnRarity)
+            });
+
+            spawns = spawns.filter((data) => {
+                if (data.rarity >= highestSpawnRarity) return true
+            });
+
             if (state.isBiomeGrid) {
-                // Player will spawn at the biome that they were most recently
-                // located in, with a default biome of Garden.
+                // Filter the spawnpoints further to make the player spawn at their
+                // most recently visited biome, with a default biome of Garden.
                 if (client?.sentBiome === undefined || client?.sentBiome === BIOME_TYPES.GARDEN) {
                     spawns = spawns.filter(
                         spawn => spawn.y * state.height <= -state.mapConstants.biomeTransition
@@ -94,23 +111,6 @@ const state = {
                         spawn => spawn.y * state.height >= state.mapConstants.biomeTransition
                     );
                 }
-            } else {
-                // Player will spawn at a random checkpoint whose rarity
-                // is <= the player's highest-rarity petal.
-                let highestSpawnRarity = 0;
-                spawns = spawns.filter((spawn) => {
-                    if (spawn.rarity <= client.highestRarity) {
-                        return true
-                    }
-                })
-
-                spawns.forEach((data) => {
-                    highestSpawnRarity = Math.max(data.rarity, highestSpawnRarity)
-                })
-
-                spawns = spawns.filter((data) => {
-                    if (data.rarity >= highestSpawnRarity) return true
-                })
             }
         }
 

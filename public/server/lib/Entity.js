@@ -1,6 +1,6 @@
-import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
+import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, formatLargeNumber, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal, tiers } from "./config.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
@@ -75,7 +75,7 @@ export class HealthComponent {
             this.health = this.health - dmg;
             damageDone += dmg;
             if (state.isBiomeGrid && isPoison) {
-                this.healBlock += dmg;
+                this.healBlock += 5 * dmg;
             } else if (state.isBiomeGrid && damageDone > 0 && !isPoison) {
                 // Apply Poison Drain: Entities' poison attacks become weaker after taking non-poison damage
                 if (this.entity instanceof Player) {
@@ -570,8 +570,8 @@ export class PetalSlot {
                     this.petals[j].define(this.config, this.rarity);
                     this.cooldowns[j] = 0;
 
-                    // Give the petal a spark if it reached the adrenaline cap (5 uses / 50% reload)
-                    if (this.adrenalineApplied[j] >= 5) {
+                    // Give the petal a spark if it reached the adrenaline cap (8 uses / 50% reload)
+                    if (this.adrenalineApplied[j] >= 8) {
                         this.petals[j].adrenalineSpark = true;
                     }
                 }
@@ -1687,12 +1687,12 @@ export class Player extends Entity {
             this.health.onDamage = (_damageDone, isPoison) => {
                 if (!isPoison) {
                     // Adrenaline mechanic: Every time the player takes non-poison
-                    // damage, every petal's cooldown gets reduced by 10%, capping
+                    // damage, every petal's cooldown gets reduced by 6.25%, capping
                     // out at 50%.
                     for (let slot of this.petalSlots) {
                         for (let i = 0; i < slot.amount; i++) {
-                            if (!slot.petals[i] && slot.adrenalineApplied[i] < 5) {
-                                slot.cooldowns[i] += 0.1 * slot.config.cooldown;
+                            if (!slot.petals[i] && slot.adrenalineApplied[i] < 8) {
+                                slot.cooldowns[i] += 0.0625 * slot.config.cooldown;
                                 slot.adrenalineApplied[i]++;
                             }
                         }
@@ -2599,6 +2599,8 @@ export class Mob extends Entity {
             this.y = this.head.y - Math.sin(atan2) * (this.size + this.head.size + 1);
             this.facing = atan2;
         } else if (this.speed > 0) {
+            let facingOffset = 0;
+
             this.tick--;
             if (this.tick2) this.tick2--;
 
@@ -2682,7 +2684,19 @@ export class Mob extends Entity {
                     if (this.config.tiers[this.rarity].lightning) {
                         const diff = quickDiff(this, this.target);
 
-                        if (diff < Math.pow(this.config.tiers[this.rarity].lightning.range, 2) * .85) {
+                        let closeToTarget = false;
+                        if (!state.isBiomeGrid) {
+                            if (diff < Math.pow(this.config.tiers[this.rarity].lightning.range, 2) * .85) {
+                                closeToTarget = true;
+                            }
+                        } else {
+                            // In grid mode, we consider distance from mob's surface instead of mob's centre
+                            if (Math.sqrt(diff) - this.size < this.config.tiers[this.rarity].lightning.range * .65) {
+                                closeToTarget = true;
+                            }
+                        }
+
+                        if (closeToTarget) {
                             this.moveStrength = 0;
                         } else {
                             this.moveStrength = this.speed;
@@ -2709,8 +2723,12 @@ export class Mob extends Entity {
                     }
 
                     if (this.strafes) {
-                        if (this.strafes.mTick < this.strafes.length) {
-                            this.movementAngle += (this.strafes.direction == 0 ? Math.PI : -Math.PI) / 2;
+                        // If mob is too far away from player, move closer to player instead of strafing
+                        if (this.strafes.mTick < this.strafes.length &&
+                            quickDiff(this, this.target) <= Math.pow(this.strafes.dist + this.size, 2)
+                        ) {
+                            facingOffset = (this.strafes.direction == 0 ? Math.PI : -Math.PI) / 2;
+                            this.movementAngle += facingOffset;
                             this.moveStrength *= this.strafes.speedMult;
                             this.strafes.cTick = this.strafes.cooldown;
 
@@ -2795,11 +2813,7 @@ export class Mob extends Entity {
             if (this.spins) {
                 this.facing += (this.spins.constant == false ? this.velocity.magnitude : 1) / this.speed * .1 * this.spins.rate;
             } else {
-                this.facing = this.movementAngle;
-            }
-
-            if (this.strafes && this.target) if (this.strafes.cTick == this.strafes.cooldown) {
-                this.facing -= (this.strafes.direction == 0 ? Math.PI : -Math.PI) / 2;
+                this.facing = this.movementAngle - facingOffset;
             }
         }
 
@@ -2990,7 +3004,15 @@ export class Mob extends Entity {
                     this.extraTicker--;
 
                     if (this.extraTicker <= 0) {
-                        new Lightning(this).define(lightning.damage, lightning.range, lightning.bounces).bounce();
+                        let angle = undefined;
+                        
+                        // In grid mode, lightning spawns from the mob's surface instead of the mob's centre,
+                        // so that lightning range can begin from the mob's surface.
+                        if (state.isBiomeGrid) {
+                            angle = Math.atan2(this.target.y - this.y, this.target.x - this.x)
+                        };
+
+                        new Lightning(this, angle).define(lightning.damage, lightning.range, lightning.bounces).bounce();
                         this.extraTicker = lightning.cooldown * (.95 + Math.random() * .1);
                     }
                 }
@@ -3067,17 +3089,22 @@ export class Mob extends Entity {
                     const name = state.clients.get(topDamagers[index].clientID).username;
                     if (index === max - 1) {
                         if (max === 1) {
-                            killText += name;
+                            killText += name + "!";
                         } else if (max === 2) {
-                            killText += " and " + name;
+                            killText += " and " + name + "!";
                         } else {
-                            killText += ", and " + name;
+                            killText += ", and " + name + "!";
                         };
                     } else if (index === 0) {
                         killText += name;
                     } else {
                         killText += ", " + name;
                     };
+                }
+
+                if (state.isBiomeGrid) {
+                    // Once a new rarity is defeated, stop announcing previous rarities
+                    state.announceRarity = Math.max(state.announceRarity, this.rarity);
                 }
             } else {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " despawned";
@@ -3097,8 +3124,9 @@ export class Mob extends Entity {
         description += `Damage: ${formatLargeNumber(this.damage, 2)}\n`;
         
         const lightning = this.config.tiers[this.rarity].lightning?.damage ?? 0;
+        const ltnCooldown = this.config.tiers[this.rarity].lightning?.cooldown ?? 0;
         if (lightning > 0) {
-            description += `Lightning: ${formatLargeNumber(lightning, 2)}\n`;
+            description += `Lightning: ${formatLargeNumber(lightning, 2)} every ${formatLargeNumber(ltnCooldown / 22.5, 2)}s\n`;
         }
 
         const poison = this.poison.toApply;
@@ -3137,8 +3165,7 @@ export class Mob extends Entity {
         }
 
         if (this.projectile && !this.periodicHeal) {
-            const projectile = new Petal(this, -1, -1);
-            projectile.define(petalConfigs[this.projectile.petalIndex], this.rarity);
+            const projectile = this.shootProjectile();
 
             description += `\nProjectile: ${projectile.config.name}\n`;
             description += `Health: ${formatLargeNumber(this.projectile.health, 2)}\n`;
@@ -3178,6 +3205,10 @@ export class Mob extends Entity {
         petal.spinSpeed = 0;
         petal.nullCollision = this.projectile.nullCollision;
         petal.slowdownPerTick = this.projectile.slowdownPerTick;
+        if (state.isBiomeGrid) {
+            petal.poison.toApply.damage = this.projectile.poison.damage;
+            petal.poison.toApply.timer = this.projectile.poison.duration;
+        }
         return petal;
     }
 }
@@ -3309,17 +3340,24 @@ export class Pentagram {
 export class Lightning {
     static idAccum = 1;
 
-    constructor(parent) {
+    constructor(parent, angle) {
         this.id = Lightning.idAccum++;
 
         this.parent = parent;
 
-        /** @type {{x:number,y:number}[]} */
-        this.points = [{
+        const parentPoint = {
             x: parent.x,
             y: parent.y,
-            id: -1
-        }];
+            id: -1,
+        };
+        
+        if (angle !== undefined) {
+            parentPoint.x += parent.size * Math.cos(angle);
+            parentPoint.y += parent.size * Math.sin(angle);
+        }
+
+        /** @type {{x:number,y:number}[]} */
+        this.points = [parentPoint];
 
         this.damage = 0;
         this.range = 0;

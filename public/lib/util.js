@@ -299,7 +299,7 @@ export const options = {
 };
 
 export function applyArticle(word, capitalize = false) {
-    if (/^[aeiou]/i.test(word)) {
+    if (/^[aeiou]/i.test(word) && word.toLowerCase() !== "unique") {
         return (capitalize ? "An" : "an") + " " + word;
     } else {
         return (capitalize ? "A" : "a") + " " + word;

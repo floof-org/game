@@ -851,10 +851,13 @@ export const GRID_OCEAN_MOBS = [
     mobIDOf("Sponge"),
 ];
 
+// Give scorpion 1/2 weight
 export const GRID_DESERT_MOBS = [
     mobIDOf("Scorpion"),
     mobIDOf("Soldier Fire Ant"),
+    mobIDOf("Soldier Fire Ant"),
     //mobIDOf("Worker Fire Ant"),
+    mobIDOf("Baby Fire Ant"),
     mobIDOf("Baby Fire Ant"),
 ];
 
@@ -1036,6 +1039,7 @@ export function applyGridBiomeConfigs() {
     PetalTier.HEALTH_SCALE = 2;
     MobTier.DAMAGE_SCALE = 2.1;
     MobTier.SIZE_SCALE = Math.pow(4, 1 / 11);
+    MobTier.LTN_RANGE_SCALE = 1;
 
     // Some rarity name tweaks
     tiers[1].name = "Unusual";
@@ -1064,11 +1068,12 @@ export function applyGridBiomeConfigs() {
     /***********    GARDEN PETALS    ***********/
 
     // Health: 10 -> 5
-    // Damage: 10 -> 7
-    petalConfigs[petalIDOf("Basic")] = new PetalConfig("Basic", 22.5 * 1, 5, 7, petalIDOf("Basic"))
-        .setDescription("A simple petal. Not too strong, not too weak.");
+    // Damage: 10 -> 8
+    petalConfigs[petalIDOf("Basic")] = new PetalConfig("Basic", 22.5 * 1, 5, 8, petalIDOf("Basic"))
+        .setDescription("A weak starter petal. Try to replace this with better petals.");
 
-    petalConfigs[petalIDOf("Powder")] = new PetalConfig("Powder", 22.5 * .75, 3, 5, petalIDOf("Powder"))
+    // Damage: 5 -> 1
+    petalConfigs[petalIDOf("Powder")] = new PetalConfig("Powder", 22.5 * .75, 3, 1, petalIDOf("Powder"))
         .setSize(1.65)
         .setSpeedMultiplier(1.03)
         .setHuddles(1)
@@ -1108,11 +1113,10 @@ export function applyGridBiomeConfigs() {
     /***********     GARDEN MOBS     ***********/
 
     // Health: 25 -> 50
-    // Damage: 10 -> 5
     // Poison: 3 * 5 -> 0
     // Constant heal: 0 -> 0.0075
     // Drops: Iris 0.75, Shrub 0.6, Leaf 1.0 -> Powder 0.8, Leaf 1.0
-    mobConfigs[mobIDOf("Shrub")] = new MobConfig("Shrub", 50, 5, 30, 0, mobIDOf("Shrub"))
+    mobConfigs[mobIDOf("Shrub")] = new MobConfig("Shrub", 50, 10, 30, 0, mobIDOf("Shrub"))
         .setDescription("Poses no danger, but can heal itself very fast.")
         .setPushability(0.5)
         .setHealing(0.0075)
@@ -1201,43 +1205,49 @@ export function applyGridBiomeConfigs() {
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Faster"));
 
-    // Lightning reload: Around 3s -> 0.8s
+    // Lightning reload: Around 3s -> 0.4s
+    // Lightning damage: 2 -> 1
     // Body damage: 15 -> 5
-    // Lightning damage: 2 -> 3
+    // Lightning range: 125 -> 150 but no longer scales exponentially
     // Drops: Lightning 100%, Jelly 100% -> Lightning 100%
+    // Todo: Replace lightning or make it not OP vs leeches
     mobConfigs[mobIDOf("Jellyfish")] = new MobConfig("Jellyfish", 40, 5, 30, 2.5, mobIDOf("Jellyfish"))
-        .setDescription("The master of fast electrical attacks.")
+        .setDescription("The master of fast lightning attacks.")
         .setAggressive(1)
-        .setLightning(22.5 * 0.8, [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 3)
+        .setLightning(22.5 * 0.4, [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 150, 1)
         .addDrop(petalIDOf("Lightning"));
         //.addDrop(petalIDOf("Jelly"));
 
     // On-damage projectiles: None -> Bubbles
     // Drops: Sponge 100% -> Sand 50%
     mobConfigs[mobIDOf("Sponge")] = new MobConfig("Sponge", 35, 3, 30, 0, mobIDOf("Sponge"))
-        .setDescription("It was once harmless, but can now defend itself by spraying bubbles at attackers.")
+        .setDescription("It was once harmless, but it can now defend itself by spraying bubbles at attackers.")
         .setOnDamageProjectile({
             petalIndex: petalIDOf("Bubble"),
             health: 1e-99,
-            damage: 2,
+            damage: 1,
             speed: 6,
             range: 22.5 * 1,
-            size: .15,
-        }, 30)
+            size: .1,
+        }, 60)
         .addDrop(petalIDOf("Sand"), .5);
 
     /***********    DESERT PETALS    ***********/
 
+    // Poison: 2 * 5 -> 15 * 5
     petalConfigs[petalIDOf("Pincer")] = new PetalConfig("Pincer", 22.5 * 1, 7.5, 7.5, petalIDOf("Pincer"))
         .setSize(1.2)
-        .setPoison(2, 5)
+        .setPoison(15, 5)
         .setEnemySpeedMultiplier(.6, 5)
         .setDescription("Poisonous, and it slows down your enemies. A perfect double whammy.");
 
-    petalConfigs[petalIDOf("Iris")] = new PetalConfig("Iris", 22.5 * 1, 10, 5, petalIDOf("Iris"))
+    
+    // Damage: 5 -> 1
+    // Poison: 12.5 * 5 -> 30 * 3
+    petalConfigs[petalIDOf("Iris")] = new PetalConfig("Iris", 22.5 * 1, 10, 1, petalIDOf("Iris"))
         .setSize(.8)
-        .setPoison(12.5, 5)
-        .setDescription("Packs an unexpected punch in its secret weapon: poison.");
+        .setPoison(30, 3)
+        .setDescription("Packs a predictable punch in its well-known weapon: poison.");
     
     // Lightning protection: True -> false (may revert if changed to drop from Rock in Garden)
     petalConfigs[petalIDOf("Magnet")] = new PetalConfig("Magnet", 22.5 * 2, 9, 6, petalIDOf("Magnet"))
@@ -1249,8 +1259,8 @@ export function applyGridBiomeConfigs() {
     petalConfigs.push(
         new PetalConfig("Privet", 22.5 * 1, 5, 20)
             .setSize(.8)
-            .setPoisonBasedCap(2)
-            .setDescription("A strange berry. Its damage is capped by 2 times the poison DPS currently inflicted on the opponent.")
+            .setPoisonBasedCap(1)
+            .setDescription("A strange berry. Its damage is capped by the poison DPS currently inflicted on the opponent.")
             .setDrawing(new Drawing()
                 .addAction("beginPath")
                 .addAction("arc", 0, 0, .8, 0, 2 * Math.PI)
@@ -1259,9 +1269,8 @@ export function applyGridBiomeConfigs() {
             ),
     );
 
-    // Poison: 2.5 * 5 -> 2.5 * 3
     petalConfigs[petalIDOf("Scorpion Missile.projectile")] = new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 5, 2.5, petalIDOf("Scorpion Missile.projectile"))
-        .setPoison(2.5, 3)
+        .setPoison(2.5, 5)
         .setDescription("[object null object]");
     
     petalConfigs.push(
@@ -1348,16 +1357,24 @@ export function applyGridBiomeConfigs() {
     /***********     DESERT MOBS     ***********/
 
     // Body poison: 0 -> 3 * 5
-    mobConfigs[mobIDOf("Scorpion")] = new MobConfig("Scorpion", 45, 7.5, 32.5, 3, mobIDOf("Scorpion"))
+    // Speed: 3 -> 2.5
+    // Strafe movement: 1/3 charge -> 0 charge, 300 max distance from player
+    // Missile cooldown: 2s -> 4s
+    // Missile poison: 2.5 * 5 -> 2.5 * 3
+    mobConfigs[mobIDOf("Scorpion")] = new MobConfig("Scorpion", 45, 7.5, 32.5, 2.5, mobIDOf("Scorpion"))
         .setDescription("Everyone's most hated enemy. At least it won't kill you instantly this time...")
         .setAggressive(1)
-        .setStrafes(30, 15, 1.25)
+        .setStrafes(1e99, 0, 1.25, 300)
         .setPoison(3, 5)
         .setProjectile({
             petalIndex: petalIDOf("Scorpion Missile.projectile"),
-            cooldown: 22.5 * 2,
+            cooldown: 22.5 * 4,
             health: 2,
             damage: 2,
+            poison: {
+                damage: 2.5,
+                duration: 3,
+            },
             speed: 5,
             range: 65,
             size: .2
@@ -1402,6 +1419,10 @@ export function applyGridBiomeConfigs() {
             cooldown: 22.5 * 7,
             health: Infinity,
             damage: 0,
+            poison: {
+                damage: 10,
+                duration: 5,
+            },
             speed: 6,
             range: 22.5 * 20,
             size: .2,
@@ -1421,7 +1442,6 @@ export function applyGridBiomeConfigs() {
     // Todo: Probably add crafting
     // Todo: Hopefully implement tutorial rooms?
     // Todo: Give player more ways to deal with Toxic Remnants
-    // Todo: Let evil ladybug heal faster?
     // Todo: Knockback vs non-bubble projectiles
     // Todo: Should Privet also inflict Toxic Remnants?
 }

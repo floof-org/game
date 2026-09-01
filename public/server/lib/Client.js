@@ -1347,7 +1347,7 @@ export default class Client {
                                 this.systemMessage(`Error: Your teleport is on cooldown. Please try again in ${seconds} seconds.`, colors.legendary);
                             }
                         } else if (Math.abs(this.body.y) < state.mapConstants.tpThreshold) {
-                            this.systemMessage("Error: You are too far away from the wall to teleport.", colors.legendary);
+                            this.systemMessage("Error: You can only teleport at the top/bottom of the map.", colors.legendary);
                         } else {
                             // Despawn the player's petals when teleporting
                             for (let slot of this.body.petalSlots) {
@@ -1377,7 +1377,7 @@ export default class Client {
                         this.systemMessage("(INFO 1/4)", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
-                            "- Adrenaline: If your flower takes non-poison damage, all your petals skip 10% of their " +
+                            "- Adrenaline: If your flower takes non-poison damage, all your petals skip 6.25% of their " +
                             "reload time (capped at 50%).",
                             colors.lightningTeal,
                         );
@@ -1429,7 +1429,7 @@ export default class Client {
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
                             "- Toxic Remnants: When a player or mob takes poison damage, it also inflicts Toxic " +
-                            "Remnants equal to the poison damage taken. If the player/mob tries to heal afterward, " +
+                            "Remnants at a 5:1 ratio. If the player/mob tries to heal afterward, " +
                             "the healing and the Toxic Remnants cancel each other out.",
                             poisonColor,
                         );

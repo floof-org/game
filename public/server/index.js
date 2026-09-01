@@ -218,7 +218,7 @@ setInterval(() => {
 
             const info = state.spawnNearPlayer(cfg, playerOverride);
             if (state.isBiomeGrid) {
-                if (info.tile?.type !== 3) {
+                if (info.tile?.type !== 3 && info.tile?.type !== 2) {
                     // In grid mode, do not spawn mobs outside of proper spawn zones
                     doNotSpawn = true;
                 }
@@ -312,75 +312,77 @@ setInterval(() => {
 // Router server through worker through socket
 state.router = new Router();
 
-switch (globalThis.environmentName) {
-    case "browser":
-        self.onmessage = async ({ data }) => {
-            switch (data[0]) {
-                case 0x00:
-                    state.router.addClient(u8ToU16(data, 1), u8ToString(data, 4), data[3]);
-                    break;
-                case 0x01:
-                    state.router.pipeMessage(u8ToU16(data, 1), new DataView(data.buffer, data.byteOffset + 3, data.byteLength - 3));
-                    break;
-                case 0x02:
-                    state.router.removeClient(u8ToU16(data, 1));
-                    break;
-                case "start":
-                    state.router.begin(data);
-                    if (data[2]) new ModdingAPI();
-                    break;
+// Split this into an async function so that it doesn't break Vite
+(async function somethingInvolvingBun() {
+    switch (globalThis.environmentName) {
+        case "browser":
+            self.onmessage = async ({ data }) => {
+                switch (data[0]) {
+                    case 0x00:
+                        state.router.addClient(u8ToU16(data, 1), u8ToString(data, 4), data[3]);
+                        break;
+                    case 0x01:
+                        state.router.pipeMessage(u8ToU16(data, 1), new DataView(data.buffer, data.byteOffset + 3, data.byteLength - 3));
+                        break;
+                    case 0x02:
+                        state.router.removeClient(u8ToU16(data, 1));
+                        break;
+                    case "start":
+                        state.router.begin(data);
+                        if (data[2]) new ModdingAPI();
+                        break;
+                }
             }
-        }
 
-        state.router.postMessage = data => self.postMessage(data);
-        break;
-    case "node":
-        throw new Error("Node environment not supported");
-    case "bun": {
-        if (Bun.env.ENV_DONE !== "true") {
-            await Bun.write("./.env", [
-                "ENV_DONE=false",
-                "ROUTING_SERVER=https://routing.supercord.dev",
-                "GAME_NAME=dedicated lobby",
-                "MODDED=false",
-                "GAMEMODE=maze",
-                `SECRET=${Array.from(crypto.getRandomValues(new Uint8Array(24))).map(e => e.toString(16).padStart(2, "0")).join("")}`,
-                "ADMIN_KEYS=devkey,devkey2",
-                "BIOME=0",
-                "HOST=dedicated.floof.supercord.dev",
-                "PORT=3005",
-                "TLS_DIRECTORY=false"
-            ].join("\n"));
-            console.warn("Please fill out the .env file with the correct values. Set ENV_DONE to 'true' when done.");
-            process.exit();
-        }
+            state.router.postMessage = data => self.postMessage(data);
+            break;
+        case "node":
+            throw new Error("Node environment not supported");
+        case "bun": {
+            if (Bun.env.ENV_DONE !== "true") {
+                await Bun.write("./.env", [
+                    "ENV_DONE=false",
+                    "ROUTING_SERVER=https://routing.supercord.dev",
+                    "GAME_NAME=dedicated lobby",
+                    "MODDED=false",
+                    "GAMEMODE=maze",
+                    `SECRET=${Array.from(crypto.getRandomValues(new Uint8Array(24))).map(e => e.toString(16).padStart(2, "0")).join("")}`,
+                    "ADMIN_KEYS=devkey,devkey2",
+                    "BIOME=0",
+                    "HOST=dedicated.floof.supercord.dev",
+                    "PORT=3005",
+                    "TLS_DIRECTORY=false"
+                ].join("\n"));
+                console.warn("Please fill out the .env file with the correct values. Set ENV_DONE to 'true' when done.");
+                process.exit();
+            }
 
-        if (Bun.env.MODDED !== "true" && Bun.env.MODDED !== "false") {
-            console.error("MODDED must be 'true' or 'false'");
-            process.exit();
-        }
+            if (Bun.env.MODDED !== "true" && Bun.env.MODDED !== "false") {
+                console.error("MODDED must be 'true' or 'false'");
+                process.exit();
+            }
 
-        if (!["ffa", "tdm", "waves", "line", "maze", "mmo"].includes(Bun.env.GAMEMODE)) {
-            console.error("GAMEMODE must be 'ffa', 'tdm', 'waves', 'line', 'maze', or 'mmo'");
-            process.exit();
-        }
+            if (!["ffa", "tdm", "waves", "line", "maze", "mmo"].includes(Bun.env.GAMEMODE)) {
+                console.error("GAMEMODE must be 'ffa', 'tdm', 'waves', 'line', 'maze', or 'mmo'");
+                process.exit();
+            }
 
-        if (!/^[0-9a-f]{48}$/i.test(Bun.env.SECRET)) {
-            console.error("SECRET must be a 48 character hex string");
-            process.exit();
-        }
+            if (!/^[0-9a-f]{48}$/i.test(Bun.env.SECRET)) {
+                console.error("SECRET must be a 48 character hex string");
+                process.exit();
+            }
 
-        if (!Bun.env.ADMIN_KEYS.split(",").every(e => typeof e === "string")) {
-            console.error("ADMIN_KEYS must be a comma separated list of strings");
-            process.exit();
-        }
+            if (!Bun.env.ADMIN_KEYS.split(",").every(e => typeof e === "string")) {
+                console.error("ADMIN_KEYS must be a comma separated list of strings");
+                process.exit();
+            }
 
-        if (Bun.env.BIOME == -1) {
-            console.log("BIOME is set to -1, selecting random biome");
-            Bun.env.BIOME = isHalloween ? BIOME_TYPES.HALLOWEEN : (Math.random() * 8 | 0);
-        }
+            if (Bun.env.BIOME == -1) {
+                console.log("BIOME is set to -1, selecting random biome");
+                Bun.env.BIOME = isHalloween ? BIOME_TYPES.HALLOWEEN : (Math.random() * 8 | 0);
+            }
 
-        const keys = Bun.env.ADMIN_KEYS.split(",").filter(e => e.length > 3);
+            const keys = Bun.env.ADMIN_KEYS.split(",").filter(e => e.length > 3);
 
         let bunSocketID = 1;
         const bunSendMap = new Map();
@@ -403,9 +405,9 @@ switch (globalThis.environmentName) {
                     }
                 });
 
-                if (success) return undefined;
-                return new Response("Hello world");
-            },
+                    if (success) return undefined;
+                    return new Response("Hello world");
+                },
 
             websocket: {
                 perMessageDeflate: true,
@@ -414,122 +416,123 @@ switch (globalThis.environmentName) {
                     socket.binaryType = "arraybuffer";
                     const client = state.router.addClient(socket.data.socketID, socket.data.userId, keys.includes(socket.data.searchParams.get("clientKey")));
 
-                    if (client) {
-                        bunSendMap.set(socket.data.socketID, socket);
+                        if (client) {
+                            bunSendMap.set(socket.data.socketID, socket);
 
-                        let ct = (ipCounts.get(socket.data.ip) ?? 0) + 1;
+                            let ct = (ipCounts.get(socket.data.ip) ?? 0) + 1;
 
-                        if (ct > 100) {
-                            client.kick("Too many connections from this IP");
+                            if (ct > 100) {
+                                client.kick("Too many connections from this IP");
+                                return;
+                            }
+
+                        ipCounts.set(socket.data.ip, ct);
+                    }
+                },
+
+                    close(socket) {
+                        state.router.removeClient(socket.data.socketID);
+                        bunSendMap.delete(socket.data.socketID);
+
+                        if (lobbySocket.readyState === WebSocket.OPEN && socket.data.searchParams.has("analytics")) {
+                            lobbySocket.send(new Uint8Array([ROUTER_PACKET_TYPES.ANALYTICS_DATA, ...stringToU8(socket.data.searchParams.get("analytics")), ...stringToU8((performance.now() - socket.data.begin).toFixed(2))]));
+                        }
+
+                        let ct = (ipCounts.get(socket.data.ip) ?? 0) - 1;
+
+                        if (ct <= 0) {
+                            ipCounts.delete(socket.data.ip);
+                        } else {
+                            ipCounts.set(socket.data.ip, ct);
+                        }
+                    },
+
+                    message(socket, data) {
+                        if (typeof data === "string") {
                             return;
                         }
 
-                        ipCounts.set(socket.data.ip, ct);
+                        state.router.pipeMessage(socket.data.socketID, new DataView(data));
                     }
                 },
 
-                close(socket) {
-                    state.router.removeClient(socket.data.socketID);
-                    bunSendMap.delete(socket.data.socketID);
+                port: +Bun.env.DEDICATED_LOBBY_PORT,
+                tls: Bun.env.TLS_DIRECTORY !== "false" ? {
+                    key: Bun.file(`${Bun.env.TLS_DIRECTORY}/privkey.pem`),
+                    cert: Bun.file(`${Bun.env.TLS_DIRECTORY}/fullchain.pem`)
+                } : undefined
+            });
 
-                    if (lobbySocket.readyState === WebSocket.OPEN && socket.data.searchParams.has("analytics")) {
-                        lobbySocket.send(new Uint8Array([ROUTER_PACKET_TYPES.ANALYTICS_DATA, ...stringToU8(socket.data.searchParams.get("analytics")), ...stringToU8((performance.now() - socket.data.begin).toFixed(2))]));
-                    }
+            const timezone = -Math.floor(new Date().getTimezoneOffset() / 60);
 
-                    let ct = (ipCounts.get(socket.data.ip) ?? 0) - 1;
+            const lobbySocket = new WebSocket(`${Bun.env.ROUTING_SERVER.replace('http', 'ws')}/ws/lobby?gameName=${Bun.env.GAME_NAME}&isModded=${Bun.env.MODDED == "true" ? "yes" : "no"}&gamemode=${Bun.env.GAMEMODE}&secretKey=${Bun.env.SECRET}&isPrivate=no&biome=${Bun.env.BIOME}&directConnect=${Bun.env.HOST},${timezone}&analytics=${ANALYTICS_DATA}`, {
+                origin: Bun.env.HOST,
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+                }
+            });
 
-                    if (ct <= 0) {
-                        ipCounts.delete(socket.data.ip);
-                    } else {
-                        ipCounts.set(socket.data.ip, ct);
-                    }
-                },
+            lobbySocket.binaryType = "arraybuffer";
 
-                message(socket, data) {
-                    if (typeof data === "string") {
+            const wait = [];
+
+            lobbySocket.onopen = () => {
+                console.log("Connected to server");
+                state.router.begin(["start", Bun.env.GAMEMODE, Bun.env.MODDED == "true", crypto.randomUUID(), +Bun.env.BIOME]);
+
+                lobbySocket.onmessage = event => {
+                    const data = new Uint8Array(event.data);
+
+                    if (data[0] === 255) {
+                        const ok = data[1] === 1;
+
+                        if (!ok) throw new Error("Request rejected by server");
+
+                        console.log("Lobby Verified", new TextDecoder().decode(data.slice(2, -1)));
                         return;
                     }
-
-                    state.router.pipeMessage(socket.data.socketID, new DataView(data));
                 }
-            },
 
-            port: +Bun.env.DEDICATED_LOBBY_PORT,
-            tls: Bun.env.TLS_DIRECTORY !== "false" ? {
-                key: Bun.file(`${Bun.env.TLS_DIRECTORY}/privkey.pem`),
-                cert: Bun.file(`${Bun.env.TLS_DIRECTORY}/fullchain.pem`)
-            } : undefined
-        });
-
-        const timezone = -Math.floor(new Date().getTimezoneOffset() / 60);
-
-        const lobbySocket = new WebSocket(`${Bun.env.ROUTING_SERVER.replace('http', 'ws')}/ws/lobby?gameName=${Bun.env.GAME_NAME}&isModded=${Bun.env.MODDED == "true" ? "yes" : "no"}&gamemode=${Bun.env.GAMEMODE}&secretKey=${Bun.env.SECRET}&isPrivate=no&biome=${Bun.env.BIOME}&directConnect=${Bun.env.HOST},${timezone}&analytics=${ANALYTICS_DATA}`, {
-            origin: Bun.env.HOST,
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+                wait.forEach(fn => fn());
             }
-        });
 
-        lobbySocket.binaryType = "arraybuffer";
+            lobbySocket.onclose = () => {
+                console.log("Disconnected from server");
 
-        const wait = [];
+                state.clients.forEach(c => c.kick("Connection to lobby server lost"));
+                setTimeout(() => process.exit(), 1000);
+            }
 
-        lobbySocket.onopen = () => {
-            console.log("Connected to server");
-            state.router.begin(["start", Bun.env.GAMEMODE, Bun.env.MODDED == "true", crypto.randomUUID(), +Bun.env.BIOME]);
+            state.router.postMessage = u8 => {
+                switch (u8[0]) {
+                    case ROUTER_PACKET_TYPES.PIPE_PACKET:
+                        const sock = bunSendMap.get(u8ToU16(u8, 1));
 
-            lobbySocket.onmessage = event => {
-                const data = new Uint8Array(event.data);
-
-                if (data[0] === 255) {
-                    const ok = data[1] === 1;
-
-                    if (!ok) throw new Error("Request rejected by server");
-
-                    console.log("Lobby Verified", new TextDecoder().decode(data.slice(2, -1)));
-                    return;
+                        if (sock != null && sock.readyState === WebSocket.OPEN) {
+                            sock.send(u8.slice(3));
+                        }
+                        break;
+                    case ROUTER_PACKET_TYPES.CLOSE_CLIENT:
+                        bunSendMap.get(u8ToU16(u8, 1))?.close();
+                        break;
+                    default:
+                        if (lobbySocket.readyState === WebSocket.OPEN) {
+                            lobbySocket.send(u8);
+                            console.log(`Lobby ready state: ${lobbySocket.readyState}`)
+                        } else {
+                            console.log(`Lobby ready state: Closed.`)
+                            wait.push(() => lobbySocket.send(u8));
+                        }
+                        break;
                 }
             }
+        } break;
+        default:
+            throw new Error("Invalid environment");
+    }
 
-            wait.forEach(fn => fn());
-        }
-
-        lobbySocket.onclose = () => {
-            console.log("Disconnected from server");
-
-            state.clients.forEach(c => c.kick("Connection to lobby server lost"));
-            setTimeout(() => process.exit(), 1000);
-        }
-
-        state.router.postMessage = u8 => {
-            switch (u8[0]) {
-                case ROUTER_PACKET_TYPES.PIPE_PACKET:
-                    const sock = bunSendMap.get(u8ToU16(u8, 1));
-
-                    if (sock != null && sock.readyState === WebSocket.OPEN) {
-                        sock.send(u8.slice(3));
-                    }
-                    break;
-                case ROUTER_PACKET_TYPES.CLOSE_CLIENT:
-                    bunSendMap.get(u8ToU16(u8, 1))?.close();
-                    break;
-                default:
-                    if (lobbySocket.readyState === WebSocket.OPEN) {
-                        lobbySocket.send(u8);
-                        console.log(`Lobby ready state: ${lobbySocket.readyState}`)
-                    } else {
-                        console.log(`Lobby ready state: Closed.`)
-                        wait.push(() => lobbySocket.send(u8));
-                    }
-                    break;
-            }
-        }
-    } break;
-    default:
-        throw new Error("Invalid environment");
-}
-
-state.router.sendMockups();
+    state.router.sendMockups();
+})();
 
 class ModdingAPI {
     static TRANSFERRABLE_TYPES = {

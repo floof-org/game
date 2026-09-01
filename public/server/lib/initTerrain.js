@@ -92,12 +92,16 @@ export default async function initTerrain(type) {
                     cell.score = 0;
                 } else if (
                     (x % 24 < 16 && y % 24 < 16) // Grid squares
-                    || (x % 24 <= 9 && x % 12 >= 6) // Vertical halls
-                    || (y % 24 <= 9 && y % 12 >= 6) // Horizontal halls
+                    || (x % 24 <= 9 && x % 24 >= 6) // Vertical halls
+                    || (y % 24 <= 9 && y % 24 >= 6) // Horizontal halls
                 ) {
                     const rarity = Math.max(0.001, Math.min(map.maxRarity, (x - 1.5) / 12))
                     cell.type = 3;
                     cell.score = rarity / map.maxRarity;
+
+                    if ((x % 24 === 20 || x % 24 === 21) && (y % 24 === 7 || y % 24 === 8)) { // Hallway checkpoints
+                        cell.type = 2;
+                    }
 
                     if (y < 20) {
                         cell.spawn = SPAWN_TYPES.GARDEN;

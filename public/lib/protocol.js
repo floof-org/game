@@ -97,6 +97,7 @@ export class MobTier {
     static HEALTH_SCALE = 3.15;
     static DAMAGE_SCALE = 3;
     static SIZE_SCALE = 1.235;
+    static LTN_RANGE_SCALE = 1.15;
 
     constructor(tier, health, damage, size) {
         this.health = health * Math.pow(MobTier.HEALTH_SCALE, tier);
@@ -105,7 +106,7 @@ export class MobTier {
 
         this.damageReduction = 0;
 
-        /** @type {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, nullCollision: boolean, slowdownPerTick: number, shootAtEndOfPassiveMove: boolean, multiShot: {count:number,delay:number}|null}|null} */
+        /** @type {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, poison: {damage: number, duration: number}, speed: number, range: number, size: number, nullCollision: boolean, slowdownPerTick: number, shootAtEndOfPassiveMove: boolean, multiShot: {count:number,delay:number}|null}|null} */
         this.projectile = null;
 
         /** @type {{speedMultiplier: number, duration: number}|null} */
@@ -743,7 +744,7 @@ export class MobConfig {
         return this;
     }
 
-    /** @param {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number,spread:number}|null, runs: boolean, nullCollision: boolean, slowdownPerTick?: number, shootAtEndOfPassiveMove?: boolean, }} projectile */
+    /** @param {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, poison: {damage: number, duration: number}, speed: number, range: number, size: number, multiShot: {count:number,delay:number,spread:number}|null, runs: boolean, nullCollision: boolean, slowdownPerTick?: number, shootAtEndOfPassiveMove?: boolean, }} projectile */
     setProjectile(projectile = {}) {
         for (let i = 0; i < this.tiers.length; i++) {
         
@@ -752,8 +753,12 @@ export class MobConfig {
                 cooldown: projectile.cooldown ?? 10,
                 health: (projectile.health ?? 1) * Math.pow(MobTier.HEALTH_SCALE, i),
                 damage: (projectile.damage ?? 1) * Math.pow(MobTier.DAMAGE_SCALE, i),
+                poison: {
+                    damage: (projectile.poison?.damage ?? 0) * Math.pow(MobTier.DAMAGE_SCALE, i) / 22.5,
+                    duration: (projectile.poison?.duration ?? 0) * 22.5,
+                },
                 speed: projectile.speed ?? 5,
-                range: (projectile.range ?? 50) * Math.pow(MobTier.SIZE_SCALE * .8, i),
+                range: (projectile.range ?? 50),
                 size: projectile.size ?? .35,
                 multiShot: projectile.multiShot ?? null,
                 runs: projectile.runs ?? false,
@@ -807,8 +812,8 @@ export class MobConfig {
             this.tiers[i].lightning = {
                 cooldown: cooldown instanceof Array ? (cooldown[i] ?? cooldown[cooldown.length - 1]) : cooldown,
                 bounces: bounces instanceof Array ? (bounces[i] ?? bounces[bounces.length - 1]) : bounces,
-                range: range * Math.pow(1.15, i),
-                damage: damage * Math.pow(MobTier.DAMAGE_SCALE, i)
+                range: range * Math.pow(MobTier.LTN_RANGE_SCALE, i),
+                damage: damage * Math.pow(MobTier.DAMAGE_SCALE, i),
             };
         }
 
@@ -939,11 +944,12 @@ export class MobConfig {
         return this;
     }
 
-    setStrafes(length, cooldown, speedMult) {
+    setStrafes(length, cooldown, speedMult, dist = 0) {
         this.strafes = {
             length,
             cooldown,
-            speedMult
+            speedMult,
+            dist,
         }
         return this;
     }
