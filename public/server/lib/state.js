@@ -246,6 +246,11 @@ const state = {
                 const goesUp = Math.random() > .5 * Math.pow(1.1015, baseRarity);
                 rarity = Math.min(11, Math.max(0, goesUp ? baseRarity + 1 : baseRarity - (Math.random() * 2 | 0)));
 
+                // In grid mode, do not spawn Unusual mobs in Common zones
+                if (state.isBiomeGrid && baseRarity === 0) {
+                    rarity = 0;
+                }
+
                 const retrieved = state.spatialHash.retrieve({
                     _AABB: {
                         x1: position.x - config.tiers[rarity].size,

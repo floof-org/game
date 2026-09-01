@@ -1444,4 +1444,9 @@ export function applyGridBiomeConfigs() {
     // Todo: Give player more ways to deal with Toxic Remnants
     // Todo: Knockback vs non-bubble projectiles
     // Todo: Should Privet also inflict Toxic Remnants?
+    
+
+    // Todo: Chat logger for /commands?
+    // Pdrain doesn't show up if cache petal assets
+    // Crash is most likely not a wifi issue, I can temporarily disconnect wifi and still resume lobby 10s later
 }

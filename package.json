@@ -5,7 +5,7 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-        "build-vite": "vite build",
+        "build-vite": "vite build && cpy ./dist/floof-game.js ./build/floof.supercord.lol/server/index.js",
         "build": "webpack --config ./webpack.config.js",
         "build-and-override": "webpack --config ./webpack.config.js && cpy ./build/server/index.js ./build/floof.supercord.dev/server/index.js && cpy ./build/bundle.js ./build/floof.supercord.dev/bundle.js",
         "deploy": "npm run build && rsync -av --delete ./build/ /var/www/floof.supercord.dev",

@@ -1404,7 +1404,8 @@ export default class Client {
                             damageColor,
                         );
                         this.systemMessage(
-                            "- For poisonous mobs, this debuff is indicated by an icon below the mob's HP bar.",
+                            "- For poisonous mobs, this debuff is indicated by an icon below the mob's HP bar. " +
+                            "(Due to a bug, you must turn off \"Cache Petal Assets\" to see this indicator, sorry!)",
                             damageColor,
                         );
                         this.systemMessage(

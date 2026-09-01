@@ -313,7 +313,7 @@ setInterval(() => {
 state.router = new Router();
 
 // Split this into an async function so that it doesn't break Vite
-(async function somethingInvolvingBun() {
+(async () => {
     switch (globalThis.environmentName) {
         case "browser":
             self.onmessage = async ({ data }) => {
@@ -334,7 +334,23 @@ state.router = new Router();
                 }
             }
 
-            state.router.postMessage = data => self.postMessage(data);
+            state.router.postMessage = data => {
+                const length = data.byteLength;
+
+                if (length > 10000) {
+                    console.warn("Sending data with length:", length);
+                    if (length >= (1 << 24)) {
+                        let dataContents = "[";
+                        for (let a of data.values()) {
+                            dataContents += a + ", ";
+                        }
+                        dataContents += "]";
+                        console.error("Data too long:", data, dataContents);
+                    }
+                }
+
+                self.postMessage(data);
+            }
             break;
         case "node":
             throw new Error("Node environment not supported");
