@@ -129,19 +129,15 @@ const config = {
                     function recursiveHashFiles(directory) {
                         const files = fs.readdirSync(directory);
 
-                        files.forEach((file) => {
+                        files.forEach(file => {
                             const filePath = path.join(directory, file);
-
-                            if (fs.statSync(filePath).isDirectory()) {
-                                recursiveHashFiles(filePath);
-                            } else {
-                                hash.update(fs.readFileSync(filePath));
-                            }
+                            if (fs.statSync(filePath).isDirectory()) recursiveHashFiles(filePath);
+                            else hash.update(fs.readFileSync(filePath));
                         });
+
                     }
 
                     recursiveHashFiles(destinationDir);
-
                     const buildHash = hash.digest("hex");
 
                     // Write the hash to a file

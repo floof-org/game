@@ -444,14 +444,6 @@
             }
         </style>
     </head>
-
-    <script type="module">
-        document.addEventListener("DOMContentLoaded", () => {
-            const redirect = window.location.href;
-            document.getElementById("discordLoginBtn").href = `<%= DISCORD_OAUTH2_REDIRECT_URL %>&state=${encodeURIComponent(JSON.stringify({ redirect }))}`;
-        });
-    </script>
-
     <body oncontextmenu="return false;">
         <canvas></canvas>
 
@@ -513,33 +505,13 @@
                     <!-- Logged In -->
                     <div id="accountLoggedIn" style="display: none; padding: 2vmin; text-align: center">
                         <img id="accountAvatar" src="" width="128" height="128" style="border-radius: 50%; margin-bottom: 1.5vmin; image-rendering: -webkit-optimize-contrast" />
-
                         <div id="accountUsernameDisplay" style="font-size: 3.2vmin; font-weight: bold; margin-bottom: 2.5vmin; white-space: nowrap">Loading...</div>
-
                         <button id="logoutButton" style="background: #ed4245; color: white; border: none; padding: 1.4vmin 4vmin; border-radius: 2px solid #c13537; border-radius: 1vmin; font-weight: bold; font-size: 2.2vmin; cursor: pointer; width: 80%">Log Out</button>
                     </div>
 
                     <!-- Logged Out -->
                     <div id="accountLoggedOut" style="text-align: center; padding: 4vmin 2vmin">
-                        <!-- <div style="color: #888; margin-bottom: 3vmin; font-size: 2.2vmin">Sign in to save progress</div> -->
-                        <a
-                            href="<%= DISCORD_OAUTH2_REDIRECT_URL %>"
-                            id="discordLoginBtn"
-                            style="
-                                display: inline-flex;
-                                align-items: center;
-                                justify-content: center;
-                                gap: 14px;
-                                padding: 1.6vmin 4vmin;
-                                background: #5865f2;
-                                color: white;
-                                border-radius: 1.2vmin;
-                                text-decoration: none;
-                                font-weight: bold;
-                                font-size: 2.2vmin;
-                                box-shadow: 0 6px 16px rgba(88, 101, 242, 0.4);
-                            "
-                        >
+                        <a id="discordLoginBtn" style=" display: inline-flex; align-items: center; justify-content: center; gap: 14px; padding: 1.6vmin 4vmin; background: #5865f2; color: white; border-radius: 1.2vmin; text-decoration: none; font-weight: bold; font-size: 2.2vmin; box-shadow: 0 6px 16px rgba(88, 101, 242, 0.4);">
                             <img src="/assets/Discord-Symbol-Black.png" width="32" height="32" style="object-fit: contain" />
                             <span>Log in with Discord</span>
                         </a>
@@ -614,46 +586,5 @@
         </div>
 
         <input type="text" maxlength="128" id="chatInput" placeholder="Enter to chat; Esc to close" />
-        <script type="module">
-            const AUTH_SERVER = "<%= AUTH_SERVER %>".replace(/\/+$/, "");
-
-            async function updateAccountMenu() {
-                const loggedIn = document.getElementById("accountLoggedIn");
-                const loggedOut = document.getElementById("accountLoggedOut");
-                const avatar = document.getElementById("accountAvatar");
-                const username = document.getElementById("accountUsernameDisplay");
-                const logoutBtn = document.getElementById("logoutButton");
-
-                try {
-                    const res = await fetch(`${AUTH_SERVER}/api/me`, { credentials: "include" });
-                    if (!res.ok) throw new Error();
-                    const user = await res.json();
-                    const name = user.global_name || user.username || "User";
-                    const tag = user.discriminator === "0" ? "" : `#${user.discriminator}`;
-                    username.textContent = `${name}${tag}`;
-
-                    // GIF SUPPORT + FALLBACK
-                    if (user.avatar?.startsWith("a_")) avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.gif?size=128`;
-                    else if (user.avatar) avatar.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp?size=128`;
-                    else avatar.src = `https://cdn.discordapp.com/embed/avatars/${user.id}.png`;
-
-                    loggedIn.style.display = "block";
-                    loggedOut.style.display = "none";
-
-                    logoutBtn.onclick = () => {
-                        fetch(`${AUTH_SERVER}/api/logout`, {
-                            method: "POST",
-                            credentials: "include",
-                            headers: { "Content-Type": "application/json" },
-                        }).then(() => window.location.href = "/");
-                    };
-                } catch (e) {
-                    loggedIn.style.display = "none";
-                    loggedOut.style.display = "block";
-                }
-            }
-
-            updateAccountMenu();
-        </script>
     </body>
 </html>
