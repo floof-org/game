@@ -175,18 +175,18 @@ export default class Router {
     static getText = (u8, o, l) => Router.decoder.decode(u8.slice(o, o + l));
     static setText = t => Router.encoder.encode(t);
 
-    addClient(numericID, uuid, isAdmin) {
+    addClient(numericID, userId, isAdmin) {
         let kick = false;
         if (!isAdmin) {
             for (const client of state.clients.values()) {
-                if (client.uuid === uuid) {
+                if (client.userId === userId) {
                     kick = "DAR-7";
                     break;
                 }
             }
         }
 
-        const client = new Client(numericID, uuid, isAdmin);
+        const client = new Client(numericID, userId, isAdmin);
 
         if (state.clients.size > 35) {
             client.kick("Lobby is full, create another one");
@@ -289,7 +289,7 @@ export default class Router {
             "  - Gamemode: " + message[1],
             "  - Biome: " + BIOME_BACKGROUNDS[message[4]].name,
             "  - Modded: " + (message[2] ? "Yes" : "No"),
-            "  - Admin UUID: " + state.secretKey,
+            // "  - Admin UUID: " + state.secretKey,
             "  - Spawn Table: " + (state.mobTable ? mobTableIntoChances(state.mobTable) : "None")
         ].join("\n"));
     }

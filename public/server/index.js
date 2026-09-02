@@ -308,13 +308,9 @@ switch (globalThis.environmentName) {
         const ipCounts = new Map();
         const server = Bun.serve({
             async fetch(req) {
-                const cookies = req.headers.get('cookie') || '';
-                const sessionIdCookie = cookies.split('; ').find(cookie => cookie.startsWith('sessionId='));
-                if (!sessionIdCookie) return new Response(":(");
-                const sessionId = sessionIdCookie.split('=')[1]; 
-                const body = JSON.stringify({ sessionId });
-                const { ok } = await fetch(`${process.env.AUTH_SERVER}/api/session/verify`, { body, method: 'POST' });
-                if (!ok) return new Response(":(");
+                const cookie = req.headers.get('cookie');
+                const userId = await fetch(`${process.env.AUTH_SERVER}/api/user/id`, { headers: { cookie } }).then(response => response.json());
+                if (userId?.error) return new Response(":(");
                 const ip = server.requestIP(req);
                 if (!ip?.address) return new Response(":(");
 
@@ -323,7 +319,8 @@ switch (globalThis.environmentName) {
                         socketID: bunSocketID++,
                         searchParams: new URLSearchParams(req.url.split("?").slice(1).join("?")),
                         begin: performance.now(),
-                        ip: ip.address
+                        ip: ip.address,
+                        userId
                     }
                 });
 
@@ -336,7 +333,7 @@ switch (globalThis.environmentName) {
                 idleTimeout: 0,  // ← DISABLE IDLE TIMEOUT
                 async open(socket) {
                     socket.binaryType = "arraybuffer";
-                    const client = state.router.addClient(socket.data.socketID, socket.data.searchParams.get("uuid"), keys.includes(socket.data.searchParams.get("clientKey")));
+                    const client = state.router.addClient(socket.data.socketID, socket.data.userId, keys.includes(socket.data.searchParams.get("clientKey")));
 
                     if (client) {
                         bunSendMap.set(socket.data.socketID, socket);
@@ -349,20 +346,6 @@ switch (globalThis.environmentName) {
                         }
 
                         ipCounts.set(socket.data.ip, ct);
-
-                        try {
-                            const res = await fetch(`${Bun.env.ROUTING_SERVER}/uuid/check?uuid=${client.uuid}&trustedKey=${Bun.env.SECRET}`);
-                            const data = await res.json();
-
-                            if (!data.ok || !data.isValid) {
-                                client.kick("DAR-6");
-                                return;
-                            }
-                        } catch (e) {
-                            console.error(e);
-                            client.kick("DAR-5");
-                            return;
-                        }
                     }
                 },
 

@@ -410,25 +410,6 @@ async function encodeAnalytics() {
 
 const analyticalData = encodeURIComponent(await encodeAnalytics());
 
-export async function loadUUID() {
-    const storageID = localStorage.getItem("uuid");
-    let existing = false;
-
-    if (storageID) {
-        const [id, expiresAt] = storageID.split(":");
-        if (Date.now() < Number(expiresAt)) {
-            existing = id;
-        }
-    }
-
-    const data = await fetch(util.SERVER_URL + "/uuid/get?existing=" + existing).then(r => r.json());
-    if (!data.ok) throw new Error("Failed to get UUID data");
-    localStorage.setItem("uuid", data.uuid + ":" + (Date.now() + 1e3 * 60 * 60 * 24));
-    return data.uuid;
-}
-
-export const UUID = await loadUUID();
-
 export async function findLobbies() { return await fetch(util.SERVER_URL + "/lobby/list").then(response => response.json()) };
 
 class ModdingAPI {
@@ -774,7 +755,7 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
             console.log("Connected to server");
 
             const worker = new Worker("./server/index.js", { type: "module" });
-            worker.postMessage(["start", gamemode, modded, UUID, biomeInt]);
+            worker.postMessage(["start", gamemode, modded, state.user.id, biomeInt]);
 
             socket.onmessage = event => {
                 const data = new Uint8Array(event.data);
@@ -1170,21 +1151,18 @@ export class ClientSocket extends WebSocket {
         }
 
         handle(id, data) {
-            if (!this.jobs.has(id)) {
-                return false;
-            }
-
+            if (!this.jobs.has(id)) return false;
             this.jobs.get(id)(data);
             this.jobs.delete(id);
             return true;
         }
     };
 
-    constructor(url, username) {
+    constructor(url) {
         super(url);
 
         this.binaryType = "arraybuffer";
-        this.username = username;
+        this.username = state.user.username;
 
         this.addEventListener("open", this.onOpen.bind(this));
         this.addEventListener("close", this.onClose.bind(this));
@@ -2227,6 +2205,7 @@ export class IconItem {
 export const state = {
     interpolationFactor: 0.2,
     username: "",
+    user: null,
 
     camera: {
         x: 0,
@@ -2376,10 +2355,9 @@ export async function loadAssets(lobbyID) {
 }
 
 let clientSocketDone = false;
-export async function beginState(lobbyID, username, serverURL = util.SERVER_URL.replace("http", "ws")) {
+export async function beginState(lobbyID, serverURL = util.SERVER_URL.replace("http", "ws")) {
     if (clientSocketDone) return;
     clientSocketDone = true;
-    state.username = username;
 
     // Load resources
     try {
@@ -2390,7 +2368,7 @@ export async function beginState(lobbyID, username, serverURL = util.SERVER_URL.
         }
 
         location.hash = lobbyID;
-        state.socket = new ClientSocket(`${serverURL}/ws/client?partyURL=${lobbyID}&clientKey=${localStorage.getItem("token") ?? ""}&uuid=${UUID}&analytics=${analyticalData}`, username);
+        state.socket = new ClientSocket(`${serverURL}/ws/client?partyURL=${lobbyID}&clientKey=${localStorage.getItem("token") ?? ""}&analytics=${analyticalData}`);
         state.socket.lobbyID = lobbyID;
     } catch (error) {
         console.error(error);

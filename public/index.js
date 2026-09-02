@@ -6,7 +6,7 @@ import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, 
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
-import { getUserFromSession } from "./lib/auth.js";
+import { updateAccountMenu } from './lib/auth.js';
 import "./lib/craftMenu.js";
 
 if (location.hash) {
@@ -18,21 +18,8 @@ if (location.hash) {
                 location.hash = "";
                 history.replaceState(null, null, location.pathname + location.search);
             } else {
-                getUsername().then(async username => {
-                    const res = await fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1));
-                    const text = await res.text();
-
-                    if (text == "null") {
-                        alert("Invalid party URL");
-                        location.hash = "";
-                        history.replaceState(null, null, location.pathname + location.search);
-                        return;
-                    }
-
-                    const lobby = JSON.parse(text);
-
-                    net.beginState(location.hash.slice(1), username, lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
-                });
+                const lobby = JSON.parse(json);
+                net.beginState(location.hash.slice(1), lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
             }
         }).catch(() => {
             console.warn("Invalid party URL");
@@ -62,9 +49,8 @@ function refreshLobbies() {
             }
 
             element.onclick = () => {
-                getUsername().then((username) => {
-                    net.beginState(lobby.partyCode, username, lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
-                });
+                const username = getUsername();
+                net.beginState(lobby.partyCode, lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
             };
 
             lobbiesDisplay.appendChild(element);
@@ -94,60 +80,31 @@ document.querySelectorAll("button").forEach((button) => {
     }
 });
 
-async function getUsername() {
-    const user = await getUserFromSession();
+function getUsername() {
+    const { user } = net.state;
     
     if (user) {
-        localStorage.setItem("username", user.username);
         changeMenu("thisshouldntexistsoletshopeitdoesnt");
         return user.username;
     }
 
     window.location.href = `${process.env.DISCORD_OAUTH2_REDIRECT_URL}&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
-
-    // changeMenu("usernameInput");
-    
-    // return new Promise(resolve => {
-    //     const usernameInputInput = document.getElementById("usernameInputInput");
-    //     const button = document.getElementById("usernameButton");
-
-    //     button.onclick = () => {
-    //         const value = usernameInputInput.value.trim() || "guest";
-    //         if (value.length > 24) return shakeElement(usernameInputInput);
-    //         button.onclick = null;
-    //         changeMenu("thisshouldntexistsoletshopeitdoesnt");
-    //         resolve(value);
-    //     };
-    // });
 }
 
 let hasCreatedLobby = false;
 document.getElementById("createLobbyButton").onclick = async () => {
-    if (hasCreatedLobby) {
-        return;
-    }
-
+    if (hasCreatedLobby) return;
     const lobbyName = document.getElementById("lobbyName");
-
-    if (lobbyName.value.length < 3 || lobbyName.value.length > 32 || !/^[a-zA-Z0-9 ]+$/.test(lobbyName.value)) {
-        shakeElement(lobbyName);
-        return;
-    }
-
+    if (lobbyName.value.length < 3 || lobbyName.value.length > 32 || !/^[a-zA-Z0-9 ]+$/.test(lobbyName.value)) return shakeElement(lobbyName);
     const gamemodeSelect = document.getElementById("gamemodeSelect");
     localStorage.setItem("gamemode", gamemodeSelect.value);
-
     const biomeSelect = document.getElementById("biomeSelect");
     localStorage.setItem("biome", biomeSelect.value);
-
     const enableMods = document.getElementById("enableMods");
     localStorage.setItem("enableMods", enableMods.checked);
-
     const privateLobby = document.getElementById("privateLobby");
     localStorage.setItem("privateLobby", privateLobby.checked);
-
     hasCreatedLobby = true;
-
     document.getElementById("createLobbyButton").disabled = true;
     const server = await net.createServer(lobbyName.value, gamemodeSelect.value, enableMods.checked, privateLobby.checked, biomeSelect.value);
     document.getElementById("createLobbyButton").disabled = false;
@@ -157,11 +114,10 @@ document.getElementById("createLobbyButton").onclick = async () => {
         hasCreatedLobby = false;
         return;
     }
+    
+    const username = getUsername();
 
-    const username = await getUsername();
-    localStorage.setItem("username", username);
-
-    net.beginState(server.party, username);
+    net.beginState(server.party);
 };
 
 let lastFlag = 0,
@@ -2818,7 +2774,7 @@ function draw() {
 
             ctx.restore();
 
-            text(net.state.username, cuteLittleAnimations.nameText, 175, 20);
+            text(net.state.user.username, cuteLittleAnimations.nameText, 175, 20);
 
             drawBar(175, 275, 210, 22.5, colors["???"]);
             drawBar(175, 175 + 100 * net.state.levelProgress, 210, 15, colors.playerYellow);
@@ -3216,4 +3172,4 @@ document.getElementById("privateLobby").checked = localStorage.getItem("privateL
 
 showMenus();
 loadAndRenderChangelogs();
-getUserFromSession();
+updateAccountMenu();
