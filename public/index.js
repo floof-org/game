@@ -18,8 +18,8 @@ if (location.hash) {
                 location.hash = "";
                 history.replaceState(null, null, location.pathname + location.search);
             } else {
-                const lobby = JSON.parse(json);
-                net.beginState(location.hash.slice(1), lobby.directConnect ? location.protocol.replace("http", "ws") + "//" + lobby.directConnect.address : SERVER_URL.replace("http", "ws"));
+                changeMenu("thisshouldntexistsoletshopeitdoesnt");
+                net.beginState(location.hash.slice(1), json.directConnect ? location.protocol.replace("http", "ws") + "//" + json.directConnect.address : SERVER_URL.replace("http", "ws"));
             }
         }).catch(() => {
             console.warn("Invalid party URL");

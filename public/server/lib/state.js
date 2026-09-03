@@ -250,6 +250,11 @@ const state = {
                 if (state.isBiomeGrid && baseRarity === 0) {
                     rarity = 0;
                 }
+                
+                // In grid mode, also do not spawn Common mobs in Unusual zones
+                if (state.isBiomeGrid && baseRarity === 1) {
+                    rarity = Math.max(rarity, 1);
+                }
 
                 const retrieved = state.spatialHash.retrieve({
                     _AABB: {

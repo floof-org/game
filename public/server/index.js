@@ -316,7 +316,17 @@ state.router = new Router();
 (async () => {
     switch (globalThis.environmentName) {
         case "browser":
+            let incomingBytes = 0;
+            let outgoingBytes = 0;
+            setInterval(() => {
+                console.log(`${incomingBytes} incoming bytes in the past 10 seconds`);
+                console.log(`${outgoingBytes} outgoing bytes in the past 10 seconds`);
+                incomingBytes = 0;
+                outgoingBytes = 0;
+            }, 10000);
+
             self.onmessage = async ({ data }) => {
+                incomingBytes += data.byteLength;
                 switch (data[0]) {
                     case 0x00:
                         state.router.addClient(u8ToU16(data, 1), u8ToString(data, 4), data[3]);
@@ -335,6 +345,8 @@ state.router = new Router();
             }
 
             state.router.postMessage = data => {
+                outgoingBytes += data.byteLength;
+
                 const length = data.byteLength;
 
                 if (length > 10000) {
