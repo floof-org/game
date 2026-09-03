@@ -689,7 +689,7 @@ export class Camera {
 class Disconnect {
     /** @param {Client} client  */
     constructor(client) {
-        this.uuid = client.uuid;
+        this.userId = client.userId;
         this.username = client.username;
         this.level = client.level;
         this.xp = client.xp;
@@ -699,14 +699,14 @@ class Disconnect {
         this.team = client.team;
         this.inventory = client.inventory;
 
-        Client.disconnects.set(this.uuid, this);
+        Client.disconnects.set(this.userId, this);
 
         if (this.body) {
             this.body.client = null;
         }
 
         this.timeout = setTimeout(() => {
-            Client.disconnects.delete(this.uuid);
+            Client.disconnects.delete(this.userId);
 
             if (this.body && !this.body.health.isDead) {
                 this.body.destroy();
@@ -722,11 +722,11 @@ export default class Client {
     /** @type {Map<number,Disconnect>} */
     static disconnects = new Map();
 
-    constructor(id, uuid, masterPermissions = 0) {
+    constructor(id, userId, masterPermissions = 0) {
         this.id = id;
         this.verified = false;
         this.username = "unknown";
-        this.uuid = uuid;
+        this.userId = userId;
         this.nameColor = ["#FFFFFF", "#D85555"][+masterPermissions];
         this.masterPermissions = +masterPermissions;
         this.inventory = {};
@@ -857,8 +857,6 @@ export default class Client {
 
                 this.username = reader.getStringUTF8();
                 const lowercase = this.username.toLowerCase();
-                if (this.username.length > 24 || tripsFilter(lowercase)) return this.kick("Invalid username");
-
                 this.verified = true;
                 console.log(`Client ${this.id} verified as ${this.username}`);
                 this.talk(CLIENT_BOUND.READY);
@@ -866,9 +864,9 @@ export default class Client {
                 state.sendTerrain(this.id);
                 tiers.forEach(tier => this.inventory[tier.name] = {});
 
-                if (this.uuid === state.secretKey && this.masterPermissions < 1) this.nameColor = "#F5D230";
+                if (this.userId === state.secretKey && this.masterPermissions < 1) this.nameColor = "#F5D230";
 
-                const dc = Client.disconnects.get(this.uuid);
+                const dc = Client.disconnects.get(this.userId);
 
                 if (dc) {
                     this.level = dc.level;
@@ -885,7 +883,7 @@ export default class Client {
                     }
 
                     clearTimeout(dc.timeout);
-                    Client.disconnects.delete(this.uuid);
+                    Client.disconnects.delete(this.userId);
 
                     console.log(`Client ${this.id} reconnected as ${this.username}`);
                 }
