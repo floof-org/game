@@ -1445,8 +1445,11 @@ export function applyGridBiomeConfigs() {
     // Todo: Knockback vs non-bubble projectiles
     // Todo: Should Privet also inflict Toxic Remnants?
     
+    // Todo: Communicate mob abilities better?
 
     // Todo: Chat logger for /commands?
     // Pdrain doesn't show up if cache petal assets
     // Crash is most likely not a wifi issue, I can temporarily disconnect wifi and still resume lobby 10s later
+    // Random crash is NOT a >16mb message issue :(
+    // If socket closes from lobby creator's end, it gives close code 1005 instead of 1006, so it is NOT the cause
 }

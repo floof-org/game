@@ -1747,8 +1747,9 @@ export default class Client {
             );
             this.systemMessage("", colors.uncommon);
             this.systemMessage(
-                "This gamemode has several important mechanics not present in other gamemodes. To learn " +
-                "more about them, please use \"/info [1-4]\" .",
+                "This gamemode has several important mechanics not present in other gamemodes. For example, Garden " +
+                "mobs can heal themselves, but you can prevent them from healing by poisoning them. To learn more " +
+                "about these mechanics, please use \"/info [1-4]\" .",
                 colors.uncommon,
             );
             this.systemMessage("", colors.uncommon);

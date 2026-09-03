@@ -340,12 +340,7 @@ state.router = new Router();
                 if (length > 10000) {
                     console.warn("Sending data with length:", length);
                     if (length >= (1 << 24)) {
-                        let dataContents = "[";
-                        for (let a of data.values()) {
-                            dataContents += a + ", ";
-                        }
-                        dataContents += "]";
-                        console.error("Data too long:", data, dataContents);
+                        console.error("Data too long:", data);
                     }
                 }
 
