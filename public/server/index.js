@@ -259,7 +259,7 @@ setInterval(() => {
                 const mob = new Mob(info.position);
                 mob.define(cfg, info.rarity);
 
-                if (info.rarity >= state.announceRarity && state.announceRarity > -1) {
+                if (info.rarity >= state.spawnAnnounceRarity && state.spawnAnnounceRarity > -1) {
                     if (!tiers[info.rarity]) console.error(`Rarity returns undefined: ${info.rarity}`);
                     else state.clients.forEach(c => c.systemMessage(applyArticle(tiers[info.rarity].name, true) + " " + cfg.name + " has spawned!", tiers[info.rarity].color));
                 }

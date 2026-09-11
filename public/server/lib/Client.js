@@ -1,8 +1,8 @@
 import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES } from "../../lib/protocol.js";
-import { mobConfigs, mobIDOf, petalConfigs, petalIDOf, tiers } from "./config.js";
-import { colors, xpForLevel } from "../../lib/util.js";
+import { mobConfigs, petalConfigs, petalIDOf, tiers } from "./config.js";
+import { colors, formatLargeNumber } from "../../lib/util.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -755,7 +755,7 @@ export default class Client {
         this.xp = 1;
         if (state.isBiomeGrid) {
             this.secondarySlots[0] = { id: petalIDOf("Gallery"), rarity: 0 };
-            this.xp = xpForLevel(0, state.isBiomeGrid) + 0.00001;
+            this.xp = state.xpForLevel(0) + 0.00001;
         }
 
         this.lastChat = 0;
@@ -773,7 +773,7 @@ export default class Client {
 
         this.xp += x;
 
-        while (this.xp < xpForLevel(this.level - 1, state.isBiomeGrid)) {
+        while (this.xp < state.xpForLevel(this.level - 1)) {
             this.level--;
 
             if (this.body && !this.body.health.isDead) {
@@ -782,7 +782,7 @@ export default class Client {
             }
         }
 
-        while (this.xp >= xpForLevel(this.level, state.isBiomeGrid)) {
+        while (this.xp >= state.xpForLevel(this.level)) {
             this.level++;
 
             if (this.body && !this.body.health.isDead) {
@@ -807,13 +807,17 @@ export default class Client {
             if (this.body && !this.body.health.isDead) this.body.initSlots(slots);
         }
 
-        this.levelProgress = this.level < (state.isBiomeGrid ? 1 : 2) ? this.xp / xpForLevel(this.level, state.isBiomeGrid) : (this.xp - xpForLevel(this.level - 1, state.isBiomeGrid)) / (xpForLevel(this.level, state.isBiomeGrid) - xpForLevel(this.level - 1, state.isBiomeGrid));
+        if (this.level < (state.isBiomeGrid ? 1 : 2)) {
+            this.levelProgress = this.xp / state.xpForLevel(this.level);
+        } else {
+            this.levelProgress = (this.xp - state.xpForLevel(this.level - 1)) / (state.xpForLevel(this.level) - state.xpForLevel(this.level - 1));
+        }
     }
 
     get healthAdjustement() {
         if (state.isBiomeGrid) {
             // Make health scale exponentially so it can actually keep up with enemies
-            return 80 * Math.pow(2, this.level / 10);
+            return 80 * Math.pow(1.9, this.level / 10);
         } else {
             return 40 + 5 * Math.pow(this.level, 1.5);
         }
@@ -1323,7 +1327,7 @@ export default class Client {
                         this.body.health.health = 1;
                         this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
                         return;
-                    } else if (message === "/poison") {
+                    } else if (message === "/poison" && false) {
                         // Do not poison if already at critically low HP
                         if (this.body.health.health <= 1 || this.body.poison.timer > 0) {
                             return;
@@ -1334,7 +1338,15 @@ export default class Client {
                         this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
                         return;
                     } else if (message === "/hp" || message === "/health") {
-                        this.systemMessage("Your max health: " + this.body.health.maxHealth, colors.leafGreen);
+                        this.systemMessage("Your max health: " + formatLargeNumber(this.body.health.maxHealth, 2), colors.leafGreen);
+                        return;
+                    } else if (message === "/die" || message === "/kill") {
+                        if (this.body && !this.body.health.isDead) {
+                            this.body.destroy();
+                            this.systemMessage("/die command activated.", colors.leafGreen);
+                        } else {
+                            this.systemMessage("Error: You are already dead.", colors.legendary);
+                        }
                         return;
                     } else if (message === "/tp" || message === "/teleport") {
                         if (!this.body || this.body.health.isDead) {
@@ -1367,17 +1379,17 @@ export default class Client {
                         return;
                     } else if (message === "/help") {
                         this.systemMessage("Available commands:", colors.uncommon);
-                        this.systemMessage("/help - Shows you the list of available commands.", colors.uncommon);
-                        this.systemMessage("/info [1-4] - Info about this gamemode's unique mechanics.", colors.uncommon);
-                        this.systemMessage("/tp - Teleports you from the top of the map to the bottom of the map, and vice versa.", colors.username);
-                        this.systemMessage("/hp - Tells you your current max HP (including +HP petals).", colors.uncommon);
-                        this.systemMessage("/poison - Poisons you until you reach low HP. Mainly used for testing out Toxic Remnants.", colors.uncommon);
+                        this.systemMessage("/help - Shows you the list of available commands.", colors.unique);
+                        this.systemMessage("/info [1-5] - Info about this gamemode's unique mechanics.", colors.unique);
+                        this.systemMessage("/tp - Teleports you from the top of the map to the bottom of the map, and vice versa.", colors.unique);
+                        this.systemMessage("/hp - Tells you your current max HP (including +HP petals).", colors.unique);
+                        this.systemMessage("/die - Kills your flower and lets you respawn afterward.", colors.unique);
                         return;
                     } else if (message === "/info" || message === "/info 1") {
-                        this.systemMessage("(INFO 1/4)", colors.uncommon);
+                        this.systemMessage("INFO 1/5 - ADRENALINE MECHANIC", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
-                            "- Adrenaline: If your flower takes non-poison damage, all your petals skip 6.25% of their " +
+                            "- Whenever your flower takes non-poison damage, all your petals skip 6.25% of their " +
                             "reload time (capped at 50%).",
                             colors.lightningTeal,
                         );
@@ -1396,10 +1408,10 @@ export default class Client {
                         return;
                     } else if (message === "/info 2") {
                         const damageColor = "#FF4D4D";
-                        this.systemMessage("(INFO 2/4)", colors.uncommon);
+                        this.systemMessage("INFO 2/5 - POISON DRAIN MECHANIC", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
-                            "- Poison Drain: If a player or mob gets hit with non-poison damage, the player/mob's " +
+                            "- If a player or mob gets hit with non-poison damage, the player/mob's " +
                             "poison attacks will be weaker afterwards (capped at -75%).",
                             damageColor,
                         );
@@ -1413,7 +1425,7 @@ export default class Client {
                             damageColor,
                         );
                         this.systemMessage(
-                            "- Mobs lose 4% poison damage per hit and regain 20% per second.",
+                            "- Mobs lose 2% poison damage per hit and regain 20% per second.",
                             damageColor,
                         );
                         this.systemMessage(
@@ -1426,11 +1438,11 @@ export default class Client {
                         return;
                     } else if (message === "/info 3") {
                         const poisonColor = "#9B4DFF";
-                        this.systemMessage("(INFO 3/4)", colors.uncommon);
+                        this.systemMessage("INFO 3/5 - TOXIC REMNANTS MECHANIC", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
-                            "- Toxic Remnants: When a player or mob takes poison damage, it also inflicts Toxic " +
-                            "Remnants at a 5:1 ratio. If the player/mob tries to heal afterward, " +
+                            "- When a player or mob takes poison damage, it also inflicts Toxic " +
+                            "Remnants at a 3:1 ratio. If the player/mob tries to heal afterward, " +
                             "the healing and the Toxic Remnants cancel each other out.",
                             poisonColor,
                         );
@@ -1448,32 +1460,49 @@ export default class Client {
                         this.systemMessage("(Use \"/info 4\" to continue...)", colors.uncommon);
                         return;
                     } else if (message === "/info 4") {
-                        this.systemMessage("(INFO 4/4)", colors.uncommon);
+                        this.systemMessage("INFO 4/5 - MOB MECHANICS", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
-                        this.systemMessage("Here are some final tips for this gamemode:", colors.uncommon);
+                        this.systemMessage(
+                            "- Whenever you die, you lose all damage progress on every mob that you haven't successfully " +
+                            "killed. Use other petals wisely in order to stay alive.",
+                            colors.unique,
+                        );
+                        this.systemMessage(
+                            "- Desert mobs are so poisonous that you will get poisoned when your petals make contact " +
+                            "with them! This poison damage increases as the mob's HP decreases, maxing out at 1x the " +
+                            "mob's base poison at low HP. (This does not count as getting hit for any other purposes.)",
+                            colors.unique,
+                        );
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage("(Use \"/info 5\" to continue...)", colors.uncommon);
+                        return;
+                    } else if (message === "/info 5") {
+                        this.systemMessage("INFO 5/5 - FINAL TIPS", colors.uncommon);
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage("Here are some final tips for this gamemode:", colors.unique);
                         this.systemMessage(
                             "- This gamemode is unfinished and under active development. If you find any bugs or " +
                             "issues, please report them to the gamemode's creator (@pigeonbar on Discord)",
-                            colors.uncommon,
+                            colors.unique,
                         );
                         this.systemMessage(
                             "- You can teleport between Garden and Desert by moving to the top/bottom of the map " +
                             "and then using \"/tp\".",
-                            colors.uncommon,
+                            colors.unique,
                         );
                         this.systemMessage(
                             "- You start the game with a \"Gallery\" petal in your secondary row. You can hit a " +
                             "mob with this petal to view the mob's stats.",
-                            colors.uncommon,
+                            colors.unique,
                         );
                         this.systemMessage(
                             "- You can use \"/hp\" to view your current max HP, which can be useful for tank builds.",
-                            colors.uncommon,
+                            colors.unique,
                         );
-                        this.systemMessage("Thank you for playing Biome Grid, and have fun!", colors.uncommon);
+                        this.systemMessage("Thank you for playing Biome Grid, and have fun!", colors.unique);
                         return;
-                    } else if (message === "/info 5") {
-                        this.systemMessage("(INFO 5/4)", colors.uncommon);
+                    } else if (message === "/info 6") {
+                        this.systemMessage("INFO 6/5 - undefined", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         let msg = "-You can hold the [J] key to vie Uncaught OutOfBoundsError ";
                         let chars = "          ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()1234567890";
@@ -1749,7 +1778,7 @@ export default class Client {
             this.systemMessage(
                 "This gamemode has several important mechanics not present in other gamemodes. For example, Garden " +
                 "mobs can heal themselves, but you can prevent them from healing by poisoning them. To learn more " +
-                "about these mechanics, please use \"/info [1-4]\" .",
+                "about these mechanics, please use \"/info [1-5]\" .",
                 colors.uncommon,
             );
             this.systemMessage("", colors.uncommon);

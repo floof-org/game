@@ -25,7 +25,8 @@ const state = {
     isLineMap: false,
     biome: 0,
 
-    announceRarity: 7,
+    killAnnounceRarity: 7,
+    spawnAnnounceRarity: 7,
 
     gamemode: GAMEMODES.FFA,
 
@@ -330,6 +331,23 @@ const state = {
             position: { x, y },
             rarity: rarity
         };
+    },
+
+    xpForLevel: level => {
+        if (state.isBiomeGrid) {
+            // Use a pure exponential scale, which should make balancing more consistent across rarities.
+            // Killing rarity n gives ~3^n xp, so farming rarity n brings the player to approximately level 10n.
+            // For now, the player's level also get capped around when they kill the final rarity.
+            if (level < 0) {
+                return 0;
+            } else if (level >= 10 * (tiers.length - 2)) {
+                return 1e99 * Math.pow(3, level / 8.5);
+            } else {
+                return 50 * Math.pow(3, level / 8.5);
+            }
+        } else {
+            return Math.pow(level, 2.35) + Math.exp(level / 25);
+        }
     },
 
     spatialHash: new SpatialHashGrid(),

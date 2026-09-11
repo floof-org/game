@@ -1,6 +1,6 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, } from "../../lib/protocol.js";
-import { angleDiff, applyArticle, applyPlural, formatLargeNumber, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal, tiers } from "./config.js";
+import { angleDiff, applyArticle, applyPlural, formatLargeNumber, getDropRarity, lerpAngle, quickDiff } from "../../lib/util.js";
+import { GRID_GARDEN_MOBS, MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal, tiers } from "./config.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
@@ -56,10 +56,6 @@ export class HealthComponent {
             return 0;
         }
 
-        if (source) {
-            this.lastDamagedBy = source;
-        }
-
         // const dmg = Math.max(0, Math.min(this.health, x - x * Math.min(.75, this.damageReduction)));
         // this.health = this.health - dmg;
 
@@ -71,22 +67,38 @@ export class HealthComponent {
         }
 
         if (this.shield <= 0 || state.isBiomeGrid) {
-            const dmg = Math.max(0, Math.min(this.health, (x - damageDone) - (x - damageDone) * Math.min(.75, this.damageReduction)));
+            let damageReduction = Math.min(.75, this.damageReduction);
+
+            // In grid mode, physical damage reduction does not affect poison
+            if (state.isBiomeGrid && isPoison) {
+                damageReduction = 0;
+            }
+
+            const dmg = Math.max(0, Math.min(this.health, (x - damageDone) * (1 - damageReduction)));
             this.health = this.health - dmg;
             damageDone += dmg;
             if (state.isBiomeGrid && isPoison) {
-                this.healBlock += 5 * dmg;
+                this.healBlock += 3 * dmg;
             } else if (state.isBiomeGrid && damageDone > 0 && !isPoison) {
                 // Apply Poison Drain: Entities' poison attacks become weaker after taking non-poison damage
                 if (this.entity instanceof Player) {
                     this.entity.poisonDrain = Math.min(.75, this.entity.poisonDrain + .2);
                 } else {
-                    this.entity.poisonDrain = Math.min(.75, this.entity.poisonDrain + .04);
+                    this.entity.poisonDrain = Math.min(.75, this.entity.poisonDrain + .02);
                 }
             }
         }
 
-        this.lastDamaged = Date.now();
+        // Check for damage credit between players and mobs
+        if (state.isBiomeGrid) {
+            this.checkDamageCredit(ENTITY_TYPES.MOB, ENTITY_TYPES.PLAYER, source, damageDone);
+            this.checkDamageCredit(ENTITY_TYPES.PLAYER, ENTITY_TYPES.MOB, source, damageDone);
+        }
+
+        // In grid mode, poison damage does not count as getting hit
+        if (!(state.isBiomeGrid && isPoison)) {
+            this.lastDamaged = Date.now();
+        }
 
         if (this.onDamage) {
             this.onDamage(damageDone, isPoison);
@@ -95,18 +107,50 @@ export class HealthComponent {
         return damageDone;
     }
 
-    heal(x) {
+    heal(x, bypassHealBlock = false) {
         if (x < 0) {
             console.warn("Entity is being healed by a negative amount!", this, x);
         }
 
-        if (this.healBlock > 0) {
+        if (this.healBlock > 0 && !bypassHealBlock) {
             const blocked = Math.max(0, Math.min(this.healBlock, x));
             this.healBlock -= blocked;
             x -= blocked;
         }
 
         this.health = Math.min(this.maxHealth, this.health + x);
+
+        // Restore a mob's on-damage projectiles
+        if (this.entity.totalOnDamageProjectiles > 0) {
+            this.entity.remainingOnDamageProjectiles = Math.max(
+                this.entity.remainingOnDamageProjectiles,
+                Math.floor(this.entity.totalOnDamageProjectiles * this.ratio),
+            );
+        }
+    }
+
+    /**
+     * A helper function to process damage credit if this health component's
+     * parent entity is of type `type1` and the damage source is of type
+     * `type2`.
+     */
+    checkDamageCredit(type1, type2, source, damageDone) {
+        if (this.entity.type === type1) {
+            if (source?.type === type2) {
+                if (this.entity.damagedBy[source.id]) {
+                    this.entity.damagedBy[source.id][0] += damageDone;
+                } else {
+                    if (type2 === ENTITY_TYPES.PLAYER) {
+                        this.entity.damagedBy[source.id] = [damageDone, type2, source.name, source.client.id];
+                    } else {
+                        this.entity.damagedBy[source.id] = [damageDone, type2, source.index, null];
+                    }
+                }
+                this.lastDamagedBy = source;
+            } else {
+                console.warn("Source not provided!");
+            }
+        }
     }
 
     deteriorateShield() {
@@ -763,6 +807,7 @@ export class Entity {
         this.poison = {
             damage: 0,
             timer: 0,
+            source: undefined,
 
             toApply: {
                 damage: 0,
@@ -845,7 +890,7 @@ export class Entity {
         }
 
         if (this.poison.timer > 0) {
-            this.health.damage(this.poison.damage, true);
+            this.health.damage(this.poison.damage, true, this.poison.source);
             this.poison.timer--;
         }
 
@@ -978,8 +1023,8 @@ export class Entity {
                         }
                     }
 
-                    thisDamageDone = thisDamageDone - other.armor
-                    otherDamageDone = otherDamageDone - this.armor
+                    thisDamageDone = Math.max(0, thisDamageDone - other.armor);
+                    otherDamageDone = Math.max(0, otherDamageDone - this.armor);
 
                     if (this instanceof Petal && this.parent?.type === ENTITY_TYPES.PLAYER) {
                         // Petals can randomly crit in non-grid modes based on velocity
@@ -995,8 +1040,21 @@ export class Entity {
 
                         // Petals can consume adrenaline spark in grid mode
                         if (other instanceof Mob && this.adrenalineSpark) {
-                            new Lightning(this).define(this.damage * .2, 0, 1).bounce(other);
+                            new Lightning(this.parent, this.x, this.y).define(this.damage * .2, 0, 1).bounce(other);
                             this.adrenalineSpark = false;
+                        }
+                        
+                        // Poisonous mobs can poison the player upon contact with petals in grid mode
+                        if (state.isBiomeGrid && other instanceof Mob && other.poison.toApply.damage > 0) {
+                            const poisonDrain = other.poisonDrain;
+                            const poisonDmg = other.poison.toApply.damage * (1 - other.health.ratio) * (1 - poisonDrain);
+
+                            // Do not overwrite poison with weaker poison
+                            if (this.parent.poison.timer <= 0 || this.parent.poison.damage <= poisonDmg) {
+                                this.parent.poison.damage = poisonDmg;
+                                this.parent.poison.timer = 22.5 * 1;
+                                this.parent.poison.source = other;
+                            }
                         }
                     }
                     
@@ -1014,8 +1072,21 @@ export class Entity {
 
                         // Petals can consume adrenaline spark in grid mode
                         if (this instanceof Mob && other.adrenalineSpark) {
-                            new Lightning(other).define(other.damage * .2, 0, 1).bounce(this);
+                            new Lightning(other.parent, other.x, other.y).define(other.damage * .2, 0, 1).bounce(this);
                             other.adrenalineSpark = false;
+                        }
+                        
+                        // Poisonous mobs can poison the player upon contact with petals in grid mode
+                        if (state.isBiomeGrid && this instanceof Mob && this.poison.toApply.damage > 0) {
+                            const poisonDrain = this.poisonDrain;
+                            const poisonDmg = this.poison.toApply.damage * (1 - this.health.ratio) * (1 - poisonDrain);
+
+                            // Do not overwrite poison with weaker poison
+                            if (other.parent.poison.timer <= 0 || other.parent.poison.damage <= poisonDmg) {
+                                other.parent.poison.damage = poisonDmg;
+                                other.parent.poison.timer = 22.5 * 1;
+                                other.parent.poison.source = this;
+                            }
                         }
                     }
 
@@ -1100,31 +1171,34 @@ export class Entity {
                         other.target = this.parent;
                     }
 
-                    if (this.type === ENTITY_TYPES.PLAYER || this.type === ENTITY_TYPES.MOB) {
-                        if (this.parent && this.config?.name === "Leech") {
-                            let existing = this.parent.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
-                            existing[0] += other.damage;
+                    // In grid mode, damage credit is processed in `HealthComponent.damage()` instead
+                    if (!state.isBiomeGrid) {
+                        if (this.type === ENTITY_TYPES.PLAYER || this.type === ENTITY_TYPES.MOB) {
+                            if (this.parent && this.config?.name === "Leech") {
+                                let existing = this.parent.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
+                                existing[0] += other.damage;
 
-                            this.parent.damagedBy[other.parent.id] = existing;
-                        } else {
-                            let existing = this.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
-                            existing[0] += other.damage;
+                                this.parent.damagedBy[other.parent.id] = existing;
+                            } else {
+                                let existing = this.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
+                                existing[0] += other.damage;
 
-                            this.damagedBy[other.parent.id] = existing;
+                                this.damagedBy[other.parent.id] = existing;
+                            }
                         }
-                    }
 
-                    if (other.type === ENTITY_TYPES.PLAYER || other.type === ENTITY_TYPES.MOB) {
-                        if (other.parent && other.config?.name === "Leech") {
-                            let existing = other.parent.damagedBy[this.parent.id] || [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                            existing[0] += this.damage;
+                        if (other.type === ENTITY_TYPES.PLAYER || other.type === ENTITY_TYPES.MOB) {
+                            if (other.parent && other.config?.name === "Leech") {
+                                let existing = other.parent.damagedBy[this.parent.id] || [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
+                                existing[0] += this.damage;
 
-                            other.parent.damagedBy[this.parent.id] = existing;
-                        } else {
-                            let existing = other.damagedBy[this.parent.id] || [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                            existing[0] += this.damage;
+                                other.parent.damagedBy[this.parent.id] = existing;
+                            } else {
+                                let existing = other.damagedBy[this.parent.id] || [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
+                                existing[0] += this.damage;
 
-                            other.damagedBy[this.parent.id] = existing;
+                                other.damagedBy[this.parent.id] = existing;
+                            }
                         }
                     }
 
@@ -1141,7 +1215,7 @@ export class Entity {
                     }
 
                     if (this.type === ENTITY_TYPES.PETAL && this.lightning !== null && this.lightning.chargesLeft > 0 && !this.lightning.lightningOnParentHit) {
-                        new Lightning(this.parent).define(this.lightning.damage, this.lightning.range, this.lightning.bounces).bounce();
+                        new Lightning(this.parent, this.x, this.y).define(this.lightning.damage, this.lightning.range, this.lightning.bounces).bounce();
 
                         if (this.lightning.charges > 1) {
                             this.lightning.chargesLeft--;
@@ -1162,7 +1236,7 @@ export class Entity {
                     }
 
                     if (other.type === ENTITY_TYPES.PETAL && other.lightning !== null && other.lightning.chargesLeft > 0 && !other.lightning.lightningOnParentHit) {
-                        new Lightning(other.parent).define(other.lightning.damage, other.lightning.range, other.lightning.bounces).bounce();
+                        new Lightning(other.parent, other.x, other.y).define(other.lightning.damage, other.lightning.range, other.lightning.bounces).bounce();
 
                         if (other.lightning.charges > 1) {
                             other.lightning.chargesLeft--;
@@ -1172,12 +1246,28 @@ export class Entity {
                 }
 
                 if (this.speedDebuff.toApply.timer > 0) {
-                    other.speedDebuff.multiplier = this.speedDebuff.toApply.multiplier;
+                    let speedMult = this.speedDebuff.toApply.multiplier;
+
+                    // In grid mode, Poison Drain also affects the speed debuff applied by poisonous petals
+                    if (state.isBiomeGrid && this.poison.toApply.timer > 0) {
+                        const poisonDrain = this.parent.poisonDrain;
+                        speedMult = 1 - (1 - speedMult) * (1 - poisonDrain);
+                    }
+
+                    other.speedDebuff.multiplier = speedMult;
                     other.speedDebuff.timer = this.speedDebuff.toApply.timer;
                 }
 
                 if (other.speedDebuff.toApply.timer > 0) {
-                    this.speedDebuff.multiplier = other.speedDebuff.toApply.multiplier;
+                    let speedMult = other.speedDebuff.toApply.multiplier;
+
+                    // In grid mode, Poison Drain also affects the speed debuff applied by poisonous petals
+                    if (state.isBiomeGrid && other.poison.toApply.timer > 0) {
+                        const poisonDrain = other.parent.poisonDrain;
+                        speedMult = 1 - (1 - speedMult) * (1 - poisonDrain);
+                    }
+
+                    this.speedDebuff.multiplier = speedMult;
                     this.speedDebuff.timer = other.speedDebuff.toApply.timer;
                 }
 
@@ -1191,6 +1281,7 @@ export class Entity {
                         if ((other.poison.timer <= 0 || other.poison.damage <= poisonDmg) && other.type !== ENTITY_TYPES.PETAL) {
                             other.poison.damage = poisonDmg;
                             other.poison.timer = this.poison.toApply.timer;
+                            other.poison.source = this.parent;
                         }
                     } else {
                         other.poison.damage = this.poison.toApply.damage;
@@ -1208,6 +1299,7 @@ export class Entity {
                         if ((this.poison.timer <= 0 || this.poison.damage <= poisonDmg) && this.type !== ENTITY_TYPES.PETAL) {
                             this.poison.damage = poisonDmg;
                             this.poison.timer = other.poison.toApply.timer;
+                            this.poison.source = other.parent;
                         }
                     } else {
                         this.poison.damage = other.poison.toApply.damage;
@@ -1483,7 +1575,7 @@ export class Petal extends Entity {
             this.placeDown = true;
         }
 
-        if (tier.density) {
+        if (tier.density !== undefined) {
             this.density = tier.density;
         }
 
@@ -1774,8 +1866,18 @@ export class Player extends Entity {
 
         super.update();
 
-        if (this.health.lastDamaged + 1.5E4 < Date.now()) {
-            this.health.heal(this.health.maxHealth * .0025);
+        let healWait = 15000;
+        if (state.isBiomeGrid) {
+            healWait = 5000;
+        }
+
+        if (this.health.lastDamaged + healWait < Date.now()) {
+            if (state.isBiomeGrid) {
+                // In grid mode, passive healing only uses base max HP, ignoring +hp petals
+                this.health.heal(this.client.healthAdjustement * .0025);
+            } else {
+                this.health.heal(this.health.maxHealth * .0025);
+            }
         }
 
         if (state.isBiomeGrid) {
@@ -1863,6 +1965,24 @@ export class Player extends Entity {
         this.petalSlots.forEach(slot => slot.destroy());
         super.destroy();
 
+        // Upon death, player loses all damage credit and damage progress on mobs
+        if (state.isBiomeGrid) {
+            state.entities.forEach(mob => {
+                if (mob instanceof Mob) {
+                    const damageCredit = mob.damagedBy[this.id];
+                    if (damageCredit?.[0] > 0) {
+                        mob.health.heal(damageCredit[0], true);
+                        damageCredit[0] = 0;
+                    }
+
+                    if (mob.poison.source === this) {
+                        mob.poison.damage = 0;
+                        mob.poison.timer = 0;
+                    }
+                }
+            });
+        }
+
         if (this.client !== null) {
             const topDamagers = this.getTopDamagers(10);
             const playerKillers = [];
@@ -1933,7 +2053,7 @@ class FakeClient {
 
         this.xp += x;
 
-        while (this.xp < xpForLevel(this.level - 1, state.isBiomeGrid)) {
+        while (this.xp < state.xpForLevel(this.level - 1)) {
             this.level--;
 
             if (this.body && !this.body.health.isDead) {
@@ -1942,7 +2062,7 @@ class FakeClient {
             }
         }
 
-        while (this.xp >= xpForLevel(this.level, state.isBiomeGrid)) {
+        while (this.xp >= state.xpForLevel(this.level)) {
             this.level++;
 
             if (this.body && !this.body.health.isDead) {
@@ -1973,7 +2093,7 @@ class FakeClient {
     get healthAdjustement() {
         if (state.isBiomeGrid) {
             // Make health scale exponentially so it can actually keep up with enemies
-            return 80 * Math.pow(2, this.level / 10);
+            return 80 * Math.pow(1.9, this.level / 10);
         } else {
             return 40 + 5 * Math.pow(this.level, 1.5);
         }
@@ -2045,7 +2165,7 @@ export class AIPlayer extends Player {
 
         this.client = new FakeClient(1024 + this.id);
         this.client.body = this;
-        this.client.addXP(xpForLevel(level, state.isBiomeGrid) + 1);
+        this.client.addXP(state.xpForLevel(level) + 1);
 
         this.index = 255
 
@@ -2994,7 +3114,12 @@ export class Mob extends Entity {
         if (this.aggressive) {
             if (this.targetTick <= 0 || this.target === null || this.target.health.isDead) {
                 this.targetTick = 25 + Math.random() * 100 | 0;
-                this.target = this.findTarget(this.size * 12 + 50);
+
+                if (state.isBiomeGrid) {
+                    this.target = this.findTarget(this.size * 3 + 300);
+                } else {
+                    this.target = this.findTarget(this.size * 12 + 50);
+                }
             }
 
             if (this.target?.health.ratio > 0) {
@@ -3004,18 +3129,33 @@ export class Mob extends Entity {
                     this.extraTicker--;
 
                     if (this.extraTicker <= 0) {
-                        let angle = undefined;
+                        let initx = undefined;
+                        let inity = undefined;
                         
                         // In grid mode, lightning spawns from the mob's surface instead of the mob's centre,
                         // so that lightning range can begin from the mob's surface.
                         if (state.isBiomeGrid) {
-                            angle = Math.atan2(this.target.y - this.y, this.target.x - this.x)
+                            const angle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
+                            initx = this.x + this.size * Math.cos(angle);
+                            inity = this.y + this.size * Math.sin(angle);
                         };
 
-                        new Lightning(this, angle).define(lightning.damage, lightning.range, lightning.bounces).bounce();
+                        new Lightning(this, initx, inity).define(lightning.damage, lightning.range, lightning.bounces).bounce();
                         this.extraTicker = lightning.cooldown * (.95 + Math.random() * .1);
                     }
                 }
+            }
+        }
+
+        // Debugging in case a mob's damage credit isn't being calculated properly
+        if (state.isBiomeGrid
+            && !GRID_GARDEN_MOBS.includes(this.config.id)
+            && (this.config.name !== "Leech" || !this.head)
+            && this.health.health > 0
+        ) {
+            const totalDmg = Object.values(this.damagedBy).map(d => d[0]).reduce((a, b) => a + b, 0);
+            if (Math.abs(this.health.maxHealth - this.health.health - totalDmg) > 0.1) {
+                console.warn("Health discrepancy!", this);
             }
         }
     }
@@ -3072,12 +3212,14 @@ export class Mob extends Entity {
 
             }
         });
+        
+        const announceRarity = topDamagers.length > 0 ? state.killAnnounceRarity : state.spawnAnnounceRarity;
 
         if (
             this.config.isSystem === false &&
             !this.friendly &&
             !["Queen Ant Egg", "Termite Overmind Egg", "Queen Fire Ant Egg"].includes(this.config.name) &&
-            this.rarity >= state.announceRarity
+            this.rarity >= announceRarity
         ) {
             if (topDamagers.length > 0) {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by ";
@@ -3104,7 +3246,8 @@ export class Mob extends Entity {
 
                 if (state.isBiomeGrid) {
                     // Once a new rarity is defeated, stop announcing previous rarities
-                    state.announceRarity = Math.max(state.announceRarity, this.rarity);
+                    state.killAnnounceRarity = Math.max(state.killAnnounceRarity, this.rarity);
+                    state.spawnAnnounceRarity = Math.max(state.spawnAnnounceRarity, this.rarity + 1);
                 }
             } else {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " despawned";
@@ -3138,7 +3281,7 @@ export class Mob extends Entity {
         }
 
         if (this.health.damageReduction > 0) {
-            description += `Damage reduction: ${formatLargeNumber(Math.min(75, 100 * this.health.damageReduction), 2)}%\n`;
+            description += `Phys. dmg reduction: ${formatLargeNumber(Math.min(75, 100 * this.health.damageReduction), 2)}%\n`;
         }
 
         if (this.armor > 0) {
@@ -3340,24 +3483,17 @@ export class Pentagram {
 export class Lightning {
     static idAccum = 1;
 
-    constructor(parent, angle) {
+    constructor(parent, initx, inity) {
         this.id = Lightning.idAccum++;
 
         this.parent = parent;
 
-        const parentPoint = {
-            x: parent.x,
-            y: parent.y,
+        /** @type {{x:number,y:number,id:number}[]} */
+        this.points = [{
+            x: initx ?? parent.x,
+            y: inity ?? parent.y,
             id: -1,
-        };
-        
-        if (angle !== undefined) {
-            parentPoint.x += parent.size * Math.cos(angle);
-            parentPoint.y += parent.size * Math.sin(angle);
-        }
-
-        /** @type {{x:number,y:number}[]} */
-        this.points = [parentPoint];
+        }];
 
         this.damage = 0;
         this.range = 0;
@@ -3452,12 +3588,15 @@ export class Lightning {
 
                 ent.health.damage(this.damage, false, this.parent);
 
-                if (ent.parent && ent.config?.name === "Leech") {
-                    ent.parent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                    ent.parent.damagedBy[this.parent.id][0] += this.damage;
-                } else {
-                    ent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                    ent.damagedBy[this.parent.id][0] += this.damage;
+                // In grid mode, damage credit is processed in `HealthComponent.damage()` instead
+                if (!state.isBiomeGrid) {
+                    if (ent.parent && ent.config?.name === "Leech") {
+                        ent.parent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
+                        ent.parent.damagedBy[this.parent.id][0] += this.damage;
+                    } else {
+                        ent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
+                        ent.damagedBy[this.parent.id][0] += this.damage;
+                    }
                 }
 
                 if (ent.type === ENTITY_TYPES.MOB && ent.neutral) {

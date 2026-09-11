@@ -117,6 +117,9 @@ document.getElementById("createLobbyButton").onclick = async () => {
     }
 
 
+    // Wait 2.5s for the lobby server to be ready
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
     net.beginState(server.party);
 };
 
