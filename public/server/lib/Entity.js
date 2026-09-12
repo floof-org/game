@@ -1,4 +1,4 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
+import { CLIENT_BOUND, ENTITY_TYPES, GAMEMODES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
 import state from "./state.js";
@@ -1428,7 +1428,7 @@ export class Player extends Entity {
         this.type = ENTITY_TYPES.PLAYER;
         this.team = this.id;
 
-        this.health.set(40);
+        this.health.set(state.gamemode === GAMEMODES.MMO ? 1200 : 40);
 
         this.moveAngle = 0;
         this.moveStrength = 0;

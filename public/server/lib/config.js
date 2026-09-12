@@ -1,6 +1,15 @@
-import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig } from "../../lib/protocol.js";
+import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig, GAMEMODES } from "../../lib/protocol.js";
+import state from './state.js';
 export const tiers = structuredClone(_tiers);
 export { Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig };
+
+if (state.gamemode === GAMEMODES.MMO) {
+    MobTier.DAMAGE_SCALE = 1.6;
+    MobTier.HEALTH_SCALE = 1.3;
+    // MobTier.SIZE_SCALE
+    PetalTier.DAMAGE_SCALE = 1.0918;
+    PetalTier.HEALTH_SCALE = 1.06;
+}
 
 export const petalConfigs = [
     new PetalConfig("Basic", 22.5 * 1, 10, 10)

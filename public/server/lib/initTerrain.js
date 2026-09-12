@@ -53,7 +53,7 @@ export default async function initTerrain(type) {
                 mapSrc = MAP_TYPES.darkForest;
                 break;
             case BIOME_TYPES.CRYPT:
-                mapSrc = MAP_TYPES.crypt;
+                mapSrc = generateRandomMap(128, 128, false)/* MAP_TYPES.crypt */;
                 break;
             default:
                 throw new Error("Invalid biome type");
