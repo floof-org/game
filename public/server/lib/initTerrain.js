@@ -184,16 +184,44 @@ function generateRandomMap(width, height, enclose = false) {
 
     maze.set(spawnX, spawnY, 2);
 
-    const finder = new Pathfinder(maze);
+    const dist = new Array(maze.width * maze.height).fill(Infinity);
+    const q = [];
+
+    const startKey = spawnY * maze.width + spawnX;
+    dist[startKey] = 0;
+    q.push({ x: spawnX, y: spawnY });
+
+    while (q.length) {
+        const { x, y } = q.shift();
+        const d = dist[y * maze.width + x];
+
+        const neighbors = maze.getNeighbors(x, y);
+        const dirs = [
+            [x - 1, y, neighbors.west],
+            [x + 1, y, neighbors.east],
+            [x, y - 1, neighbors.north],
+            [x, y + 1, neighbors.south],
+        ];
+
+        for (const [nx, ny, val] of dirs) {
+            if (val === 0) { // walkable
+                const nk = ny * maze.width + nx;
+                if (dist[nk] === Infinity) {
+                    dist[nk] = d + 1;
+                    q.push({ x: nx, y: ny });
+                }
+            }
+        }
+    }
+
     let maxLength = 0;
 
     for (let x = 0; x < maze.width; x++) {
         for (let y = 0; y < maze.height; y++) {
             if (maze.get(x, y) === 0) {
-                const path = finder.findPath(spawnX, spawnY, x, y);
-
-                maze.set(x, y, path.length + 10);
-                maxLength = Math.max(maxLength, path.length);
+                const d = dist[y * maze.width + x];
+                maze.set(x, y, d + 10);
+                if (d > maxLength) maxLength = d;
             }
         }
     }
