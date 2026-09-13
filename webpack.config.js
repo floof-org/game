@@ -6,7 +6,6 @@ import fs from "fs";
 import crypto from "crypto";
 import uglify from "uglify-js";
 import js_beautify from "js-beautify";
-import HtmlWebpackPlugin from 'html-webpack-plugin';
 import 'dotenv/config';
 
 const mode = process.env.NODE_ENV;
@@ -46,16 +45,6 @@ const config = {
             "process.env.AUTH_SERVER": JSON.stringify(process.env.AUTH_SERVER),
             "process.env.DISCORD_OAUTH2_REDIRECT_URL": JSON.stringify(process.env.DISCORD_OAUTH2_REDIRECT_URL),            
          }),
-        new HtmlWebpackPlugin({
-            template: './public/index.ejs',
-            inject: true,
-            chunks: ['bundle'],
-            filename: 'index.html',
-            templateParameters: { 
-                DISCORD_OAUTH2_REDIRECT_URL: process.env.DISCORD_OAUTH2_REDIRECT_URL,
-                AUTH_SERVER: process.env.AUTH_SERVER
-            },
-        }),
         {
             apply: (compiler) => {
                 compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
