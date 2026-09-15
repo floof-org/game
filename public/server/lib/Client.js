@@ -763,6 +763,8 @@ export default class Client {
 
         if (state.isBiomeGrid) {
             this.aliveTimer = 0;
+            this.afk = false;
+            this.afkTime = 0;
         }
     }
 
@@ -960,6 +962,7 @@ export default class Client {
 
                 if (state.isBiomeGrid) {
                     this.aliveTimer = 0;
+                    this.toggleAfk(false);
                 }
 
                 if (state.isTDM) {
@@ -997,6 +1000,10 @@ export default class Client {
                         this.body.moveAngle = Math.atan2(y, x);
                         this.body.moveStrength = this.body.speed;
                     }
+                }
+
+                if (this.body.moveStrength > 0.5 * this.body.speed) {
+                    this.toggleAfk(false);
                 }
 
                 this.body.attack = (flags & 0x10) === 0x10;
@@ -1169,7 +1176,10 @@ export default class Client {
                     return;
                 }
 
-                switch (reader.getUint8()) {
+                const type = reader.getUint8();
+                console.log("Activated dev cheat with type:", type);
+
+                switch (type) {
                     case DEV_CHEAT_IDS.TELEPORT: {
                         this.body.x += reader.getFloat32();
                         this.body.y += reader.getFloat32();
@@ -1189,7 +1199,7 @@ export default class Client {
                         const index = reader.getUint8();
                         const rarity = reader.getUint8();
 
-                        if (index < 0 || index >= petalConfigs.length) {
+                        if (index < 0 || index >= mobConfigs.length) {
                             return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
                                 promiseID: promiseID,
                                 ok: false,
@@ -1202,6 +1212,14 @@ export default class Client {
                                 promiseID: promiseID,
                                 ok: false,
                                 message: "Rarity out of range"
+                            });
+                        }
+
+                        if (state.isBiomeGrid && !mobConfigs[index]?.isBiomeGridOfficial) {
+                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
+                                promiseID: promiseID,
+                                ok: false,
+                                message: "Mob type is not officially implemented",
                             });
                         }
 
@@ -1258,6 +1276,14 @@ export default class Client {
                                 promiseID: promiseID,
                                 ok: false,
                                 message: "Rarity out of range"
+                            });
+                        }
+
+                        if (state.isBiomeGrid && !petalConfigs[index]?.isBiomeGridOfficial) {
+                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
+                                promiseID: promiseID,
+                                ok: false,
+                                message: "Petal type is not officially implemented",
                             });
                         }
 
@@ -1321,6 +1347,18 @@ export default class Client {
 
                 const message = reader.getStringUTF8();
 
+                if (message.startsWith("/login")
+                    || message.startsWith("/register")
+                    || message.startsWith("/save")
+                    || message.startsWith("/import")
+                ) {
+                    // Exit early to avoid leaking login info
+                    this.systemMessage("Error: This lobby does not have an account system.", colors.legendary);
+                    return;
+                }
+
+                console.log(`(Chat) ${this.username}: ${message}`);
+
                 if (state.isBiomeGrid) {
                     if (message === "/damage" && false) {
                         this.body.health.lastDamaged = Date.now();
@@ -1336,6 +1374,9 @@ export default class Client {
                         this.body.poison.timer = 22.5 * 1;
                         this.body.poison.damage = (this.body.health.health - 1) / 23;
                         this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
+                        return;
+                    } else if (message === "/afk") {
+                        this.toggleAfk(!this.afk, true);
                         return;
                     } else if (message === "/hp" || message === "/health") {
                         this.systemMessage("Your max health: " + formatLargeNumber(this.body.health.maxHealth, 2), colors.leafGreen);
@@ -1382,6 +1423,7 @@ export default class Client {
                         this.systemMessage("/help - Shows you the list of available commands.", colors.unique);
                         this.systemMessage("/info [1-5] - Info about this gamemode's unique mechanics.", colors.unique);
                         this.systemMessage("/tp - Teleports you from the top of the map to the bottom of the map, and vice versa.", colors.unique);
+                        this.systemMessage("/afk - Lets other players know that you are AFK.", colors.unique);
                         this.systemMessage("/hp - Tells you your current max HP (including +HP petals).", colors.unique);
                         this.systemMessage("/die - Kills your flower and lets you respawn afterward.", colors.unique);
                         return;
@@ -1512,6 +1554,8 @@ export default class Client {
                         this.systemMessage(msg, colors.legendary);
                         return;
                     }
+
+                    this.toggleAfk(false);
                 }
 
                 if (!/^[\w\s,.!?'"@#%^&*()_\-+=:;<>\/\\|[\]{}~`\u00A0-\uFFFF]{1,128}$/.test(message)) {
@@ -1640,6 +1684,22 @@ export default class Client {
         this.terminate();
     }
 
+    /**
+     * Toggles the client's AFK status. By default, it also stops the player
+     * from accidentally toggling their AFK status OFF for 10s after toggling
+     * their AFK status ON.
+     */
+    toggleAfk(newAfk, bypassTimer = false) {
+        if (newAfk === false && this.afk === true && (bypassTimer || Date.now() > this.afkTime + 10000)) {
+            this.systemMessage("AFK status set to OFF.", colors.leafGreen);
+            this.afk = false;
+        } else if (newAfk === true && this.afk === false) {
+            this.systemMessage("AFK status set to ON.", colors.leafGreen);
+            this.afk = true;
+            this.afkTime = Date.now();
+        }
+    }
+
     worldUpdate() {
         if (!this.verified) {
             return;
@@ -1714,7 +1774,12 @@ export default class Client {
             writer.setUint8(entity.team);
             writer.setUint8(entity.highestRarity);
             writer.setFloat32(entity.xp / 10000);
-            writer.setStringUTF8(entity.username);
+
+            let nameToSend = entity.username;
+            if (state.isBiomeGrid && entity.afk) {
+                nameToSend = "[AFK] " + entity.username;
+            }
+            writer.setStringUTF8(nameToSend);
         }
 
         writer.setUint8(state.playerCount);
@@ -1777,8 +1842,8 @@ export default class Client {
             this.systemMessage("", colors.uncommon);
             this.systemMessage(
                 "This gamemode has several important mechanics not present in other gamemodes. For example, Garden " +
-                "mobs can heal themselves, but you can prevent them from healing by poisoning them. To learn more " +
-                "about these mechanics, please use \"/info [1-5]\" .",
+                "mobs can heal themselves, but you can prevent them from healing by poisoning them. To learn more, " +
+                "please use \"/info [1-5]\" .",
                 colors.uncommon,
             );
             this.systemMessage("", colors.uncommon);

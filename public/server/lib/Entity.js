@@ -19,8 +19,8 @@ export class HealthComponent {
         if (state.isBiomeGrid) {
             // Accumulated by taking poison damage
             // When this is active, the player cannot heal
-            // Instead, healing decreases healBlock until healBlock reaches 0
-            this.healBlock = 0;
+            // Instead, healing decreases toxic remnants until it reaches 0
+            this.toxicRemnants = 0;
         }
 
         this.entity = entity;
@@ -28,10 +28,10 @@ export class HealthComponent {
     
     get shield() {
         if (state.isBiomeGrid) {
-            // We use the player's shield to indicate healBlock, as a bandaid
-            // fix for the fact that we cannot display a second healBlock bar
+            // We use the player's shield to indicate toxic remnants, as a bandaid
+            // fix for the fact that we cannot display a second toxic remnants bar
             // without being able to access the client-side code.
-            return Math.min(this.maxHealth, this.healBlock);
+            return Math.min(this.maxHealth, this.toxicRemnants);
         } else {
             return this._shield;
         }
@@ -78,7 +78,7 @@ export class HealthComponent {
             this.health = this.health - dmg;
             damageDone += dmg;
             if (state.isBiomeGrid && isPoison) {
-                this.healBlock += 3 * dmg;
+                this.toxicRemnants += 3 * dmg;
             } else if (state.isBiomeGrid && damageDone > 0 && !isPoison) {
                 // Apply Poison Drain: Entities' poison attacks become weaker after taking non-poison damage
                 if (this.entity instanceof Player) {
@@ -107,14 +107,14 @@ export class HealthComponent {
         return damageDone;
     }
 
-    heal(x, bypassHealBlock = false) {
+    heal(x, bypassToxicRemnants = false) {
         if (x < 0) {
             console.warn("Entity is being healed by a negative amount!", this, x);
         }
 
-        if (this.healBlock > 0 && !bypassHealBlock) {
-            const blocked = Math.max(0, Math.min(this.healBlock, x));
-            this.healBlock -= blocked;
+        if (this.toxicRemnants > 0 && !bypassToxicRemnants) {
+            const blocked = Math.max(0, Math.min(this.toxicRemnants, x));
+            this.toxicRemnants -= blocked;
             x -= blocked;
         }
 
@@ -315,7 +315,7 @@ export class PetalSlot {
             const petal = this.petals[j];
             if (petal) {
                 if (this.config.tiers[this.rarity].constantHeal !== 0 && this.player.health.ratio <= this.config.healWhenUnder && this.player.health.ratio > 0 && (!this.config.healsInDefense || (!this.player.attack && this.player.defend))) {
-                    this.player.health.heal(this.config.tiers[this.rarity].constantHeal);
+                    this.player.health.heal(this.config.tiers[this.rarity].constantHeal, this.config.bypassToxicRemnants);
                 }
 
                 if (this.config.healSpit) {
@@ -336,7 +336,7 @@ export class PetalSlot {
                                 return;
                             }
 
-                            entity.health.heal(this.config.healSpit.heal * Math.pow(PetalTier.HEALTH_SCALE, this.rarity));
+                            entity.health.heal(this.config.healSpit.heal * Math.pow(PetalTier.HEALTH_SCALE, this.rarity), this.config.bypassToxicRemnants);
                         });
                     }
                 }
@@ -432,7 +432,7 @@ export class PetalSlot {
                     
                         if (petal.range <= 0) {
                             if (quickDiff(petal, target) < target.size) {
-                                target.health.heal(this.config.tiers[this.rarity].healing);
+                                target.health.heal(this.config.tiers[this.rarity].healing, this.config.bypassToxicRemnants);
                                 petal.destroy();
                             }
                             continue;
@@ -597,7 +597,7 @@ export class PetalSlot {
                 if (state.isBiomeGrid) {
                     // Make leaf-like petals still heal while reloading, like they always should
                     if (this.config.tiers[this.rarity].constantHeal !== 0 && this.player.health.ratio <= this.config.healWhenUnder && this.player.health.ratio > 0 && (!this.config.healsInDefense || (!this.player.attack && this.player.defend))) {
-                        this.player.health.heal(this.config.tiers[this.rarity].constantHeal);
+                        this.player.health.heal(this.config.tiers[this.rarity].constantHeal, this.config.bypassToxicRemnants);
                     }
                 }
                 if (this.boundMobs[j].length > 0) {
@@ -1150,12 +1150,12 @@ export class Entity {
                         }
                     }
 
-                    if (this.healBack !== 0) {
-                        this.parent.health.heal(this.healBack * thisDamageDone);
+                    if (this.healBack !== 0 && (!state.isBiomeGrid || other.type !== ENTITY_TYPES.PETAL)) {
+                        this.parent.health.heal(this.healBack * thisDamageDone, this.config?.bypassToxicRemnants);
                     }
 
-                    if (other.healBack !== 0) {
-                        other.parent.health.heal(other.healBack * otherDamageDone);
+                    if (other.healBack !== 0 && (!state.isBiomeGrid || this.type !== ENTITY_TYPES.PETAL)) {
+                        other.parent.health.heal(other.healBack * otherDamageDone, other.config?.bypassToxicRemnants);
                     }
 
                     if (Number.isFinite(this.health?.health) && Number.isFinite(other.health?.health)) {
@@ -1432,7 +1432,7 @@ export class Entity {
     }
 
     /** @returns {{id:number,type:number,damage:number,name:string,clientID:?number}[]} */
-    getTopDamagers(n = 3, filterType = -1) {
+    getTopDamagers(n = 3, filterType = -1, percentThreshold = 0) {
         const topHurters = [];
 
         for (const id in this.damagedBy) {
@@ -1464,7 +1464,7 @@ export class Entity {
 
         topHurters.sort((a, b) => b.damage - a.damage);
 
-        return topHurters.slice(0, n);
+        return topHurters.filter(a => a.damage >= this.health.maxHealth * percentThreshold).slice(0, n);
     }
 
     destroy() {
@@ -2351,6 +2351,13 @@ export class Mob extends Entity {
 
     /** @param {MobConfig} config */
     define(config, rarity = 0) {
+        // Prevent unofficial mobs from spawning
+        if (state.isBiomeGrid && !config.isBiomeGridOfficial) {
+            console.warn("Trying to spawn unofficial mob!", config);
+            this.destroy();
+            return;
+        }
+
         this.config = config;
         rarity = Math.min(config.tiers.length - 1, rarity);
         const tier = config.tiers[rarity];
@@ -3181,7 +3188,10 @@ export class Mob extends Entity {
             return;
         }
 
-        const topDamagers = this.getTopDamagers(3, ENTITY_TYPES.PLAYER);
+        // In grid mode, the threshold for looting a mob is 5% damage instead of top 3 damagers
+        const topDamagers = state.isBiomeGrid
+            ? this.getTopDamagers(20, ENTITY_TYPES.PLAYER, .05)
+            : this.getTopDamagers(3, ENTITY_TYPES.PLAYER);
         let killText = '';
         topDamagers.forEach(damager => {
             if (damager.clientID > 0) {
@@ -3360,6 +3370,12 @@ export class Drop {
     static idAccumulator = 1;
 
     constructor(position = { x: 0, y: 0 }, client, i, r) {
+        // Prevent unofficial petals from dropping
+        if (state.isBiomeGrid && !petalConfigs[i]?.isBiomeGridOfficial) {
+            console.warn("Trying to drop unofficial petal!", petalConfigs[i]);
+            return;
+        }
+
         this.id = Drop.idAccumulator++;
         this.x = position.x;
         this.y = position.y;

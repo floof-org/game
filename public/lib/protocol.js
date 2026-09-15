@@ -146,7 +146,7 @@ export class PetalConfig {
         return output;
     }
 
-    constructor(name, cooldown, health, damage, idOverride) {
+    constructor(name, cooldown, health, damage, isBiomeGridOfficial = false, idOverride = undefined) {
         if (idOverride !== undefined) {
             this.id = idOverride;
         } else {
@@ -185,10 +185,12 @@ export class PetalConfig {
         this.huddles = false;
         this.ignoreWalls = false;
         this.extraLighting = 0;
+
+        this.isBiomeGridOfficial = isBiomeGridOfficial;
         this.doNotRotate = false;
         this.nullCollision = false;
-
         this.poisonBasedCap = undefined;
+        this.bypassToxicRemnants = false;
     }
 
     setName(name) {
@@ -386,9 +388,9 @@ export class PetalConfig {
         return this;
     }
 
-    setExtraVision(extraVision) {
+    setExtraVision(extraVision, scalingPerRarity = 1.45) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].extraVision = extraVision * Math.pow(1.45, i);
+            this.tiers[i].extraVision = extraVision * Math.pow(scalingPerRarity, i);
         }
 
         return this;
@@ -531,9 +533,17 @@ export class PetalConfig {
         return this;
     }
 
-    setHealBack(healBack) {
+    setHealBack(healBack, isPercentage = true) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].healBack = healBack instanceof Array ? (healBack[i] ?? healBack[healBack.length - 1]) : healBack;
+
+            if (!isPercentage) {
+                // The healback is a flat number, and we need to convert it into a percentage
+                this.tiers[i].healBack /= this.tiers[i].damage;
+                if (!(healBack instanceof Array)) {
+                    this.tiers[i].healBack *= Math.pow(PetalTier.HEALTH_SCALE, i);
+                }
+            }
         }
 
         return this;
@@ -603,6 +613,11 @@ export class PetalConfig {
         this.poisonBasedCap = ratio;
         return this;
     }
+
+    setBypassToxicRemnants(bypassToxicRemnants) {
+        this.bypassToxicRemnants = bypassToxicRemnants;
+        return this;
+    }
 }
 
 export class MobDrop {
@@ -624,7 +639,7 @@ export class MobConfig {
         return output;
     }
 
-    constructor(name, health, damage, size, speed, idOverride = undefined) {
+    constructor(name, health, damage, size, speed, isBiomeGridOfficial = false, idOverride = undefined) {
         if (idOverride) {
             this.id = idOverride;
         } else {
@@ -674,8 +689,8 @@ export class MobConfig {
 
         this.wavesIconSize = 3.5;
 
+        this.isBiomeGridOfficial = isBiomeGridOfficial;
         this.periodicHeal = undefined;
-
         this.totalOnDamageProjectiles = 0;
     }
 

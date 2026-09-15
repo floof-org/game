@@ -242,6 +242,9 @@ setInterval(() => {
                     } else if (info.tile.spawn === SPAWN_TYPES.DESERT) {
                         const spawn = GRID_DESERT_MOBS[Math.floor(GRID_DESERT_MOBS.length * Math.random())];
                         cfg = mobConfigs[spawn];
+                    } else {
+                        console.warn("Invalid tile spawn type!", info.tile);
+                        doNotSpawn = true;
                     }
                 } else {
                     const spawner = state.mapData.mobSpawners.find(spawner => { spawner.id == info.tile?.spawn });
