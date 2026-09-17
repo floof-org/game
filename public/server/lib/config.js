@@ -1117,7 +1117,8 @@ export function applyGridBiomeConfigs() {
         .setDescription("The mysterious petal of balance.");
 
     // Reload: 4.5s -> 5s
-    petalConfigs[petalIDOf("Stinger")] = new PetalConfig("Stinger", 22.5 * 5, 1, 75, true, petalIDOf("Stinger"))
+    // Damage: 75 -> 80
+    petalConfigs[petalIDOf("Stinger")] = new PetalConfig("Stinger", 22.5 * 5, 1, 80, true, petalIDOf("Stinger"))
         .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5], 1, true)
         .setDescription("A fragile petal that deals lots of damage.");
     
@@ -1126,7 +1127,15 @@ export function applyGridBiomeConfigs() {
         .setExtraVision(500, MobTier.SIZE_SCALE)
         .setMulti(0, false)
         .setWearable(WEARABLES.ANTENNAE)
-        .setDescription("These feelers give you some extra vision."),
+        .setDescription("These feelers give you some extra vision.");
+
+    // Reload: .75s -> 3600s
+    // Damage: 13 -> 0
+    petalConfigs[petalIDOf("Pollen")] = new PetalConfig("Pollen", 22.5 * 3600, 13, 0, true, petalIDOf("Pollen"))
+        .setSize(.6)
+        .setLaunchable(0, 75)
+        .setMulti([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5], false, true)
+        .setDescription("Currently unobtainable."),
 
     /***********     GARDEN MOBS     ***********/
 
@@ -1172,20 +1181,19 @@ export function applyGridBiomeConfigs() {
     // Health: 25 -> 40
     // Size: 30 -> 20
     // Drops: Pollen 100%, Honey 100% -> Stinger 100%, Antennae 100%
-    // Todo: Extract pollen from shrubs ability
     // Todo: Feed pollen to injured entities ability
     mobConfigs[mobIDOf("Bumblebee")] = new MobConfig("Bumblebee", 40, 15, 20, 5, true, mobIDOf("Bumblebee"))
-        .setDescription("")
+        .setDescription("Other mobs love to eat the nutritious Pollens that it gathers.")
         .setMoveInSines(1)
         .setBumblebeeMovement(1)
-        .setProjectile({
-            petalIndex: petalIDOf("Pollen"),
-            cooldown: 22.5 * .5,
-            health: 1,
-            damage: 1,
-            speed: 0,
-            range: 90
-        })
+        // .setProjectile({
+        //     petalIndex: petalIDOf("Pollen"),
+        //     cooldown: 22.5 * .5,
+        //     health: 1,
+        //     damage: 1,
+        //     speed: 0,
+        //     range: 90
+        // })
         .addDrop(petalIDOf("Stinger"))
         .addDrop(petalIDOf("Antennae"));
 
@@ -1485,7 +1493,7 @@ export function applyGridBiomeConfigs() {
     // Todo: Make lightning able to hit the same mob multiple times
     // Todo: How can Pincer be useful in Garden?
 
-    // Todo: Fix issue with leeches not displaying
+    // Todo: Safeguards to prevent mobs from spawning in wall
 
     // Todo: Chat logger for /commands?
     // Pdrain doesn't show up if cache petal assets

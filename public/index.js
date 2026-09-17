@@ -88,14 +88,14 @@ function getUsername() {
         return user.username;
     }
 
-    window.location.href = `https://discord.com/oauth2/authorize?client_id=1132362368979050546&response_type=code&redirect_uri=https%3A%2F%2Fsupercord.lol%2Fapi%2Flogin&scope=identify&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
+    window.location.href = `https://discord.com/oauth2/authorize?client_id=1132362368979050546&response_type=code&redirect_uri=https%3A%2F%2Fsupercord.dev%2Fapi%2Flogin&scope=identify&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
 }
 
 let hasCreatedLobby = false;
 document.getElementById("createLobbyButton").onclick = async () => {
     if (hasCreatedLobby) return;
     const lobbyName = document.getElementById("lobbyName");
-    if (lobbyName.value.length < 3 || lobbyName.value.length > 32 || !/^[a-zA-Z0-9 ]+$/.test(lobbyName.value)) return shakeElement(lobbyName);
+    if (lobbyName.value.length < 3 || lobbyName.value.length > 32) return shakeElement(lobbyName);
     const gamemodeSelect = document.getElementById("gamemodeSelect");
     localStorage.setItem("gamemode", gamemodeSelect.value);
     const biomeSelect = document.getElementById("biomeSelect");

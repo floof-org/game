@@ -318,7 +318,7 @@
 - Magnet now grounds Lightning
 - Lightning is now more accurage against players
 - Added angry flowers
-- Added some more support for the modding API, see info at https://floof.supercord.lol/moddingAPI/
+- Added some more support for the modding API, see info at https://floof.supercord.dev/moddingAPI/
 - Added ECONNRESET error handling
 - You now lose some XP when you die
 - Damage Reflection now only reflects the real damage done. For example, if a mob has 8 health remaining and your petal does 25 damage, only 8 damage will be reflected back upon you.

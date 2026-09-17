@@ -538,6 +538,19 @@ export class Camera {
             }
         });
 
+        // First loop: Check for Leeches that are only partially visible
+        if (state.isBiomeGrid) {
+            retrieved.forEach(entity => {
+                // If the player sees any segment of a Leech, they should see the full Leech.
+                // This requires seeing the Leech's head, which contains all of the Leech's data.
+                if (entity.config?.name === "Leech" && entity !== entity.parent) {
+                    retrieved.set(entity.parent.id, entity.parent);
+                    retrieved.delete(entity.id);
+                }
+            })
+        }
+
+        // Second loop: Update all data that needs to be sent to client
         retrieved.forEach(/** @param {Entity} entity */ entity => {
             switch (entity.type) {
                 case ENTITY_TYPES.PLAYER: {
@@ -1378,6 +1391,14 @@ export default class Client {
                     } else if (message === "/afk") {
                         this.toggleAfk(!this.afk, true);
                         return;
+                    } else if (message === "/xp" || message === "/exp") {
+                        this.systemMessage("Your current XP: " + formatLargeNumber(this.xp, 2), colors.leafGreen);
+                        if (this.level >= 10 * (tiers.length - 2)) {
+                            this.systemMessage("You are at the max level.", colors.leafGreen);
+                        } else {
+                            this.systemMessage("XP required for next level: " + formatLargeNumber(state.xpForLevel(this.level), 2), colors.leafGreen);
+                        }
+                        return;
                     } else if (message === "/hp" || message === "/health") {
                         this.systemMessage("Your max health: " + formatLargeNumber(this.body.health.maxHealth, 2), colors.leafGreen);
                         return;
@@ -1424,6 +1445,7 @@ export default class Client {
                         this.systemMessage("/info [1-5] - Info about this gamemode's unique mechanics.", colors.unique);
                         this.systemMessage("/tp - Teleports you from the top of the map to the bottom of the map, and vice versa.", colors.unique);
                         this.systemMessage("/afk - Lets other players know that you are AFK.", colors.unique);
+                        this.systemMessage("/xp - Tells you your current XP (the leaderboard shows your level instead).", colors.unique);
                         this.systemMessage("/hp - Tells you your current max HP (including +HP petals).", colors.unique);
                         this.systemMessage("/die - Kills your flower and lets you respawn afterward.", colors.unique);
                         return;
@@ -1773,7 +1795,13 @@ export default class Client {
         for (const entity of state.alivePlayers) {
             writer.setUint8(entity.team);
             writer.setUint8(entity.highestRarity);
-            writer.setFloat32(entity.xp / 10000);
+
+            if (state.isBiomeGrid) {
+                // In grid mode, the leaderboard displays the player's level instead of their XP
+                writer.setFloat32(entity.level / 10000);
+            } else {
+                writer.setFloat32(entity.xp / 10000);
+            }
 
             let nameToSend = entity.username;
             if (state.isBiomeGrid && entity.afk) {

@@ -1,4 +1,4 @@
-import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, } from "../../lib/protocol.js";
+import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, MobTier, PetalTier } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, formatLargeNumber, getDropRarity, lerpAngle, quickDiff } from "../../lib/util.js";
 import { GRID_GARDEN_MOBS, MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal, tiers } from "./config.js";
 import state from "./state.js";
@@ -756,6 +756,16 @@ export class Gun {
     }
 }
 
+/**
+ * A list of possible states for controlling whether or not a petal should heal
+ * a mob/player on collision.
+ */
+const HEAL_ON_COLLISION = {
+    NONE: 0,
+    ALL: 1,
+    PARENT: 2,
+};
+
 export class Entity {
     static idAccumulator = 1; // 0 is reserved for the protocol as a flag
 
@@ -841,6 +851,8 @@ export class Entity {
         /** @type {Gun[]} */
         this.guns = [];
 
+        this.healOnCollision = HEAL_ON_COLLISION.NONE;
+
         state.entities.set(this.id, this);
     }
 
@@ -863,12 +875,28 @@ export class Entity {
         this.y = Math.max(-state.height / 2, Math.min(state.height / 2, this.y));
     }
 
-    findTarget(range, random = false) {
+    /**
+     * Returns a valid target within the given range, or `null` if none exists.
+     * 
+     * If `random` is `true`, a random target within the given range is
+     * selected. Otherwise, the closest target is selected.
+     * 
+     * The default criterion is: The target must be on a different team than
+     * this entity, and the target must not be a petal.
+     */
+    findTarget(range, random = false, criterion = undefined) {
         const retrieved = state.spatialHash.retrieve({
             _AABB: { x1: this.x - range, y1: this.y - range, x2: this.x + range, y2: this.y + range }
         });
 
-        const valid = retrieved.values().filter(entity => !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || entity.type === ENTITY_TYPES.PETAL));
+        const valid = retrieved.values().filter(entity => {
+            if (criterion) {
+                return criterion(entity);
+            } else {
+                return !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || entity.type === ENTITY_TYPES.PETAL)
+            }
+        });
+
         if (valid.length === 0) return null;
         if (random) return valid[Math.floor(Math.random() * valid.length)];
 
@@ -973,15 +1001,29 @@ export class Entity {
         const collisions = state.spatialHash.retrieve(this);
 
         collisions.forEach(/** @param {Entity} other */ other => {
-            if (this.collisionIDs.has(other.id) || other.collisionIDs.has(this.id) || this.id === other.id || (this.parent.id === other.parent.id && this.type !== other.type)) {
+            // Do not collide if the collision has already been processed
+            if (this.collisionIDs.has(other.id) || other.collisionIDs.has(this.id)) {
+                return;
+            }
+
+            // Do not collide with itself
+            if (this.id === other.id) {
+                return;
+            }
+
+            // Mobs do not collide with their own petals, UNLESS it has a "heal on collision" property
+            if (this.parent.id === other.parent.id && this.type !== other.type && this.healOnCollision === HEAL_ON_COLLISION.NONE && other.healOnCollision === HEAL_ON_COLLISION.NONE) {
                 return;
             }
 
             this.collisionIDs.add(other.id);
             other.collisionIDs.add(this.id);
 
+            // Entities do not collide with teammate petals/pets, UNLESS it has a "heal on collision" property
             if (this.parent.team === other.parent.team && (this.type === ENTITY_TYPES.PETAL || other.type === ENTITY_TYPES.PETAL || (this.type === ENTITY_TYPES.PLAYER && other.type === ENTITY_TYPES.MOB) || (other.type === ENTITY_TYPES.PLAYER && this.type === ENTITY_TYPES.MOB))) {
-                return;
+                if (this.healOnCollision === HEAL_ON_COLLISION.NONE && other.healOnCollision === HEAL_ON_COLLISION.NONE) {
+                    return;
+                }
             }
 
             if (this.type === ENTITY_TYPES.MOB && other.type === ENTITY_TYPES.MOB && this.team === other.team && this.segmentID > -1 && other.segmentID > -1) {
@@ -996,6 +1038,36 @@ export class Entity {
 
             if (distSqr === 0 || this.size + other.size < Math.sqrt(distSqr)) {
                 return;
+            }
+
+            if (this.type === ENTITY_TYPES.PETAL && other.type !== ENTITY_TYPES.PETAL) {
+                let rarityDiff = 0;
+                if (other.type === ENTITY_TYPES.MOB) {
+                    rarityDiff = Math.max(this.rarity, other.rarity) - this.rarity;
+                }
+
+                if (this.healOnCollision === HEAL_ON_COLLISION.PARENT && other === this.parent) {
+                    other.health.heal(other.health.maxHealth * .25 * Math.pow(MobTier.HEALTH_SCALE, -rarityDiff));
+                    this.destroy();
+                } else if (this.healOnCollision === HEAL_ON_COLLISION.ALL && other !== this.parent) {
+                    other.health.heal(other.health.maxHealth * .25 * Math.pow(MobTier.HEALTH_SCALE, -rarityDiff));
+                    this.destroy();
+                }
+            }
+
+            if (other.type === ENTITY_TYPES.PETAL && this.type !== ENTITY_TYPES.PETAL) {
+                let rarityDiff = 0;
+                if (this.type === ENTITY_TYPES.MOB) {
+                    rarityDiff = Math.max(other.rarity, this.rarity) - other.rarity;
+                }
+
+                if (other.healOnCollision === HEAL_ON_COLLISION.PARENT && this === other.parent) {
+                    this.health.heal(this.health.maxHealth * .25 * Math.pow(MobTier.HEALTH_SCALE, -rarityDiff));
+                    other.destroy();
+                } else if (other.healOnCollision === HEAL_ON_COLLISION.ALL && this !== other.parent) {
+                    this.health.heal(this.health.maxHealth * .25 * Math.pow(MobTier.HEALTH_SCALE, -rarityDiff));
+                    other.destroy();
+                }
             }
 
             if (this.parent.team !== other.parent.team && !this.spawnInvincibility && !other.spawnInvincibility) {
@@ -1726,6 +1798,11 @@ export class Petal extends Entity {
         }
 
         super.collide();
+
+        // Petals with the "Heal on collision" property should also collide with terrain
+        if (this.healOnCollision !== HEAL_ON_COLLISION.NONE) {
+            this.collideTerrain();
+        }
     }
 
     destroy() {
@@ -1972,7 +2049,7 @@ export class Player extends Entity {
                     const damageCredit = mob.damagedBy[this.id];
                     if (damageCredit?.[0] > 0) {
                         mob.health.heal(damageCredit[0], true);
-                        damageCredit[0] = 0;
+                        delete mob.damagedBy[this.id];
                     }
 
                     if (mob.poison.source === this) {
@@ -2243,6 +2320,21 @@ export class AIPlayer extends Player {
     }
 }
 
+/**
+ * A list of phases present in bumble bees' behaviour.
+ * 
+ * WANDERING: Moves around randomly, looking for a target to transition to another phase.
+ * GATHERING: Targets a Shrub and gathers 2 pollen from it.
+ * FEEDING: Targets an injured mob/player and feeds up to 2 pollen to it.
+ * AFRAID: "Targets" the closest player and runs away from the player.
+ */
+const BB_PHASES = {
+    WANDERING: 0,
+    GATHERING: 1,
+    FEEDING: 2,
+    AFRAID: 3,
+};
+
 export class Mob extends Entity {
     static segmentedLength = 0;
 
@@ -2325,6 +2417,19 @@ export class Mob extends Entity {
         this.ropeBodies = null;
 
         this._countsTowardsMobCount = true;
+
+        if (state.isBiomeGrid) {
+            this.bbState = {
+                phase: BB_PHASES.WANDERING,
+                pollens: [],
+                pollensPending: 0,
+                gatherTimer: 0,
+                feedTimer: 0,
+                eatTimer: 0,
+                lastTarget: null,
+                lastTargetPhase: BB_PHASES.WANDERING,
+            };
+        }
     }
 
     get countsTowardsMobCount() {
@@ -2577,7 +2682,9 @@ export class Mob extends Entity {
                 segment.size = this.size;
                 segment.givesXP = false;
                 segment.health = this.health;
-                segment.canBeViewed = false;
+                if (!state.isBiomeGrid) {
+                    segment.canBeViewed = false;
+                }
                 segment.countsTowardsMobCount = false;
                 segment.segmentID = segmentID;
                 segment.team = this.team;
@@ -2906,7 +3013,8 @@ export class Mob extends Entity {
                     }
                 }
             } else if (this.config.bumblebeeMovement) {
-                if (this.tick <= 0) {
+                if (this.tick <= 0 && !state.isBiomeGrid) {
+                    // Randomize bumble bee's movement direction outside of grid mode
                     this.tick = 22.5 * 6;
                     this.movementAngle = Math.random() * Math.PI * 2;
                     this.moveStrength = this.speed;
@@ -2928,7 +3036,91 @@ export class Mob extends Entity {
 
             if (this.config.moveInSines) {
                 if (this.config.bumblebeeMovement) {
-                    this.movementAngle += Math.sin(performance.now() / 120 + this.id) * .1 * (this.velocity.magnitude * .5);
+                    // Additional custom movement for bumblebees in grid mode
+                    if (state.isBiomeGrid) {
+                        let angleAmplitude = this.speed;
+
+                        if (this.bbState.phase === BB_PHASES.GATHERING && this.target?.health.ratio > 0) {
+                            // Slow down when close to the target shrub
+                            // Full speed at a distance of 0.5 * bee size, zero speed at distance of 0.1 * bee size
+                            const distRatio = (Math.sqrt(quickDiff(this, this.target)) - this.target.size - this.size) / this.size;
+                            const speedRatio = Math.max(0, Math.min(1, (distRatio - 0.1) / .4));
+                            this.moveStrength = this.speed * speedRatio;
+
+                            // At a distance of 0.15 * bee size, the bee is close enough to gather pollen
+                            if (distRatio <= .15) {
+                                this.bbState.gatherTimer--;
+                                if (this.bbState.pollensPending > 0
+                                    && this.bbState.pollensPending > Math.ceil(this.bbState.gatherTimer / (22.5 * 2))
+                                ) {
+                                    this.bbState.pollensPending--;
+                                    const pollenRarity = Math.min(this.rarity, this.target.rarity);
+
+                                    if (this.health.ratio >= .75) {
+                                        // When not injured, gather pollens to feed to other mobs
+                                        const pollen = new Petal(this, -1, -1);
+                                        pollen.define(petalConfigs[petalIDOf("Pollen")], pollenRarity);
+                                        pollen.nullCollision = true;
+                                        pollen.size = .2 * this.size;
+                                        pollen.speed = 0;
+                                        this.bbState.pollens.push(pollen);
+                                    } else {
+                                        // When injured, heal itself
+                                        this.health.heal(this.health.maxHealth * .25 * Math.pow(MobTier.HEALTH_SCALE, pollenRarity - this.rarity));
+                                    }
+                                }
+                            }
+                        } else if (this.bbState.phase === BB_PHASES.FEEDING && this.target?.health.ratio > 0) {
+                            // Slow down when close to the target mob
+                            // Max speed at distance of 0.5 * bee size + 75, zero speed at distance of 0.1 * bee size + 75
+                            const distRatio = (Math.sqrt(quickDiff(this, this.target)) - this.target.size - this.size - 75) / this.size;
+                            const speedRatio = Math.max(-.5, Math.min(1, (distRatio - 0.1) / .4));
+                            this.moveStrength = this.speed * speedRatio;
+
+                            // At a distance of 0.3 * bee size + 75, the bee is close enough to feed the target
+                            if (distRatio <= .3) {
+                                this.bbState.feedTimer--;
+                                if (this.bbState.feedTimer <= 0) {
+                                    // Feed the target 2 pollens, then wait 2 seconds before wandering off
+                                    this.releasePollen();
+                                    this.releasePollen();
+                                    this.bbState.feedTimer = 1e99;
+                                    this.targetTick = 22.5 * 2;
+                                }
+                            }
+
+                            // Bee also changes angle less as it tries to aim at the target
+                            angleAmplitude *= Math.max(.2, Math.min(1, speedRatio));
+                        } else if (this.bbState.phase === BB_PHASES.AFRAID && this.target?.health.ratio > 0) {
+                            // Rotate angle by 180 degrees to run away from the player
+                            this.movementAngle += Math.PI;
+                        } else {
+                            // Default: Move at full speed
+                            this.moveStrength = this.speed;
+
+                            // Angle amplitude is halved when movement angle doesn't point at a fixed target
+                            angleAmplitude /= 2;
+                        }
+
+                        this.movementAngle += Math.sin(performance.now() / 120 + this.id) * .1 * angleAmplitude;
+
+                        // Slow down to avoid accidentally running into players at full speed
+                        state.alivePlayers.forEach(client => {
+                            const player = client.body;
+                            if (player?.health.ratio > 0) {
+                                // Max speed at distance of 0.5 * bee size + 75, zero speed at distance of 0.1 * bee size + 75
+                                // Slowdown is greater when bee is facing directly towards the player
+                                const distRatio = (Math.sqrt(quickDiff(this, player)) - player.size - this.size - 75) / this.size;
+                                const slowdownFactor = Math.cos(this.movementAngle - Math.atan2(player.y - this.y, player.x - this.x));
+                                const rawSpeedRatio = Math.max(0, Math.min(1, (distRatio - 0.1) / .4));
+                                const speedRatio = Math.max(.4, Math.min(1, 1 - (1 - rawSpeedRatio) * slowdownFactor));
+
+                                this.moveStrength = Math.min(this.moveStrength, this.speed * speedRatio);
+                            }
+                        });
+                    } else {
+                        this.movementAngle += Math.sin(performance.now() / 120 + this.id) * .1 * (this.velocity.magnitude * .5);
+                    }
                 } else {
                     this.movementAngle += Math.sin(performance.now() / 120 + this.id) * .1 * this.velocity.magnitude;
                 }
@@ -2956,7 +3148,7 @@ export class Mob extends Entity {
             }
 
             let hasTarget = false;
-            if (this.config.name === "Bumblebee") {
+            if (this.config.name === "Bumblebee" && !state.isBiomeGrid) {
                 // Bumblebee lays pollen on the ground
                 hasTarget = true;
             }
@@ -3117,6 +3309,7 @@ export class Mob extends Entity {
         super.collide();
         this.collideTerrain();
 
+        // Target selection for general aggressive mobs
         this.targetTick--;
         if (this.aggressive) {
             if (this.targetTick <= 0 || this.target === null || this.target.health.isDead) {
@@ -3150,6 +3343,162 @@ export class Mob extends Entity {
                         new Lightning(this, initx, inity).define(lightning.damage, lightning.range, lightning.bounces).bounce();
                         this.extraTicker = lightning.cooldown * (.95 + Math.random() * .1);
                     }
+                }
+            }
+        }
+        
+        // Target selection for bumblebee in grid mode
+        if (state.isBiomeGrid && this.config.bumblebeeMovement) {
+            // Arrange pollens around the bee's antennae (this must be done AFTER checking collision with wall)
+            for (let i = 0; i < this.bbState.pollens.length; i++) {
+                let pollen = this.bbState.pollens[i];
+
+                // Vector to place pollen exactly at antennae
+                let r1 = 1.6 * this.size;
+                let angle1 = this.facing;
+                if (i % 2 === 0) {
+                    angle1 += 0.25;
+                } else {
+                    angle1 -= 0.25;
+                }
+
+                // Vector to place different pollens at different positions around antennae
+                let r2 = 0.5 * pollen.size;
+                let angle2 = angle1 + Math.floor(i / 2) * Math.PI * 2 / 3;
+
+                pollen.x = this.x + r1 * Math.cos(angle1) + r2 * Math.cos(angle2);
+                pollen.y = this.y + r1 * Math.sin(angle1) + r2 * Math.sin(angle2);
+            }
+
+            this.bbState.eatTimer--;
+
+            if (this.health.ratio >= 0.75) {
+                // Main behaviour: Gather pollen from shrubs, feed pollen to heal injured mobs
+
+                let searchForTarget = false;
+                if (this.bbState.phase === BB_PHASES.WANDERING) {
+                    // Wandering bees will run target checks based on a timer
+                    if (this.targetTick <= 0) {
+                        searchForTarget = true;
+                    }
+                } else if (this.bbState.phase === BB_PHASES.GATHERING) {
+                    // Bees will stop gathering if it finished gathering 2 pollen, or if the target died
+                    if (this.targetTick <= 0 || this.bbState.pollensPending <= 0 || this.bbState.pollens.length >= 6 || this.target?.health.isDead) {
+                        searchForTarget = true;
+                    }
+                } else if (this.bbState.phase === BB_PHASES.FEEDING) {
+                    // Search for new target if it is finished feeding the target, or if the target died
+                    if (this.targetTick <= 0 || this.target?.health.ratio >= 1 || this.target?.health.isDead) {
+                        searchForTarget = true;
+                    }
+                } else if (this.bbState.phase === BB_PHASES.AFRAID) {
+                    // Bee should stop being afraid once it is no longer injured
+                    searchForTarget = true;
+                }
+
+                if (searchForTarget) {
+                    const gatherTarget = this.findTarget(this.size * 3 + 600, false, entity => {
+                        return entity.type === ENTITY_TYPES.MOB
+                            && entity.config?.name === "Shrub"
+                            && entity !== this.bbState.lastTarget;
+                    });
+                    const feedTarget = this.findTarget(this.size * 3 + 600, false, entity => {
+                        return entity.type !== ENTITY_TYPES.PETAL
+                            && entity.health.ratio < .75
+                            && (entity !== this.bbState.lastTarget || this.bbState.lastTargetPhase !== BB_PHASES.FEEDING);
+                    });
+
+                    if (feedTarget && this.bbState.pollens.length > 0) {
+                        this.target = feedTarget;
+                        this.bbState.phase = BB_PHASES.FEEDING;
+                        this.targetTick = 22.5 * 12; // Will give up feeding after 12s
+                        this.bbState.feedTimer = 22.5 * 2;
+                        this.bbState.lastTarget = feedTarget;
+                        this.bbState.lastTargetPhase = BB_PHASES.FEEDING;
+                    } else if (gatherTarget && this.bbState.pollens.length < 5) {
+                        this.target = gatherTarget;
+                        this.bbState.phase = BB_PHASES.GATHERING;
+                        this.targetTick = 22.5 * 15; // Will give up gathering after 15s
+                        this.bbState.gatherTimer = 22.5 * 4;
+                        this.bbState.pollensPending = 2;
+                        this.bbState.lastTarget = gatherTarget;
+                        this.bbState.lastTargetPhase = BB_PHASES.GATHERING;
+                    } else {
+                        // Search for targets in another random direction
+                        this.target = null;
+                        this.bbState.phase = BB_PHASES.WANDERING;
+                        this.movementAngle = 2 * Math.PI * Math.random();
+                        this.targetTick = 22.5 * (2 + Math.random());
+
+                        // Bee should move upwards if it is close to the Ocean biome
+                        if (this.y > -state.mapConstants.biomeTransition - 4 * 192) {
+                            this.movementAngle = -Math.PI * Math.random();
+                        }
+                    }
+                }
+            } else {
+                // Injured behaviour: Run away from player, gather pollen from shrubs to heal itself
+
+                let searchForTarget = false;
+                if (this.bbState.phase === BB_PHASES.WANDERING) {
+                    // Wandering bees will run target checks based on a timer
+                    if (this.targetTick <= 0) {
+                        searchForTarget = true;
+                    }
+                } else if (this.bbState.phase === BB_PHASES.GATHERING) {
+                    // Injured bees will stop gathering if it finished gathering 1 pollen, or if the target died
+                    if (this.targetTick <= 0 || this.bbState.pollensPending <= 1 || this.target?.health.isDead) {
+                        searchForTarget = true;
+                    }
+                } else if (this.bbState.phase === BB_PHASES.FEEDING) {
+                    // Injured bees stop feeding other mobs immediately
+                    searchForTarget = true;
+                } else if (this.bbState.phase === BB_PHASES.AFRAID && this.targetTick <= 0) {
+                    // Bee checks whether player is still nearby on a timer, or when player is dead
+                    if (this.targetTick <= 0 || this.target?.health.isDead) {
+                        searchForTarget = true;
+                    }
+                }
+
+                if (searchForTarget) {
+                    const gatherTarget = this.findTarget(this.size * 3 + 300, false, entity => {
+                        return entity.type === ENTITY_TYPES.MOB
+                            && entity.config?.name === "Shrub"
+                            && entity !== this.bbState.lastTarget;
+                    });
+
+                    const afraidTarget = this.findTarget(this.size * 3 + 300);
+
+                    if (gatherTarget) {
+                        this.target = gatherTarget;
+                        this.bbState.phase = BB_PHASES.GATHERING;
+                        this.targetTick = 22.5 * 15; // Will give up gathering after 15s
+                        this.bbState.gatherTimer = 22.5 * 4;
+                        this.bbState.pollensPending = 2;
+                        this.bbState.lastTarget = gatherTarget;
+                        this.bbState.lastTargetPhase = BB_PHASES.GATHERING;
+                    } else if (afraidTarget) {
+                        this.target = afraidTarget;
+                        this.bbState.phase = BB_PHASES.AFRAID;
+                        this.targetTick = 22.5 * (1 + Math.random() * .5);
+                    } else {
+                        // Search for targets in another random direction
+                        this.target = null;
+                        this.bbState.phase = BB_PHASES.WANDERING;
+                        this.movementAngle = 2 * Math.PI * Math.random();
+                        this.targetTick = 22.5 * (1 + Math.random() * .5);
+
+                        // Bee should move upwards if it is close to the Ocean biome
+                        if (this.y > -state.mapConstants.biomeTransition - 4 * 192) {
+                            this.movementAngle = -Math.PI * Math.random();
+                        }
+                    }
+                }
+
+                if (this.health.ratio < .5 && this.bbState.eatTimer <= 0) {
+                    // At below half health, the bumble bee starts eating its own Pollens
+                    this.releasePollen(true);
+                    this.bbState.eatTimer = 22.5 * 1;
                 }
             }
         }
@@ -3198,7 +3547,12 @@ export class Mob extends Entity {
                 const client = state.clients.get(damager.clientID);
 
                 if (client) {
-                    client.addXP((Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1));
+                    let xpReward = (Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1);
+                    if (state.isBiomeGrid) {
+                        // Do not randomize XP rewards in grid mode
+                        xpReward = Math.pow(3, this.rarity + 1);
+                    }
+                    client.addXP(xpReward);
 
                     const output = [];
                     for (const drop of mobConfigs[this.index].drops) {
@@ -3206,7 +3560,7 @@ export class Mob extends Entity {
                             continue;
                         }
 
-                        const rarity = getDropRarity(this.rarity, client.highestRarity + 5);
+                        const rarity = getDropRarity(this.rarity, client.highestRarity + 5, state.isBiomeGrid);
                         if (rarity < drop.minRarity) {
                             continue;
                         }
@@ -3264,6 +3618,20 @@ export class Mob extends Entity {
             }
             state.clients.forEach(c => c.systemMessage(killText, tiers[this.rarity].color));
         }
+        
+        if (this.bbState) {
+            if (topDamagers.length > 0) {
+                // Scatter this mob's pollens when it gets killed
+                while (this.bbState.pollens.length > 0) {
+                    this.releasePollen();
+                }
+            } else {
+                // Despawn this mob's pollens when it despawns
+                for (let pollen of this.bbState.pollens) {
+                    pollen.destroy();
+                }
+            }
+        }
     }
 
     getStatsDescription() {
@@ -3300,6 +3668,8 @@ export class Mob extends Entity {
 
         if (this.healing > 0) {
             description += `Healing: ${formatLargeNumber(this.health.maxHealth * this.healing * 22.5, 2)}/s\n`;
+        } else if (this.bumblebeeMovement) {
+            description += "Healing: 25% HP per pollen\n";
         }
 
         if (this.periodicHeal) {
@@ -3310,6 +3680,8 @@ export class Mob extends Entity {
         }
 
         description += `Speed: ${formatLargeNumber(this.speed, 2)}\n`;
+
+        description += `XP: ${formatLargeNumber(Math.pow(3, this.rarity + 1))}\n`;
 
         if (this.config.drops?.length > 0) {
             description += `Drops: ${this.config.drops.map(
@@ -3363,6 +3735,43 @@ export class Mob extends Entity {
             petal.poison.toApply.timer = this.projectile.poison.duration;
         }
         return petal;
+    }
+
+    /**
+     * A helper function for bumblebees to release a pollen to heal itself or other mobs.
+     */
+    releasePollen(targetItself = false) {
+        const pollen = this.bbState?.pollens?.pop();
+        if (!pollen) {
+            return;
+        }
+
+        pollen.healOnCollision = HEAL_ON_COLLISION.ALL;
+        pollen.launched = true;
+        pollen.launchedAt = this.target;
+        pollen.ignoreWalls = true;
+        pollen.range = 22.5 * 6;
+
+        if (this.health.isDead) {
+            // When this bumblebee dies, scatter pollens in random directions
+            pollen.moveAngle = Math.random() * 2 * Math.PI;
+            pollen.speed = Math.random() * .5;
+        } else if (targetItself) {
+            // When targeting itself, launch the pollen toward the bumblebee
+            pollen.moveAngle = Math.atan2(this.y - pollen.y, this.x - pollen.x);
+            pollen.speed = 6 + (Math.random() - .5) * 2;
+            pollen.healOnCollision = HEAL_ON_COLLISION.PARENT;
+            pollen.launchedAt = this;
+        } else if (this.target?.health.ratio > 0) {
+            // When targeting a valid target, gently release the pollen toward the target
+            // (Pollen still needs to be fast enough to reach the target if the target is moving)
+            pollen.moveAngle = Math.atan2(this.target.y - pollen.y, this.target.x - pollen.x);
+            pollen.speed = 2.5 + (Math.random() - .5) * .5;
+        } else {
+            // Failsafe: Gently release the pollen in the direction that the bumblebee is facing
+            pollen.moveAngle = this.facing + (Math.random() - .5) * .2 * Math.PI;
+            pollen.speed = 2.5 + (Math.random() - .5) * .5;
+        }
     }
 }
 

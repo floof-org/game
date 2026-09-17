@@ -341,9 +341,9 @@ const state = {
             if (level < 0) {
                 return 0;
             } else if (level >= 10 * (tiers.length - 2)) {
-                return 1e99 * Math.pow(3, level / 8.5);
+                return 1e99 * Math.pow(3, level / 8);
             } else {
-                return 50 * Math.pow(3, level / 8.5);
+                return 50 * Math.pow(3, level / 8);
             }
         } else {
             return Math.pow(level, 2.35) + Math.exp(level / 25);

@@ -416,7 +416,7 @@ state.router = new Router();
         const server = Bun.serve({
             async fetch(req) {
                 const cookie = req.headers.get('cookie');
-                const userId = await fetch(`https://supercord.lol/api/user/id`, { headers: { cookie } }).then(response => response.json());
+                const userId = await fetch(`https://supercord.dev/api/user/id`, { headers: { cookie } }).then(response => response.json());
                 if (userId?.error) return new Response(":(");
                 const ip = server.requestIP(req);
                 if (!ip?.address) return new Response(":(");

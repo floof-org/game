@@ -1,4 +1,4 @@
-export const SERVER_URL = "https://routing.floof.supercord.lol";
+export const SERVER_URL = "https://routing.supercord.dev";
 export function lerp(a, b, t) {
     return a + (b - a) * t;
 }
@@ -197,8 +197,8 @@ export function formatLargeNumber(number, type = 0) {
 
 const threshold = .6375;
 
-export function getDropRarity(mobRarity, highestPlayerRarity) {
-    const maxRarity = Math.min(11, Math.min(mobRarity, highestPlayerRarity + 1));
+export function getDropRarity(mobRarity, highestPlayerRarity, isBiomeGrid = false) {
+    const maxRarity = Math.min(11, mobRarity, highestPlayerRarity + 1);
     const minRarity = Math.max(0, maxRarity - 2);
 
     if (minRarity > maxRarity) {
@@ -211,6 +211,13 @@ export function getDropRarity(mobRarity, highestPlayerRarity) {
     for (let i = minRarity; i < maxRarity; i++) {
         if (Math.random() < myThreshold) {
             rarity++;
+        }
+    }
+
+    if (isBiomeGrid && rarity === minRarity && minRarity > 0) {
+        // In grid mode, higher-rarity mobs have a chance of dropping a (minRarity - 1) petal
+        if (Math.random() > Math.pow(.5, minRarity / 9)) {
+            rarity--;
         }
     }
 
