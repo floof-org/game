@@ -5,6 +5,7 @@ import { AIPlayer, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
+import SpatialHashGrid from './lib/SpatialHashGrid.js';
 
 function createWave(n) {
     const output = [];
@@ -111,6 +112,7 @@ setInterval(() => {
 
     state.spatialHash.clear();
     state.viewsSpatialHash.clear();
+    SpatialHashGrid.configure(state.width, state.height);
     state.entities.forEach(entity => entity.update());
     state.entities.forEach(entity => { if (entity._AABB) entity.collide() });
 

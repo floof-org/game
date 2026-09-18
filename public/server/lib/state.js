@@ -329,7 +329,7 @@ const state = {
 
     updateTerrain: () => {
         state.terrainSpatialHash.clear();
-
+        SpatialHashGrid.configure(state.width, state.height);
         state.terrain.forEach(terrain => {
             terrain._AABB = terrain.polygon._AABB;
             state.terrainSpatialHash.insert(terrain);

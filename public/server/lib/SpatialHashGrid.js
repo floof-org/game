@@ -11,6 +11,23 @@ function cellKey(x, y) {
 }
 
 export default class SpatialHashGrid {
+    static OFFSET = 0;
+    static SHIFT = 0;
+    static _w = -1;
+    static _h = -1;
+
+    // Call once per frame, before entities update, with the current world size.
+    static configure(worldW, worldH) {
+        if (worldW === this._w && worldH === this._h) return; // unchanged -> nothing to do
+        this._w = worldW;
+        this._h = worldH;
+        const cell = 1 << shiftA;
+        // Max |cell index| across either axis (world is centered at 0), +1 margin.
+        this.OFFSET = Math.max(Math.ceil(worldW / 2 / cell), Math.ceil(worldH / 2 / cell)) + 1;
+        // Bits needed to hold (coord + OFFSET) -> makes the pack a pure shift + or.
+        this.SHIFT = Math.ceil(Math.log2(2 * this.OFFSET + 1));
+    }
+
     constructor() {
         this.grid = new Map();
     }
