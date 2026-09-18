@@ -106,6 +106,7 @@ document.getElementById("createLobbyButton").onclick = async () => {
     localStorage.setItem("privateLobby", privateLobby.checked);
     hasCreatedLobby = true;
     document.getElementById("createLobbyButton").disabled = true;
+    const username = getUsername();
     const server = await net.createServer(lobbyName.value, gamemodeSelect.value, enableMods.checked, privateLobby.checked, biomeSelect.value);
     document.getElementById("createLobbyButton").disabled = false;
 
@@ -114,8 +115,7 @@ document.getElementById("createLobbyButton").onclick = async () => {
         hasCreatedLobby = false;
         return;
     }
-    
-    const username = getUsername();
+
 
     net.beginState(server.party);
 };
@@ -2471,7 +2471,7 @@ function draw() {
             ctx.roundRect(maxXOfSecondary + (lineWidth - 1), y + (lineWidth - 1), secondaryBoxSize - (lineWidth - 1) * 2, secondaryBoxSize - (lineWidth - 1) * 2, 2);
             ctx.closePath();
             ctx.fill();
-            
+
             text("Destroy", maxXOfSecondary + secondaryBoxSize / 2, y + secondaryBoxSize / 2, secondaryBoxSize / 5);
             text("[k]", maxXOfSecondary + secondaryBoxSize / 2, y + secondaryBoxSize + padding, 12);
         }
@@ -2623,7 +2623,7 @@ function draw() {
         net.state.waveInfoBarWidth ??= 0;
         net.state.waveInfoBarWidth = lerp(net.state.waveInfoBarWidth, barWidth, 0.15);
         let size = 22.5 * Math.min(1, net.state.waveInfoBarWidth / 15);
-        
+
         ctx.textBaseline = "middle";
 
         text("Wave " + net.state.waveInfo.wave, width / 2, 30, 35);
@@ -2847,7 +2847,7 @@ function draw() {
         const petalRects = net.state.petalElements.map(petalElement => petalElement.icon.getBoundingClientRect());
         const mouseX = mouse.x / window.devicePixelRatio;
         const mouseY = mouse.y / window.devicePixelRatio;
-        
+
         net.state.petalElements.forEach((petal, i) => {
             const rect = petalRects[i]
             const visible = rect.top >= menuRect.top && rect.bottom <= menuRect.bottom && rect.left >= menuRect.left && rect.right <= menuRect.right;

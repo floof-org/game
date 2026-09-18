@@ -5,6 +5,7 @@ import { AIPlayer, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
+import SpatialHashGrid from './lib/SpatialHashGrid.js';
 
 function createWave(n) {
     const output = [];
@@ -111,6 +112,7 @@ setInterval(() => {
 
     state.spatialHash.clear();
     state.viewsSpatialHash.clear();
+    SpatialHashGrid.configure(state.width, state.height);
     state.entities.forEach(entity => entity.update());
     state.entities.forEach(entity => { if (entity._AABB) entity.collide() });
 
@@ -261,14 +263,14 @@ switch (globalThis.environmentName) {
         if (Bun.env.ENV_DONE !== "true") {
             await Bun.write("./.env", [
                 "ENV_DONE=false",
-                "ROUTING_SERVER=https://routing.floof.supercord.lol",
+                "ROUTING_SERVER=https://routing.supercord.dev",
                 "GAME_NAME=dedicated lobby",
                 "MODDED=false",
                 "GAMEMODE=maze",
                 `SECRET=${Array.from(crypto.getRandomValues(new Uint8Array(24))).map(e => e.toString(16).padStart(2, "0")).join("")}`,
                 "ADMIN_KEYS=devkey,devkey2",
                 "BIOME=0",
-                "HOST=dedicated.floof.supercord.lol",
+                "HOST=dedicated.floof.supercord.dev",
                 "PORT=3005",
                 "TLS_DIRECTORY=false"
             ].join("\n"));
