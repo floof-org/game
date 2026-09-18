@@ -106,6 +106,7 @@ document.getElementById("createLobbyButton").onclick = async () => {
     localStorage.setItem("privateLobby", privateLobby.checked);
     hasCreatedLobby = true;
     document.getElementById("createLobbyButton").disabled = true;
+    const username = getUsername();
     const server = await net.createServer(lobbyName.value, gamemodeSelect.value, enableMods.checked, privateLobby.checked, biomeSelect.value);
     document.getElementById("createLobbyButton").disabled = false;
 
