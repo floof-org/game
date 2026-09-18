@@ -1,13 +1,11 @@
-const shiftA = 6;
+const shiftA = 6; // cell size = 2^6 (a design choice)
 // Cell coords are packed into a single numeric key with an offset so that negative
 // coordinates cannot collide (the old `x | (y << 6)` mapping merged distinct cells,
 // which made lookups degrade badly on large maps). Supports cell coords in
 // [-2048, +2047] => world range of +/-131072 units at the current 64px cell size.
-const CELL_OFFSET = 1 << 11;
-const CELL_STRIDE = 1 << 12;
 
 function cellKey(x, y) {
-    return (x + CELL_OFFSET) * CELL_STRIDE + (y + CELL_OFFSET);
+    return ((x + SpatialHashGrid.OFFSET) << SpatialHashGrid.SHIFT) | (y + SpatialHashGrid.OFFSET);
 }
 
 export default class SpatialHashGrid {
