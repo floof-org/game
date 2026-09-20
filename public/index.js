@@ -1767,6 +1767,12 @@ function draw() {
     const currentMobs = new Map();
     const currentPetals = new Map();
     const currentPlayers = new Map();
+    const mobRenderDistance = net.state.camera.fov / 1.85;
+    const isMobInRenderDistance = (mob) => {
+        const dx = mob.x - net.state.camera.x;
+        const dy = mob.y - net.state.camera.y;
+        return dx * dx + dy * dy <= mobRenderDistance * mobRenderDistance;
+    };
 
     net.state.mobs.forEach((mob) => currentMobs.set(mob.id, mob));
     net.state.petals.forEach((petal) => currentPetals.set(petal.id, petal));
@@ -1822,6 +1828,7 @@ function draw() {
         const entity = data.mob;
         data.progress += 0.2;
         if (data.progress >= 1) return net.state.dyingMobs.delete(id);
+        if (!isMobInRenderDistance(entity)) return;
         const fade = 1 - data.progress;
         const scaling = 1.35 + data.progress;
         const drawX = entity.x * scale - cameraX + halfWidth;
@@ -2001,6 +2008,7 @@ function draw() {
 
     net.state.mobs.forEach((entity) => {
         entity.interpolate();
+        if (!isMobInRenderDistance(entity)) return;
         const drawX = entity.x * scale - cameraX + halfWidth;
         const drawY = entity.y * scale - cameraY + halfHeight;
         const size = entity.size * scale;
