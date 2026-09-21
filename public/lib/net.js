@@ -792,7 +792,9 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
             socket.onclose = ev => {
                 const { code, reason, wasClean, timestamp } = ev;
                 console.log("Disconnected from server:", JSON.stringify({ code, reason, wasClean, timestamp }));
-                //worker.terminate();
+
+                // For logging reasons, wait 60s before terminating the worker
+                setTimeout(() => worker.terminate(), 60 * 1000);
             };
 
             if (modded) {

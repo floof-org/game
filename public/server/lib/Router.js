@@ -1,7 +1,7 @@
 import { stringToU8 } from "../../lib/lobbyProtocol.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, CLIENT_BOUND, encodeEverything, GAMEMODES, loadTerrains, Reader } from "../../lib/protocol.js";
 import Client from "./Client.js";
-import { applyGridBiomeConfigs, mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
+import { applyBiomeGridConfigs, mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
 import initTerrain from "./initTerrain.js";
 import state from "./state.js";
 
@@ -224,7 +224,15 @@ export default class Router {
         if (message[1] === "maze" && message[2]) {
             state.isBiomeGrid = true;
 
-            applyGridBiomeConfigs();
+            applyBiomeGridConfigs();
+            
+
+            // Set up times for daily resets
+            const dayLength = 24 * 3600 * 1000;
+            state.resetTime = Date.now() - (Date.now() % dayLength) + dayLength;
+            for (let i = 0; i < 5; i++) {
+                state.resetWarningTimes.push(state.resetTime - (i + 1) * 60 * 1000);
+            }
             
             // Send everything new to the client
             this.sendMockups();
@@ -239,8 +247,7 @@ export default class Router {
                 state.gamemode = GAMEMODES.MAZE;
                 state.mobsExpire = true;
                 state.teamCount = 0;
-                state.killAnnounceRarity = state.isBiomeGrid ? 8 : 10;
-                state.spawnAnnounceRarity = state.isBiomeGrid ? 8 : 10;
+                state.announceRarity = state.isBiomeGrid ? 8 : 10;
 
                 // setTimeout(() => {
                 //     state.clients.forEach(c => c.systemMessage("Lobby will be closing in 5 minutes...", "#FF0000"));

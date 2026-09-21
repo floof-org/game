@@ -839,8 +839,9 @@ export const mobConfigs = [
 
 export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 
-// Give bumblebee 1/2 weight
+// Give bumblebee 1/2 weight, give shrub 3/2 weight to feed bumblebees
 export const GRID_GARDEN_MOBS = [
+    mobIDOf("Shrub"),
     mobIDOf("Shrub"),
     mobIDOf("Shrub"),
     mobIDOf("Leafbug"),
@@ -1038,7 +1039,7 @@ export const randomPossiblePetal = (rarity) => {
     return possible[Math.random() * possible.length | 0];
 }
 
-export function applyGridBiomeConfigs() {
+export function applyBiomeGridConfigs() {
     // Make enemy damage scale slower to prevent player from unfairly getting one-shot
     PetalTier.HEALTH_SCALE = 2;
     MobTier.DAMAGE_SCALE = 2.1;
@@ -1063,7 +1064,7 @@ export function applyGridBiomeConfigs() {
                 .addAction("stroke", "#000000", 0.4, 0)
                 .addAction("stroke", "#00db2f", 0.3, 0)
                 .addAction("beginPath")
-                .addAction("line", 0, 0.8, 0, 0.8)
+                .addAction("line", 0, 0.8, 0, 0.81)
                 .addAction("stroke", "#000000", 0.4, 0)
                 .addAction("stroke", "#00db2f", 0.3, 0)
             )
@@ -1492,6 +1493,14 @@ export function applyGridBiomeConfigs() {
     // Todo: Make player unable to kill mobs with Powder equipped
     // Todo: Make lightning able to hit the same mob multiple times
     // Todo: How can Pincer be useful in Garden?
+    // Todo: Does Antennae vision cause lag?
+
+    // Todo: One of these 2 ideas:
+    // 1. Ocean ecosystem: Leeches eat from sponges and (rarely) jf, while jf can shock and stun leeches in self-defence
+    //   - Should also add Rubber petal to make this jf strategy safer
+    // 2. New ocean/desert hybrid mob: Urchin. It rotates its body to launch 10 fast projectiles at the player
+    //   - New petal: Lotus, absorbs poison damage, including toxic remnants
+    //   - Want to do thorn-type petal that implements pokemon's Merciless ability, idk if it works in floof though
 
     // Todo: Safeguards to prevent mobs from spawning in wall
 

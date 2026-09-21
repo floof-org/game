@@ -88,7 +88,8 @@ function getUsername() {
         return user.username;
     }
 
-    window.location.href = `https://discord.com/oauth2/authorize?client_id=1132362368979050546&response_type=code&redirect_uri=https%3A%2F%2Fsupercord.dev%2Fapi%2Flogin&scope=identify&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
+    const oauthUrl = import.meta.env.VITE_DISCORD_OAUTH2_REDIRECT_URL ?? process.env.DISCORD_OAUTH2_REDIRECT_URL;
+    window.location.href = `${oauthUrl}&state=${encodeURIComponent(JSON.stringify({ redirect: window.location.href }))}`;
 }
 
 let hasCreatedLobby = false;

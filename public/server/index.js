@@ -4,7 +4,7 @@ import { DEFAULT_PETAL_COUNT, GRID_DESERT_MOBS, GRID_GARDEN_MOBS, GRID_OCEAN_MOB
 import { AIPlayer, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
-import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
+import { applyArticle, colors, getWaveMobRarity, isHalloween } from "../lib/util.js";
 import SpatialHashGrid from './lib/SpatialHashGrid.js';
 
 function createWave(n) {
@@ -262,7 +262,16 @@ setInterval(() => {
                 const mob = new Mob(info.position);
                 mob.define(cfg, info.rarity);
 
-                if (info.rarity >= state.spawnAnnounceRarity && state.spawnAnnounceRarity > -1) {
+                let announceRarity = state.announceRarity;
+                
+                if (state.isBiomeGrid) {
+                    // Do not announce spawns at or below the max rarity killed
+                    state.clients.forEach(client => {
+                        announceRarity = Math.max(announceRarity, client.maxKilledRarity + 1);
+                    });
+                }
+
+                if (info.rarity >= announceRarity && announceRarity > -1) {
                     if (!tiers[info.rarity]) console.error(`Rarity returns undefined: ${info.rarity}`);
                     else state.clients.forEach(c => c.systemMessage(applyArticle(tiers[info.rarity].name, true) + " " + cfg.name + " has spawned!", tiers[info.rarity].color));
                 }
@@ -280,6 +289,19 @@ setInterval(() => {
 
     state.lag.totalTime += performance.now() - startTime;
     state.lag.ticks++;
+
+    if (Date.now() >= state.resetTime) {
+        state.resetLobby();
+    }
+
+    for (let i = 0; i < state.resetWarningTimes.length; i++) {
+        if (Date.now() >= state.resetWarningTimes[i]) {
+            state.clients.forEach(client => {
+                client.systemMessage(`Server: Resetting in ${i + 1} ${i === 0 ? "min" : "mins"}!`, colors.uncommon);
+            });
+            state.resetWarningTimes[i] += 24 * 3600 * 1000;
+        }
+    }
 }, 1000 / 22.5);
 
 let k = 0;
@@ -415,8 +437,9 @@ state.router = new Router();
         const ipCounts = new Map();
         const server = Bun.serve({
             async fetch(req) {
+                const authServerUrl = import.meta.env.VITE_AUTH_SERVER ?? process.env.AUTH_SERVER;
                 const cookie = req.headers.get('cookie');
-                const userId = await fetch(`https://supercord.dev/api/user/id`, { headers: { cookie } }).then(response => response.json());
+                const userId = await fetch(`${authServerUrl}/api/user/id`, { headers: { cookie } }).then(response => response.json());
                 if (userId?.error) return new Response(":(");
                 const ip = server.requestIP(req);
                 if (!ip?.address) return new Response(":(");

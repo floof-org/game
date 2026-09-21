@@ -711,6 +711,7 @@ class Disconnect {
         this.body = client.body;
         this.team = client.team;
         this.inventory = client.inventory;
+        this.maxKilledRarity = client.maxKilledRarity;
 
         Client.disconnects.set(this.userId, this);
 
@@ -746,6 +747,7 @@ export default class Client {
         this.camera = new Camera();
         this.sentTerrain = false;
         this.sentBiome = undefined;
+        this.maxKilledRarity = 0;
 
         /** @type {Player|null} */
         this.body = null;
@@ -897,7 +899,13 @@ export default class Client {
                 const lowercase = this.username.toLowerCase();
                 this.verified = true;
                 console.log(`Client ${this.id} verified as ${this.username}`);
-                tiers.forEach(tier => this.inventory[tier.name] = {});
+
+                tiers.forEach(tier => {
+                    this.inventory[tier.name] = {};
+                    petalConfigs.forEach(config => {
+                        this.inventory[tier.name][config.id] = 0;
+                    });
+                });
 
                 if (this.userId === state.secretKey && this.masterPermissions < 1) this.nameColor = "#F5D230";
 
@@ -910,6 +918,7 @@ export default class Client {
                     this.secondarySlots = dc.secondarySlots;
                     this.team = dc.team;
                     this.inventory = dc.inventory;
+                    this.maxKilledRarity = dc.maxKilledRarity;
                     this.addXP(0);
 
                     if (dc.body) {
@@ -941,47 +950,7 @@ export default class Client {
                 }, 100);
                 break;
             case SERVER_BOUND.SPAWN:
-                if (!this.verified) {
-                    this.kick("Not verified");
-                    return;
-                }
-
-                if (this.body && !this.body.health.isDead) {
-                    return;
-                }
-
-                this.body = new Player(state.getPlayerSpawn(this));
-                this.body.name = this.username;
-                this.body.nameColor = this.nameColor;
-                this.body.client = this;
-                this.body.health.set(this.healthAdjustement);
-                this.body.damage = this.bodyDamageAdjustment;
-                this.addXP(0)
-
-                this.body.initSlots(this.slots.length);
-                for (let i = 0; i < this.slots.length; i++) {
-                    if (this.slots[i]) {
-                        this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
-                    }
-                }
-
-                this.body.spawnInvincibility = true
-
-                setTimeout(() => {
-                    if (this.body) {
-                        this.body.spawnInvincibility = false;
-                    }
-                }, 2 * 1000);
-
-                if (state.isBiomeGrid) {
-                    this.aliveTimer = 0;
-                    this.toggleAfk(false);
-                }
-
-                if (state.isTDM) {
-                    this.body.team = -this.team;
-                }
-                state.alivePlayers.push(this);
+                this.spawnPlayer();
                 break;
             case SERVER_BOUND.INPUTS: {
                 if (!this.verified) {
@@ -1442,7 +1411,7 @@ export default class Client {
                     } else if (message === "/help") {
                         this.systemMessage("Available commands:", colors.uncommon);
                         this.systemMessage("/help - Shows you the list of available commands.", colors.unique);
-                        this.systemMessage("/info [1-5] - Info about this gamemode's unique mechanics.", colors.unique);
+                        this.systemMessage("/info [1-6] - Info about this gamemode's unique mechanics.", colors.unique);
                         this.systemMessage("/tp - Teleports you from the top of the map to the bottom of the map, and vice versa.", colors.unique);
                         this.systemMessage("/afk - Lets other players know that you are AFK.", colors.unique);
                         this.systemMessage("/xp - Tells you your current XP (the leaderboard shows your level instead).", colors.unique);
@@ -1450,7 +1419,27 @@ export default class Client {
                         this.systemMessage("/die - Kills your flower and lets you respawn afterward.", colors.unique);
                         return;
                     } else if (message === "/info" || message === "/info 1") {
-                        this.systemMessage("INFO 1/5 - ADRENALINE MECHANIC", colors.uncommon);
+                        this.systemMessage("INFO 1/6 - SERVER INFO", colors.uncommon);
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage(
+                            "- This gamemode is unfinished and under active development. If you find any bugs or " +
+                            "issues, please report them to the gamemode's creator (@pigeonbar on Discord)",
+                            colors.unique,
+                        );
+                        this.systemMessage(
+                            "- This lobby has an estimated completion time of 1-2 hours.",
+                            colors.unique,
+                        );
+                        this.systemMessage(
+                            "- This server (along with all player progress) gets reset daily at midnight UTC. " +
+                            "New updates may also happen during server resets.",
+                            colors.unique,
+                        );
+                        this.systemMessage("", colors.uncommon);
+                        this.systemMessage("(Use \"/info 2\" to continue...)", colors.uncommon);
+                        return;
+                    } else if (message === "/info 2") {
+                        this.systemMessage("INFO 2/6 - ADRENALINE MECHANIC", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
                             "- Whenever your flower takes non-poison damage, all your petals skip 6.25% of their " +
@@ -1468,11 +1457,11 @@ export default class Client {
                             colors.lightningTeal,
                         );
                         this.systemMessage("", colors.uncommon);
-                        this.systemMessage("(Use \"/info 2\" to continue...)", colors.uncommon);
+                        this.systemMessage("(Use \"/info 3\" to continue...)", colors.uncommon);
                         return;
-                    } else if (message === "/info 2") {
+                    } else if (message === "/info 3") {
                         const damageColor = "#FF4D4D";
-                        this.systemMessage("INFO 2/5 - POISON DRAIN MECHANIC", colors.uncommon);
+                        this.systemMessage("INFO 3/6 - POISON DRAIN MECHANIC", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
                             "- If a player or mob gets hit with non-poison damage, the player/mob's " +
@@ -1498,11 +1487,11 @@ export default class Client {
                             damageColor,
                         );
                         this.systemMessage("", colors.uncommon);
-                        this.systemMessage("(Use \"/info 3\" to continue...)", colors.uncommon);
+                        this.systemMessage("(Use \"/info 4\" to continue...)", colors.uncommon);
                         return;
-                    } else if (message === "/info 3") {
+                    } else if (message === "/info 4") {
                         const poisonColor = "#9B4DFF";
-                        this.systemMessage("INFO 3/5 - TOXIC REMNANTS MECHANIC", colors.uncommon);
+                        this.systemMessage("INFO 4/6 - TOXIC REMNANTS MECHANIC", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
                             "- When a player or mob takes poison damage, it also inflicts Toxic " +
@@ -1521,10 +1510,10 @@ export default class Client {
                             poisonColor,
                         );
                         this.systemMessage("", colors.uncommon);
-                        this.systemMessage("(Use \"/info 4\" to continue...)", colors.uncommon);
+                        this.systemMessage("(Use \"/info 5\" to continue...)", colors.uncommon);
                         return;
-                    } else if (message === "/info 4") {
-                        this.systemMessage("INFO 4/5 - MOB MECHANICS", colors.uncommon);
+                    } else if (message === "/info 5") {
+                        this.systemMessage("INFO 5/6 - MOB MECHANICS", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage(
                             "- Whenever you die, you lose all damage progress on every mob that you haven't successfully " +
@@ -1538,17 +1527,11 @@ export default class Client {
                             colors.unique,
                         );
                         this.systemMessage("", colors.uncommon);
-                        this.systemMessage("(Use \"/info 5\" to continue...)", colors.uncommon);
-                        return;
-                    } else if (message === "/info 5") {
-                        this.systemMessage("INFO 5/5 - FINAL TIPS", colors.uncommon);
+                        this.systemMessage("(Use \"/info 6\" to continue...)", colors.uncommon);
+                    } else if (message === "/info 6") {
+                        this.systemMessage("INFO 6/6 - FINAL TIPS", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         this.systemMessage("Here are some final tips for this gamemode:", colors.unique);
-                        this.systemMessage(
-                            "- This gamemode is unfinished and under active development. If you find any bugs or " +
-                            "issues, please report them to the gamemode's creator (@pigeonbar on Discord)",
-                            colors.unique,
-                        );
                         this.systemMessage(
                             "- You can teleport between Garden and Desert by moving to the top/bottom of the map " +
                             "and then using \"/tp\".",
@@ -1565,8 +1548,8 @@ export default class Client {
                         );
                         this.systemMessage("Thank you for playing Biome Grid, and have fun!", colors.unique);
                         return;
-                    } else if (message === "/info 6") {
-                        this.systemMessage("INFO 6/5 - undefined", colors.uncommon);
+                    } else if (message === "/info 7") {
+                        this.systemMessage("INFO 7/6 - undefined", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
                         let msg = "-You can hold the [J] key to vie Uncaught OutOfBoundsError ";
                         let chars = "          ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()1234567890";
@@ -1871,7 +1854,7 @@ export default class Client {
             this.systemMessage(
                 "This gamemode has several important mechanics not present in other gamemodes. For example, Garden " +
                 "mobs can heal themselves, but you can prevent them from healing by poisoning them. To learn more, " +
-                "please use \"/info [1-5]\" .",
+                "please use \"/info [1-6]\" .",
                 colors.uncommon,
             );
             this.systemMessage("", colors.uncommon);
@@ -1886,5 +1869,84 @@ export default class Client {
     /** @param {Drop} drop */
     removeDrop(drop) {
         this.camera.dropsToRemove.push(drop);
+    }
+
+    /**
+     * A helper function to respawn the player.
+     */
+    spawnPlayer() {
+        if (!this.verified) {
+            this.kick("Not verified");
+            return;
+        }
+
+        if (this.body && !this.body.health.isDead) {
+            return;
+        }
+
+        this.body = new Player(state.getPlayerSpawn(this));
+        this.body.name = this.username;
+        this.body.nameColor = this.nameColor;
+        this.body.client = this;
+        this.body.health.set(this.healthAdjustement);
+        this.body.damage = this.bodyDamageAdjustment;
+        this.addXP(0);
+
+        this.body.initSlots(this.slots.length);
+        for (let i = 0; i < this.slots.length; i++) {
+            if (this.slots[i]) {
+                this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
+            }
+        }
+
+        this.body.spawnInvincibility = true;
+
+        setTimeout(() => {
+            if (this.body) {
+                this.body.spawnInvincibility = false;
+            }
+        }, 2 * 1000);
+
+        if (state.isBiomeGrid) {
+            this.aliveTimer = 0;
+            this.toggleAfk(false);
+        }
+
+        if (state.isTDM) {
+            this.body.team = -this.team;
+        }
+        state.alivePlayers.push(this);
+    }
+
+    /**
+     * A helper function to reset this client's progress back to the very
+     * beginning. For example, this is done during server resets.
+     *
+     * This function also handles respawning the player at the beginning of the
+     * map.
+     */
+    resetProgress() {
+        this.body?.destroy(false);
+
+        this.inventory = {};
+        tiers.forEach(tier => {
+            this.inventory[tier.name] = {};
+            petalConfigs.forEach(config => {
+                this.inventory[tier.name][config.id] = 0;
+            });
+        });
+        this.slots = new Array(5).fill(null).map(() => ({ id: 0, rarity: 0 }));
+        this.slotRatios = new Array(5).fill(0).map(() => 0);
+        this.secondarySlots = new Array(5).fill(null).map(() => null);
+        this.level = 1;
+        this.xp = 1;
+        if (state.isBiomeGrid) {
+            this.secondarySlots[0] = { id: petalIDOf("Gallery"), rarity: 0 };
+            this.xp = state.xpForLevel(0) + 0.00001;
+        }
+        this.maxKilledRarity = 0;
+        this.sentBiome = undefined;
+
+        this.spawnPlayer();
     }
 }

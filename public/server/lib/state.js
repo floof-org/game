@@ -25,8 +25,7 @@ const state = {
     isLineMap: false,
     biome: 0,
 
-    killAnnounceRarity: 7,
-    spawnAnnounceRarity: 7,
+    announceRarity: 7,
 
     gamemode: GAMEMODES.FFA,
 
@@ -134,6 +133,20 @@ const state = {
 
         if (gridX < 0 || gridX >= state.terrainGridWidth || gridY < 0 || gridY >= state.terrainGridHeight) {
             return false;
+        }
+        
+        // In grid mode, do not spawn mobs right next to walls, so that the mob doesn't get stuck in the wall
+        if (state.isBiomeGrid) {
+            const tileWidth = state.width / state.terrainGridWidth;
+            const tileHeight = state.height / state.terrainGridHeight;
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (state.mapDataAt(x + i * tileWidth, y + i * tileHeight)?.type === 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         return state.mapDataAt(x, y).type !== 0;
@@ -463,6 +476,39 @@ const state = {
         biomeTransition: 0,
         tpThreshold: 0,
     },
+
+    /**
+     * A list of times to warn the player 1-5 minutes before daily server resets.
+     */
+    resetWarningTimes: [],
+    
+    /**
+     * The next timestamp to perform the next daily server reset.
+     */
+    resetTime: 1e99,
+
+    resetLobby: () => {
+        state.resetTime += 24 * 3600 * 1000;
+
+        state.drops.forEach(drop => drop.destroy());
+
+        state.drops = new Map();
+        state.pentagrams = new Map();
+        state.lightning = new Map();
+
+        state.entities.forEach(entity => {
+            // Respawning players and resetting player progress is handled separately
+            if (entity.type !== ENTITY_TYPES.PLAYER) {
+                entity.damagedBy = {};
+                entity.destroy();
+            }
+        });
+
+        state.clients.forEach(client => {
+            client.resetProgress();
+            client.systemMessage("Server: All progress has been reset!", colors.uncommon);
+        });
+    }
 };
 
 if (state.inventory) tiers.forEach(tier => {

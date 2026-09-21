@@ -1,4 +1,4 @@
-export const SERVER_URL = "https://routing.supercord.dev";
+export const SERVER_URL = import.meta.env.VITE_ROUTING_SERVER ?? process.env.ROUTING_SERVER;
 export function lerp(a, b, t) {
     return a + (b - a) * t;
 }

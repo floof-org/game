@@ -1800,7 +1800,7 @@ export class Petal extends Entity {
         super.collide();
 
         // Petals with the "Heal on collision" property should also collide with terrain
-        if (this.healOnCollision !== HEAL_ON_COLLISION.NONE) {
+        if (this.healOnCollision === HEAL_ON_COLLISION.ALL) {
             this.collideTerrain();
         }
     }
@@ -2038,7 +2038,7 @@ export class Player extends Entity {
         }
     }
 
-    destroy() {
+    destroy(notifyClient = true) {
         this.petalSlots.forEach(slot => slot.destroy());
         super.destroy();
 
@@ -2068,35 +2068,38 @@ export class Player extends Entity {
             const xpToGift = this.petalSlots.reduce((acc, slot) => acc + Math.pow(slot.rarity + 1, 3), 0);
             this.client.addXP(-Math.random() * .1 * this.client.xp);
 
-            topDamagers.forEach(damager => {
-                if (damager.type === ENTITY_TYPES.PLAYER) {
-                    playerKillers.push(damager.name);
+            if (notifyClient) {
+                topDamagers.forEach(damager => {
+                    if (damager.type === ENTITY_TYPES.PLAYER) {
+                        playerKillers.push(damager.name);
 
-                    if (damager.clientID !== null) {
-                        const client = state.clients.get(damager.clientID);
+                        if (damager.clientID !== null) {
+                            const client = state.clients.get(damager.clientID);
 
-                        if (client) {
-                            client.addXP(xpToGift);
+                            if (client) {
+                                client.addXP(xpToGift);
+                            }
                         }
                     }
+
+                    if (damager.type === ENTITY_TYPES.MOB) {
+                        mobKillers[damager.name] = (mobKillers[damager.name] || 0) + 1;
+                    }
+                });
+
+                const allKillers = [...playerKillers, ...Object.entries(mobKillers).map(([name, count]) => (count === 1 ? "a" : count) + " " + (count > 1 ? applyPlural(name) : name))];
+
+                let string = "You were killed by ";
+
+                if (allKillers.length > 0) {
+                    string += allKillers.slice(0, -1).join(", ") + (allKillers.length > 1 ? " and " : "") + allKillers[allKillers.length - 1];
+                } else {
+                    string += "\"the game\"";
                 }
 
-                if (damager.type === ENTITY_TYPES.MOB) {
-                    mobKillers[damager.name] = (mobKillers[damager.name] || 0) + 1;
-                }
-            });
-
-            const allKillers = [...playerKillers, ...Object.entries(mobKillers).map(([name, count]) => (count === 1 ? "a" : count) + " " + (count > 1 ? applyPlural(name) : name))];
-
-            let string = "You were killed by ";
-
-            if (allKillers.length > 0) {
-                string += allKillers.slice(0, -1).join(", ") + (allKillers.length > 1 ? " and " : "") + allKillers[allKillers.length - 1];
-            } else {
-                string += "\"the game\"";
+                this.client.talk(CLIENT_BOUND.DEATH, string);
             }
 
-            this.client.talk(CLIENT_BOUND.DEATH, string);
             this.client.body = null;
             state.alivePlayers = state.alivePlayers.filter(m => m.id !== this.client.id);
         }
@@ -2428,6 +2431,7 @@ export class Mob extends Entity {
                 eatTimer: 0,
                 lastTarget: null,
                 lastTargetPhase: BB_PHASES.WANDERING,
+                targetRetries: 0,
             };
         }
     }
@@ -2793,7 +2797,7 @@ export class Mob extends Entity {
         }
 
         if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.health.ratio <= .8 ? 120_000 : 30_000)) < performance.now()) {
-            this.damagedBy = []
+            this.damagedBy = {};
             this.destroy();
             return;
         }
@@ -3415,6 +3419,7 @@ export class Mob extends Entity {
                         this.bbState.feedTimer = 22.5 * 2;
                         this.bbState.lastTarget = feedTarget;
                         this.bbState.lastTargetPhase = BB_PHASES.FEEDING;
+                        this.bbState.targetRetries = 0;
                     } else if (gatherTarget && this.bbState.pollens.length < 5) {
                         this.target = gatherTarget;
                         this.bbState.phase = BB_PHASES.GATHERING;
@@ -3423,6 +3428,7 @@ export class Mob extends Entity {
                         this.bbState.pollensPending = 2;
                         this.bbState.lastTarget = gatherTarget;
                         this.bbState.lastTargetPhase = BB_PHASES.GATHERING;
+                        this.bbState.targetRetries = 0;
                     } else {
                         // Search for targets in another random direction
                         this.target = null;
@@ -3442,7 +3448,8 @@ export class Mob extends Entity {
                 let searchForTarget = false;
                 if (this.bbState.phase === BB_PHASES.WANDERING) {
                     // Wandering bees will run target checks based on a timer
-                    if (this.targetTick <= 0) {
+                    // The timer gets shortened by 1 second so that the bee reacts faster to getting damaged
+                    if (this.targetTick <= 22.5) {
                         searchForTarget = true;
                     }
                 } else if (this.bbState.phase === BB_PHASES.GATHERING) {
@@ -3461,7 +3468,11 @@ export class Mob extends Entity {
                 }
 
                 if (searchForTarget) {
-                    const gatherTarget = this.findTarget(this.size * 3 + 300, false, entity => {
+                    // The bee's ability to find shrubs improves as its number of retries increases,
+                    // mostly so that the player can't just trap the bee in a corneer.
+                    this.bbState.targetRetries++;
+
+                    const gatherTarget = this.findTarget(this.size * 3 + 300 * this.bbState.targetRetries, false, entity => {
                         return entity.type === ENTITY_TYPES.MOB
                             && entity.config?.name === "Shrub"
                             && entity !== this.bbState.lastTarget;
@@ -3477,16 +3488,17 @@ export class Mob extends Entity {
                         this.bbState.pollensPending = 2;
                         this.bbState.lastTarget = gatherTarget;
                         this.bbState.lastTargetPhase = BB_PHASES.GATHERING;
+                        this.bbState.targetRetries = 0;
                     } else if (afraidTarget) {
                         this.target = afraidTarget;
                         this.bbState.phase = BB_PHASES.AFRAID;
-                        this.targetTick = 22.5 * (1 + Math.random() * .5);
+                        this.targetTick = 22.5 * (2 + Math.random() * .5);
                     } else {
                         // Search for targets in another random direction
                         this.target = null;
                         this.bbState.phase = BB_PHASES.WANDERING;
                         this.movementAngle = 2 * Math.PI * Math.random();
-                        this.targetTick = 22.5 * (1 + Math.random() * .5);
+                        this.targetTick = 22.5 * (2 + Math.random() * .5);
 
                         // Bee should move upwards if it is close to the Ocean biome
                         if (this.y > -state.mapConstants.biomeTransition - 4 * 192) {
@@ -3527,6 +3539,7 @@ export class Mob extends Entity {
             for (let petal of this.periodicHeal.state.healPetals) {
                 petal.destroy();
             }
+            this.periodicHeal.state.healPetals = [];
         }
 
         if (!this.friendly && this.countsTowardsMobCount) {
@@ -3576,8 +3589,22 @@ export class Mob extends Entity {
 
             }
         });
+
+        let announceRarity = state.announceRarity;
         
-        const announceRarity = topDamagers.length > 0 ? state.killAnnounceRarity : state.spawnAnnounceRarity;
+        if (state.isBiomeGrid) {
+            if (topDamagers.length > 0) {
+                // Do not announce kills below the max rarity killed
+                state.clients.forEach(client => {
+                    announceRarity = Math.max(announceRarity, client.maxKilledRarity);
+                });
+            } else {
+                // Do not announce despawns at or below the max rarity killed
+                state.clients.forEach(client => {
+                    announceRarity = Math.max(announceRarity, client.maxKilledRarity + 1);
+                });
+            }
+        }
 
         if (
             this.config.isSystem === false &&
@@ -3592,7 +3619,8 @@ export class Mob extends Entity {
                         continue;
                     }
 
-                    const name = state.clients.get(topDamagers[index].clientID).username;
+                    const client = state.clients.get(topDamagers[index].clientID);
+                    const name = client.username;
                     if (index === max - 1) {
                         if (max === 1) {
                             killText += name + "!";
@@ -3606,12 +3634,11 @@ export class Mob extends Entity {
                     } else {
                         killText += ", " + name;
                     };
-                }
 
-                if (state.isBiomeGrid) {
-                    // Once a new rarity is defeated, stop announcing previous rarities
-                    state.killAnnounceRarity = Math.max(state.killAnnounceRarity, this.rarity);
-                    state.spawnAnnounceRarity = Math.max(state.spawnAnnounceRarity, this.rarity + 1);
+                    if (state.isBiomeGrid) {
+                        // Keep track of every player's max killed rarity
+                        client.maxKilledRarity = Math.max(client.maxKilledRarity, this.rarity);
+                    }
                 }
             } else {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " despawned";
@@ -3631,6 +3658,7 @@ export class Mob extends Entity {
                     pollen.destroy();
                 }
             }
+            this.bbState.pollens = [];
         }
     }
 
@@ -3756,6 +3784,7 @@ export class Mob extends Entity {
             // When this bumblebee dies, scatter pollens in random directions
             pollen.moveAngle = Math.random() * 2 * Math.PI;
             pollen.speed = Math.random() * .5;
+            pollen.launchedAt = null;
         } else if (targetItself) {
             // When targeting itself, launch the pollen toward the bumblebee
             pollen.moveAngle = Math.atan2(this.y - pollen.y, this.x - pollen.x);
