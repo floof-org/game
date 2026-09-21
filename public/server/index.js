@@ -6,6 +6,7 @@ import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, colors, getWaveMobRarity, isHalloween } from "../lib/util.js";
 import SpatialHashGrid from './lib/SpatialHashGrid.js';
+import Client from "./lib/Client.js";
 
 function createWave(n) {
     const output = [];
@@ -291,7 +292,7 @@ setInterval(() => {
     state.lag.ticks++;
 
     if (Date.now() >= state.resetTime) {
-        state.resetLobby();
+        Client.resetLobby();
     }
 
     for (let i = 0; i < state.resetWarningTimes.length; i++) {

@@ -1492,7 +1492,6 @@ export function applyBiomeGridConfigs() {
     // Todo: Baby Fire Ant should shoot projectiles farther at higher rarities
     // Todo: Make player unable to kill mobs with Powder equipped
     // Todo: Make lightning able to hit the same mob multiple times
-    // Todo: How can Pincer be useful in Garden?
     // Todo: Does Antennae vision cause lag?
 
     // Todo: One of these 2 ideas:
@@ -1502,9 +1501,6 @@ export function applyBiomeGridConfigs() {
     //   - New petal: Lotus, absorbs poison damage, including toxic remnants
     //   - Want to do thorn-type petal that implements pokemon's Merciless ability, idk if it works in floof though
 
-    // Todo: Safeguards to prevent mobs from spawning in wall
-
-    // Todo: Chat logger for /commands?
     // Pdrain doesn't show up if cache petal assets
     // Crash is most likely not a wifi issue, I can temporarily disconnect wifi and still resume lobby 10s later
     // Random crash is NOT a >16mb message issue :(

@@ -486,29 +486,6 @@ const state = {
      * The next timestamp to perform the next daily server reset.
      */
     resetTime: 1e99,
-
-    resetLobby: () => {
-        state.resetTime += 24 * 3600 * 1000;
-
-        state.drops.forEach(drop => drop.destroy());
-
-        state.drops = new Map();
-        state.pentagrams = new Map();
-        state.lightning = new Map();
-
-        state.entities.forEach(entity => {
-            // Respawning players and resetting player progress is handled separately
-            if (entity.type !== ENTITY_TYPES.PLAYER) {
-                entity.damagedBy = {};
-                entity.destroy();
-            }
-        });
-
-        state.clients.forEach(client => {
-            client.resetProgress();
-            client.systemMessage("Server: All progress has been reset!", colors.uncommon);
-        });
-    }
 };
 
 if (state.inventory) tiers.forEach(tier => {
