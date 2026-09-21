@@ -735,39 +735,22 @@ export class Entity {
 
     findTarget(range, random = false) {
         const retrieved = state.spatialHash.retrieve({
-            _AABB: {
-                x1: this.x - range,
-                y1: this.y - range,
-                x2: this.x + range,
-                y2: this.y + range
-            }
+            _AABB: { x1: this.x - range, y1: this.y - range, x2: this.x + range, y2: this.y + range }
         });
 
-        if (random) {
-            const valid = [];
+        const valid = retrieved.values().filter(entity => !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || entity.type === ENTITY_TYPES.PETAL));
+        if (valid.length === 0) return null;
+        if (random) return valid[Math.floor(Math.random() * valid.length)];
 
-            retrieved.forEach(entity => {
-                if (entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || entity.type === ENTITY_TYPES.PETAL) {
-                    return;
-                }
-
-                valid.push(entity);
-            });
-
-            return valid[Math.floor(Math.random() * valid.length)];
-        } else {
-            const valid = [];
-
-            retrieved.forEach(entity => {
-                if (entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || entity.type === ENTITY_TYPES.PETAL) {
-                    return;
-                }
-
-                valid.push(entity);
-            });
-
-            return valid.sort((a, b) => quickDiff(this, a) - quickDiff(this, b)).sort((a, b) => b.parent.aggroLevel - a.parent.aggroLevel)[0] || null;
+        // Highest aggro, tie-break nearest.
+        let best = null, bestD = 0;
+        for (const e of valid) {
+            const d = quickDiff(this, e);
+            const a = e.parent.aggroLevel;
+            if (best === null || a > best.parent.aggroLevel || (a === best.parent.aggroLevel && d < bestD))  best = e, bestD = d;
         }
+
+        return best;
     }
 
     update() {
