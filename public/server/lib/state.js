@@ -400,12 +400,22 @@ const state = {
     /** @type {Zone[]} */
     zones: [],
 
-    lag: {
+    gameLoopLag: {
         fps: 20,
         mspt: 0,
 
         ticks: 0,
-        totalTime: 0
+        totalTime: 0,
+        maxTickTime: 0,
+    },
+
+    worldUpdateLag: {
+        fps: 20,
+        mspt: 0,
+
+        ticks: 0,
+        totalTime: 0,
+        maxTickTime: 0,
     },
 
     updateTerrain: () => {

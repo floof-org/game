@@ -288,8 +288,10 @@ setInterval(() => {
         }
     }
 
-    state.lag.totalTime += performance.now() - startTime;
-    state.lag.ticks++;
+    const tickTime = performance.now() - startTime;
+    state.gameLoopLag.totalTime += tickTime;
+    state.gameLoopLag.maxTickTime = Math.max(state.gameLoopLag.maxTickTime, tickTime);
+    state.gameLoopLag.ticks++;
 
     if (Date.now() >= state.resetTime) {
         Client.resetLobby();
@@ -307,16 +309,24 @@ setInterval(() => {
 
 let k = 0;
 setInterval(() => {
-    state.lag.mspt = state.lag.totalTime / Math.max(1, state.lag.ticks);
-    state.lag.fps = state.lag.ticks;
+    state.gameLoopLag.mspt = state.gameLoopLag.totalTime / Math.max(1, state.gameLoopLag.ticks);
+    state.gameLoopLag.fps = state.gameLoopLag.ticks;
 
-    state.lag.totalTime = 0;
-    state.lag.ticks = 0;
-
-    // CHANGE THIS
-    if (!Router.isSandbox && ++k % 5 === 0) {
-        // console.log("FPS:", state.lag.fps, "MSPT:", state.lag.mspt.toFixed(2));
+    if (++k % 60 === 0 || state.gameLoopLag.maxTickTime >= 100 || state.gameLoopLag.ticks <= 10) {
+        console.log(
+            "Game Loop - FPS:",
+            state.gameLoopLag.fps,
+            "MSPT:",
+            state.gameLoopLag.mspt.toFixed(2),
+            "Max:",
+            state.gameLoopLag.maxTickTime.toFixed(2),
+            "ms",
+        );
     }
+
+    state.gameLoopLag.totalTime = 0;
+    state.gameLoopLag.ticks = 0;
+    state.gameLoopLag.maxTickTime = 0;
 }, 1000);
 
 // Drops update
@@ -327,13 +337,42 @@ setInterval(() => {
 
 // World update loop
 setInterval(() => {
+    const startTime = performance.now();
+
     // Do not send world updates until client has received terrain data
     state.clients.forEach(client => {
         if (client.sentTerrain) {
             client.worldUpdate();
         }
     });
+
+    const tickTime = performance.now() - startTime;
+    state.worldUpdateLag.totalTime += tickTime;
+    state.worldUpdateLag.maxTickTime = Math.max(state.worldUpdateLag.maxTickTime, tickTime);
+    state.worldUpdateLag.ticks++;
 }, 1000 / 25);
+
+let k2 = 0;
+setInterval(() => {
+    state.worldUpdateLag.mspt = state.worldUpdateLag.totalTime / Math.max(1, state.worldUpdateLag.ticks);
+    state.worldUpdateLag.fps = state.worldUpdateLag.ticks;
+
+    if (++k2 % 60 === 0 || state.worldUpdateLag.maxTickTime >= 100 || state.worldUpdateLag.ticks <= 10) {
+        console.log(
+            "World Update - FPS:",
+            state.worldUpdateLag.fps,
+            "MSPT:",
+            state.worldUpdateLag.mspt.toFixed(2),
+            "Max:",
+            state.worldUpdateLag.maxTickTime.toFixed(2),
+            "ms",
+        );
+    }
+
+    state.worldUpdateLag.totalTime = 0;
+    state.worldUpdateLag.ticks = 0;
+    state.worldUpdateLag.maxTickTime = 0;
+}, 1000);
 
 // Router server through worker through socket
 state.router = new Router();
