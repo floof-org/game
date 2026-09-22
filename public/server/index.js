@@ -181,7 +181,7 @@ setInterval(() => {
     let lonelyPlayers = [];
     if (state.isBiomeGrid) {
         state.clients.forEach(client => {
-            if (client.body) {
+            if (client.body && !client.doingTutorial) {
                 // Vertical range is narrower because screens are typically horizontal
                 const retrieved = state.viewsSpatialHash.retrieve({
                     _AABB: {

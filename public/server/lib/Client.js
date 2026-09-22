@@ -3,6 +3,7 @@ import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES } from "../../lib/protocol.js";
 import { mobConfigs, petalConfigs, petalIDOf, tiers } from "./config.js";
 import { colors, formatLargeNumber } from "../../lib/util.js";
+import { endTutorial, startTutorial, tutorialState } from "./gridTutorial.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -749,6 +750,8 @@ export default class Client {
         this.sentBiome = undefined;
         this.maxKilledRarity = 0;
 
+        this.doingTutorial = false;
+
         /** @type {Player|null} */
         this.body = null;
 
@@ -1327,6 +1330,10 @@ export default class Client {
                     return;
                 }
 
+                if (this.doingTutorial) {
+                    tutorialState.awaitChatOrKill = false;
+                }
+
                 const message = reader.getStringUTF8();
 
                 if (message.startsWith("/login")
@@ -1342,20 +1349,17 @@ export default class Client {
                 console.log(`(Chat) ${this.username}: ${message}`);
 
                 if (state.isBiomeGrid) {
-                    if (message === "/damage" && false) {
-                        this.body.health.lastDamaged = Date.now();
-                        this.body.health.health = 1;
-                        this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
-                        return;
-                    } else if (message === "/poison" && false) {
-                        // Do not poison if already at critically low HP
-                        if (this.body.health.health <= 1 || this.body.poison.timer > 0) {
-                            return;
+                    if (message === "/tutorial") {
+                        if (this.doingTutorial) {
+                            this.doingTutorial = false;
+                            this.systemMessage("Tutorial stopped.", colors.leafGreen);
+                            endTutorial();
+                        } else if (tutorialState.client) {
+                            this.systemMessage("Error: The tutorial area is already occupied.", colors.legendary);
+                        } else {
+                            this.doingTutorial = true;
+                            startTutorial(this);
                         }
-                        this.body.health.lastDamaged = Date.now();
-                        this.body.poison.timer = 22.5 * 1;
-                        this.body.poison.damage = (this.body.health.health - 1) / 23;
-                        this.systemMessage("Max health: " + this.body.health.maxHealth, colors.leafGreen);
                         return;
                     } else if (message === "/afk") {
                         this.toggleAfk(!this.afk, true);
@@ -1884,7 +1888,11 @@ export default class Client {
             return;
         }
 
-        this.body = new Player(state.getPlayerSpawn(this));
+        if (this.doingTutorial) {
+            this.body = new Player(tutorialState.playerSpawn);
+        } else {
+            this.body = new Player(state.getPlayerSpawn(this));
+        }
         this.body.name = this.username;
         this.body.nameColor = this.nameColor;
         this.body.client = this;

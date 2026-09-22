@@ -4,6 +4,7 @@ import state from "./state.js";
 import { isHalloween } from "../../lib/util.js";
 import MazeGenerator from "./MazeGenerator.js";
 import Pathfinder from "./Pathfinder.js";
+import { initTutorialLoop } from "./gridTutorial.js";
 
 const MAP_TYPES = {
     standard: "/server/maps/standard.json",
@@ -192,6 +193,9 @@ export default async function initTerrain(type) {
                 cell.spawn = SPAWN_TYPES.NONE;
             }
         }
+        
+        // Tutorials can start running AFTER the map is all set up
+        initTutorialLoop();
     }
 
     globalThis._MAP_CELLS = map.cells;
