@@ -332,7 +332,6 @@ switch (globalThis.environmentName) {
 
             websocket: {
                 perMessageDeflate: true,
-                idleTimeout: 0,  // ← DISABLE IDLE TIMEOUT
                 async open(socket) {
                     socket.binaryType = "arraybuffer";
                     const client = state.router.addClient(socket.data.socketID, socket.data.userId, keys.includes(socket.data.searchParams.get("clientKey")));
