@@ -478,7 +478,10 @@ const state = {
     mobTable: null,
 
     debugInterval: setInterval(() => {
-        console.log(state);
+        // Only log the state when testing locally
+        if (typeof Bun === "undefined") {
+            console.log(state);
+        }
     }, 10000),
 
     // Only used in biome grid mode
@@ -496,6 +499,14 @@ const state = {
      * The next timestamp to perform the next daily server reset.
      */
     resetTime: 1e99,
+
+    /**
+     * A timer that decreases by 1 every tick. If this timer is positive, then
+     * this lobby will kick all players until either the server update is
+     * complete (thereby destroying this instance of the lobby) or until this
+     * timer reaches zero.
+     */
+    serverUpdateTimer: 0,
 };
 
 if (state.inventory) tiers.forEach(tier => {

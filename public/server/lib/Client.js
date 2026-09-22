@@ -1429,6 +1429,9 @@ export default class Client {
                     // Exit early to avoid leaking login info
                     this.systemMessage("Error: This lobby does not have an account system.", colors.legendary);
                     return;
+                } else if (message === (import.meta.env.VITE_SERVER_UPDATE_SECRET ?? process.env.SERVER_UPDATE_SECRET)) {
+                    state.serverUpdateTimer = 22.5 * 60 * 2;
+                    return;
                 }
 
                 console.log(`(Chat) ${this.username}: ${message}`);
@@ -1468,7 +1471,7 @@ export default class Client {
                             this.systemMessage("Error: You are already dead.", colors.legendary);
                         }
                         return;
-                    } else if (message === "/tp" || message === "/teleport") {
+                    } else if (message.startsWith("/tp") || message.startsWith("/teleport")) {
                         if (this.doingTutorial) {
                             this.systemMessage("Error: Cannot teleport during the tutorial.", colors.legendary);
                         } else if (!this.body || this.body.health.isDead) {

@@ -339,8 +339,14 @@ setInterval(() => {
 setInterval(() => {
     const startTime = performance.now();
 
-    // Do not send world updates until client has received terrain data
+    state.serverUpdateTimer--;
     state.clients.forEach(client => {
+        // Kick the player if a server update is in progress
+        if (state.serverUpdateTimer > 0) {
+            client.kick("Server update in progress. Check back in 1-2 minutes!")
+        }
+
+        // Do not send world updates until client has received terrain data
         if (client.sentTerrain) {
             client.worldUpdate();
         }
