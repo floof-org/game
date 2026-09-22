@@ -338,16 +338,10 @@ switch (globalThis.environmentName) {
 
                     if (client) {
                         bunSendMap.set(socket.data.socketID, socket);
-
                         let ct = (ipCounts.get(socket.data.ip) ?? 0) + 1;
-
-                        if (ct > 100) {
-                            client.kick("Too many connections from this IP");
-                            return;
-                        }
-
+                        if (ct > 100) return client.kick("Too many connections from this IP");
                         ipCounts.set(socket.data.ip, ct);
-                    }
+                    } else socket.close(4001, "Rejected");
                 },
 
                 close(socket) {
