@@ -1623,13 +1623,10 @@ export function encodePetalConfig(config) {
         output.push(config.splits.count);
     }
 
-    return output.map(value => {
-        if (Number.isFinite(value)) {
-            return +value.toFixed(2);
-        }
-
-        return value;
-    });
+    // Note: I removed rounding here. It slightly increases the size of the
+    // config data that this lobby has to send (~97 kb -> ~113 kb), which
+    // should be fine.
+    return output;
 }
 
 export function decodePetalConfig(data, nTiers) {
@@ -1947,13 +1944,10 @@ function encodeMobConfig(config) {
         output.push(config.wavesIconSize);
     }
 
-    return output.map(value => {
-        if (Number.isFinite(value)) {
-            return +value.toFixed(2);
-        }
-
-        return value;
-    });
+    // Note: I removed rounding here. It slightly increases the size of the
+    // config data that this lobby has to send (~97 kb -> ~113 kb), which
+    // should be fine.
+    return output;
 }
 
 function decodeMobConfig(data, nTiers) {
