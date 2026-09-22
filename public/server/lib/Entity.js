@@ -231,10 +231,6 @@ export class PetalSlot {
             }
         }
 
-        if (this.config.tiers[this.rarity].extraVision) {
-            this.player.extraVision += this.config.tiers[this.rarity].extraVision;
-        }
-
         if (this.config.tiers[this.rarity].absorbsDamage) {
             this.player.absorbStacks.set(this.index, new SpongeStack(this.config.tiers[this.rarity].absorbsDamage.maxDamage, this.config.tiers[this.rarity].absorbsDamage.period));
         }
@@ -274,10 +270,6 @@ export class PetalSlot {
                 this.player.damageReflection.reflection -= this.config.tiers[this.rarity].damageReflection.reflection;
                 this.player.damageReflection.cap -= this.config.tiers[this.rarity].damageReflection.cap;
             }
-        }
-
-        if (this.config.tiers[this.rarity].extraVision) {
-            this.player.extraVision -= this.config.tiers[this.rarity].extraVision;
         }
 
         if (this.config.tiers[this.rarity].absorbsDamage) {
@@ -1846,7 +1838,6 @@ export class Player extends Entity {
         this.client = null;
 
         this.wearing = [];
-        this.extraVision = 0;
 
         this.lightVision = 2;
 
@@ -1889,6 +1880,22 @@ export class Player extends Entity {
         });
 
         return rarity;
+    }
+
+    get extraVision() {
+        let extraVision = 0;
+
+        if (state.isBiomeGrid) {
+            for (let slot of this.petalSlots) {
+                extraVision = Math.max(extraVision, slot.config.tiers[slot.rarity].extraVision ?? 0);
+            }
+        } else {
+            for (let slot of this.petalSlots) {
+                extraVision += slot.config.tiers[slot.rarity].extraVision ?? 0;
+            }
+        }
+
+        return extraVision;
     }
 
     initSlots(n) {

@@ -1123,12 +1123,12 @@ export function applyBiomeGridConfigs() {
         .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5], 1, true)
         .setDescription("A fragile petal that deals lots of damage.");
     
-    // Vision: 150 * 1.45^rarity -> 500 * 1.13^rarity
+    // Vision: 150 * 1.45^rarity -> 300 * 1.13^rarity
     petalConfigs[petalIDOf("Antennae")] = new PetalConfig("Antennae", 0, 0, 0, true, petalIDOf("Antennae"))
-        .setExtraVision(500, MobTier.SIZE_SCALE)
+        .setExtraVision(300, MobTier.SIZE_SCALE)
         .setMulti(0, false)
         .setWearable(WEARABLES.ANTENNAE)
-        .setDescription("These feelers give you some extra vision.");
+        .setDescription("These feelers give you some extra vision. Does not stack.");
 
     // Reload: .75s -> 3600s
     // Damage: 13 -> 0
