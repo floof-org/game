@@ -3,7 +3,7 @@ import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES } from "../../lib/protocol.js";
 import { mobConfigs, petalConfigs, petalIDOf, tiers } from "./config.js";
 import { colors, formatLargeNumber } from "../../lib/util.js";
-import { endTutorial, startTutorial, tutorialState } from "./gridTutorial.js";
+import { endTutorial, startTutorial, tutorialInventory, tutorialSecondarySlots, tutorialSlots, tutorialState } from "./gridTutorial.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -786,6 +786,86 @@ export default class Client {
         }
     }
 
+    get level() {
+        if (this.doingTutorial) {
+            return 55;
+        } else {
+            return this._level;
+        }
+    }
+
+    set level(v) {
+        if (!this.doingTutorial) {
+            this._level = v;
+        }
+    }
+
+    get xp() {
+        if (this.doingTutorial) {
+            return state.xpForLevel(54) + 1;
+        } else {
+            return this._xp;
+        }
+    }
+
+    set xp(v) {
+        if (!this.doingTutorial) {
+            this._xp = v;
+        }
+    }
+
+    get inventory() {
+        if (this.doingTutorial) {
+            return tutorialInventory;
+        } else {
+            return this._inventory;
+        }
+    }
+
+    set inventory(v) {
+        if (!this.doingTutorial) {
+            this._inventory = v;
+        }
+    }
+
+    get slots() {
+        if (this.doingTutorial) {
+            return tutorialSlots;
+        } else {
+            return this._slots;
+        }
+    }
+
+    set slots(v) {
+        if (!this.doingTutorial) {
+            this._slots = v;
+        }
+    }
+
+    get secondarySlots() {
+        if (this.doingTutorial) {
+            return tutorialSecondarySlots;
+        } else {
+            return this._secondarySlots;
+        }
+    }
+
+    set secondarySlots(v) {
+        if (!this.doingTutorial) {
+            this._secondarySlots = v;
+        }
+    }
+
+    get maxKilledRarity() {
+        return this._maxKilledRarity;
+    }
+
+    set maxKilledRarity(v) {
+        if (!this.doingTutorial) {
+            this._maxKilledRarity = v;
+        }
+    }
+
     addXP(x) {
         if (!Number.isFinite(x)) {
             return;
@@ -851,15 +931,20 @@ export default class Client {
         }
     }
 
+    /**
+     * The highest rarity among the petals owned by the player.
+     */
     get highestRarity() {
+        // Note: We search through `_slots` instead of `slots` in case the
+        // player is doing the tutorial.
         let highest = 0;
-        for (const slot of this.slots) {
+        for (const slot of this._slots) {
             if (slot && slot.rarity > highest) {
                 highest = slot.rarity;
             }
         }
 
-        for (const slot of this.secondarySlots) {
+        for (const slot of this._secondarySlots) {
             if (slot && slot.rarity > highest) {
                 highest = slot.rarity;
             }
@@ -1353,7 +1438,7 @@ export default class Client {
                         if (this.doingTutorial) {
                             this.doingTutorial = false;
                             this.systemMessage("Tutorial stopped.", colors.leafGreen);
-                            endTutorial();
+                            endTutorial(this);
                         } else if (tutorialState.client) {
                             this.systemMessage("Error: The tutorial area is already occupied.", colors.legendary);
                         } else {
@@ -1384,7 +1469,9 @@ export default class Client {
                         }
                         return;
                     } else if (message === "/tp" || message === "/teleport") {
-                        if (!this.body || this.body.health.isDead) {
+                        if (this.doingTutorial) {
+                            this.systemMessage("Error: Cannot teleport during the tutorial.", colors.legendary);
+                        } else if (!this.body || this.body.health.isDead) {
                             this.systemMessage("Error: Cannot teleport while you are dead.", colors.legendary);
                         } else if (this.body.tpCooldown > 0) {
                             const seconds = Math.ceil(this.body.tpCooldown / 22.5);
@@ -1415,6 +1502,7 @@ export default class Client {
                     } else if (message === "/help") {
                         this.systemMessage("Available commands:", colors.uncommon);
                         this.systemMessage("/help - Shows you the list of available commands.", colors.unique);
+                        this.systemMessage("/tutorial - Starts the tutorial.", colors.unique);
                         this.systemMessage("/info [1-6] - Info about this gamemode's unique mechanics.", colors.unique);
                         this.systemMessage("/tp - Teleports you from the top of the map to the bottom of the map, and vice versa.", colors.unique);
                         this.systemMessage("/afk - Lets other players know that you are AFK.", colors.unique);
@@ -1428,6 +1516,10 @@ export default class Client {
                         this.systemMessage(
                             "- This gamemode is unfinished and under active development. If you find any bugs or " +
                             "issues, please report them to the gamemode's creator (@pigeonbar on Discord)",
+                            colors.unique,
+                        );
+                        this.systemMessage(
+                            "- This gamemode has a tutorial! You can access it by using \"/tutorial\".",
                             colors.unique,
                         );
                         this.systemMessage(
@@ -1669,11 +1761,14 @@ export default class Client {
     onClose() {
         if (this.verified) {
             console.log(`Client ${this.id} (${this.username}) disconnected.`);
-            // if (this.body /* && !this.body.health.isDead && this.level >= 20 */) {
+
+            if (this.doingTutorial) {
+                endTutorial(this);
+            }
+
             new Disconnect(this);
-            // } else 
+
             this.body?.destroy();
-            // }
         } else {
             console.log(`Client ${this.id} disconnected`);
         }
@@ -1784,8 +1879,10 @@ export default class Client {
             writer.setUint8(entity.highestRarity);
 
             if (state.isBiomeGrid) {
-                // In grid mode, the leaderboard displays the player's level instead of their XP
-                writer.setFloat32(entity.level / 10000);
+                // In grid mode, the leaderboard displays the player's level instead of their XP.
+                // Also, if the player is doing the tutorial, we display their normal level
+                // instead of their fixed tutorial level.
+                writer.setFloat32(entity._level / 10000);
             } else {
                 writer.setFloat32(entity.xp / 10000);
             }
@@ -1856,9 +1953,8 @@ export default class Client {
             );
             this.systemMessage("", colors.uncommon);
             this.systemMessage(
-                "This gamemode has several important mechanics not present in other gamemodes. For example, Garden " +
-                "mobs can heal themselves, but you can prevent them from healing by poisoning them. To learn more, " +
-                "please use \"/info [1-6]\" .",
+                "This gamemode has several important mechanics not present in other gamemodes. To learn more, " +
+                "please use \"/tutorial\" or \"/info [1-6]\".",
                 colors.uncommon,
             );
             this.systemMessage("", colors.uncommon);
@@ -1934,28 +2030,35 @@ export default class Client {
      * map.
      */
     resetProgress() {
-        this.body?.destroy(false);
+        if (!this.doingTutorial) {
+            this.body?.destroy(false);
+        }
 
-        this.inventory = {};
+        // Note: We clear `_inventory` instead of `inventory`, etc. so that
+        // even if the player is currently in the tutorial, we clear their
+        // saved progress instead of their tutorial progress.
+        this._inventory = {};
         tiers.forEach(tier => {
-            this.inventory[tier.name] = {};
+            this._inventory[tier.name] = {};
             petalConfigs.forEach(config => {
-                this.inventory[tier.name][config.id] = 0;
+                this._inventory[tier.name][config.id] = 0;
             });
         });
-        this.slots = new Array(5).fill(null).map(() => ({ id: 0, rarity: 0 }));
+        this._slots = new Array(5).fill(null).map(() => ({ id: 0, rarity: 0 }));
         this.slotRatios = new Array(5).fill(0).map(() => 0);
-        this.secondarySlots = new Array(5).fill(null).map(() => null);
-        this.level = 1;
-        this.xp = 1;
+        this._secondarySlots = new Array(5).fill(null).map(() => null);
+        this._level = 1;
+        this._xp = 1;
         if (state.isBiomeGrid) {
-            this.secondarySlots[0] = { id: petalIDOf("Gallery"), rarity: 0 };
-            this.xp = state.xpForLevel(0) + 0.00001;
+            this._secondarySlots[0] = { id: petalIDOf("Gallery"), rarity: 0 };
+            this._xp = state.xpForLevel(0) + 0.00001;
         }
-        this.maxKilledRarity = 0;
+        this._maxKilledRarity = 0;
         this.sentBiome = undefined;
 
-        this.spawnPlayer();
+        if (!this.doingTutorial) {
+            this.spawnPlayer();
+        }
     }
 
     static resetLobby() {
@@ -1970,7 +2073,7 @@ export default class Client {
 
         state.entities.forEach(entity => {
             // Respawning players and resetting player progress is handled separately
-            if (entity.type !== ENTITY_TYPES.PLAYER) {
+            if (entity.type !== ENTITY_TYPES.PLAYER && entity !== tutorialState.lastMob) {
                 entity.damagedBy = {};
                 entity.destroy();
             }

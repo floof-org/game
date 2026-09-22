@@ -11,7 +11,7 @@ import { Mob } from "./Entity.js";
  * - Wait: Pauses the tutorial for a specified number of milliseconds [1].
  * - Set Biome: Send a room update with the new biome [1] to all clients.
  * - Set Slots: Set each client's primary slots to Legendary petals of the specified types [1-10].
- *   - Also handles setting the client to level 55 and clearing the client's inventory.
+ *   - Also handles clearing the client's inventory.
  * - Set Secondary Slots: Set each client's secondary slots to Legendary petals of the specified types [1-10].
  * - Spawn Mob: Spawns a Super mob of the specified type [1] and rarity [2].
  * - Await Chat: Pauses the tutorial until any client sends a chat message (or somehow kills all mobs in the room).
@@ -23,10 +23,10 @@ const tutorialData = [
     [
         [],  // Padding step, does nothing
         ["Set Biome", "Garden"],
-        ["Chat", "Welcome to the tutorial for Biome Grid!"],
-        ["Wait", 3000],
         ["Set Slots", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic"],
         ["Set Secondary Slots", "Gallery"],
+        ["Chat", "Welcome to the tutorial for Biome Grid!"],
+        ["Wait", 3000],
         ["Spawn Mob", "Shrub", 6],
         ["Chat", "Let's start with the Gallery petal.", colors.common],
         ["Chat", "You begin with a Gallery petal in your bottom petal slots.", colors.common],
@@ -112,6 +112,21 @@ export const tutorialState = {
 };
 
 /**
+ * An empty inventory given to the player during the tutorial.
+ */
+export const tutorialInventory = {};
+
+/**
+ * The primary petal slots given to the player during the tutorial.
+ */
+export const tutorialSlots = Array(10).fill({ id: 0, rarity: 0 });
+
+/**
+ * The secondary petal slots given to the player during the tutorial.
+ */
+export const tutorialSecondarySlots = Array(10).fill(null);
+
+/**
  * Initializes the loop that runs each step of the tutorial.
  */
 export function initTutorialLoop() {
@@ -134,6 +149,17 @@ export function initTutorialLoop() {
     };
 
     setInterval(() => {
+        if (tutorialState.lastMob?.health.isDead) {
+            tutorialState.awaitKill = false;
+            tutorialState.awaitChatOrKill = false;
+            tutorialState.awaitGalleryOrKill = false;
+        }
+
+        // Keep the tutorial mob loaded so that it does not despawn
+        if (tutorialState.lastMob) {
+            tutorialState.lastMob.lastSeen = performance.now();
+        }
+
         if (tutorialState.awaitTime
             || tutorialState.awaitKill
             || tutorialState.awaitChatOrKill
@@ -185,52 +211,51 @@ export function initTutorialLoop() {
 
                 break;
             case "Set Slots":
-                client.level = 55;
-                client.xp = state.xpForLevel(54) + 1;
-                client.inventory = {};
+                // "Populate" the empty inventory with 0's for every possible petal type
                 tiers.forEach(tier => {
-                    client.inventory[tier.name] = {};
+                    tutorialInventory[tier.name] = {};
                     petalConfigs.forEach(config => {
-                        client.inventory[tier.name][config.id] = 0;
+                        tutorialInventory[tier.name][config.id] = 0;
                     });
                 });
 
-                client.slots = Array(10);
-                client.secondarySlots = Array(10).fill(null);
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < tutorialSlots.length; i++) {
                     const type = instruction[i + 1] ?? "Basic";
                     if (type === "Gallery") {
-                        client.slots[i] = { id: petalIDOf("Gallery"), rarity: 0 };
+                        tutorialSlots[i] = { id: petalIDOf("Gallery"), rarity: 0 };
                     } else {
-                        client.slots[i] = { id: petalIDOf(type), rarity: 4 };
+                        tutorialSlots[i] = { id: petalIDOf(type), rarity: 4 };
                     }
                 }
 
                 if (client.body && !client.body.health.isDead) {
-                    client.body.initSlots(client.slots.length);
-                    for (let i = 0; i < client.slots.length; i++) {
-                        if (client.slots[i]) {
-                            client.body.setSlot(i, client.slots[i].id, client.slots[i].rarity);
+                    client.body.initSlots(tutorialSlots.length);
+                    for (let i = 0; i < tutorialSlots.length; i++) {
+                        if (tutorialSlots[i]) {
+                            client.body.setSlot(i, tutorialSlots[i].id, tutorialSlots[i].rarity);
                         }
                     }
-
-                    client.body.health.set(client.healthAdjustement);
                 }
                 break;
             case "Set Secondary Slots":
-                client.secondarySlots = Array(10);
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < tutorialSecondarySlots.length; i++) {
                     const type = instruction[i + 1];
                     if (type === "Gallery") {
-                        client.secondarySlots[i] = { id: petalIDOf("Gallery"), rarity: 0 };
+                        tutorialSecondarySlots[i] = { id: petalIDOf("Gallery"), rarity: 0 };
                     } else if (type === undefined) {
-                        client.secondarySlots[i] = null;
+                        tutorialSecondarySlots[i] = null;
                     } else {
-                        client.secondarySlots[i] = { id: petalIDOf(type), rarity: 4 };
+                        tutorialSecondarySlots[i] = { id: petalIDOf(type), rarity: 4 };
                     }
                 }
                 break;
             case "Spawn Mob":
+                // Failsafe: Despawn the previous mob if it is somehow still alive
+                if (tutorialState.lastMob) {
+                    tutorialState.lastMob.damagedBy = {};
+                    tutorialState.lastMob.destroy();
+                }
+
                 const mob = new Mob(mobSpawnPoints[tutorialState.biome]);
                 mob.define(mobConfigs[mobIDOf(instruction[1])], instruction[2]);
                 state.aliveMobs.push(mob);
@@ -238,14 +263,7 @@ export function initTutorialLoop() {
                 tutorialState.lastMobType = instruction[1];
                 tutorialState.lastMob = mob;
 
-                // Also listen to when the mob dies or gets hit by the Gallery petal
-                mob.deathEvent = () => {
-                    tutorialState.awaitKill = false;
-                    tutorialState.awaitChatOrKill = false;
-                    tutorialState.awaitGalleryOrKill = false;
-                }
-
-                // Also listen to when mobs get hit by the Gallery petal
+                // Also listen to when the mob gets hit by the Gallery petal
                 const originalGetStats = mob.getStatsDescription.bind(mob);
                 mob.getStatsDescription = function() {
                     tutorialState.awaitGalleryOrKill = false;
@@ -266,7 +284,7 @@ export function initTutorialLoop() {
                 tutorialState.awaitKill = true;
                 break;
             case "End":
-                endTutorial();
+                endTutorial(tutorialState.client);
                 break;
         }
     }, 1000 / 22.5);
@@ -278,6 +296,20 @@ export function initTutorialLoop() {
  */
 export function startTutorial(newClient) {
     tutorialState.client = newClient;
+    newClient.doingTutorial = true;
+
+    // Sync the player's max HP with the player's fixed level during tutorial
+    if (newClient.body) {
+        newClient.body.health.set(newClient.healthAdjustement);
+    }
+
+    // "Populate" the empty inventory with 0's for every possible petal type
+    tiers.forEach(tier => {
+        tutorialInventory[tier.name] = {};
+        petalConfigs.forEach(config => {
+            tutorialInventory[tier.name][config.id] = 0;
+        });
+    });
 
     tutorialState.biomeNumber = 0;
     tutorialState.stepNumber = 0;
@@ -288,9 +320,7 @@ export function startTutorial(newClient) {
     clearTimeout(tutorialState.timeout);
 }
 
-export function endTutorial() {
-    const client = tutorialState.client;
-    tutorialState.client = null;
+export function endTutorial(client) {
     client.doingTutorial = false;
 
     // Respawn the player in the main playing area
@@ -298,8 +328,11 @@ export function endTutorial() {
     client.sentBiome = undefined;
     client.spawnPlayer();
 
-    if (tutorialState.lastMob) {
-        tutorialState.lastMob.damagedBy = {};
-        tutorialState.lastMob.destroy();
+    if (client === tutorialState.client) { // This should always be true
+        tutorialState.client = null;
+        if (tutorialState.lastMob) {
+            tutorialState.lastMob.damagedBy = {};
+            tutorialState.lastMob.destroy();
+        }
     }
 }
