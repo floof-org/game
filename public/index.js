@@ -1730,6 +1730,46 @@ function draw() {
     const cameraY = net.state.camera.y * scale;
     const halfWidth = canvas.width * 0.5;
     const halfHeight = canvas.height * 0.5;
+    const mobIntersectsViewport = (entity, drawX, drawY, size, rotation) => {
+        let minX = -1;
+        let maxX = 1;
+        let minY = -1;
+        let maxY = 1;
+
+        if (entity.index === 49 && Array.isArray(entity.extraData)) {
+            entity.extraData.forEach((body) => {
+                if (!body || !Number.isFinite(body.x) || !Number.isFinite(body.y)) return;
+                minX = Math.min(minX, body.x);
+                maxX = Math.max(maxX, body.x);
+                minY = Math.min(minY, body.y);
+                maxY = Math.max(maxY, body.y);
+            });
+            minX = Math.min(minX, -1.2);
+            maxX = Math.max(maxX, 1.15);
+            minY = Math.min(minY, -1.2);
+            maxY = Math.max(maxY, 1.2);
+        }
+
+        const cos = Math.cos(rotation);
+        const sin = Math.sin(rotation);
+        const corners = [[minX, minY], [minX, maxY], [maxX, minY], [maxX, maxY]];
+        let screenMinX = Infinity;
+        let screenMaxX = -Infinity;
+        let screenMinY = Infinity;
+        let screenMaxY = -Infinity;
+
+        corners.forEach(([x, y]) => {
+            const rotatedX = (x * cos - y * sin) * size + drawX;
+            const rotatedY = (x * sin + y * cos) * size + drawY;
+            screenMinX = Math.min(screenMinX, rotatedX);
+            screenMaxX = Math.max(screenMaxX, rotatedX);
+            screenMinY = Math.min(screenMinY, rotatedY);
+            screenMaxY = Math.max(screenMaxY, rotatedY);
+        });
+
+        return screenMaxX >= 0 && screenMinX <= canvas.width &&
+            screenMaxY >= 0 && screenMinY <= canvas.height;
+    };
 
     drawBackground(cameraX, cameraY, scale, net.state.socket?.readyState === WebSocket.OPEN, net.state.room.width, net.state.room.height, net.state.disconnected ? null : BIOME_BACKGROUNDS[net.state.room.biome], net.state.room.isRadial);
 
@@ -1834,6 +1874,7 @@ function draw() {
         const drawX = entity.x * scale - cameraX + halfWidth;
         const drawY = entity.y * scale - cameraY + halfHeight;
         const size = entity.size * scale * scaling;
+        if (!mobIntersectsViewport(entity, drawX, drawY, size, entity.facing)) return;
 
         // ctx.save();
         const oldTransform = ctx.getTransform();
@@ -2011,6 +2052,7 @@ function draw() {
         const drawX = entity.x * scale - cameraX + halfWidth;
         const drawY = entity.y * scale - cameraY + halfHeight;
         const size = entity.size * scale;
+        if (!mobIntersectsViewport(entity, drawX, drawY, size, entity.facing)) return;
         // ctx.save();
         // ctx.translate(drawX, drawY);
         // ctx.scale(size, size);
