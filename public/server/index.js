@@ -506,11 +506,11 @@ state.router = new Router();
 
             websocket: {
                 perMessageDeflate: true,
-                idleTimeout: 0,  // ← DISABLE IDLE TIMEOUT
                 async open(socket) {
                     socket.binaryType = "arraybuffer";
                     const client = state.router.addClient(socket.data.socketID, socket.data.userId, keys.includes(socket.data.searchParams.get("clientKey")));
 
+<<<<<<< HEAD
                         if (client) {
                             bunSendMap.set(socket.data.socketID, socket);
 
@@ -549,6 +549,14 @@ state.router = new Router();
 
                         state.router.pipeMessage(socket.data.socketID, new DataView(data));
                     }
+=======
+                    if (client) {
+                        bunSendMap.set(socket.data.socketID, socket);
+                        let ct = (ipCounts.get(socket.data.ip) ?? 0) + 1;
+                        if (ct > 100) return client.kick("Too many connections from this IP");
+                        ipCounts.set(socket.data.ip, ct);
+                    } else socket.close(4001, "Rejected");
+>>>>>>> d4276b0d4abe553a3b8d07fe9269a4f5a36c63df
                 },
 
                 port: +Bun.env.DEDICATED_LOBBY_PORT,
