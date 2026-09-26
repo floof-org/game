@@ -312,8 +312,8 @@ setInterval(() => {
     state.gameLoopLag.mspt = state.gameLoopLag.totalTime / Math.max(1, state.gameLoopLag.ticks);
     state.gameLoopLag.fps = state.gameLoopLag.ticks;
 
-    if (++k % 60 === 0 || state.gameLoopLag.maxTickTime >= 100 || state.gameLoopLag.ticks <= 10) {
-        console.log(
+    if (++k % 600 === 0 || state.gameLoopLag.maxTickTime >= 100 || state.gameLoopLag.ticks <= 10) {
+        console.debug(
             "Game Loop - FPS:",
             state.gameLoopLag.fps,
             "MSPT:",
@@ -363,8 +363,8 @@ setInterval(() => {
     state.worldUpdateLag.mspt = state.worldUpdateLag.totalTime / Math.max(1, state.worldUpdateLag.ticks);
     state.worldUpdateLag.fps = state.worldUpdateLag.ticks;
 
-    if (++k2 % 60 === 0 || state.worldUpdateLag.maxTickTime >= 100 || state.worldUpdateLag.ticks <= 10) {
-        console.log(
+    if (++k2 % 600 === 0 || state.worldUpdateLag.maxTickTime >= 100 || state.worldUpdateLag.ticks <= 10) {
+        console.debug(
             "World Update - FPS:",
             state.worldUpdateLag.fps,
             "MSPT:",
@@ -379,6 +379,18 @@ setInterval(() => {
     state.worldUpdateLag.ticks = 0;
     state.worldUpdateLag.maxTickTime = 0;
 }, 1000);
+
+// Memory log suggested by Cryptverse
+setInterval(() => {
+    console.debug({
+        clients: state.clients.size,
+        entities: state.entities.size,
+        drops: state.drops.size,
+        disconnects: Client.disconnects.size,
+        // process.memoryUsage is only available when building using node, not webpack or Vite
+        // heap: process.memoryUsage().heapUsed,
+    });
+}, 60 * 1000);
 
 // Router server through worker through socket
 state.router = new Router();
@@ -432,7 +444,7 @@ state.router = new Router();
             break;
         case "node":
             throw new Error("Node environment not supported");
-        case "bun": {
+        case "bun":
             if (Bun.env.ENV_DONE !== "true") {
                 await Bun.write("./.env", [
                     "ENV_DONE=false",
@@ -478,45 +490,45 @@ state.router = new Router();
 
             const keys = Bun.env.ADMIN_KEYS.split(",").filter(e => e.length > 3);
 
-        let bunSocketID = 1;
-        const bunSendMap = new Map();
-        const ipCounts = new Map();
-        const server = Bun.serve({
-            async fetch(req) {
-                const authServerUrl = import.meta.env.VITE_AUTH_SERVER ?? process.env.AUTH_SERVER;
-                const cookie = req.headers.get('cookie');
-                const userId = await fetch(`${authServerUrl}/api/user/id`, { headers: { cookie } }).then(response => response.json());
-                if (userId?.error) return new Response(":(");
-                const ip = server.requestIP(req);
-                if (!ip?.address) return new Response(":(");
+            let bunSocketID = 1;
+            const bunSendMap = new Map();
+            const ipCounts = new Map();
+            const server = Bun.serve({
+                async fetch(req) {
+                    const authServerUrl = import.meta.env.VITE_AUTH_SERVER ?? process.env.AUTH_SERVER;
+                    const cookie = req.headers.get('cookie');
+                    const userId = await fetch(`${authServerUrl}/api/user/id`, { headers: { cookie } }).then(response => response.json());
+                    if (userId?.error) return new Response(":(");
+                    const ip = server.requestIP(req);
+                    if (!ip?.address) return new Response(":(");
 
-                const success = server.upgrade(req, {
-                    data: {
-                        socketID: bunSocketID++,
-                        searchParams: new URLSearchParams(req.url.split("?").slice(1).join("?")),
-                        begin: performance.now(),
-                        ip: ip.address,
-                        userId
-                    }
-                });
+                    const success = server.upgrade(req, {
+                        data: {
+                            socketID: bunSocketID++,
+                            searchParams: new URLSearchParams(req.url.split("?").slice(1).join("?")),
+                            begin: performance.now(),
+                            ip: ip.address,
+                            userId
+                        }
+                    });
 
-                    if (success) return undefined;
-                    return new Response("Hello world");
-                },
+                        if (success) return undefined;
+                        return new Response("Hello world");
+                    },
 
-            websocket: {
-                perMessageDeflate: true,
-                async open(socket) {
-                    socket.binaryType = "arraybuffer";
-                    const client = state.router.addClient(socket.data.socketID, socket.data.userId, keys.includes(socket.data.searchParams.get("clientKey")));
+                websocket: {
+                    perMessageDeflate: true,
+                    async open(socket) {
+                        socket.binaryType = "arraybuffer";
+                        const client = state.router.addClient(socket.data.socketID, socket.data.userId, keys.includes(socket.data.searchParams.get("clientKey")));
 
-                    if (client) {
-                        bunSendMap.set(socket.data.socketID, socket);
-                        let ct = (ipCounts.get(socket.data.ip) ?? 0) + 1;
-                        if (ct > 100) return client.kick("Too many connections from this IP");
-                        ipCounts.set(socket.data.ip, ct);
-                    } else socket.close(4001, "Rejected");
-                },
+                        if (client) {
+                            bunSendMap.set(socket.data.socketID, socket);
+                            let ct = (ipCounts.get(socket.data.ip) ?? 0) + 1;
+                            if (ct > 100) return client.kick("Too many connections from this IP");
+                            ipCounts.set(socket.data.ip, ct);
+                        } else socket.close(4001, "Rejected");
+                    },
 
                     close(socket) {
                         state.router.removeClient(socket.data.socketID);
@@ -548,7 +560,7 @@ state.router = new Router();
                 tls: Bun.env.TLS_DIRECTORY !== "false" ? {
                     key: Bun.file(`${Bun.env.TLS_DIRECTORY}/privkey.pem`),
                     cert: Bun.file(`${Bun.env.TLS_DIRECTORY}/fullchain.pem`)
-                } : undefined
+                } : undefined,
             });
 
             const timezone = -Math.floor(new Date().getTimezoneOffset() / 60);
@@ -614,7 +626,7 @@ state.router = new Router();
                         break;
                 }
             }
-        } break;
+            break;
         default:
             throw new Error("Invalid environment");
     }

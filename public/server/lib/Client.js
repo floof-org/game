@@ -709,23 +709,14 @@ class Disconnect {
         this.xp = client.xp;
         this.slots = client.slots;
         this.secondarySlots = client.secondarySlots;
-        this.body = client.body;
         this.team = client.team;
         this.inventory = client.inventory;
         this.maxKilledRarity = client.maxKilledRarity;
 
         Client.disconnects.set(this.userId, this);
 
-        if (this.body) {
-            this.body.client = null;
-        }
-
         this.timeout = setTimeout(() => {
             Client.disconnects.delete(this.userId);
-
-            if (this.body && !this.body.health.isDead) {
-                this.body.destroy();
-            }
         }, 1000 * 3600 * 24);
     }
 }
@@ -1008,11 +999,6 @@ export default class Client {
                     this.inventory = dc.inventory;
                     this.maxKilledRarity = dc.maxKilledRarity;
                     this.addXP(0);
-
-                    if (dc.body) {
-                        this.body = dc.body;
-                        this.body.client = this;
-                    }
 
                     clearTimeout(dc.timeout);
                     Client.disconnects.delete(this.userId);
@@ -1516,6 +1502,10 @@ export default class Client {
                     } else if (message === "/info" || message === "/info 1") {
                         this.systemMessage("INFO 1/6 - SERVER INFO", colors.uncommon);
                         this.systemMessage("", colors.uncommon);
+                        this.systemMessage(
+                            "- Your chat messages are being recorded and used as feedback to improve the lobby.",
+                            colors.unique,
+                        );
                         this.systemMessage(
                             "- This gamemode is unfinished and under active development. If you find any bugs or " +
                             "issues, please report them to the gamemode's creator (@pigeonbar on Discord)",
