@@ -1511,7 +1511,7 @@ export default class Client {
 
                 terrainWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
                 terrainWriter.setUint16(this.id);
-                terrainWriter.setUint8(113);
+                terrainWriter.setUint8(CLIENT_BOUND.TERRAIN_SCORES);
 
                 terrainWriter.setUint32(cells.length);
 

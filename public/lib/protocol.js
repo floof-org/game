@@ -899,7 +899,15 @@ export const CLIENT_BOUND = {
     JSON_MESSAGE: 0x07,
     PONG: 0x08,
     TERRAIN: 0x09,
-    CHAT_MESSAGE: 0x0A
+    CHAT_MESSAGE: 0x0A,
+
+    CUSTOM_GRADIENTS: 111,
+    TERRAIN_SCORES: 113,
+
+    // Section: Options that seem to be unused by server.
+    // Both sets of data are sent via `CLIENT_BOUND.WORLD_UPDATE` instead.
+    UNUSED_INVENTORY_UPDATE: 110,
+    UNUSED_DROPS_UPDATE: 250,
 };
 
 export const SERVER_BOUND = {

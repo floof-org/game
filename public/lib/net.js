@@ -1749,7 +1749,7 @@ export class ClientSocket extends WebSocket {
                     state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 }
                 break;
-            case 250: {
+            case CLIENT_BOUND.UNUSED_DROPS_UPDATE: {
                 const count = reader.getUint16();
 
                 for (let i = 0; i < count; i++) {
@@ -1769,7 +1769,7 @@ export class ClientSocket extends WebSocket {
 
                 break;
             }
-            case 110: {
+            case CLIENT_BOUND.UNUSED_INVENTORY_UPDATE: {
                 if (!state.usesNewInventory) {
                     state.usesNewInventory = true;
                     state.inventory = {};
@@ -1799,7 +1799,7 @@ export class ClientSocket extends WebSocket {
                 state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 break;
             }
-            case 111: {
+            case CLIENT_BOUND.CUSTOM_GRADIENTS: {
                 const count = reader.getUint8();
 
                 globalThis.__CUSTOM_GRADIENTS = {};
@@ -1906,7 +1906,7 @@ export class ClientSocket extends WebSocket {
 
                 break;
             }
-case 113: {
+case CLIENT_BOUND.TERRAIN_SCORES: {
     if (!state.terrain?.blocks) {
         break;
     }
