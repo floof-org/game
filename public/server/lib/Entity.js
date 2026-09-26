@@ -3557,9 +3557,10 @@ export class Mob extends Entity {
             return;
         }
 
-        // In grid mode, the threshold for looting a mob is 5% damage instead of top 3 damagers
+        // In grid mode, the threshold for looting a mob is 20% damage instead of top 3 damagers
+        const numDamagers = Math.max(1, Object.keys(this.damagedBy).length);
         const topDamagers = state.isBiomeGrid
-            ? this.getTopDamagers(20, ENTITY_TYPES.PLAYER, .05)
+            ? this.getTopDamagers(20, ENTITY_TYPES.PLAYER, Math.min(.2, .5 / numDamagers))
             : this.getTopDamagers(3, ENTITY_TYPES.PLAYER);
         let killText = '';
         topDamagers.forEach(damager => {
