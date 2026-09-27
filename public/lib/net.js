@@ -2003,7 +2003,7 @@ case 113: {
           width: reader.getUint16(),
           height: reader.getUint16(),
           blocks: ((blocks = []) => {
-            for (let i = reader.getUint16(); i > 0; i--) {
+            for (let i = reader.getUint32(); i > 0; i--) {
               blocks.push({
                 x: reader.getInt16(),
                 y: reader.getInt16(),

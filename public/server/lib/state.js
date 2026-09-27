@@ -345,7 +345,7 @@ const state = {
         writer.setUint16(state.terrainGridWidth);
         writer.setUint16(state.terrainGridHeight);
 
-        writer.setUint16(state.terrain.size);
+        writer.setUint32(state.terrain.size);
         state.terrain.forEach(terrain => {
             writer.setInt16(terrain.gridX);
             writer.setInt16(terrain.gridY);
