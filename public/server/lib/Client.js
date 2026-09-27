@@ -1499,30 +1499,6 @@ export default class Client {
 
         state.router.postMessage(writer.build());
 
-        const minimapWriter = new Writer(true);
-        minimapWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
-        minimapWriter.setUint16(this.id);
-        minimapWriter.setUint8(112);
-
-        const players = [];
-
-        for (const [, obj] of state.entities) {
-            if (!obj) continue;
-            if (obj.type !== ENTITY_TYPES.PLAYER) continue;
-
-            players.push(obj);
-        }
-
-        minimapWriter.setUint16(players.length);
-
-        for (const player of players) {
-            minimapWriter.setUint32(player.id ?? 0);
-            minimapWriter.setFloat32(Number(player.x) || 0);
-            minimapWriter.setFloat32(Number(player.y) || 0);
-        }
-
-        state.router.postMessage(minimapWriter.build());
-
         if (globalThis._MAP_CELLS?.length) {
             this.__sentTerrainScores ??= false;
 

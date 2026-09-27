@@ -1906,22 +1906,6 @@ export class ClientSocket extends WebSocket {
 
                 break;
             }
-            case 112: {
-                state.minimapPlayers ??= new Map();
-                state.minimapPlayers.clear();
-
-                const count = reader.getUint16();
-
-                for (let i = 0; i < count; i++) {
-                    const id = reader.getUint32();
-                    const x = reader.getFloat32();
-                    const y = reader.getFloat32();
-
-                    state.minimapPlayers.set(id, { id, x, y });
-                }
-
-        break;
-      }
 case 113: {
     if (!state.terrain?.blocks) {
         break;
