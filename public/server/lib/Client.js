@@ -1587,8 +1587,8 @@ export default class Client {
                 if (account.data) {
                     this.level = Math.min(9999, Math.max(1, Math.floor(+account.data.level || 1)));
                     this.xp = Math.min(1e15, Math.max(1, +account.data.xp || 1));
-                    this.slots = sanitizeSlots(account.data.slots, this.slots.length);
-                    this.secondarySlots = sanitizeSlots(account.data.secondarySlots, this.secondarySlots.length, true);
+                    this.slots = sanitizeSlots(account.data.slots, account.data.slots?.length || this.slots.length);
+                    this.secondarySlots = sanitizeSlots(account.data.secondarySlots, account.data.secondarySlots?.length || this.secondarySlots.length, true);
 
                     const inv = account.data.inventory || {};
                     tiers.forEach(tier => this.inventory[tier.name] = {});
