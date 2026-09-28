@@ -2767,16 +2767,30 @@ function draw() {
             ctx.arc(selfX, selfY, radius, 0, Math.PI * 2);
             ctx.fill();
 
-            for (const player of net.state.players.values()) {
-                if (player.id === net.state.playerID) continue;
+            if (net.state.dmazeAllies) {
+                for (const player of net.state.dmazeAllies) {
+                    if (player.id === net.state.playerID) continue;
 
-                const px = (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
-                const py = (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
+                    const px = (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
+                    const py = (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
 
-                ctx.fillStyle = blueDot;
-                ctx.beginPath();
-                ctx.arc(px, py, radius * 0.85, 0, Math.PI * 2);
-                ctx.fill();
+                    ctx.fillStyle = blueDot;
+                    ctx.beginPath();
+                    ctx.arc(px, py, radius * 0.85, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else {
+                for (const player of net.state.players.values()) {
+                    if (player.id === net.state.playerID) continue;
+
+                    const px = (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
+                    const py = (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
+
+                    ctx.fillStyle = blueDot;
+                    ctx.beginPath();
+                    ctx.arc(px, py, radius * 0.85, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         }
 

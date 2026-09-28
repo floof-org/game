@@ -1769,6 +1769,23 @@ export class ClientSocket extends WebSocket {
 
                 break;
             }
+            case 251: {
+                const allies = [];
+                const count = reader.getUint8();
+
+                for (let i = 0; i < count; i++) {
+                    const id = reader.getUint32();
+                    const x = reader.getFloat32();
+                    const y = reader.getFloat32();
+                    const team = reader.getUint8();
+                    const highestRarity = reader.getUint8();
+                    const username = reader.getStringUTF8();
+                    allies.push({ id, x, y, team, highestRarity, username });
+                }
+
+                state.dmazeAllies = allies;
+                break;
+            }
             case 110: {
                 if (!state.usesNewInventory) {
                     state.usesNewInventory = true;
@@ -2243,6 +2260,7 @@ export const state = {
     },
 
     playerID: 0,
+    dmazeAllies: null,
 
     /** @type {Map<number, ClientPlayer>} */
     players: new Map(),

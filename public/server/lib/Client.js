@@ -2476,6 +2476,25 @@ export default class Client {
             });
         });
 
+        if (state.gamemode === GAMEMODES.MAZE) {
+            const alliesWriter = new Writer(true);
+            alliesWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+            alliesWriter.setUint16(this.id);
+            alliesWriter.setUint8(251);
+            alliesWriter.setUint8(state.alivePlayers.length);
+
+            for (const entity of state.alivePlayers) {
+                alliesWriter.setUint32(entity.body?.id ?? 0);
+                alliesWriter.setFloat32(entity.body?.x ?? 0);
+                alliesWriter.setFloat32(entity.body?.y ?? 0);
+                alliesWriter.setUint8(entity.team);
+                alliesWriter.setUint8(entity.highestRarity);
+                alliesWriter.setStringUTF8(entity.username);
+            }
+
+            state.router.postMessage(alliesWriter.build());
+        }
+
         state.router.postMessage(writer.build());
 
         if (globalThis._MAP_CELLS?.length) {
