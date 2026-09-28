@@ -30,7 +30,7 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/createaccount", "/login"
+    "/createaccount", "/login", "/give"
 ]);
 
 function normalizeName(str) {
@@ -891,6 +891,17 @@ export default class Client {
         this.levelProgress = this.level < 2 ? this.xp / xpForLevel(this.level) : (this.xp - xpForLevel(this.level - 1)) / (xpForLevel(this.level) - xpForLevel(this.level - 1));
     }
 
+    grantOwnerPermissions() {
+        if (!this.auth?.loggedIn) return;
+
+        const owners = ((typeof Bun !== "undefined" && Bun.env.OWNER_ACCOUNTS) || "").split(",").map(name => name.trim().toLowerCase()).filter(Boolean);
+
+        if (owners.includes(this.auth.username.toLowerCase())) {
+            this.masterPermissions = Math.max(this.masterPermissions, 2);
+            console.log(`Client ${this.id} (${this.username}) granted owner permissions.`);
+        }
+    }
+
     get healthAdjustement() {
         return 40 + 5 * Math.pow(this.level, 1.5);
     }
@@ -1451,6 +1462,15 @@ export default class Client {
             return true;
         };
 
+        const requireOwner = () => {
+            if (this.masterPermissions < 2) {
+                this.systemMessage("You are not allowed to run this command.", "#ff5555");
+                return false;
+            }
+
+            return true;
+        };
+
         // help
         if (commandCheck("/help") || commandCheck("/cmd") || commandCheck("/commands")) {
             [
@@ -1491,6 +1511,85 @@ export default class Client {
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode."
             ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
+            return;
+        }
+
+        // /give
+        if (commandCheck("/give")) {
+            (async () => {
+                if (!requireOwner()) return;
+
+                const args = e.slice(5).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 3) {
+                    this.systemMessage("Usage: /give [player] [petal] [rarity]", "#ffaa00");
+                    return;
+                }
+
+                const [playerName, petalName, rarityArg] = args;
+
+                const petalIndex = petalConfigs.findIndex(petal => petal?.name?.toLowerCase() === petalName.toLowerCase());
+
+                if (petalIndex < 0) {
+                    this.systemMessage(`Petal "${petalName}" not found.`, "#ff5555");
+                    return;
+                }
+
+                let rarityIndex = null;
+
+                if (!isNaN(rarityArg)) {
+                    rarityIndex = parseInt(rarityArg);
+                } else {
+                    const lower = rarityArg.toLowerCase();
+
+                    for (let i = 0; i < tiers.length; i++) {
+                        if (tiers[i].name.toLowerCase() === lower) {
+                            rarityIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
+                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                    return;
+                }
+
+                const rarity = tiers[rarityIndex];
+                let target = null;
+
+                for (const client of state.clients.values()) {
+                    if (client.auth?.loggedIn && client.auth.username.toLowerCase() === playerName.toLowerCase()) {
+                        target = client;
+                        break;
+                    }
+                }
+
+                if (target) {
+                    if (!target.inventory[rarity.name]) target.inventory[rarity.name] = {};
+                    target.inventory[rarity.name][petalIndex] = (target.inventory[rarity.name][petalIndex] || 0) + 1;
+                    accounts.saveClient(target);
+
+                    target.systemMessage(`You received a ${rarity.name} ${petalConfigs[petalIndex].name}!`, "#55ff55");
+                    this.systemMessage(`Gave ${rarity.name} ${petalConfigs[petalIndex].name} to ${target.username}.`, "#55ff55");
+                    return;
+                }
+
+                const account = accounts.find(playerName);
+
+                if (!account) {
+                    this.systemMessage(`Player "${playerName}" not found.`, "#ff5555");
+                    return;
+                }
+
+                account.data.inventory ??= {};
+                account.data.inventory[rarity.name] ??= {};
+                account.data.inventory[rarity.name][petalIndex] = (account.data.inventory[rarity.name][petalIndex] || 0) + 1;
+                accounts.persist().catch(err => console.warn("[Accounts] Save failed:", err));
+
+                this.systemMessage(`Gave ${rarity.name} ${petalConfigs[petalIndex].name} to ${account.username} offline.`, "#55ff55");
+            })();
+
             return;
         }
 
@@ -1539,6 +1638,8 @@ export default class Client {
                 };
 
                 ONLINE_USERS.set(user.toLowerCase(), this);
+
+                this.grantOwnerPermissions();
 
                 this.systemMessage(`Account '${user}' created and logged in.`, "#55ff55");
             })();
@@ -1609,6 +1710,8 @@ export default class Client {
                 };
 
                 ONLINE_USERS.set(user.toLowerCase(), this);
+
+                this.grantOwnerPermissions();
 
                 this.systemMessage(`Logged in as ${user}`, "#55ff55");
             })();
