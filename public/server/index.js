@@ -6,6 +6,7 @@ import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
 import SpatialHashGrid from './lib/SpatialHashGrid.js';
+import accounts from './lib/Accounts.js';
 
 function createWave(n) {
     const output = [];
@@ -232,6 +233,15 @@ setInterval(() => {
 // World update loop
 setInterval(() => state.clients.forEach(c => c.worldUpdate()), 1000 / 25);
 
+// Autosave logged in accounts (mirrors White's 20 minute autosave)
+setInterval(() => {
+    console.log("[AUTOSAVE] running...");
+    state.clients.forEach(client => {
+        if (!client?.auth?.loggedIn) return;
+        accounts.saveClient(client);
+    });
+}, 20 * 60 * 1000);
+
 // Router server through worker through socket
 state.router = new Router();
 
@@ -260,6 +270,8 @@ switch (globalThis.environmentName) {
     case "node":
         throw new Error("Node environment not supported");
     case "bun": {
+        await accounts.ready;
+
         if (Bun.env.ENV_DONE !== "true") {
             await Bun.write("./.env", [
                 "ENV_DONE=false",

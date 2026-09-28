@@ -6,3 +6,4 @@ run_bun.sh
 bun.lock
 player_builds
 .continue
+accounts.json

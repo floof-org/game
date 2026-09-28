@@ -3,6 +3,9 @@ import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, SUMMON_STATS } from "../../lib/protocol.js";
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP } from "./config.js";
 import { xpForLevel } from "../../lib/util.js";
+import accounts from "./Accounts.js";
+
+const ONLINE_USERS = new Map();
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -26,11 +29,33 @@ const RARITY_ORDER = tiers.map(tier => tier.name);
 const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/rarities", "/drops",
-    "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob"
+    "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
+    "/createaccount", "/login"
 ]);
 
 function normalizeName(str) {
     return str.toLowerCase().replace(/\s+/g, "");
+}
+
+function sanitizeSlots(slots, length, nullable = false) {
+    const output = new Array(length);
+    const maxId = petalConfigs.length - 1;
+    const maxRarity = tiers.length - 1;
+
+    for (let i = 0; i < length; i++) {
+        const slot = slots?.[i];
+
+        if (!slot || slot.id === 0) {
+            output[i] = nullable ? null : { id: 0, rarity: 0 };
+            continue;
+        }
+
+        const id = Math.min(maxId, Math.max(0, Math.floor(+slot.id || 0)));
+        const rarity = Math.min(maxRarity, Math.max(0, Math.floor(+slot.rarity || 0)));
+        output[i] = { id, rarity };
+    }
+
+    return output;
 }
 
 function formatNumber(num) {
@@ -792,6 +817,7 @@ export default class Client {
         this.verified = false;
         this.username = "unknown";
         this.userId = userId;
+        this.auth = null;
         this.nameColor = ["#FFFFFF", "#D85555"][+masterPermissions];
         this.masterPermissions = +masterPermissions;
         this.inventory = {};
@@ -1425,6 +1451,8 @@ export default class Client {
                 "/petalinfo [rarity] [petal name] - Preview the stats of the specified petal and rarity.",
                 "/drops [rarity name] [mob name] - Shows the drop chances for the specified rarity and mob.",
                 "/rarities - Shows all rarities.",
+                "/createaccount [user] [password] - Creates an account and auto-logs you into it, it will be auto-saved.",
+                "/login [user] [password] - Logs you into your previously made account which will restore all progress from the last game.",
                 "/die - Kills you.",
                 "/infocommands - Shows all related commands that give info of something.",
                 "/admincommands - Shows all admin commands."
@@ -1455,6 +1483,128 @@ export default class Client {
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode."
             ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
+            return;
+        }
+
+        // /createaccount
+        if (commandCheck("/createaccount")) {
+            (async () => {
+                if (this.auth?.loggedIn) {
+                    this.systemMessage("Already logged in.", "#ff5555");
+                    return;
+                }
+
+                if ((this.level ?? 0) < 25) {
+                    this.systemMessage("Reach level 25 to create an account.", "#ff5555");
+                    return;
+                }
+
+                const args = e.slice(14).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 2) {
+                    this.systemMessage("Usage: /createaccount [username] [password]", "#ffe65d");
+                    return;
+                }
+
+                const [user, pass] = args;
+
+                if (!/^[A-Za-z0-9_]{1,64}$/.test(user)) {
+                    this.systemMessage("Username must be letters, numbers and underscores only (max 64).", "#ff5555");
+                    return;
+                }
+
+                if (pass.length < 6) {
+                    this.systemMessage("Password must be at least 6 characters.", "#ff5555");
+                    return;
+                }
+
+                const result = await accounts.create(user, pass, this);
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                this.auth = {
+                    loggedIn: true,
+                    username: user
+                };
+
+                ONLINE_USERS.set(user.toLowerCase(), this);
+
+                this.systemMessage(`Account '${user}' created and logged in.`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /login
+        if (commandCheck("/login")) {
+            (async () => {
+                const args = e.slice(6).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 2) {
+                    this.systemMessage("Usage: /login [username] [password]", "#ffe65d");
+                    return;
+                }
+
+                if (this.auth?.loggedIn) {
+                    this.systemMessage("Already logged in.", "#ffe65d");
+                    return;
+                }
+
+                const [user, pass] = args;
+
+                const result = await accounts.login(user, pass);
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                const account = result.account;
+
+                if (account.banned) {
+                    this.systemMessage("This account is banned.", "#ff5555");
+                    return;
+                }
+
+                const existing = ONLINE_USERS.get(user.toLowerCase());
+
+                if (existing && existing !== this) {
+                    this.systemMessage("Account already in use.", "#ff5555");
+                    return;
+                }
+
+                if (account.data) {
+                    this.level = Math.min(9999, Math.max(1, Math.floor(+account.data.level || 1)));
+                    this.xp = Math.min(1e15, Math.max(1, +account.data.xp || 1));
+                    this.slots = sanitizeSlots(account.data.slots, this.slots.length);
+                    this.secondarySlots = sanitizeSlots(account.data.secondarySlots, this.secondarySlots.length, true);
+
+                    const inv = account.data.inventory || {};
+                    tiers.forEach(tier => this.inventory[tier.name] = {});
+                    for (const rarity in inv) {
+                        if (!(rarity in this.inventory)) continue;
+                        for (const id in inv[rarity]) {
+                            const amount = Math.max(1, Math.floor(+inv[rarity][id] || 0));
+                            if (amount > 0) this.inventory[rarity][id] = amount;
+                        }
+                    }
+
+                    this.addXP(0);
+                }
+
+                this.auth = {
+                    loggedIn: true,
+                    username: user
+                };
+
+                ONLINE_USERS.set(user.toLowerCase(), this);
+
+                this.systemMessage(`Logged in as ${user}`, "#55ff55");
+            })();
+
             return;
         }
 
@@ -2029,6 +2179,12 @@ export default class Client {
     onClose() {
         if (this.verified) {
             console.log(`Client ${this.id} (${this.username}) disconnected.`);
+
+            if (this.auth?.loggedIn) {
+                ONLINE_USERS.delete(this.auth.username.toLowerCase());
+                accounts.saveClient(this);
+            }
+
             // if (this.body /* && !this.body.health.isDead && this.level >= 20 */) {
             new Disconnect(this);
             // } else 
