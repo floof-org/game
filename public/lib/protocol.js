@@ -107,13 +107,21 @@ export const tiers = [{
     color: "#ea00ff"
 }];
 
+export const RARITY_SIZE_MULTIPLIERS = [
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1.16,
+    1.26, 1.30, 1.44, 1.51, 1.58, 1.65, 1.63, 1.87, 1.92,
+    2.04,
+    2.16, 2.3, 2.5, 2.61, 2.7, 2.9, 3.1, 3.3, 3.5
+];
+
 export class PetalTier {
     static HEALTH_SCALE = 3;
     static DAMAGE_SCALE = 3;
 
     constructor(tier, health, damage) {
-        this.health = health * Math.pow(PetalTier.HEALTH_SCALE, tier);
-        this.damage = damage * Math.pow(PetalTier.DAMAGE_SCALE, tier);
+        this.health = Array.isArray(health) ? health[Math.min(tier, health.length - 1)] : health * Math.pow(PetalTier.HEALTH_SCALE, tier);
+        this.damage = Array.isArray(damage) ? damage[Math.min(tier, damage.length - 1)] : damage * Math.pow(PetalTier.DAMAGE_SCALE, tier);
 
         this.extraHealth = 0;
         this.constantHeal = 0;
@@ -123,6 +131,7 @@ export class PetalTier {
         this.damageReduction = 0;
         this.damageReflection = null;
         this.speedMultiplier = 1;
+        this.sizeRatio = 1;
         this.extraSize = 0;
         this.extraRange = 0;
 
@@ -356,7 +365,20 @@ export class PetalConfig {
     }
 
     setSize(sizeRatio) {
-        this.sizeRatio = sizeRatio;
+        if (Array.isArray(sizeRatio)) {
+            this.sizeRatio = sizeRatio[sizeRatio.length - 1] ?? this.sizeRatio;
+
+            for (let i = 0; i < this.tiers.length; i++) {
+                this.tiers[i].sizeRatio = sizeRatio[i] ?? sizeRatio[sizeRatio.length - 1];
+            }
+        } else {
+            this.sizeRatio = sizeRatio;
+
+            for (let i = 0; i < this.tiers.length; i++) {
+                this.tiers[i].sizeRatio = sizeRatio;
+            }
+        }
+
         return this;
     }
 

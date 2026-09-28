@@ -1,4 +1,4 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES, SUMMON_STATS } from "../../lib/protocol.js";
+import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES, SUMMON_STATS } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
 import state from "./state.js";
@@ -1234,7 +1234,7 @@ export class Petal extends Entity {
         this.health.set(tier.health);
         this.damage = tier.damage;
         this.config = config;
-        this.size *= config.sizeRatio;
+        this.size *= (config.tiers?.[rarity]?.sizeRatio ?? config.sizeRatio) * (RARITY_SIZE_MULTIPLIERS[rarity] ?? 1);
         this.index = config.id;
         this.spinSpeed = config.launchable ? 0 : .1;
         this.armor = 0;

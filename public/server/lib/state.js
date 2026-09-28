@@ -204,7 +204,7 @@ const state = {
             if (dx * dx + dy * dy > minDist * minDist && state.isValidMapSpawn(position.x, position.y)) {
                 const baseRarity = state.mapSpawnClosestTo(position.x, position.y).rarity;
                 const goesUp = Math.random() > .5 * Math.pow(1.1015, baseRarity);
-                rarity = Math.min(11, Math.max(0, goesUp ? baseRarity + 1 : baseRarity - (Math.random() * 2 | 0)));
+                rarity = Math.min(tiers.length - 1, Math.max(0, goesUp ? baseRarity + 1 : baseRarity - (Math.random() * 2 | 0)));
 
                 const retrieved = state.spatialHash.retrieve({
                     _AABB: {

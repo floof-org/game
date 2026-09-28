@@ -1967,6 +1967,12 @@ function petalRender(index, hit, ctx, id, size) {
         case 73: // Diep Pentagon
             drawPentagonMob(ctx, hit);
             break;
+        case 85: // Fire Missile
+            ctx.save();
+            ctx.rotate(-Math.PI / 4);
+            drawMissile(ctx, hit);
+            ctx.restore();
+            break;
         default:
             console.log("Unknown petal index: " + index);
             basicPetal(ctx, hit, "#FF0000", size);
@@ -2132,6 +2138,12 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             ctx.save();
             ctx.scale(1.05, 1.05);
             drawCandyIcon(ctx, index, rarity);
+            ctx.restore();
+            break;
+        case 85: // Fire Missile
+            ctx.save();
+            ctx.rotate(-Math.PI / 4);
+            drawMissile(ctx, index, rarity);
             ctx.restore();
             break;
         default:
