@@ -1,6 +1,6 @@
 import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
-import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, SUMMON_STATS } from "../../lib/protocol.js";
+import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, SUMMON_STATS } from "../../lib/protocol.js";
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
 import { xpForLevel } from "../../lib/util.js";
 import accounts from "./Accounts.js";

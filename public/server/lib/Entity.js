@@ -1,4 +1,4 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES } from "../../lib/protocol.js";
+import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
 import state from "./state.js";
@@ -238,7 +238,7 @@ export class PetalSlot {
                                 return;
                             }
 
-                            entity.health.health = Math.min(entity.health.maxHealth, entity.health.health + this.config.healSpit.heal * Math.pow(PetalTier.HEALTH_SCALE, this.rarity));
+                            entity.health.health = Math.min(entity.health.maxHealth, entity.health.health + this.config.healSpit.heal * petalTierMultiplier(this.rarity));
                         });
                     }
                 }

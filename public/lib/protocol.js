@@ -115,13 +115,30 @@ export const RARITY_SIZE_MULTIPLIERS = [
     2.16, 2.3, 2.5, 2.61, 2.7, 2.9, 3.1, 3.3, 3.5
 ];
 
+export const PETAL_TIER_TABLE = [
+    1, 2, 4, 8, 16, 32, 160, 480, 2880, 17280, 103680,
+    1244160, 14929920, 89579520, 268738560, 1612431360,
+    16124313600, 16124313600, 161243136000, 161243136000,
+    161243136000, 1612431360000
+];
+
+let petalTierMode = false;
+
+export function setPetalTierMode(enabled) {
+    petalTierMode = enabled;
+}
+
+export function petalTierMultiplier(tier) {
+    return petalTierMode ? PETAL_TIER_TABLE[Math.min(tier, PETAL_TIER_TABLE.length - 1)] : Math.pow(PetalTier.HEALTH_SCALE, tier);
+}
+
 export class PetalTier {
     static HEALTH_SCALE = 3;
     static DAMAGE_SCALE = 3;
 
     constructor(tier, health, damage) {
-        this.health = Array.isArray(health) ? health[Math.min(tier, health.length - 1)] : health * Math.pow(PetalTier.HEALTH_SCALE, tier);
-        this.damage = Array.isArray(damage) ? damage[Math.min(tier, damage.length - 1)] : damage * Math.pow(PetalTier.DAMAGE_SCALE, tier);
+        this.health = Array.isArray(health) ? health[Math.min(tier, health.length - 1)] : health * petalTierMultiplier(tier);
+        this.damage = Array.isArray(damage) ? damage[Math.min(tier, damage.length - 1)] : damage * petalTierMultiplier(tier);
 
         this.extraHealth = 0;
         this.constantHeal = 0;
@@ -349,7 +366,7 @@ export class PetalConfig {
     setHealth(health) {
         this.health = health;
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].health = health * Math.pow(PetalTier.HEALTH_SCALE, i);
+            this.tiers[i].health = health * petalTierMultiplier(i);
         }
 
         return this;
@@ -358,7 +375,7 @@ export class PetalConfig {
     setDamage(damage) {
         this.damage = damage;
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].damage = damage * Math.pow(PetalTier.DAMAGE_SCALE, i);
+            this.tiers[i].damage = damage * petalTierMultiplier(i);
         }
 
         return this;
@@ -415,7 +432,7 @@ export class PetalConfig {
 
     setExtraHealth(extraHealth) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].extraHealth = extraHealth * Math.pow(PetalTier.HEALTH_SCALE, i);
+            this.tiers[i].extraHealth = extraHealth * petalTierMultiplier(i);
         }
 
         return this;
@@ -423,7 +440,7 @@ export class PetalConfig {
 
     setConstantHeal(constantHeal, healsInDefense = false, healWhenUnder = 1) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].constantHeal = (constantHeal / 22.5) * Math.pow(PetalTier.HEALTH_SCALE, i);
+            this.tiers[i].constantHeal = (constantHeal / 22.5) * petalTierMultiplier(i);
         }
 
         this.healsInDefense = healsInDefense;
@@ -478,7 +495,7 @@ export class PetalConfig {
 
     setHealing(healing) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].healing = healing * Math.pow(PetalTier.HEALTH_SCALE, i);
+            this.tiers[i].healing = healing * petalTierMultiplier(i);
         }
         return this;
     }
@@ -500,7 +517,7 @@ export class PetalConfig {
     setPoison(poisonDamage, duration) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].poison = {
-                damage: poisonDamage * Math.pow(PetalTier.DAMAGE_SCALE, i) / 22.5,
+                damage: poisonDamage * petalTierMultiplier(i) / 22.5,
                 duration: duration * 22.5
             };
         }
@@ -570,9 +587,9 @@ export class PetalConfig {
             this.tiers[i].pentagramAbility = {
                 cooldown: cooldown,
                 range: range * Math.pow(1.15, i),
-                damage: damage * Math.pow(PetalTier.DAMAGE_SCALE, i),
+                damage: damage * petalTierMultiplier(i),
                 poison: {
-                    damage: (poison.damage / 22.5) * Math.pow(PetalTier.DAMAGE_SCALE, i),
+                    damage: (poison.damage / 22.5) * petalTierMultiplier(i),
                     duration: poison.duration * 22.5 * Math.pow(1.1, i)
                 },
                 speedDebuff: {
@@ -590,7 +607,7 @@ export class PetalConfig {
             this.tiers[i].lightning = {
                 bounces: bounces instanceof Array ? (bounces[i] ?? bounces[bounces.length - 1]) : bounces,
                 range: range * Math.pow(1.15, i),
-                damage: damage * Math.pow(PetalTier.DAMAGE_SCALE, i),
+                damage: damage * petalTierMultiplier(i),
                 charges: charges instanceof Array ? (charges[i] ?? charges[charges.length - 1]) : charges,
                 lightningOnParentHit: lightningOnParentHit
             };
@@ -651,7 +668,7 @@ export class PetalConfig {
     setAbsorbsDamage(maxDamage, period) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].absorbsDamage = {
-                maxDamage: maxDamage instanceof Array ? (maxDamage[i] ?? maxDamage[maxDamage.length - 1]) : (maxDamage * Math.pow(PetalTier.DAMAGE_SCALE, i)),
+                maxDamage: maxDamage instanceof Array ? (maxDamage[i] ?? maxDamage[maxDamage.length - 1]) : (maxDamage * petalTierMultiplier(i)),
                 period: period instanceof Array ? (period[i] ?? period[period.length - 1]) : period
             };
         }
@@ -666,7 +683,7 @@ export class PetalConfig {
 
     setShield(shield) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].shield = shield instanceof Array ? (shield[i] ?? shield[shield.length - 1]) : (shield * Math.pow(PetalTier.HEALTH_SCALE, i));
+            this.tiers[i].shield = shield instanceof Array ? (shield[i] ?? shield[shield.length - 1]) : (shield * petalTierMultiplier(i));
         }
 
         return this;
@@ -716,7 +733,7 @@ export class PetalConfig {
     }
     setArmor(armor) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].armor = armor * Math.pow(PetalTier.DAMAGE_SCALE, i);
+            this.tiers[i].armor = armor * petalTierMultiplier(i);
         }
 
         return this;
@@ -1899,7 +1916,7 @@ export function encodePetalConfig(config) {
         }
 
         if (output[flagsIndex] & 0x40000) {
-            tierOutput.push(config.healSpit.heal * Math.pow(PetalTier.HEALTH_SCALE, tierID));
+            tierOutput.push(config.healSpit.heal * petalTierMultiplier(tierID));
         }
 
         if (output[flagsIndex] & 0x80000) {

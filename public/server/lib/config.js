@@ -1,7 +1,9 @@
-import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig } from "../../lib/protocol.js";
+import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig, setPetalTierMode } from "../../lib/protocol.js";
 import { DROP_TABLES } from "./dropTables.js";
 export const tiers = structuredClone(_tiers);
 export { Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig };
+
+setPetalTierMode(Bun.env.GAMEMODE === "maze");
 
 export const petalConfigs = [
     new PetalConfig("Basic", 22.5 * 1, 10, 10)
