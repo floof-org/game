@@ -724,9 +724,10 @@ export class PetalConfig {
     setIcon(size, count, name, rotation) {
         for (let i = 0; i < this.tiers.length; i++) {
             let c2 = count instanceof Array ? (count[i] ?? count[count.length - 1]) : count;
+            let s2 = size instanceof Array ? (size[i] ?? size[size.length - 1]) : size;
 
             this.tiers[i].icon = {
-                size: size,
+                size: s2,
                 count: c2,
                 name: name,
                 rotation: rotation * Math.PI / 180

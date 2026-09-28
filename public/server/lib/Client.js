@@ -1854,6 +1854,8 @@ export default class Client {
 
             lines.push(Number.isFinite(tier.damage) ? `- Damage: ${formatNumber(tier.damage)}` : "- Damage: special");
 
+            if (tier.count > 1) lines.push(`- Count: ${tier.count}`);
+
             if (tier.size > 1) lines.push(`- Size: ${tier.size}`);
             if (tier.extraHealth > 0) lines.push(`- Extra Health: ${formatNumber(tier.extraHealth)}`);
             if (tier.constantHeal > 0) lines.push(`- Constant Heal: ${formatNumber(tier.constantHeal)}`);

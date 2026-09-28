@@ -25,7 +25,8 @@ export const petalConfigs = [
         .setSize(1.25)
         .setDescription("A bit weak, but recharges instantly."),
     new PetalConfig("Rock", 22.5 * 2, 65, 53)
-        .setSize(1.3)
+        .setIcon([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5], 1, "Rock", 0)
+        .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 2])
         .setDescription("It's a rock, not much to say about it."),
     new PetalConfig("Cactus", 22.5 * 2, 18, 6)
         .setSize(1.25)
@@ -37,7 +38,9 @@ export const petalConfigs = [
         .setConstantHeal(5.5)
         .setDescription("A petal that heals you over time by the power of photosynthesis."),
     new PetalConfig("Wing", 22.5 * 1.25, 17, [17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20, 21, 22])
-        .setSize(1.3)
+        .setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], "Wing", 0)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], 1, true)
+        .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setWingMovement(true)
         .setDescription("It comes and it goes."),
     new PetalConfig("Bone", 22.5 * 1.5, [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 20], 18.25)
@@ -68,13 +71,14 @@ export const petalConfigs = [
         .setDescription("A bunch of oranges. They're pretty juicy."),
     new PetalConfig("Missile", 7.5, 4, 18.5)
         .setLaunchable(.7, 45)
-        .setSize(1.35)
+        .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setDescription("You can actually shoot this one!"),
     new PetalConfig("Pea.projectile", 22.5 * 100, 3, 3)
         .setDescription("[object null object]"),
     new PetalConfig("Rose", 22.5 * 1.5, 5, 5)
         .setHealing(12.5)
         .setHuddles(1)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6], 1, true)
         .setDescription("Not great at combat, but it's healing properties are amazing."),
     new PetalConfig("Yin Yang", 22.5 * 1, 9, 11)
         .setYinYang(1)
@@ -89,7 +93,7 @@ export const petalConfigs = [
         .setEnemySpeedMultiplier(.45, 5)
         .setDescription("It's sticky and will slow your enemies down."),
     new PetalConfig("Iris", 22.5 * 1, 10, [29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 49])
-        .setSize(.8)
+        .setSize([0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setPoison(12.5, 5)
         .setDescription("Packs an unexpected punch in its secret weapon: poison."),
     new PetalConfig("Web", 22.5 * 2, 7, 7)
@@ -139,6 +143,7 @@ export const petalConfigs = [
         .setSize(1.3)
         .setHuddles(1)
         .setHealSpit(22.5 * 3, 125, 10)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6], 1, true)
         .setDescription("Said to be from a mystical covenant of witches who specialized in healing nature."),
     new PetalConfig("Fire Spellbook", 22.5 * 1.25, 15, 5)
         .setSize(1.2)
@@ -181,8 +186,10 @@ export const petalConfigs = [
         .setHuddles(1)
         .setDescription("A petal that spawns ants. They'll help you out!"),
     new PetalConfig("Yucca", 22.5 * 1.5, 8, 15.5)
+        .setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7], "Yucca", 0)
         .setSize(1.2)
         .setConstantHeal(7.5, true)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7], 1, true)
         .setDescription("A strange leaf that heals you but only when you're in defensive mode."),
     new PetalConfig("Magnet", 22.5 * 2, 9, 6)
         .setSize(1.55)
