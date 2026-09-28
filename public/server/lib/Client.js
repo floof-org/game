@@ -2188,6 +2188,12 @@ export default class Client {
         if (this.verified) {
             console.log(`Client ${this.id} (${this.username}) disconnected.`);
 
+            const onlineCount = state.clients.size - 1;
+
+            state.clients.forEach(client => {
+                if (client !== this) client.systemMessage(`${this.username} has left the game. (${onlineCount} players online)`, "#00f2ff");
+            });
+
             if (this.auth?.loggedIn) {
                 ONLINE_USERS.delete(this.auth.username.toLowerCase());
                 accounts.saveClient(this);
