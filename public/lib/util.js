@@ -252,6 +252,27 @@ export function xpForLevel(level) {
     return Math.pow(level, 2.35) + Math.exp(level / 25);
 }
 
+export function pickWeighted(entries) {
+    if (!entries || entries.length === 0) {
+        return null;
+    }
+
+    let total = 0;
+    for (const entry of entries) {
+        total += entry.weight;
+    }
+
+    let roll = Math.random() * total;
+    for (const entry of entries) {
+        roll -= entry.weight;
+        if (roll <= 0) {
+            return entry;
+        }
+    }
+
+    return entries[entries.length - 1];
+}
+
 export const options = {
     showDebug: false,
     hideGrid: false,

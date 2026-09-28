@@ -1,6 +1,6 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES } from "../../lib/protocol.js";
-import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal } from "./config.js";
+import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, tiers, WEARABLES, SUMMON_STATS } from "../../lib/protocol.js";
+import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
@@ -13,6 +13,7 @@ export class HealthComponent {
         this.invulnerable = false;
         this.onDamage = null;
         this.shield = 0;
+        this.armor = 0;
     }
 
     set(x, preserve = true) {
@@ -24,6 +25,10 @@ export class HealthComponent {
 
     damage(x) {
         if (this.invulnerable) {
+            return 0;
+        }
+
+        if (this.armor && x < this.armor) {
             return 0;
         }
 
@@ -469,14 +474,23 @@ export class PetalSlot {
                     petal.range--;
 
                     if (petal.range <= 0) {
+                        const spawnConfig = mobConfigs[this.config.tiers[this.rarity].spawnable.index];
+                        const spawnRarity = this.config.tiers[this.rarity].spawnable.rarity;
+
                         const mob = new Mob(petal);
                         mob.parent = this.player;
                         mob.team = this.player.team;
                         mob.friendly = true;
                         state.livingMobCount--;
-                        mob.define(mobConfigs[this.config.tiers[this.rarity].spawnable.index], this.config.tiers[this.rarity].spawnable.rarity);
-                        mob.health.maxHealth *= 6;
-                        mob.health.health *= 6;
+                        mob.define(spawnConfig, spawnRarity);
+
+                        const summonScale = SUMMON_STATS[spawnRarity];
+
+                        if (summonScale) {
+                            mob.health.set(spawnConfig.health * summonScale.health);
+                            mob.damage = spawnConfig.damage * summonScale.damage;
+                            mob.size = spawnConfig.size * summonScale.size * (.98 + Math.random() * .04) * ((spawnConfig.sizeRand?.min ?? 1) + Math.random() * (spawnConfig.sizeRand?.max ?? 0));
+                        }
 
                         this.boundMobs[j].push(mob);
                         petal.health.health = 0;
@@ -837,9 +851,6 @@ export class Entity {
 
                     thisDamageDone += this.damage;
                     otherDamageDone += other.damage;
-
-                    thisDamageDone = thisDamageDone - other.armor
-                    otherDamageDone = otherDamageDone - this.armor
 
                     if (this.type === ENTITY_TYPES.PETAL && this.parent?.type === ENTITY_TYPES.PLAYER) {
                         let velocity = this.velocity.magnitude;
@@ -1933,6 +1944,7 @@ export class Mob extends Entity {
         this.healing = config.healing;
         this.fleeAtLowHealth = config.fleeAtLowHealth;
         this.armor = 0;
+        this.health.armor = 0;
 
         this.spawnInvincibility = true
 
@@ -1965,6 +1977,7 @@ export class Mob extends Entity {
 
         if (tier.armor) {
             this.armor = tier.armor;
+            this.health.armor = tier.armor;
         }
 
         if (tier.antHoleSpawns) {
@@ -2591,17 +2604,37 @@ export class Mob extends Entity {
                     client.addXP((Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1));
 
                     const output = [];
-                    for (const drop of mobConfigs[this.index].drops) {
-                        if (Math.random() > drop.chance) {
-                            continue;
-                        }
+                    const table = DROP_LOOKUP[this.config?.name];
 
-                        const rarity = getDropRarity(this.rarity, client.highestRarity + 5);
-                        if (rarity < drop.minRarity) {
-                            continue;
-                        }
+                    if (table) {
+                        const rows = table[this.rarity];
 
-                        output.push(new Drop(this, client, drop.index, rarity));
+                        if (rows && rows.length) {
+                            for (const row of rows) {
+                                if (Math.random() > row.chance) {
+                                    continue;
+                                }
+
+                                const entry = pickWeighted(row.entries);
+
+                                if (entry) {
+                                    output.push(new Drop(this, client, entry.index, entry.rarity, entry.amount));
+                                }
+                            }
+                        }
+                    } else {
+                        for (const drop of mobConfigs[this.index].drops) {
+                            if (Math.random() > drop.chance) {
+                                continue;
+                            }
+
+                            const rarity = getDropRarity(this.rarity, client.highestRarity + 5);
+                            if (rarity < drop.minRarity) {
+                                continue;
+                            }
+
+                            output.push(new Drop(this, client, drop.index, rarity));
+                        }
                     }
 
                     for (let i = 0; i < output.length; i++) {
@@ -2652,7 +2685,7 @@ export class Mob extends Entity {
 export class Drop {
     static idAccumulator = 1;
 
-    constructor(position = { x: 0, y: 0 }, client, i, r) {
+    constructor(position = { x: 0, y: 0 }, client, i, r, amount = 1) {
         this.id = Drop.idAccumulator++;
         this.x = position.x;
         this.y = position.y;
@@ -2664,6 +2697,7 @@ export class Drop {
 
         this.index = i;
         this.rarity = r;
+        this.amount = amount;
         this.duration = 20 * Math.pow(1.1, r);
 
         this.creation = performance.now();

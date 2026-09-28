@@ -9,14 +9,29 @@ globalThis.environmentName ??= "browser";
 // Setup shit
 function createTable(numTable) {
     const table = [];
+    let min = Infinity;
 
     for (const id in numTable) {
-        for (let i = 0; i < numTable[id]; i++) {
+        const weight = numTable[id];
+
+        if (weight > 0 && weight < min) {
+            min = weight;
+        }
+    }
+
+    if (!isFinite(min)) {
+        return [0];
+    }
+
+    for (const id in numTable) {
+        const copies = Math.round(numTable[id] / min);
+
+        for (let i = 0; i < copies; i++) {
             table.push(+id);
         }
     }
 
-    return table;
+    return table.length ? table : [0];
 }
 
 function mobTableIntoChances(table) {
@@ -67,9 +82,16 @@ function applyBiome(int) {
         }),
         [BIOME_TYPES.DESERT]: createTable({
             [mobIDOf("Shiny Ladybug")]: 1,
+            [mobIDOf("Moonlit Frog")]: 1,
+            [mobIDOf("Sunlit Frog")]: 1,
             [mobIDOf("Sandstorm")]: 3,
             [mobIDOf("Scorpion")]: 6,
             [mobIDOf("Beetle")]: 6,
+            [mobIDOf("Beetle Pod")]: 0.5,
+            [mobIDOf("Salt Flat")]: 0.46,
+            [mobIDOf("Lilypad")]: 0.35,
+            [mobIDOf("Puddle")]: 0.15,
+            [mobIDOf("Sandstone")]: 4,
             [mobIDOf("Fire Ant Egg")]: 1,
             [mobIDOf("Baby Fire Ant")]: 2,
             [mobIDOf("Worker Fire Ant")]: 3,
@@ -78,6 +100,12 @@ function applyBiome(int) {
             [mobIDOf("Moth")]: 3,
             [mobIDOf("Desert Centipede")]: 3,
             [mobIDOf("Fire Ant Hole")]: 1,
+            [mobIDOf("Desert Shrub")]: 0.75,
+            [mobIDOf("Beetle Hole")]: 0.5,
+            [mobIDOf("Jellyfish")]: 0.05,
+            [mobIDOf("Firestorm")]: 0.45,
+            [mobIDOf("ӇЄҲƛƓƠƝ")]: 0.0001,
+            [mobIDOf("Evil Desert Centipede")]: 1,
             [mobIDOf("Cactus")]: 4
         }),
         [BIOME_TYPES.OCEAN]: createTable({

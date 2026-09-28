@@ -1,4 +1,4 @@
-import { BIOME_TYPES, ENTITY_TYPES, SIDE_FLAGS } from "../../lib/protocol.js";
+import { BIOME_TYPES, ENTITY_TYPES, GAMEMODES, SIDE_FLAGS } from "../../lib/protocol.js";
 import { Terrain } from "./Entity.js";
 import state from "./state.js";
 import { isHalloween } from "../../lib/util.js";
@@ -17,7 +17,8 @@ const MAP_TYPES = {
     allMobs: "/server/maps/allMobs.json",
     sleepyMaze: "/server/maps/sleepyMaze.json",
     sleepyMazeOmega: "/server/maps/sleepyMazeOmega.json",
-    crypt: "/server/maps/crypt_map.json"
+    crypt: "/server/maps/crypt_map.json",
+    aMaze: "/server/maps/aMaze.json"
 };
 
 let mapSrc = MAP_TYPES.standard,
@@ -59,12 +60,29 @@ export default async function initTerrain(type) {
                 throw new Error("Invalid biome type");
         }
 
+        if (state.gamemode === GAMEMODES.MAZE && type === BIOME_TYPES.DESERT) {
+            mapSrc = MAP_TYPES.aMaze;
+        }
+
         if (typeof mapSrc === "string") {
-            const response = await fetch(mapSrc);
-            map = await response.json();
+            const mapName = mapSrc.split("/").pop();
+            const script = process.argv?.[1] ?? "";
+            const localDir = script.includes("build/server/")
+                ? script.slice(0, script.indexOf("build/server/"))
+                : process.cwd() + "/";
+
+            const localFile = Bun.file(`${localDir}build/server/maps/${mapName}`);
+
+            if (await localFile.exists()) {
+                map = await localFile.json();
+            } else {
+                map = await (await fetch(mapSrc)).json();
+            }
         } else {
             map = mapSrc;
         }
+
+        console.log(`Map loaded: ${mapSrc} (${map.width}x${map.height}, ${map.cells.length} cells)`);
     }
 
     globalThis._MAP_CELLS = map.cells;

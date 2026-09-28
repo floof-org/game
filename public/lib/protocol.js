@@ -1,3 +1,20 @@
+globalThis.BLOOD_LIGHT_TABLE = [
+    0.01, 0.03, 0.05, 0.08, 0.1, 0.2, 0.3, 0.5,
+    0.7, 0.6, 0.8, 0.4, 0.5, 0.6, 1, 1
+];
+
+globalThis.POMEGRANATE_TABLE = [
+    0.01, 0.03, 0.05, 0.08, 0.1, 0.2, 0.3, 0.5,
+    0.7, 0.6, 0.8, 0.4, 0.5, 0.6, 1, 1
+];
+
+globalThis.SUMMON_HEALING_TABLE = [
+    0.625, 1.5, 2.875, 6.25, 25, 62.5, 162.5, 1112.5,
+    6125, 62500, 850000, 11831375, 207425000, 1883137500,
+    10742500000, 86682500000, 206682500000, 566825000000,
+    566825000000, 566825000000, 5668250000000
+];
+
 export const tiers = [{
     name: "Common",
     color: "#7EEF6D"
@@ -29,11 +46,65 @@ export const tiers = [{
     name: "Omega",
     color: "#d966e8"
 }, {
-    name: "???",
-    color: "#333333"
+    name: "Eternal",
+    color: "#e0d465"
 }, {
     name: "Unique",
     color: "#FFFFFF"
+}, {
+    name: "Hyper",
+    color: "#46e0b7"
+}, {
+    name: "Galaxium",
+    color: "#f57f95"
+}, {
+    name: "Millom",
+    color: "#3fcf32"
+}, {
+    name: "Fictional",
+    color: "#962d2d"
+}, {
+    name: "Transcestrial",
+    color: "#3690f7"
+}, {
+    name: "Chaos",
+    color: "#2e3540"
+}, {
+    name: "Absiorcadinary",
+    color: "#493ea8"
+}, {
+    name: "Absolute Fictional",
+    color: "#361111"
+}, {
+    name: "Nullified",
+    color: "#868491"
+}, {
+    name: "Hyperfixation",
+    color: "#a08efa"
+}, {
+    name: "Atlantical",
+    color: "#618691"
+}, {
+    name: "Alpha",
+    color: "#ba80a1"
+}, {
+    name: "Finalist",
+    color: "#ffa196"
+}, {
+    name: "Epsilation",
+    color: "#b5f5da"
+}, {
+    name: "Improbable",
+    color: "#41825b"
+}, {
+    name: "Izolational",
+    color: "#ffc799"
+}, {
+    name: "Chronodynamic",
+    color: "#666642"
+}, {
+    name: "Multiversal",
+    color: "#ea00ff"
 }];
 
 export class PetalTier {
@@ -93,15 +164,85 @@ export class PetalTier {
     }
 }
 
+export const RARITY_TABLE = {
+    0: { health: 2.25, damage: 0.01, size: 1, armor: 0 },
+    1: { health: 6.7, damage: 0.1, size: 1.05, armor: 1 },
+    2: { health: 17.5, damage: 0.5, size: 1.10, armor: 4 },
+    3: { health: 53.7, damage: 1, size: 1.15, armor: 10 },
+    4: { health: 114.6, damage: 2.85, size: 1.40, armor: 25 },
+    5: { health: 1000.4, damage: 4, size: 1.80, armor: 51 },
+    6: { health: 3600.7, damage: 6.7, size: 2.25, armor: 100 },
+    7: { health: 6000.9, damage: 18.95, size: 3.10, armor: 360 },
+    8: { health: 10000.3, damage: 30.2, size: 3.65, armor: 630 },
+    9: { health: 27000.2, damage: 44.24, size: 4, armor: 1200 },
+    10: { health: 196000, damage: 55.85, size: 4.25, armor: 6900 },
+    11: { health: 512000, damage: 110, size: 4.4, armor: 8200 },
+    12: { health: 3040000, damage: 320, size: 4.6, armor: 47540 },
+    13: { health: 9216000, damage: 1200, size: 4.8, armor: 265000 },
+    14: { health: 84400000, damage: 3100, size: 5, armor: 402000 },
+    15: { health: 318800000, damage: 22000, size: 5.2, armor: 1375900 },
+    16: { health: 920760056, damage: 91000, size: 5.4, armor: 5100000 },
+    17: { health: 13527600560, damage: 560000, size: 5.6, armor: 17100000 },
+    18: { health: 56832000000, damage: 3400000, size: 5.8, armor: 72240000 },
+    19: { health: 186080000000, damage: 9990000, size: 6, armor: 248000000 },
+    20: { health: 1012000000000, damage: 23000000, size: 6.2, armor: 830000000 },
+    21: { health: 9960000000000, damage: 148700000, size: 6.4, armor: 5100000000 },
+    22: { health: 14000000000000, damage: 948700000, size: 6.6, armor: 12900000000 },
+    23: { health: 107900000000000, damage: 3500000000, size: 6.8, armor: 17400000000 },
+    24: { health: 340000000000000, damage: 4900000000, size: 7, armor: 132100000000 },
+    25: { health: 1820000000000000, damage: 6000000000, size: 7.2, armor: 331200000000 },
+    26: { health: 3700000000000000, damage: 14000000000, size: 7.4, armor: 967630000000 },
+    27: { health: 140704000000000000, damage: 71000000000, size: 7.6, armor: 13100000000000 },
+    28: { health: 906800000000000000, damage: 222000000000, size: 8, armor: 22300000000000 },
+    29: { health: 6700000000000000000, damage: 3700000000000, size: 10, armor: 260500000000000 }
+};
+
+export const SUMMON_STATS = {
+    0: { health: 2.25, damage: 1.4, size: 1 },
+    1: { health: 6.7, damage: 5.1, size: 1.05 },
+    2: { health: 17.5, damage: 15.3, size: 1.10 },
+    3: { health: 53.7, damage: 36.4, size: 1.15 },
+    4: { health: 114.6, damage: 42.7, size: 1.40 },
+    5: { health: 500, damage: 94.2, size: 1.80 },
+    6: { health: 1210.7, damage: 204.7, size: 2.25 },
+    7: { health: 5000.9, damage: 988, size: 3.10 },
+    8: { health: 13000, damage: 2508, size: 3.65 },
+    9: { health: 90000.2, damage: 11008.24, size: 4 },
+    10: { health: 5050000, damage: 30004.85, size: 4.25 },
+    11: { health: 340000000, damage: 141000, size: 4.50 },
+    12: { health: 3780000000, damage: 1720000, size: 4.75 },
+    13: { health: 34520000000, damage: 20190000, size: 5 },
+    14: { health: 1976160000000, damage: 90300000, size: 5.25 },
+    15: { health: 7156960000000, damage: 1300300000, size: 5.50 },
+    16: { health: 300380002800000, damage: 19201200000, size: 5.75 },
+    17: { health: 18909500700000, damage: 650000000, size: 6 },
+    18: { health: 11040000000000, damage: 990000000, size: 6.25 },
+    19: { health: 43450000000000, damage: 400500000, size: 6.50 },
+    20: { health: 462000000000000, damage: 430000000, size: 6.75 },
+    21: { health: 3000000000000000, damage: 2870000000, size: 7 },
+    22: { health: 3400000000000000, damage: 3000000000, size: 7.25 },
+    23: { health: 3700000000000000, damage: 3500000000, size: 7.5 },
+    24: { health: 5000000000000000, damage: 4900000000, size: 8.125 },
+    25: { health: 6520000000000000, damage: 6000000000, size: 8.50 },
+    26: { health: 37000000000000000, damage: 34000000000, size: 9.75 },
+    27: { health: 56000000000000000, damage: 51000000000, size: 11 },
+    28: { health: 26800000000000000, damage: 252000000000, size: 12.5 },
+    29: { health: 37000000000000000, damage: 3700000000000, size: 15.5 }
+};
+
 export class MobTier {
     static HEALTH_SCALE = 3.15;
     static DAMAGE_SCALE = 3;
     static SIZE_SCALE = 1.235;
+    static SIZE_SCALE_LARGE = 1.25;
 
     constructor(tier, health, damage, size) {
-        this.health = health * Math.pow(MobTier.HEALTH_SCALE, tier);
-        this.damage = damage * Math.pow(MobTier.DAMAGE_SCALE, tier);
-        this.size = size * Math.pow(MobTier.SIZE_SCALE, tier);
+        const rarityData = RARITY_TABLE[Math.min(tier, 29)] ?? {};
+
+        this.health = health * (rarityData.health ?? 1);
+        this.damage = damage * (rarityData.damage ?? 1);
+        this.size = size * (rarityData.size ?? 1);
+        this.armor = rarityData.armor ?? 0;
 
         this.damageReduction = 0;
 
@@ -572,6 +713,261 @@ export class PetalConfig {
 
         return this;
     }
+
+    setDiceAbility(chance, multiplier) {
+        return this.dice = {
+            chance: chance,
+            multiplier: multiplier
+        }, this;
+    }
+
+    setBloodLight(baseRatio) {
+        const table = globalThis.BLOOD_LIGHT_TABLE;
+
+        if (!table) {
+            console.error("BLOOD_LIGHT_TABLE is missing");
+            return this;
+        }
+
+        for (let e = 0; e < this.tiers.length; e++) {
+            if (!this.tiers[e]) continue;
+
+            const tierMultiplier = table[e] ?? table[table.length - 1];
+
+            this.tiers[e].bloodLight = {
+                ratio: baseRatio * tierMultiplier
+            };
+        }
+
+        return this;
+    }
+
+    setPomegranate(baseRatio) {
+        const table = globalThis.POMEGRANATE_TABLE;
+
+        if (!table) {
+            console.error("POMEGRANATE_TABLE is missing");
+            return this;
+        }
+
+        for (let e = 0; e < this.tiers.length; e++) {
+            if (!this.tiers[e]) continue;
+
+            const tierMultiplier = table[e] ?? table[table.length - 1];
+
+            this.tiers[e].pomegranate = {
+                ratio: baseRatio * tierMultiplier
+            };
+        }
+
+        return this;
+    }
+
+    setSummonHealing(base) {
+        const table = globalThis.SUMMON_HEALING_TABLE;
+        if (!table) return this;
+
+        const keys = Object.keys(table).map(Number).sort((a, b) => a - b);
+        const fallback = table[keys[keys.length - 1]] ?? 1;
+
+        for (let e = 0; e < this.tiers.length; e++) {
+            if (!this.tiers[e]) continue;
+
+            const tierMultiplier = table[e] ?? fallback;
+            this.tiers[e].summonHealing = base * tierMultiplier;
+        }
+
+        return this;
+    }
+
+    setTierRubyAbility(tier) {
+        this.rubySummonTiers ??= {};
+        this.currentRubyTier = tier;
+
+        this.rubySummonTiers[tier] ??= {
+            min: null,
+            max: null,
+            map: {},
+            maxSummon: null,
+            description: null
+        };
+
+        return this;
+    }
+
+    setEmeraldAbility(cooldown, maxClones) {
+        this.emerald = {
+            cooldown,
+            maxClones,
+            lastProc: 0,
+            activeClones: 0
+        };
+        return this;
+    }
+
+    setTierEmeraldAbility(tier) {
+        this.emeraldTiers ??= {};
+        this.currentEmeraldTier = tier;
+
+        this.emeraldTiers[tier] ??= {
+            min: null,
+            max: null
+        };
+
+        return this;
+    }
+
+    setTierMinimumMobRarityForBloodLeafDamage(tier, minMobRarity) {
+        if (!this.minimumMobRarityForBloodLeafDamage) {
+            this.minimumMobRarityForBloodLeafDamage = {};
+        }
+
+        this.minimumMobRarityForBloodLeafDamage[tier] = minMobRarity;
+        return this;
+    }
+
+    setTierUraniumAbility(tier) {
+        this.uraniumTiers ??= {};
+        this.currentUraniumTier = tier;
+
+        this.uraniumTiers[tier] ??= {
+            min: null,
+            max: null,
+            duration: null,
+            cooldown: null
+        };
+
+        return this;
+    }
+
+    setUraniumAbility(duration, cooldown) {
+        if (this.currentUraniumTier != null) {
+            const tier = this.currentUraniumTier;
+            this.uraniumTiers[tier].duration = duration;
+            this.uraniumTiers[tier].cooldown = cooldown;
+        } else {
+            this.uranium = {
+                duration,
+                cooldown,
+                lastProc: 0
+            };
+        }
+
+        return this;
+    }
+
+    setMinimumMobForUraniumAbility(rarity) {
+        const tier = this.currentUraniumTier;
+        this.uraniumTiers[tier].min = rarity;
+        return this;
+    }
+
+    setMaximumMobForUraniumAbility(rarity) {
+        const tier = this.currentUraniumTier;
+        this.uraniumTiers[tier].max = rarity;
+        return this;
+    }
+
+    setEndTierUraniumAbility() {
+        this.currentUraniumTier = null;
+        return this;
+    }
+
+    setCloverChance(chance) {
+        const tier = this.currentCloverTier;
+
+        if (tier != null) {
+            this.cloverTiers[tier].chance = chance;
+        }
+
+        return this;
+    }
+
+    setTierCloverAbility(tier) {
+        this.cloverTiers ??= {};
+        this.currentCloverTier = tier;
+
+        this.cloverTiers[tier] ??= {
+            chance: 0
+        };
+
+        return this;
+    }
+
+    setPacifyAbility(chance = 0.005) {
+        this.pacify = {
+            chance
+        };
+
+        return this;
+    }
+
+    setPetalAttractsAggro(t) {
+        return this.petalAttractsAggro = Boolean(t), this;
+    }
+
+    setDown(t) {
+        return this.stayDown = Boolean(t), this;
+    }
+
+    SummonLifetime(ms) {
+        const tier = this.currentRubyTier;
+        this.rubySummonTiers[tier].lifetime = ms;
+        return this;
+    }
+
+    SummonRarity(mobRarity, summonRarity) {
+        const tier = this.currentRubyTier;
+        this.rubySummonTiers[tier].map[mobRarity] = summonRarity;
+        return this;
+    }
+
+    MinimumSummonRarity(mobRarity, summonRarity) {
+        const tier = this.currentRubyTier;
+        const obj = this.rubySummonTiers[tier];
+
+        obj.min = mobRarity;
+        obj.map[mobRarity] = summonRarity;
+
+        return this;
+    }
+
+    MaximumSummonRarity(mobRarity, summonRarity) {
+        const tier = this.currentRubyTier;
+        const obj = this.rubySummonTiers[tier];
+
+        obj.max = mobRarity;
+        obj.maxSummon = summonRarity;
+
+        return this;
+    }
+
+    endTierRubyAbility() {
+        this.currentRubyTier = null;
+        return this;
+    }
+
+    MinimumMobRarity(rarity) {
+        const tier = this.currentEmeraldTier;
+        this.emeraldTiers[tier].min = rarity;
+        return this;
+    }
+
+    MaximumMobRarity(rarity) {
+        const tier = this.currentEmeraldTier;
+        this.emeraldTiers[tier].max = rarity;
+        return this;
+    }
+
+    endTierEmeraldAbility() {
+        this.currentEmeraldTier = null;
+        return this;
+    }
+
+    endTierCloverAbility() {
+        this.currentCloverTier = null;
+        return this;
+    }
 }
 
 export class MobDrop {
@@ -786,13 +1182,14 @@ export class MobConfig {
         return this;
     }
 
-    /** @param {{index:number,count:number|number[],minHealthRatio?:number}[]} data */
+    /** @param {{index:number,count:number|number[],minHealthRatio?:number,chance?:number}[]} data */
     setAntHoleSpawns(data) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].antHoleSpawns = data.map(({ index, count, minHealthRatio: minHealthRatio }) => ({
+            this.tiers[i].antHoleSpawns = data.map(({ index, count, minHealthRatio, chance }) => ({
                 index: index,
                 count: count instanceof Array ? (count[i] ?? count[count.length - 1]) : count,
-                minHealthRatio: minHealthRatio ?? 1
+                minHealthRatio: minHealthRatio ?? 1,
+                chance: chance ?? 1
             }));
         }
 
@@ -884,6 +1281,40 @@ export class MobConfig {
 
     setWavesIconSize(wavesIconSize) {
         this.wavesIconSize = wavesIconSize;
+        return this;
+    }
+
+    setDensity(t) {
+        for (let e = 0; e < this.tiers.length; e++)
+            this.tiers[e].density = t * Math.pow(1.25, e);
+        return this;
+    }
+
+    setFixedDamageReflection(values) {
+        const table = values ?? [
+            1, 2, 3, 3, 4,
+            8, 10, 25, 40, 200,
+            400, 600, 1200, 3500, 6000,
+            62000, 320000, 1000000, 6000000, 38000000,
+            150000000, 300000000, 1500000000, 3000000000
+        ];
+
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].fixedDamageReflection = {
+                damage: table[i] ?? table[table.length - 1]
+            };
+        }
+
+        return this;
+    }
+
+    setThornSpawn(chance, mobName, speed = 12) {
+        this.thornSpawn = {
+            chance,
+            mobName,
+            speed
+        };
+
         return this;
     }
 }

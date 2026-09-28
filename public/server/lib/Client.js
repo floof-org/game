@@ -840,7 +840,7 @@ export default class Client {
         if (!this.inventory[rarity][drop.index]) {
             this.inventory[rarity][drop.index] = 0;
         }
-        this.inventory[rarity][drop.index] += 1;
+        this.inventory[rarity][drop.index] += drop.amount ?? 1;
         return true;
     }
 
