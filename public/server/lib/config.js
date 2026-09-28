@@ -7,7 +7,7 @@ export const petalConfigs = [
     new PetalConfig("Basic", 22.5 * 1, 10, 10)
         .setDescription("A simple petal. Not too strong, not too weak."),
     new PetalConfig("Light", 22.5 * .25, 6.5, 17)
-        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 7, 7], 0, true)
+        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 0, true)
         .setSize(.75)
         .setDescription("It's very light and recharges quickly, at the cost of damage."),
     new PetalConfig("Faster", 22.5 * .65, 12, 7)
@@ -25,8 +25,7 @@ export const petalConfigs = [
         .setSize(1.25)
         .setDescription("A bit weak, but recharges instantly."),
     new PetalConfig("Rock", 22.5 * 2, 65, 53)
-        .setIcon([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.5], 1, "Rock", 0)
-        .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 2])
+        .setSize(1.3)
         .setDescription("It's a rock, not much to say about it."),
     new PetalConfig("Cactus", 22.5 * 2, 18, 6)
         .setSize(1.25)
@@ -37,9 +36,7 @@ export const petalConfigs = [
         .setSize(1.2)
         .setConstantHeal(5.5)
         .setDescription("A petal that heals you over time by the power of photosynthesis."),
-    new PetalConfig("Wing", 22.5 * 1.25, 17, [17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20, 21, 22])
-        .setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], "Wing", 0)
-        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], 1, true)
+    new PetalConfig("Wing", 22.5 * 1.25, 17, 17)
         .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setWingMovement(true)
         .setDescription("It comes and it goes."),
@@ -51,7 +48,6 @@ export const petalConfigs = [
         .setSize(1.3)
         .setExtraHealth(55)
         .setSpeedMultiplier(.925)
-        .setExtraSize(2.5)
         .setHuddles(1)
         .setDescription("The extra soil gives your flower more mass, but it does slow you down a bit..."),
     new PetalConfig("Magnolia", 22.5 * 1.5, 8, 8)
@@ -64,7 +60,7 @@ export const petalConfigs = [
         .setDescription("It's a piece of corn. They say ants like to snack on it."),
     new PetalConfig("Sand", 22.5 * .45, 5, 16)
         .setSize(.85)
-        .setMulti(4, true)
+        .setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1, true)
         .setDescription("Some fine grains of sand. They recharge quickly and can pack a punch."),
     new PetalConfig("Orange", 22.5 * .75, 12.5, 7.5)
         .setMulti(3, true)
@@ -92,7 +88,7 @@ export const petalConfigs = [
         .setSize(1.1)
         .setEnemySpeedMultiplier(.45, 5)
         .setDescription("It's sticky and will slow your enemies down."),
-    new PetalConfig("Iris", 22.5 * 1, 10, [29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 49])
+    new PetalConfig("Iris", 22.5 * 1, 10, 20)
         .setSize([0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setPoison(12.5, 5)
         .setDescription("Packs an unexpected punch in its secret weapon: poison."),
@@ -130,11 +126,12 @@ export const petalConfigs = [
         .setHuddles(1)
         .setMulti(2, false)
         .setDescription("A bundle of sticks... I wonder what'll happen if you spin them around in the desert..."),
-    new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 0.00001, 0.0000005)
-        .setPoison(2.5, 5)
+    new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 0.001, 0.0005)
+        .setPoison(0.0001, 5)
         .setDescription("[object null object]"),
     new PetalConfig("Dahlia", 22.5 * .75, 5, 5)
         .setHealing(3)
+        .setMulti([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 8, 8], 1, true)
         .setSize(.5)
         .setHuddles(1)
         .setMulti(3, true)
@@ -173,7 +170,7 @@ export const petalConfigs = [
         .setLightning([5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10], 32 * 16, 128)
         .setDescription("A petal that channels the power of all that came before."),
     new PetalConfig("Lightning", 22.5 * 1, 1e-15, [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 17])
-        .setLightning([3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9], 32 * 8, 7)
+        .setLightning([3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9], 256, 7)
         .setDescription("Shockingly shocking!"),
     new PetalConfig("Powder", 22.5 * .75, 3, 5)
         .setSize(1.65)
@@ -350,7 +347,7 @@ export const petalConfigs = [
         .setSize(1.8)
         .setHuddles(1)
         .setDescription("This isn't from this world..."),
-    new PetalConfig("Dice", 20.5, 5, [17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 23, 23, 25]).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], "Dice", 0).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], 1, true).setDiceAbility(0.05, 35).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
+    new PetalConfig("Dice", 20.5, 5, 17.5).setDiceAbility(0.05, 35).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
         .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 5% chance of dealing 35x damage. Criticals will only apply if the base dice damage is higher than the mob armor."),
     new PetalConfig("Fire Sand", 10.125, 5, 48).setIcon(0.575, [4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], "Sand", 0).setSize(.85).setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1, true)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("closePath").addAction("paint", "#e86d48", .445, .2)
@@ -541,10 +538,10 @@ export const petalConfigs = [
     new PetalConfig("Fire Missile", 15.5, 6, 150.5).setIcon(1, 1, "Missile", -45).setLaunchable(.7, 45).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setPoison(41.5, 5).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 0, true)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#862100", .6, 0)
         ).setDescription("You can actually shoot this one and now with an extra ingredient: poison!"),
-    new PetalConfig("Shovel", 30, 1, 1).setIcon(.8, 1, "Shovel", -45).setSize(1.6)
+    new PetalConfig("Shovel", 30, 1, 1).setIcon(.8, 1, "Shovel", -45)
         .setDrawing(new Drawing().addAction("beginPath").addAction("line", -.65, 0, 1, 0).addAction("stroke", "#614c39", .225, 0).addAction("beginPath").addAction("moveTo", .6, .65).addAction("lineTo", .6, -.65).addAction("lineTo", 1.35, -.55).addAction("lineTo", 1.7, -.15).addAction("lineTo", 1.7, .15).addAction("lineTo", 1.35, .55).addAction("lineTo", .6, .65).addAction("closePath").addAction("paint", "#c7ccd1", .225, .2).addAction("beginPath").addAction("moveTo", .6, -.1).addAction("lineTo", 1.2, 0).addAction("lineTo", .6, .1).addAction("closePath").addAction("fill", "#9fa3a7").addAction("beginPath").addAction("moveTo", -1.2, .35).addAction("lineTo", -1, .35).addAction("quadraticCurveTo", -.35, 0, -1, -.35).addAction("lineTo", -1.2, -.35).addAction("closePath").addAction("stroke", "#4a3f35", .252, 0)
         ).setDescription("Disables colliding with mobs for 5s, cooldown of 70s after using. Note: Renders kind of broken and buggy but main logic actually works."),
-    new PetalConfig("Blood Leaf", 12.5, 18, 35.5).setSize(2).setIcon(1, 1, "Leaf", 0)
+    new PetalConfig("Blood Leaf", 12.5, 18, 35.5).setSize(2)
         .setTierMinimumMobRarityForBloodLeafDamage(0, 0)
         .setTierMinimumMobRarityForBloodLeafDamage(1, 0)
         .setTierMinimumMobRarityForBloodLeafDamage(2, 0)
@@ -565,7 +562,7 @@ export const petalConfigs = [
         .setTierMinimumMobRarityForBloodLeafDamage(17, 22)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", -.531, .801).addAction("lineTo", -.634, .534).addAction("lineTo", -.688, .286).addAction("lineTo", -.692, .057).addAction("lineTo", -.647, -.153).addAction("lineTo", -.552, -.343).addAction("lineTo", -.408, -.514).addAction("lineTo", -.214, -.665).addAction("lineTo", .030, -.798).addAction("lineTo", .323, -.911).addAction("lineTo", .666, -1.005).addAction("lineTo", .713, -.653).addAction("lineTo", .723, -.338).addAction("lineTo", .696, -.062).addAction("lineTo", .586, .280).addAction("lineTo", .393, .537).addAction("lineTo", .116, .707).addAction("lineTo", -.245, .792).addAction("lineTo", -.531, .801).addAction("paint", "#e03f3f", .2, .2).addAction("closePath").addAction("beginPath").addAction("moveTo", -.558, .842).addAction("lineTo", -.727, 1.096).addAction("stroke", "#e03f3f", .2, .2).addAction("closePath").addAction("beginPath").addAction("moveTo", -.272, .410).addAction("lineTo", -.221, .302).addAction("lineTo", -.167, .198).addAction("lineTo", -.110, .095).addAction("lineTo", -.051, -.005).addAction("lineTo", .012, -.102).addAction("lineTo", .077, -.197).addAction("lineTo", .145, -.289).addAction("lineTo", .215, -.379).addAction("lineTo", .289, -.466).addAction("lineTo", .365, -.551).addAction("stroke", "#e03f3f", .2, .2).addAction("closePath")
         ).setDescription("Each kill with this petal equipped gives extra damage bonus, resets when dying. Check /petalinfo [rarity] bloodleaf"),
-    new PetalConfig("Shiny Wing", 7.125, 22, 34).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], "Wing", 0).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], 1, true).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setWingMovement(true).setSize(2.4)
+    new PetalConfig("Shiny Wing", 7.125, 22, 34).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setWingMovement(true).setSize(2.4)
         .setDrawing(new Drawing().addAction("rotate", 45).addAction("beginPath").addAction("arc", 0, 0, 1, -0.63, 3.7699111843077517).addAction("quadraticCurveTo", 0, .6, .77, -.63).addAction("closePath").addAction("paint", "#fff991", .2, .2)).setDescription("It comes and it goes, bonus damage depending on how fast its going, check /petalinfo [rarity] shinywing"),
     new PetalConfig("Uranium", 225, 1, 9)
         .setSize(1.5)
@@ -709,7 +706,7 @@ export const petalConfigs = [
         .endTierCloverAbility()
         .setDrawing(new Drawing().addAction("rotate", 15).addAction("beginPath").addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("paint", "#3AB54A", .225, .2).addAction("closePath")
         ).setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 0.1%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 0.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 6%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 8%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 10%"]),
-    new PetalConfig("Rock.projectile", 2250, 0.0000001, 0.00000005)
+    new PetalConfig("Rock.projectile", 2250, 0.001, 0.0005)
         .setDrawing(new Drawing()
         .addAction("beginPath")
         .addAction("polygon", 5, 1, 3.2)
@@ -717,10 +714,10 @@ export const petalConfigs = [
         .addAction("stroke", "#525252", 0.2, 0)
         .addAction("closePath")
         ).setDescription("[object null object]"),
-    new PetalConfig("Pomegranate", 10.125, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setIcon(.85, 1, "Pomegranate", -45).setSize(1.25).setPomegranate(0.005)
+    new PetalConfig("Pomegranate", 10.125, 6, 44).setIcon(.85, 1, "Pomegranate", -45).setSize(1.25).setPomegranate(0.005)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", .75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, .75, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", -.75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, -.75, .75).addAction("paint", "#e52669", .25, .2)
         ).setDescription("A deadly 4 in 1 deal. Check /petalinfo [rarity] pomegranate"),
-    new PetalConfig("projectile.pomegranate", 2250, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setPomegranate(0.005)
+    new PetalConfig("projectile.pomegranate", 2250, 6, 44).setPomegranate(0.005)
         .setDrawing(new Drawing()
         .addAction("beginPath")
         .addAction("circle", 0, 0, 0.80)
@@ -758,10 +755,10 @@ export const petalConfigs = [
     new PetalConfig("Resin.projectile", 2250, 1e5, 15).setSize(35).setEnemySpeedMultiplier(.334, .05).setIgnoreWalls(1).setPacifyAbility(0.0001)
         .setDrawing(new Drawing().addAction("opacity", .45).addAction("beginPath").addAction("dipPolygon", 5, 1, -1.3, 0).addAction("fill", "#fcebff").addAction("opacity", 1).addAction("stroke", "#fcebff", .2, 0).addAction("opacity", .6).addAction("beginPath").addAction("dipPolygon", 5, .45, -1.6, Math.PI).addAction("fill", "#fcebff")
         ).setDescription("[object null object]"),
-    new PetalConfig("Thorn", 25, 80, [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 114]).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setSize(1.35)
+    new PetalConfig("Thorn", 25, 80, 60).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("Spiky."),
-    new PetalConfig("Thorn.projectile", 25, 0.0000000005, 0.0000000005).setSize(1.35).setLaunchable(.7, 45)
+    new PetalConfig("Thorn.projectile", 25, 6, 0.005).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("[object null object]"),
     new PetalConfig("Lilypad", 225, 6, 44)
