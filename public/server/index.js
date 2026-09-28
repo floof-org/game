@@ -392,7 +392,7 @@ switch (globalThis.environmentName) {
 
         lobbySocket.onopen = () => {
             console.log("Connected to server");
-            state.router.begin(["start", Bun.env.GAMEMODE, Bun.env.MODDED == "true", crypto.randomUUID(), +Bun.env.BIOME]);
+            state.router.begin(["start", Bun.env.GAMEMODE, Bun.env.MODDED == "true", crypto.randomUUID(), +Bun.env.BIOME, Bun.env.CRAFTING == "true"]);
 
             lobbySocket.onmessage = event => {
                 const data = new Uint8Array(event.data);

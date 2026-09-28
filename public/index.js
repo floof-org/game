@@ -102,12 +102,14 @@ document.getElementById("createLobbyButton").onclick = async () => {
     localStorage.setItem("biome", biomeSelect.value);
     const enableMods = document.getElementById("enableMods");
     localStorage.setItem("enableMods", enableMods.checked);
+    const enableCrafting = document.getElementById("enableCrafting");
+    localStorage.setItem("enableCrafting", enableCrafting.checked);
     const privateLobby = document.getElementById("privateLobby");
     localStorage.setItem("privateLobby", privateLobby.checked);
     hasCreatedLobby = true;
     document.getElementById("createLobbyButton").disabled = true;
     const username = getUsername();
-    const server = await net.createServer(lobbyName.value, gamemodeSelect.value, enableMods.checked, privateLobby.checked, biomeSelect.value);
+    const server = await net.createServer(lobbyName.value, gamemodeSelect.value, enableMods.checked, privateLobby.checked, biomeSelect.value, enableCrafting.checked);
     document.getElementById("createLobbyButton").disabled = false;
 
     if (!server.ok) {
@@ -3206,6 +3208,7 @@ if (isHalloween) {
 document.getElementById("gamemodeSelect").value = localStorage.getItem("gamemode") || "ffa";
 document.getElementById("biomeSelect").value = localStorage.getItem("biome") || "default";
 document.getElementById("enableMods").checked = localStorage.getItem("enableMods") === "true";
+document.getElementById("enableCrafting").checked = localStorage.getItem("enableCrafting") === "true";
 document.getElementById("privateLobby").checked = localStorage.getItem("privateLobby") === "true";
 
 showMenus();

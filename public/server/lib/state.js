@@ -28,6 +28,7 @@ const state = {
     announceRarity: 7,
 
     gamemode: GAMEMODES.FFA,
+    useCraftingProtocol: false,
 
     isTDM: false,
     teamCount: 2,
