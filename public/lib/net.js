@@ -1918,8 +1918,8 @@ case 113: {
     state.terrainScores = new Map();
 
     for (let i = 0; i < count; i++) {
-        const x = reader.getUint16();
-        const y = reader.getUint16();
+        const x = reader.getUint32();
+        const y = reader.getUint32();
         const score = reader.getFloat32();
 
         state.terrainScores.set(`${x},${y}`, score);
@@ -1986,13 +1986,13 @@ case 113: {
         break;
       case CLIENT_BOUND.TERRAIN:
         state.terrain = {
-          width: reader.getUint16(),
-          height: reader.getUint16(),
+          width: reader.getUint32(),
+          height: reader.getUint32(),
           blocks: ((blocks = []) => {
-            for (let i = reader.getUint16(); i > 0; i--) {
+            for (let i = reader.getUint32(); i > 0; i--) {
               blocks.push({
-                x: reader.getInt16(),
-                y: reader.getInt16(),
+                x: reader.getInt32(),
+                y: reader.getInt32(),
                 type: [reader.getUint8(), reader.getUint8()],
                 terrain: [],
               });
