@@ -1516,8 +1516,8 @@ export default class Client {
                 terrainWriter.setUint32(cells.length);
 
                 for (const cell of cells) {
-                    terrainWriter.setUint16(cell.x);
-                    terrainWriter.setUint16(cell.y);
+                    terrainWriter.setUint32(cell.x);
+                    terrainWriter.setUint32(cell.y);
                     terrainWriter.setFloat32(cell.score ?? 0);
                 }
 
