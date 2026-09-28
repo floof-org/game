@@ -955,6 +955,14 @@ export default class Client {
                 state.sendTerrain(this.id);
                 tiers.forEach(tier => this.inventory[tier.name] = {});
 
+                const onlineCount = state.clients.size;
+
+                state.clients.forEach(client => {
+                    if (client !== this) client.systemMessage(`${this.username} has joined the game! (${onlineCount} players online)`, "#00f2ff");
+                });
+
+                this.systemMessage("Welcome! Use /createaccount [user] [password] to create an account and save your progress, or /login [user] [password] to log in.", "#00f2ff");
+
                 if (this.userId === state.secretKey && this.masterPermissions < 1) this.nameColor = "#F5D230";
 
                 const dc = Client.disconnects.get(this.userId);
