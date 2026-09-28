@@ -1,4 +1,4 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES } from "../../lib/protocol.js";
+import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
 import state from "./state.js";
@@ -2605,6 +2605,10 @@ export class Mob extends Entity {
                 const client = state.clients.get(damager.clientID);
 
                 if (client) {
+                    if (state.gamemode === GAMEMODES.MAZE && damager.damage < this.health.maxHealth * 0.05) {
+                        return;
+                    }
+
                     client.addXP((Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1));
 
                     const output = [];
