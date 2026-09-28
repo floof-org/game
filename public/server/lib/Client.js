@@ -1,7 +1,7 @@
 import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
-import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES } from "../../lib/protocol.js";
-import { mobConfigs, mobIDOf, petalConfigs, tiers } from "./config.js";
+import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, SUMMON_STATS } from "../../lib/protocol.js";
+import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP } from "./config.js";
 import { xpForLevel } from "../../lib/util.js";
 
 const blockList = [];
@@ -20,6 +20,71 @@ const patterns = [
 ];
 
 const tripsFilter = message => patterns.some(p => p.test(message));
+
+const RARITY_ORDER = tiers.map(tier => tier.name);
+
+const VALID_COMMANDS = new Set([
+    "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
+    "/mobinfo", "/petalinfo", "/rarities", "/drops",
+    "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob"
+]);
+
+function normalizeName(str) {
+    return str.toLowerCase().replace(/\s+/g, "");
+}
+
+function formatNumber(num) {
+    const abs = Math.abs(num);
+    const suffixes = [
+        ["Nv", 1e30], ["Oc", 1e27], ["Sp", 1e24], ["Sx", 1e21],
+        ["Qt", 1e18], ["Qd", 1e15], ["t", 1e12], ["b", 1e9], ["m", 1e6], ["k", 1e3]
+    ];
+
+    for (const [suffix, value] of suffixes) {
+        if (abs >= value) {
+            const formatted = (num / value).toFixed(2).replace(/\.?0+$/, "");
+            return formatted + suffix;
+        }
+    }
+
+    return Math.round(num).toString();
+}
+
+function formatAmount(n) {
+    if (n === 1) return "";
+
+    const format = (value, suffix) => {
+        const rounded = Math.round(value * 10) / 10;
+        return ` x${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${suffix}`;
+    };
+
+    if (n >= 1e30) return format(n / 1e30, "Nv");
+    if (n >= 1e27) return format(n / 1e27, "Oc");
+    if (n >= 1e24) return format(n / 1e24, "Sp");
+    if (n >= 1e21) return format(n / 1e21, "Sx");
+    if (n >= 1e18) return format(n / 1e18, "Qt");
+    if (n >= 1e15) return format(n / 1e15, "Qd");
+    if (n >= 1e12) return format(n / 1e12, "t");
+    if (n >= 1e9) return format(n / 1e9, "b");
+    if (n >= 1e6) return format(n / 1e6, "m");
+    if (n >= 1e3) return format(n / 1e3, "k");
+
+    return ` x${n}`;
+}
+
+function formatPercent(p) {
+    return parseFloat(p.toFixed(10)).toString();
+}
+
+function findMobByName(name) {
+    const needle = normalizeName(name);
+
+    return mobConfigs.find(m => m?.name && normalizeName(m.name) === needle) ?? null;
+}
+
+function getItemName(index) {
+    return petalConfigs[index]?.name ?? `Item${index}`;
+}
 
 export class PlayerClientCache {
     id = 0;
@@ -1290,6 +1355,20 @@ export default class Client {
                     return;
                 }
 
+                if (message.startsWith("/")) {
+                    const parts = message.trim().split(/\s+/);
+                    const cmd = parts[0].toLowerCase();
+
+                    if (!VALID_COMMANDS.has(cmd)) {
+                        this.systemMessage("Unknown command. Please read /help", "#ff5555");
+                        return;
+                    }
+
+                    this.lastChat = performance.now();
+                    this.handleCommand(message);
+                    return;
+                }
+
                 if (message.length > 10) {
                     const setOfChars = new Set(message);
                     const split = message.split("");
@@ -1324,6 +1403,574 @@ export default class Client {
                 this.lastChat = performance.now();
                 state.clients.forEach(c => c.chatMessage(this.username, message, this.nameColor));
             } break;
+        }
+    }
+
+    handleCommand(e) {
+        const commandCheck = cmd => e.toLowerCase().startsWith(cmd);
+        const requireAdmin = () => {
+            if (this.masterPermissions < 1) {
+                this.systemMessage("You are not allowed to run this command.", "#ff5555");
+                return false;
+            }
+
+            return true;
+        };
+
+        // help
+        if (commandCheck("/help") || commandCheck("/cmd") || commandCheck("/commands")) {
+            [
+                "Note: [text] indicates required, <text> indicates optional.",
+                "/mobinfo [rarity] [mob name] - Shows health, damage and armor of the specified mob and rarity.",
+                "/petalinfo [rarity] [petal name] - Preview the stats of the specified petal and rarity.",
+                "/drops [rarity name] [mob name] - Shows the drop chances for the specified rarity and mob.",
+                "/rarities - Shows all rarities.",
+                "/die - Kills you.",
+                "/infocommands - Shows all related commands that give info of something.",
+                "/admincommands - Shows all admin commands."
+            ].forEach(cmd => this.systemMessage(cmd, "#ffe65d"));
+            return;
+        }
+
+        // info help
+        if (commandCheck("/infocommands")) {
+            [
+                "Note: [text] indicates required, <text> indicates optional.",
+                "/mobinfo [rarity] [mob name] - Shows health, damage and armor of the specified mob and rarity.",
+                "/petalinfo [rarity] [petal name] - Preview the stats of the specified petal and rarity.",
+                "/drops [rarity name] [mob name] - Shows the drop chances for the specified rarity and mob.",
+                "/rarities - Shows all rarities."
+            ].forEach(cmd => this.systemMessage(cmd, "#ffe65d"));
+            return;
+        }
+
+        // admin help
+        if (commandCheck("/admincommands")) {
+            [
+                "Note: [text] indicates required, <text> indicates optional.",
+                "/spawnmob [rarity] [mob] [x] [y] <amount> - Spawns the specified mob at the coordinates.",
+                "/killmob [mobID] - Kills the mob with the specified ID.",
+                "/killall [rarity] <mobname> - Kills all mobs of the specified rarity and mob.",
+                "/resetmobs - Resets all mobs.",
+                "/mobcount - Shows the living and actual mob count.",
+                "/godmode - Toggles godmode."
+            ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
+            return;
+        }
+
+        // /rarities
+        if (commandCheck("/rarities")) {
+            for (let i = 0; i < tiers.length; i++) {
+                this.systemMessage(`${i} - ${tiers[i].name}`, tiers[i].color || "#FFFFFF");
+            }
+
+            this.systemMessage("Use in commands like:", "#ffe65d");
+            this.systemMessage("/drops common beetle", "#3bedb5");
+            this.systemMessage("/drops 0 beetle", "#3bedb5");
+            return;
+        }
+
+        // /mobinfo
+        if (commandCheck("/mobinfo")) {
+            const args = e.substring(8).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 2 || !e.substring(8).trim()) {
+                this.systemMessage("Usage: /mobinfo [rarity] [mob]", "#ffe65d");
+                return;
+            }
+
+            let rarityIndex = -1;
+            let rarityTokenCount = 0;
+
+            for (let i = args.length; i > 0; i--) {
+                const normCandidate = normalizeName(args.slice(0, i).join(" "));
+                const index = RARITY_ORDER.findIndex(r => normalizeName(r) === normCandidate);
+
+                if (index !== -1) {
+                    rarityIndex = index;
+                    rarityTokenCount = i;
+                    break;
+                }
+            }
+
+            if (rarityIndex === -1 && !isNaN(args[0])) {
+                const num = parseInt(args[0]);
+
+                if (RARITY_ORDER[num]) {
+                    rarityIndex = num;
+                    rarityTokenCount = 1;
+                }
+            }
+
+            if (rarityIndex === -1) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const mobName = args.slice(rarityTokenCount).join(" ");
+            const mob = findMobByName(mobName);
+
+            if (!mob) {
+                this.systemMessage("Mob not found.", "#ff5e5e");
+                return;
+            }
+
+            const rarityData = RARITY_TABLE[rarityIndex];
+
+            if (!rarityData) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const finalHealth = mob.health * rarityData.health;
+            const finalDamage = mob.damage * rarityData.damage;
+            const armor = rarityData.armor ?? 0;
+
+            this.systemMessage(
+                `${RARITY_ORDER[rarityIndex]} ${mob.name}: Health: ${formatNumber(finalHealth)}, Damage: ${formatNumber(finalDamage)}, Armor: ${formatNumber(armor)}`,
+                tiers[rarityIndex]?.color || "#ffffff"
+            );
+            return;
+        }
+
+        // /petalinfo
+        if (commandCheck("/petalinfo")) {
+            const args = e.substring(10).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 1) {
+                this.systemMessage("Usage: /petalinfo [rarity] [petal]", "#ffe65d");
+                return;
+            }
+
+            let rarityIndex = -1;
+            let rarityTokenCount = 0;
+
+            for (let i = args.length; i > 0; i--) {
+                const normCandidate = normalizeName(args.slice(0, i).join(" "));
+                const index = RARITY_ORDER.findIndex(r => normalizeName(r) === normCandidate);
+
+                if (index !== -1) {
+                    rarityIndex = index;
+                    rarityTokenCount = i;
+                    break;
+                }
+            }
+
+            if (rarityIndex === -1 && !isNaN(args[0])) {
+                const num = parseInt(args[0]);
+
+                if (RARITY_ORDER[num]) {
+                    rarityIndex = num;
+                    rarityTokenCount = 1;
+                }
+            }
+
+            if (rarityIndex === -1) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const petalName = args.slice(rarityTokenCount).join(" ");
+            const index = petalConfigs.findIndex(p => p?.name && normalizeName(p.name) === normalizeName(petalName));
+
+            if (index === -1) {
+                this.systemMessage("Petal not found.", "#ff5e5e");
+                return;
+            }
+
+            const config = petalConfigs[index];
+            const tier = config.tiers?.[rarityIndex];
+
+            if (!tier) {
+                this.systemMessage(`No data for tier ${rarityIndex}`, "#ff5e5e");
+                return;
+            }
+
+            const lines = [
+                `${RARITY_ORDER[rarityIndex]} ${config.name}:`,
+                `- Health: ${formatNumber(tier.health)}`
+            ];
+
+            lines.push(Number.isFinite(tier.damage) ? `- Damage: ${formatNumber(tier.damage)}` : "- Damage: special");
+
+            if (tier.size > 1) lines.push(`- Size: ${tier.size}`);
+            if (tier.extraHealth > 0) lines.push(`- Extra Health: ${formatNumber(tier.extraHealth)}`);
+            if (tier.constantHeal > 0) lines.push(`- Constant Heal: ${formatNumber(tier.constantHeal)}`);
+            if (tier.damageReduction > 0) lines.push(`- Damage Reduction: ${Math.round(tier.damageReduction * 100)}%`);
+            if (tier.armor > 0) lines.push(`- Armor: ${formatNumber(tier.armor)}`);
+
+            if (tier.spawnable) {
+                const mob = mobConfigs[tier.spawnable.index];
+                const summon = SUMMON_STATS[tier.spawnable.rarity];
+
+                if (mob && summon) {
+                    const mobTier = mob.tiers?.[tier.spawnable.rarity];
+                    lines.push(`- Summons: ${mob.name} · Health: ${formatNumber((mobTier?.health ?? 0) * summon.health)} · Damage: ${formatNumber((mobTier?.damage ?? 0) * summon.damage)}`);
+                }
+            }
+
+            if (config.description) {
+                lines.push(`- ${config.description}`);
+            }
+
+            lines.forEach((line, i) => this.systemMessage(line, i === 0 ? tiers[rarityIndex]?.color || "#ffffff" : "#ffffff"));
+            return;
+        }
+
+        // /drops
+        if (commandCheck("/drops")) {
+            const args = e.substring(6).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 2) {
+                this.systemMessage("Usage: /drops <rarity> <mob>", "#ffe65d");
+                this.systemMessage("Example: /drops common beetle", "#3bedb5");
+                return;
+            }
+
+            let rarityArg = normalizeName(args[0]);
+
+            const shortcuts = {
+                u: "uncommon",
+                leg: "legendary",
+                ul: "ultra",
+                gala: "galaxium",
+                trans: "transcestrial",
+                null: "nullified",
+                final: "finalist",
+                epsi: "epsilation",
+                izo: "izolational",
+                chro: "chronodynamic",
+                abs: "absolutefictional"
+            };
+
+            if (shortcuts[rarityArg]) {
+                rarityArg = shortcuts[rarityArg];
+            }
+
+            const normalizedRarityOrder = RARITY_ORDER.map(r => normalizeName(r));
+
+            let rarityIndex;
+
+            if (!isNaN(rarityArg)) {
+                rarityIndex = parseInt(rarityArg);
+            } else {
+                rarityIndex = normalizedRarityOrder.indexOf(rarityArg);
+            }
+
+            if (rarityIndex < 0 || rarityIndex >= RARITY_ORDER.length) {
+                this.systemMessage(`Invalid rarity: ${args[0]}`, "#DE1F1F");
+                return;
+            }
+
+            const mob = findMobByName(args.slice(1).join(" "));
+
+            if (!mob) {
+                this.systemMessage(`Mob not found: ${args.slice(1).join(" ")}`, "#DE1F1F");
+                return;
+            }
+
+            const rows = DROP_LOOKUP?.[mob.name]?.[rarityIndex];
+
+            if (!rows || rows.length === 0) {
+                this.systemMessage("No drop table found.", "#DE1F1F");
+                return;
+            }
+
+            this.systemMessage(
+                `${RARITY_ORDER[rarityIndex]} ${mob.name}:`,
+                tiers[rarityIndex]?.color || "#FFFFFF"
+            );
+
+            for (const row of rows) {
+                const totalWeight = row.entries.reduce((sum, entry) => sum + entry.weight, 0);
+
+                this.systemMessage("----------------------------------------------", "#FFFFFF");
+
+                for (const entry of row.entries) {
+                    const itemRarity = RARITY_ORDER[entry.rarity] ?? `Tier ${entry.rarity}`;
+
+                    this.systemMessage(
+                        `- ${itemRarity} ${getItemName(entry.index)}${formatAmount(entry.amount)} : ${formatPercent(entry.weight)}%`,
+                        "#FFFFFF"
+                    );
+                }
+
+                const missing = 100 - totalWeight;
+
+                if (missing > 0.00001) {
+                    this.systemMessage(`- Nothing : ${formatPercent(missing)}%`, "#FFFFFF");
+                }
+            }
+
+            return;
+        }
+
+        // /mobcount
+        if (commandCheck("/mobcount")) {
+            if (!requireAdmin()) return;
+
+            const actual = Array.from(state.entities.values()).filter(e =>
+                e.type === ENTITY_TYPES.MOB &&
+                !e.friendly &&
+                e.countsTowardsMobCount &&
+                !e.health?.isDead
+            ).length;
+
+            this.systemMessage(
+                `livingMobCount: ${state.livingMobCount} | Actual mobs: ${actual} | maxMobs: ${state.maxMobs} | Difference: ${state.livingMobCount - actual}`,
+                actual === state.livingMobCount ? "#55ff55" : "#ff5555"
+            );
+
+            return;
+        }
+
+        // /spawnmob
+        if (commandCheck("/spawnmob")) {
+            if (!requireAdmin()) return;
+
+            const args = e.substring(9).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 4) {
+                this.systemMessage("Usage: /spawnmob [rarity] [mob] [x] [y] <amount>", "#ffaa00");
+                return;
+            }
+
+            const rawRarity = args.shift();
+
+            let rarityIndex = null;
+
+            if (!isNaN(rawRarity)) {
+                rarityIndex = parseInt(rawRarity, 10);
+            } else {
+                const lower = rawRarity.toLowerCase();
+
+                for (let i = 0; i < tiers.length; i++) {
+                    if (tiers[i].name.toLowerCase() === lower) {
+                        rarityIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (rarityIndex == null || rarityIndex < 0 || rarityIndex >= tiers.length) {
+                this.systemMessage("Invalid rarity.", "#ff5555");
+                return;
+            }
+
+            let amount = 1;
+            let x;
+            let y;
+
+            if (args.length >= 4 && !isNaN(args.at(-1)) && !isNaN(args.at(-2)) && !isNaN(args.at(-3))) {
+                amount = Math.max(1, parseInt(args.pop(), 10));
+                y = Number(args.pop());
+                x = Number(args.pop());
+            } else if (args.length >= 3 && !isNaN(args.at(-1)) && !isNaN(args.at(-2))) {
+                y = Number(args.pop());
+                x = Number(args.pop());
+            } else {
+                this.systemMessage("Coordinates required. Usage: /spawnmob [rarity] [mob] [x] [y] <amount>", "#ff5555");
+                return;
+            }
+
+            const mobName = args.join(" ");
+            const typeIndex = mobConfigs.findIndex(m => m?.name?.toLowerCase() === mobName.toLowerCase());
+
+            if (typeIndex === -1) {
+                this.systemMessage(`Mob "${mobName}" not found.`, "#ff5555");
+                return;
+            }
+
+            const config = mobConfigs[typeIndex];
+            let spawned = 0;
+
+            for (let i = 0; i < amount; i++) {
+                try {
+                    const mob = new Mob({ x, y });
+                    mob.define(config, rarityIndex);
+                    mob.x = x;
+                    mob.y = y;
+                    spawned++;
+                } catch (err) {
+                    console.error("[spawnmob]", mobName, rarityIndex, err);
+                }
+            }
+
+            this.systemMessage(
+                `Spawned ${spawned} ${tiers[rarityIndex].name} ${config.name}${spawned !== 1 ? "s" : ""}.`,
+                "#55ff55"
+            );
+
+            return;
+        }
+
+        // /godmode
+        if (commandCheck("/godmode")) {
+            if (!requireAdmin()) return;
+
+            if (!this.body) {
+                this.systemMessage("You need to be alive to use this command.", "#ff5555");
+                return;
+            }
+
+            this.body.health.invulnerable = !this.body.health.invulnerable;
+            this.systemMessage(
+                `Godmode ${this.body.health.invulnerable ? "enabled" : "disabled"}.`,
+                "#55ff55"
+            );
+
+            return;
+        }
+
+        // /die
+        if (commandCheck("/die")) {
+            if (this.body) {
+                this.body.destroy();
+                return;
+            }
+
+            this.systemMessage("You are already dead.", "#ff5555");
+            return;
+        }
+
+        // /killmob
+        if (commandCheck("/killmob")) {
+            if (!requireAdmin()) return;
+
+            const raw = e.substring(8).trim();
+
+            if (!raw) {
+                this.systemMessage("Usage: /killmob <mobID>", "#ffaa00");
+                return;
+            }
+
+            const mobID = parseInt(raw);
+
+            if (isNaN(mobID)) {
+                this.systemMessage("Invalid mob ID.", "#ff5555");
+                return;
+            }
+
+            let target = null;
+
+            for (const ent of state.entities.values()) {
+                if (ent.type === ENTITY_TYPES.MOB && ent.id === mobID) {
+                    target = ent;
+                    break;
+                }
+            }
+
+            if (!target) {
+                this.systemMessage(`Mob with ID ${mobID} not found.`, "#ff5555");
+                return;
+            }
+
+            if (target.health && !target.health.isDead) {
+                target.health.set(0);
+                this.systemMessage(`Mob ${mobID} killed successfully.`, "#55ff55");
+            } else {
+                this.systemMessage(`Mob ${mobID} is already dead.`, "#ffaa00");
+            }
+
+            return;
+        }
+
+        // /killall
+        if (commandCheck("/killall")) {
+            if (!requireAdmin()) return;
+
+            const args = e.substring(8).trim().split(/\s+/);
+
+            if (args.length < 1 || !args[0]) {
+                this.systemMessage("Usage: /killall [rarity] <mobname>", "#ffaa00");
+                return;
+            }
+
+            const rarityArg = args[0];
+            const mobArg = args.slice(1).join(" ");
+
+            let rarityValue = null;
+
+            if (!isNaN(rarityArg)) {
+                rarityValue = parseInt(rarityArg);
+            } else {
+                const lower = rarityArg.toLowerCase();
+
+                for (let i = 0; i < tiers.length; i++) {
+                    if (tiers[i].name.toLowerCase() === lower) {
+                        rarityValue = i;
+                        break;
+                    }
+                }
+            }
+
+            if (rarityValue === null) {
+                this.systemMessage(`Rarity "${rarityArg}" not found.`, "#ff5555");
+                return;
+            }
+
+            let mobName = null;
+
+            if (mobArg) {
+                mobName = mobArg.toLowerCase();
+
+                if (!mobConfigs.some(m => m?.name?.toLowerCase() === mobName)) {
+                    this.systemMessage(`Mob "${mobArg}" not found.`, "#ff5555");
+                    return;
+                }
+            }
+
+            let killed = 0;
+
+            for (const ent of state.entities.values()) {
+                if (ent.type !== ENTITY_TYPES.MOB || ent.rarity !== rarityValue) continue;
+
+                if (mobName !== null && ent.config?.name?.toLowerCase() !== mobName && ent.name?.toLowerCase() !== mobName) continue;
+
+                if (ent.health && ent.parent?.type !== ENTITY_TYPES.PLAYER && ent.team === -69 && !ent.health.isDead) {
+                    ent.health.set(0);
+                    killed++;
+                }
+            }
+
+            this.systemMessage(`${killed} mobs killed.`, "#55ff55");
+
+            return;
+        }
+
+        // /resetmobs
+        if (commandCheck("/resetmobs")) {
+            if (!requireAdmin()) return;
+
+            const mobs = [];
+
+            for (const ent of state.entities.values()) {
+                if (ent.type === ENTITY_TYPES.MOB && ent.health && !ent.health.isDead) {
+                    mobs.push(ent);
+                }
+            }
+
+            const total = mobs.length;
+
+            this.systemMessage(`Resetting ${total} mobs in batches...`, "#ffaa00");
+
+            let index = 0;
+
+            const interval = setInterval(() => {
+                let killed = 0;
+
+                while (index < mobs.length && killed < 50) {
+                    mobs[index++].health?.set?.(0);
+                    killed++;
+                }
+
+                if (index >= mobs.length) {
+                    clearInterval(interval);
+                    this.systemMessage(`Finished. Removed ${total} mobs.`, "#55ff55");
+                }
+            }, 50);
+
+            return;
         }
     }
 
