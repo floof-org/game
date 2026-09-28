@@ -2497,6 +2497,22 @@ export default class Client {
 
         state.router.postMessage(writer.build());
 
+        if (state.gamemode === GAMEMODES.MAZE) {
+            const dropAmountsWriter = new Writer(true);
+            dropAmountsWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+            dropAmountsWriter.setUint16(this.id);
+            dropAmountsWriter.setUint8(250);
+            dropAmountsWriter.setUint16(this.camera.dropsToAdd.length);
+
+            this.camera.dropsToAdd.forEach(drop => {
+                dropAmountsWriter.setUint32(drop.id);
+                dropAmountsWriter.setUint32(drop.amount ?? 1);
+                dropAmountsWriter.setUint16(0);
+            });
+
+            state.router.postMessage(dropAmountsWriter.build());
+        }
+
         if (globalThis._MAP_CELLS?.length) {
             this.__sentTerrainScores ??= false;
 
