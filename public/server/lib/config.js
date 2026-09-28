@@ -1823,6 +1823,34 @@ export const DROP_LOOKUP = {};
 
 console.log("config.js loaded", petalConfigs.length, "petals", mobConfigs.length, "mobs.");
 
+export const allPossiblePetals = (rarity) => {
+    const possible = [];
+
+    mobConfigs.forEach(mob => {
+        const table = DROP_LOOKUP[mob.name];
+
+        if (table) {
+            for (const rows of Object.values(table)) {
+                for (const row of rows) {
+                    for (const entry of row.entries) {
+                        if (entry.index > -1 && rarity >= entry.rarity) {
+                            possible.push(entry.index);
+                        }
+                    }
+                }
+            }
+        }
+
+        mob.drops.forEach(drop => {
+            if (drop.index > -1 && rarity >= drop.minRarity) {
+                possible.push(drop.index);
+            }
+        });
+    });
+
+    return [...new Set(possible)];
+};
+
 export const randomPossiblePetal = (rarity) => {
     const possible = [];
 

@@ -1,7 +1,7 @@
 import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, SUMMON_STATS } from "../../lib/protocol.js";
-import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP } from "./config.js";
+import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
 import { xpForLevel } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 
@@ -1509,7 +1509,9 @@ export default class Client {
                 "/killall [rarity] <mobname> - Kills all mobs of the specified rarity and mob.",
                 "/resetmobs - Resets all mobs.",
                 "/mobcount - Shows the living and actual mob count.",
-                "/godmode - Toggles godmode."
+                "/godmode - Toggles godmode.",
+                "/give [player] [petal] [rarity] - Gives a player a petal.",
+                "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory."
             ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
             return;
         }
@@ -1588,6 +1590,61 @@ export default class Client {
                 accounts.persist().catch(err => console.warn("[Accounts] Save failed:", err));
 
                 this.systemMessage(`Gave ${rarity.name} ${petalConfigs[petalIndex].name} to ${account.username} offline.`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /addall
+        if (commandCheck("/addall")) {
+            (async () => {
+                if (!requireOwner()) return;
+
+                const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 1) {
+                    this.systemMessage("Usage: /addall [rarity]", "#ffaa00");
+                    return;
+                }
+
+                const rarityArg = args[0];
+                let rarityIndex = null;
+
+                if (!isNaN(rarityArg)) {
+                    rarityIndex = parseInt(rarityArg);
+                } else {
+                    const lower = rarityArg.toLowerCase();
+
+                    for (let i = 0; i < tiers.length; i++) {
+                        if (tiers[i].name.toLowerCase() === lower) {
+                            rarityIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
+                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                    return;
+                }
+
+                const rarity = tiers[rarityIndex];
+                const available = allPossiblePetals(rarityIndex);
+
+                if (available.length === 0) {
+                    this.systemMessage(`No petals are obtainable at ${rarity.name}.`, "#ffaa00");
+                    return;
+                }
+
+                if (!this.inventory[rarity.name]) this.inventory[rarity.name] = {};
+
+                for (const petalIndex of available) {
+                    this.inventory[rarity.name][petalIndex] = (this.inventory[rarity.name][petalIndex] || 0) + 1;
+                }
+
+                accounts.saveClient(this);
+
+                this.systemMessage(`Added all ${available.length} obtainable ${rarity.name} petals to your inventory!`, "#55ff55");
             })();
 
             return;
