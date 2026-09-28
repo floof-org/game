@@ -965,7 +965,6 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Heavy"), .5, 2),
     new MobConfig("Sandstorm", 45, 15, 35, 3)
         .setSandstormMovement(1)
-        .setSize(35, MobTier.SIZE_SCALE, .9, .25)
         .addDrop(petalIDOf("Sand"))
         .addDrop(petalIDOf("Glass"), .7)
         .addDrop(petalIDOf("Stick"), .2, 2),
@@ -1436,7 +1435,6 @@ export const mobConfigs = [
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, "date_0.0025").addAction("paint", "#e86d48", .3, 0).addAction("beginPath").addAction("polygon", 7, .75, "date_-0.002").addAction("paint", "#d06240", .3, 0).addAction("beginPath").addAction("polygon", 7, .5, "date_0.0015").addAction("paint", "#b95739", .3, 0).addAction("beginPath").addAction("polygon", 7, .25, "date_-0.001").addAction("paint", "#a24c32", .3, 0)
         ),
     new MobConfig("Firestorm (Summon)", 135, 45, 35, 3).setSandstormMovement(1)
-        .setSize(35, MobTier.SIZE_SCALE, .9, .25)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, "date_0.0025").addAction("paint", "#fce803", .3, 0).addAction("beginPath").addAction("polygon", 7, .75, "date_-0.002").addAction("paint", "#e3d642", .3, 0).addAction("beginPath").addAction("polygon", 7, .5, "date_0.0015").addAction("paint", "#c9bf47", .3, 0).addAction("beginPath").addAction("polygon", 7, .25, "date_-0.001").addAction("paint", "#999243", .3, 0)
         ),
     new MobConfig("Evil Desert Centipede", 25, 10, 22.5, 5.5).setAggressive(1).setCentipedeMovement(1)
