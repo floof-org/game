@@ -1,6 +1,6 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES, SUMMON_STATS } from "../../lib/protocol.js";
+import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, PetalTier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
@@ -474,8 +474,18 @@ export class PetalSlot {
                     petal.range--;
 
                     if (petal.range <= 0) {
-                        const spawnConfig = mobConfigs[this.config.tiers[this.rarity].spawnable.index];
+                        let spawnConfig = mobConfigs[this.config.tiers[this.rarity].spawnable.index];
                         const spawnRarity = this.config.tiers[this.rarity].spawnable.rarity;
+
+                        const fireAmuletIndex = petalIDOf("Amulet of Fire");
+
+                        if (this.player.slots?.some(slot => slot.config?.id === fireAmuletIndex)) {
+                            const firestormIndex = mobIDOf("Firestorm (Summon)");
+
+                            if (firestormIndex >= 0 && spawnConfig.name === "Sandstorm") {
+                                spawnConfig = mobConfigs[firestormIndex];
+                            }
+                        }
 
                         const mob = new Mob(petal);
                         mob.parent = this.player;
@@ -483,14 +493,8 @@ export class PetalSlot {
                         mob.friendly = true;
                         state.livingMobCount--;
                         mob.define(spawnConfig, spawnRarity);
-
-                        const summonScale = SUMMON_STATS[spawnRarity];
-
-                        if (summonScale) {
-                            mob.health.set(spawnConfig.health * summonScale.health);
-                            mob.damage = spawnConfig.damage * summonScale.damage;
-                            mob.size = spawnConfig.size * summonScale.size * (.98 + Math.random() * .04) * ((spawnConfig.sizeRand?.min ?? 1) + Math.random() * (spawnConfig.sizeRand?.max ?? 0));
-                        }
+                        mob.health.maxHealth *= 6;
+                        mob.health.health *= 6;
 
                         this.boundMobs[j].push(mob);
                         petal.health.health = 0;
