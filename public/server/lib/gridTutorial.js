@@ -26,6 +26,7 @@ const tutorialData = [
         ["Set Slots", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic", "Basic"],
         ["Set Secondary Slots", "Gallery"],
         ["Chat", "Welcome to the tutorial for Biome Grid!"],
+        ["Chat", "You can end this tutorial at any time by using \"/tutorial\" again."],
         ["Wait", 3000],
         ["Spawn Mob", "Shrub", 6],
         ["Chat", "Let's start with the Gallery petal.", colors.common],
