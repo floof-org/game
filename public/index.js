@@ -7,7 +7,10 @@ import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip,
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
 import { updateAccountMenu } from './lib/auth.js';
+import SpatialHashGrid from "./server/lib/SpatialHashGrid.js";
 import "./lib/craftMenu.js";
+
+const mobRenderSpatialHash = new SpatialHashGrid();
 
 if (location.hash) {
     fetch(SERVER_URL + "/lobby/get?partyURL=" + location.hash.slice(1))
@@ -1723,46 +1726,6 @@ function draw() {
     const cameraY = net.state.camera.y * scale;
     const halfWidth = canvas.width * 0.5;
     const halfHeight = canvas.height * 0.5;
-    const mobIntersectsViewport = (entity, drawX, drawY, size, rotation) => {
-        let minX = -1;
-        let maxX = 1;
-        let minY = -1;
-        let maxY = 1;
-
-        if (entity.index === 49 && Array.isArray(entity.extraData)) {
-            entity.extraData.forEach((body) => {
-                if (!body || !Number.isFinite(body.x) || !Number.isFinite(body.y)) return;
-                minX = Math.min(minX, body.x);
-                maxX = Math.max(maxX, body.x);
-                minY = Math.min(minY, body.y);
-                maxY = Math.max(maxY, body.y);
-            });
-            minX = Math.min(minX, -1.2);
-            maxX = Math.max(maxX, 1.15);
-            minY = Math.min(minY, -1.2);
-            maxY = Math.max(maxY, 1.2);
-        }
-
-        const cos = Math.cos(rotation);
-        const sin = Math.sin(rotation);
-        const corners = [[minX, minY], [minX, maxY], [maxX, minY], [maxX, maxY]];
-        let screenMinX = Infinity;
-        let screenMaxX = -Infinity;
-        let screenMinY = Infinity;
-        let screenMaxY = -Infinity;
-
-        corners.forEach(([x, y]) => {
-            const rotatedX = (x * cos - y * sin) * size + drawX;
-            const rotatedY = (x * sin + y * cos) * size + drawY;
-            screenMinX = Math.min(screenMinX, rotatedX);
-            screenMaxX = Math.max(screenMaxX, rotatedX);
-            screenMinY = Math.min(screenMinY, rotatedY);
-            screenMaxY = Math.max(screenMaxY, rotatedY);
-        });
-
-        return screenMaxX >= 0 && screenMinX <= canvas.width &&
-            screenMaxY >= 0 && screenMinY <= canvas.height;
-    };
 
     drawBackground(cameraX, cameraY, scale, net.state.socket?.readyState === WebSocket.OPEN, net.state.room.width, net.state.room.height, net.state.disconnected ? null : BIOME_BACKGROUNDS[net.state.room.biome], net.state.room.isRadial);
 
@@ -1824,6 +1787,50 @@ function draw() {
         if (!currentPlayers.has(id)) net.state.dyingPlayers.set(id, { player: p, progress: 0 });
     });
 
+    SpatialHashGrid.configure(net.state.room.width || 0, net.state.room.height || 0);
+    mobRenderSpatialHash.clear();
+    const addMobRenderBounds = (entity, sizeMultiplier = 1) => {
+        let extentX = 1;
+        let extentY = 1;
+
+        if (entity.index === 49 && Array.isArray(entity.extraData)) {
+            entity.extraData.forEach((body) => {
+                if (!body || !Number.isFinite(body.x) || !Number.isFinite(body.y)) return;
+                extentX = Math.max(extentX, Math.abs(body.x));
+                extentY = Math.max(extentY, Math.abs(body.y));
+            });
+            extentX = Math.max(extentX, 1.2);
+            extentY = Math.max(extentY, 1.2);
+        }
+
+        const extent = Math.hypot(extentX, extentY);
+        const bounds = mobRenderSpatialHash.getAABB({
+            x: entity.x,
+            y: entity.y,
+            size: entity.size * sizeMultiplier,
+            width: extent,
+            height: extent
+        });
+        mobRenderSpatialHash.insert({ id: entity.id, _AABB: bounds });
+    };
+
+    net.state.mobs.forEach((entity) => {
+        entity.interpolate();
+        addMobRenderBounds(entity);
+    });
+    net.state.dyingMobs.forEach(({ mob, progress }) => {
+        addMobRenderBounds(mob, 1.35 + Math.min(1, progress + 0.2));
+    });
+
+    const visibleMobs = mobRenderSpatialHash.retrieve({
+        _AABB: {
+            x1: net.state.camera.x - halfWidth / scale,
+            y1: net.state.camera.y - halfHeight / scale,
+            x2: net.state.camera.x + halfWidth / scale,
+            y2: net.state.camera.y + halfHeight / scale
+        }
+    });
+
     net.state.dyingPetals.forEach((data, id) => {
         const entity = data.petal;
         data.progress += 0.2;
@@ -1867,7 +1874,7 @@ function draw() {
         const drawX = entity.x * scale - cameraX + halfWidth;
         const drawY = entity.y * scale - cameraY + halfHeight;
         const size = entity.size * scale * scaling;
-        if (!mobIntersectsViewport(entity, drawX, drawY, size, entity.facing)) return;
+        if (!visibleMobs.has(entity.id)) return;
 
         // ctx.save();
         const oldTransform = ctx.getTransform();
@@ -2041,11 +2048,10 @@ function draw() {
     });
 
     net.state.mobs.forEach((entity) => {
-        entity.interpolate();
         const drawX = entity.x * scale - cameraX + halfWidth;
         const drawY = entity.y * scale - cameraY + halfHeight;
         const size = entity.size * scale;
-        if (!mobIntersectsViewport(entity, drawX, drawY, size, entity.facing)) return;
+        if (!visibleMobs.has(entity.id)) return;
         // ctx.save();
         // ctx.translate(drawX, drawY);
         // ctx.scale(size, size);
