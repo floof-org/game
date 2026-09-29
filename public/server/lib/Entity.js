@@ -1500,13 +1500,26 @@ export class Player extends Entity {
             console.log(`[gm] ${this.name} godmode expired`);
         }
 
-        if (state.gamemode === GAMEMODES.MAZE && this.health.invulnerable) {
-            if (!this._mazeDiagLogged) {
-                this._mazeDiagLogged = true;
-                console.log(`[maze-diag] ${this.name} INVULNERABLE self=${this.id} hp=${this.health.health.toFixed(1)}/${this.health.maxHealth} x=${this.x >> 0} y=${this.y >> 0}`);
+        if (state.gamemode === GAMEMODES.MAZE) {
+            const sig = `${!!this.health.invulnerable}|${!!this.phases}|${this.team}|${!!this.nullCollision}|${!!this.spawnInvincibility}`;
+            if (sig !== this._mazeDiagSig) {
+                this._mazeDiagSig = sig;
+                console.log(`[maze-diag] ${this.name} self=${this.id} inv=${this.health.invulnerable} phases=${!!this.phases} team=${this.team} nullColl=${!!this.nullCollision} spawnInv=${!!this.spawnInvincibility} hp=${this.health.health.toFixed(1)}/${this.health.maxHealth} x=${this.x >> 0} y=${this.y >> 0}`);
+
+                if (this._AABB) {
+                    const nearby = state.spatialHash.retrieve(this).values();
+                    const teams = {};
+                    const sameTeamOthers = [];
+                    for (const e of nearby) {
+                        const t = e.parent?.team ?? -1;
+                        teams[t] = (teams[t] || 0) + 1;
+                        if (e.parent?.team === this.team && e.parent.type !== undefined && e.parent.id !== this.id) {
+                            sameTeamOthers.push(`${ENTITY_TYPES[e.type]}(${e.parent.id}->${e.id})`);
+                        }
+                    }
+                    console.log(`[maze-diag] ${this.name} nearby=${nearby.length} teams=${JSON.stringify(teams)} sameTeam=${sameTeamOthers.slice(0, 8).join(",")}`);
+                }
             }
-        } else if (state.gamemode === GAMEMODES.MAZE && !this.health.isDead) {
-            this._mazeDiagLogged = false;
         }
 
         if (this.health.isDead) {
