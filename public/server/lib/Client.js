@@ -616,6 +616,7 @@ export class Camera {
 
     dropsToAdd = [];
     dropsToRemove = [];
+    dropAmounts = new Map();
 
     /** @param {Writer} writer */
     see(writer) {
@@ -717,6 +718,8 @@ export class Camera {
             writer.setUint8(drop.index);
             writer.setUint8(drop.rarity);
             writer.setUint16(drop.duration);
+
+            this.dropAmounts.set(drop.id, drop.amount ?? 1);
         });
 
         writer.setUint32(0);
@@ -726,6 +729,10 @@ export class Camera {
         });
 
         writer.setUint32(0);
+
+        this.dropsToRemove.forEach(drop => {
+            this.dropAmounts.delete(drop.id);
+        });
 
         this.dropsToAdd.length = 0;
         this.dropsToRemove.length = 0;
@@ -2502,11 +2509,11 @@ export default class Client {
             dropAmountsWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
             dropAmountsWriter.setUint16(this.id);
             dropAmountsWriter.setUint8(250);
-            dropAmountsWriter.setUint16(this.camera.dropsToAdd.length);
+            dropAmountsWriter.setUint16(this.camera.dropAmounts.size);
 
-            this.camera.dropsToAdd.forEach(drop => {
-                dropAmountsWriter.setUint32(drop.id);
-                dropAmountsWriter.setUint32(drop.amount ?? 1);
+            this.camera.dropAmounts.forEach((amount, id) => {
+                dropAmountsWriter.setUint32(id);
+                dropAmountsWriter.setUint32(amount);
                 dropAmountsWriter.setUint16(0);
             });
 
