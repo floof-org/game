@@ -311,12 +311,14 @@ export default class Router {
         }
 
         state.secretKey = message[3];
+        state.useCraftingProtocol = message[5];
 
         console.log([
             "Lobby Created:",
             "  - Gamemode: " + message[1],
             "  - Biome: " + BIOME_BACKGROUNDS[message[4]].name,
             "  - Modded: " + (message[2] ? "Yes" : "No"),
+            "  - Crafting: " + (message[5] ? "Yes" : "No"),
             // "  - Admin UUID: " + state.secretKey,
             "  - Spawn Table: " + (state.mobTable ? mobTableIntoChances(state.mobTable) : "None")
         ].join("\n"));

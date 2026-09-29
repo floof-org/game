@@ -1370,7 +1370,17 @@ export const CLIENT_BOUND = {
     JSON_MESSAGE: 0x07,
     PONG: 0x08,
     TERRAIN: 0x09,
-    CHAT_MESSAGE: 0x0A
+    CHAT_MESSAGE: 0x0A,
+    CRAFT_INIT: 0x0B,
+    CRAFT_RESULT: 0x0C,
+
+    CUSTOM_GRADIENTS: 111,
+    TERRAIN_SCORES: 113,
+
+    // Section: Options that seem to be unused by server.
+    // Both sets of data are sent via `CLIENT_BOUND.WORLD_UPDATE` instead.
+    UNUSED_INVENTORY_UPDATE: 110,
+    UNUSED_DROPS_UPDATE: 250,
 };
 
 export const SERVER_BOUND = {
@@ -1381,7 +1391,8 @@ export const SERVER_BOUND = {
     DEV_CHEAT: 0x04,
     PING: 0x05,
     CHAT_MESSAGE: 0x06,
-    INVENTORY_CHANGE_LOADOUT: 0x07
+    INVENTORY_CHANGE_LOADOUT: 0x07,
+    CRAFT_REQUEST: 0x08,
 };
 
 export const DEV_CHEAT_IDS = {
