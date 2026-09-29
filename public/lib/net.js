@@ -689,7 +689,7 @@ class ModdingAPI {
     }
 }
 
-export function createServer(name, gamemode, modded, isPrivate, biome) {
+export function createServer(name, gamemode, modded, isPrivate, biome, crafting) {
     let biomeInt = 0;
 
     switch (biome) {
@@ -755,7 +755,7 @@ export function createServer(name, gamemode, modded, isPrivate, biome) {
             console.log("Connected to server");
 
             const worker = new Worker("./server/index.js", { type: "module" });
-            worker.postMessage(["start", gamemode, modded, state.user.id, biomeInt]);
+            worker.postMessage(["start", gamemode, modded, state.user.id, biomeInt, crafting]);
 
             socket.onmessage = event => {
                 const data = new Uint8Array(event.data);
@@ -1749,7 +1749,7 @@ export class ClientSocket extends WebSocket {
                     state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 }
                 break;
-            case 250: {
+            case CLIENT_BOUND.UNUSED_DROPS_UPDATE: {
                 const count = reader.getUint16();
 
                 for (let i = 0; i < count; i++) {
@@ -1769,7 +1769,7 @@ export class ClientSocket extends WebSocket {
 
                 break;
             }
-            case 110: {
+            case CLIENT_BOUND.UNUSED_INVENTORY_UPDATE: {
                 if (!state.usesNewInventory) {
                     state.usesNewInventory = true;
                     state.inventory = {};
@@ -1799,7 +1799,7 @@ export class ClientSocket extends WebSocket {
                 state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 break;
             }
-            case 111: {
+            case CLIENT_BOUND.CUSTOM_GRADIENTS: {
                 const count = reader.getUint8();
 
                 globalThis.__CUSTOM_GRADIENTS = {};
@@ -1906,7 +1906,7 @@ export class ClientSocket extends WebSocket {
 
                 break;
             }
-case 113: {
+case CLIENT_BOUND.TERRAIN_SCORES: {
     if (!state.terrain?.blocks) {
         break;
     }
@@ -1916,8 +1916,8 @@ case 113: {
     state.terrainScores = new Map();
 
     for (let i = 0; i < count; i++) {
-        const x = reader.getUint16();
-        const y = reader.getUint16();
+        const x = reader.getUint32();
+        const y = reader.getUint32();
         const score = reader.getFloat32();
 
         state.terrainScores.set(`${x},${y}`, score);
@@ -1984,13 +1984,13 @@ case 113: {
         break;
       case CLIENT_BOUND.TERRAIN:
         state.terrain = {
-          width: reader.getUint16(),
-          height: reader.getUint16(),
+          width: reader.getUint32(),
+          height: reader.getUint32(),
           blocks: ((blocks = []) => {
-            for (let i = reader.getUint16(); i > 0; i--) {
+            for (let i = reader.getUint32(); i > 0; i--) {
               blocks.push({
-                x: reader.getInt16(),
-                y: reader.getInt16(),
+                x: reader.getInt32(),
+                y: reader.getInt32(),
                 type: [reader.getUint8(), reader.getUint8()],
                 terrain: [],
               });
@@ -2024,6 +2024,40 @@ case 113: {
                             new ChatMessage(1, reader.getStringUTF8(), reader.getStringUTF8());
                             break;
                     }
+                }
+                break;
+            case CLIENT_BOUND.CRAFT_INIT:
+                // The server is also expected to send pity data as a list of craft chances,
+                // organized by rarity and petal ID.
+                let pityData = [];
+                for (let i = 0; i < state.tiers.length; i++) {
+                    pityData.push([]);
+                    for (let j = 0; j < state.petalConfigs.length; j++) {
+                        pityData[i].push(reader.getFloat32());
+                    }
+                }
+                state.craftMenu.protocolInit(pityData);
+                break;
+            case CLIENT_BOUND.CRAFT_RESULT:
+                if (reader.getUint8() === 0) { // Valid result
+                    // Data should be in the following order: Rarity, Petal ID, Amount Crafted, Attempts, New Pity
+                    const data = {};
+                    data.fromRarity = reader.getUint8();
+                    data.petalIdx = reader.getUint8();
+                    data.delta = reader.getUint32();
+                    data.attempts = reader.getUint32();
+                    data.pity = reader.getFloat32();
+
+                    state.craftMenu.updatePity(data.fromRarity, data.petalIdx, data.pity);
+                    state.craftMenu.scheduleResult({
+                        ...data,
+                        type: data.delta > 0 ? "success" : "fail",
+                        slots: state.craftMenu.craftResult.slots,
+                    });
+                } else { // Error
+                    let errorMsg = reader.getStringUTF8();
+                    new ChatMessage(1, errorMsg, util.colors.legendary);
+                    state.craftMenu.abortCraft();
                 }
                 break;
         }
@@ -2161,6 +2195,11 @@ case 113: {
                     writer.setUint8(drop.petalIndex);
                 }
                 break;
+            case SERVER_BOUND.CRAFT_REQUEST:
+                writer.setUint8(data.rarity);
+                writer.setUint8(data.petalId);
+                writer.setUint32(data.amount);
+                break;
         }
 
         const output = writer.build();
@@ -2281,6 +2320,10 @@ export const state = {
 
     /** @type {{index:number,rarity:number,icon:IconItem}[]} */
     secondarySlots: [],
+
+    inventory: null,
+
+    craftMenu: null,
 
     destroyIcon: new IconItem(),
 

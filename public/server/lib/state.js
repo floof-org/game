@@ -28,6 +28,7 @@ const state = {
     announceRarity: 7,
 
     gamemode: GAMEMODES.FFA,
+    useCraftingProtocol: false,
 
     isTDM: false,
     teamCount: 2,
@@ -342,13 +343,13 @@ const state = {
         writer.setUint16(id > 0 ? id : 0);
         writer.setUint8(CLIENT_BOUND.TERRAIN);
 
-        writer.setUint16(state.terrainGridWidth);
-        writer.setUint16(state.terrainGridHeight);
+        writer.setUint32(state.terrainGridWidth);
+        writer.setUint32(state.terrainGridHeight);
 
-        writer.setUint16(state.terrain.size);
+        writer.setUint32(state.terrain.size);
         state.terrain.forEach(terrain => {
-            writer.setInt16(terrain.gridX);
-            writer.setInt16(terrain.gridY);
+            writer.setInt32(terrain.gridX);
+            writer.setInt32(terrain.gridY);
             writer.setUint8(terrain.type[0]);
             writer.setUint8(terrain.type[1]);
         });
