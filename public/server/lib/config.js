@@ -14,14 +14,14 @@ export const petalConfigs = [
         .setDescription("It's very light and recharges quickly, at the cost of damage."),
     new PetalConfig("Faster", 22.5 * .65, 12, 7)
         .setSize(.75)
-        .setExtraRadians(.03)
+        .setExtraRadians(.01)
         .setDescription("This one makes your petals spin faster."),
     new PetalConfig("Heavy", 22.5 * 2, 100, 2.5)
         .setSize(1.25)
-        .setDensity(3)
+        .setDensity(6.5)
         .setDescription("A more chunky petal that hits harder but takes longer to recharge."),
-    new PetalConfig("Stinger", 51.25, 1, 46)
-        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5], 1, true)
+    new PetalConfig("Stinger", 101.25, 1, 46)
+        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1, true)
         .setDescription("A fragile petal that deals lots of damage."),
     new PetalConfig("Rice", 0, .5, 5)
         .setSize(1.25)
@@ -42,9 +42,9 @@ export const petalConfigs = [
         .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setWingMovement(true)
         .setDescription("It comes and it goes."),
-    new PetalConfig("Bone", 33.75, 15, 15)
+    new PetalConfig("Bone", 33.75, [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 20], 18.25)
         .setSize(1.6)
-        .setArmor(10)
+        .setArmor(6)
         .setDescription("A petal that reduces incoming damage."),
     new PetalConfig("Dirt", 22.5 * 1.5, 8, 8)
         .setSize(1.3)
@@ -67,7 +67,7 @@ export const petalConfigs = [
     new PetalConfig("Orange", 22.5 * .75, 12.5, 7.5)
         .setMulti(3, true)
         .setDescription("A bunch of oranges. They're pretty juicy."),
-    new PetalConfig("Missile", 7.5, 4, 18.5)
+    new PetalConfig("Missile", 22.5, 4, 18.5)
         .setLaunchable(.7, 45)
         .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setDescription("You can actually shoot this one!"),
@@ -102,11 +102,11 @@ export const petalConfigs = [
         .setIgnoreWalls(1)
         .setDescription("[object null object]"),
     new PetalConfig("Third Eye", 0, 0, 0)
-        .setExtraRange(.5)
+        .setExtraRange(.15)
         .setMulti(0, false)
         .setWearable(WEARABLES.THIRD_EYE)
         .setDescription("Through the eye of the beholder comes extra range."),
-    new PetalConfig("Pincer", 8.5, 7.5, 14)
+    new PetalConfig("Pincer", 22.5, 7.5, 14)
         .setSize(1.2)
         .setPoison(2, 5)
         .setEnemySpeedMultiplier(.6, 5)
@@ -116,7 +116,7 @@ export const petalConfigs = [
         .setHuddles(1)
         .setDescription("Something might pop out of this!"),
     new PetalConfig("Antennae", 0, 0, 0)
-        .setExtraVision(150)
+        .setExtraVision(75)
         .setMulti(0, false)
         .setWearable(WEARABLES.ANTENNAE)
         .setDescription("These feelers give you some extra vision."),
@@ -136,7 +136,6 @@ export const petalConfigs = [
         .setMulti([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 8, 8], 1, true)
         .setSize(.5)
         .setHuddles(1)
-        .setMulti(3, true)
         .setDescription("A very consistent trickle heal."),
     new PetalConfig("Primrose", 22.5 * 1, 12.5, 7.5)
         .setSize(1.3)
@@ -202,10 +201,10 @@ export const petalConfigs = [
         .setDamageReflection(.175, .275)
         .setDescription("What an oddity! It's said to reflect a portion of incoming conventional damage. Does not stack."),
     new PetalConfig("Jelly", 23, 9, 7)
-        .setDensity(20)
-        .setDescription("Super bouncy! Knocks all your enemies around. Very fun to use and cause problems with."),
-    new PetalConfig("Yggdrasil", 225, Infinity, 0)
-        .setDeathDefying(.15, 2.5)
+        .setDensity(1.5)
+        .setDescription("Super not bouncy! Does not knocks all your enemies around. Very useless."),
+    new PetalConfig("Yggdrasil", 4000, Infinity, 0)
+        .setDeathDefying(.15, .5)
         .setHuddles(1)
         .setPhases(1)
         .setDescription("The tree of life. If you were to die with this petal alive, you'd be revived with a portion of your health."),
@@ -282,7 +281,7 @@ export const petalConfigs = [
     new PetalConfig("Dust", 22.5 * .75, 6, 7.5)
         .setMulti(3, true)
         .setLaunchable(.7, 55)
-        .setDensity(1.5)
+        .setDensity(1.00005)
         .setDescription("A cloud of dust that can be launched at enemies."),
     new PetalConfig("Armor", 0, 0, 0)
         .setMulti(0, false)
@@ -349,8 +348,8 @@ export const petalConfigs = [
         .setSize(1.8)
         .setHuddles(1)
         .setDescription("This isn't from this world..."),
-    new PetalConfig("Dice", 20.5, 5, 17.5).setDiceAbility(0.05, 35).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
-        .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 5% chance of dealing 35x damage. Criticals will only apply if the base dice damage is higher than the mob armor."),
+    new PetalConfig("Dice", 22.5, 5, 17.5).setDiceAbility(0.05, 20).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
+        .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 5% chance of dealing 20x damage. Criticals will only apply if the base dice damage is higher than the mob armor."),
     new PetalConfig("Fire Sand", 10.125, 5, 48).setIcon(0.575, [4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], "Sand", 0).setSize(.85).setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1, true)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("closePath").addAction("paint", "#e86d48", .445, .2)
         ).setDescription("Some fine grains of sand on fire. They deal 3x damage than normal sand."),
