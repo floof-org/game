@@ -384,15 +384,6 @@ window.addEventListener("keydown", (e) => {
     }
     if (net.state.socket?.readyState === WebSocket.OPEN) {
         switch (e.key.toLowerCase()) {
-            case ";":
-                net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.GODMODE);
-                break;
-            case "t":
-                net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.TELEPORT);
-                break;
-            case "z":
-                net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.CHANGE_TEAM);
-                break;
             case "r":
                 if (net.state.socket?.readyState === WebSocket.OPEN) {
                     for (let i = 0; i < net.state.slots.length; i++) {
