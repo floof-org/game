@@ -31,7 +31,7 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/createaccount", "/login", "/give"
+    "/createaccount", "/login", "/give", "/online"
 ]);
 
 function normalizeName(str) {
@@ -825,9 +825,10 @@ export default class Client {
         this.id = id;
         this.verified = false;
         this.username = "unknown";
+        this.discordName = "";
         this.userId = userId;
         this.auth = null;
-        this.nameColor = ["#FFFFFF", "#D85555"][+masterPermissions];
+        this.nameColor = ["#FFFFFF", "#D85555", "#F5D230"][+masterPermissions] || "#FFFFFF";
         this.masterPermissions = +masterPermissions;
         this.inventory = {};
         this.craftAttempts = {};
@@ -909,7 +910,23 @@ export default class Client {
 
         if (owners.includes(this.auth.username.toLowerCase())) {
             this.masterPermissions = Math.max(this.masterPermissions, 2);
+            this.nameColor = "#F5D230";
+            if (this.body) this.body.nameColor = "#F5D230";
             console.log(`Client ${this.id} (${this.username}) granted owner permissions.`);
+        }
+    }
+
+    applyDisplayName() {
+        const base = this.discordName || this.username;
+
+        if (this.auth?.loggedIn && this.auth.username && !base.includes(`(${this.auth.username})`)) {
+            this.username = `${base} (${this.auth.username})`;
+        } else {
+            this.username = base;
+        }
+
+        if (this.body && this.body.name !== this.username) {
+            this.body.name = this.username;
         }
     }
 
@@ -969,6 +986,7 @@ export default class Client {
                 if (this.verified) return this.kick("Already verified");
 
                 this.username = reader.getStringUTF8();
+                this.discordName = this.username;
                 const lowercase = this.username.toLowerCase();
                 this.verified = true;
                 console.log(`Client ${this.id} verified as ${this.username}`);
@@ -1271,7 +1289,6 @@ export default class Client {
                     } break;
                     case DEV_CHEAT_IDS.CHANGE_TEAM: {
                         console.log(`[change-team] ${this.username} blocked CHANGE_TEAM`);
-                        this.systemMessage("CHANGE_TEAM is disabled.", "#ff5555");
                     } break;
                     case DEV_CHEAT_IDS.SPAWN_MOB: {
                         const promiseID = reader.getUint32();
@@ -1508,10 +1525,22 @@ export default class Client {
                 "/rarities - Shows all rarities.",
                 "/createaccount [user] [password] - Creates an account and auto-logs you into it, it will be auto-saved.",
                 "/login [user] [password] - Logs you into your previously made account which will restore all progress from the last game.",
+                "/online - Shows all currently online players.",
                 "/die - Kills you.",
                 "/infocommands - Shows all related commands that give info of something.",
                 "/admincommands - Shows all admin commands."
             ].forEach(cmd => this.systemMessage(cmd, "#ffe65d"));
+            return;
+        }
+
+        // /online
+        if (commandCheck("/online")) {
+            const online = [...state.clients.values()].filter(client => client.verified);
+
+            this.systemMessage(`Online players (${online.length}):`, "#00f2ff");
+            for (const client of online) {
+                this.systemMessage(`- ${client.username}${client.auth?.loggedIn && !client.username.includes(`(${client.auth.username})`) ? ` (${client.auth.username})` : ""}`, "#55ff55");
+            }
             return;
         }
 
@@ -1724,6 +1753,7 @@ export default class Client {
                 ONLINE_USERS.set(user.toLowerCase(), this);
 
                 this.grantOwnerPermissions();
+                this.applyDisplayName();
 
                 this.systemMessage(`Account '${user}' created and logged in.`, "#55ff55");
             })();
@@ -1807,8 +1837,13 @@ export default class Client {
 
                 this.grantOwnerPermissions();
 
+                // Show owner's yellow name to other clients
+                if (this.body) this.body.nameColor = this.nameColor;
+
                 const invSummary = tiers.map(t => `${t.name}:${Object.values(this.inventory[t.name] || {}).reduce((a, b) => a + b, 0)}`).join(" ");
                 console.log(`[login] ${user} slots=${this.slots.filter(s => s && s.id).length} secondary=${this.secondarySlots.filter(s => s && s.id).length} inv={${invSummary}}`);
+
+                this.applyDisplayName();
 
                 this.systemMessage(`Logged in as ${user}`, "#55ff55");
             })();
