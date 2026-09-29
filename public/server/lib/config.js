@@ -1562,6 +1562,18 @@ export const mobConfigs = [
         ),
 ];
 
+if (Bun.env.GAMEMODE === "maze") {
+    const MAX_MOB_SIZE_MULTIPLIER = 4;
+
+    for (const config of mobConfigs) {
+        const maxSize = config.size * MAX_MOB_SIZE_MULTIPLIER;
+
+        for (let i = 0; i < config.tiers.length; i++) {
+            config.tiers[i].size = Math.min(maxSize, config.tiers[i].size);
+        }
+    }
+}
+
 // Flu: Wing, Faster, Third Eye
 
 export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
