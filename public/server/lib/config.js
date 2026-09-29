@@ -1563,13 +1563,13 @@ export const mobConfigs = [
 ];
 
 if (Bun.env.GAMEMODE === "maze") {
-    const MAX_MOB_SIZE_MULTIPLIER = 4;
+    const MAZE_MOB_SIZE_SCALE = 1.04;
 
     for (const config of mobConfigs) {
-        const maxSize = config.size * MAX_MOB_SIZE_MULTIPLIER;
+        const baseSize = config.tiers[0].size;
 
-        for (let i = 0; i < config.tiers.length; i++) {
-            config.tiers[i].size = Math.min(maxSize, config.tiers[i].size);
+        for (let i = 1; i < config.tiers.length; i++) {
+            config.tiers[i].size = baseSize * Math.pow(MAZE_MOB_SIZE_SCALE, i);
         }
     }
 }
