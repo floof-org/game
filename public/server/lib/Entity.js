@@ -1494,6 +1494,12 @@ export class Player extends Entity {
     }
 
     update() {
+        if (state.gamemode === GAMEMODES.MAZE && this._godmodeExpires && this._godmodeExpires < Date.now() && this.health.invulnerable) {
+            this.health.invulnerable = false;
+            this._godmodeExpires = 0;
+            console.log(`[gm] ${this.name} godmode expired`);
+        }
+
         if (state.gamemode === GAMEMODES.MAZE && this.health.invulnerable) {
             if (!this._mazeDiagLogged) {
                 this._mazeDiagLogged = true;
