@@ -1563,7 +1563,7 @@ export const mobConfigs = [
 ];
 
 if (Bun.env.GAMEMODE === "maze") {
-    const MAZE_MOB_SIZE_SCALE = 1.04;
+    const MAZE_MOB_SIZE_SCALE = 1.06;
 
     for (const config of mobConfigs) {
         const baseSize = config.tiers[0].size;
