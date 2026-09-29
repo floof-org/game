@@ -42,7 +42,7 @@ export const petalConfigs = [
         .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setWingMovement(true)
         .setDescription("It comes and it goes."),
-    new PetalConfig("Bone", 33.75, [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 20], 18.25)
+    new PetalConfig("Bone", 33.75, 16, 18.25)
         .setSize(1.6)
         .setArmor(6)
         .setDescription("A petal that reduces incoming damage."),
