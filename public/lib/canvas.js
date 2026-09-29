@@ -594,13 +594,12 @@ export function renderTerrainForMap(
 
     const maxRarity = tiers.length - 1;
 
+    const groups = new Map();
+
     for (const [key, score] of terrainScores.entries()) {
         if (score <= 0) continue;
 
         const [xCell, yCell] = key.split(",").map(Number);
-
-        const x = 2 * (xCell + 0.5) * size;
-        const y = 2 * (yCell + 0.5) * size;
 
         const rarity = Math.max(
             0,
@@ -610,15 +609,34 @@ export function renderTerrainForMap(
             ),
         );
 
+        const group = groups.get(rarity);
+
+        if (group) {
+            group.push([xCell, yCell]);
+        } else {
+            groups.set(rarity, [[xCell, yCell]]);
+        }
+    }
+
+    for (const [rarity, cells] of groups) {
         imgCtx.fillStyle =
             tiers[rarity]?.color ?? "#000000";
 
-        imgCtx.fillRect(
-            x - size,
-            y - size,
-            size * 2,
-            size * 2,
-        );
+        imgCtx.beginPath();
+
+        for (const [xCell, yCell] of cells) {
+            const x = 2 * (xCell + 0.5) * size;
+            const y = 2 * (yCell + 0.5) * size;
+
+            imgCtx.rect(
+                x - size,
+                y - size,
+                size * 2,
+                size * 2,
+            );
+        }
+
+        imgCtx.fill();
     }
 
     return img;
