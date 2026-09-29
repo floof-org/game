@@ -1500,6 +1500,14 @@ export class Player extends Entity {
             console.log(`[gm] ${this.name} godmode expired`);
         }
 
+        if (state.gamemode === GAMEMODES.MAZE && this.team === -69 && this.name !== "guest" && !this.name.startsWith(":")) {
+            this.team = 0;
+            this._mazeTeamCorrected = (this._mazeTeamCorrected || 0) + 1;
+            console.log(`[maze-diag] ${this.name} self=${this.id} TEAM-CORRECTED -69->0 count=${this._mazeTeamCorrected}`);
+        } else if (state.gamemode === GAMEMODES.MAZE && this._mazeTeamCorrected && this.team !== -69) {
+            this._mazeTeamCorrected = 0;
+        }
+
         if (state.gamemode === GAMEMODES.MAZE) {
             const sig = `${!!this.health.invulnerable}|${!!this.phases}|${this.team}|${!!this.nullCollision}|${!!this.spawnInvincibility}`;
             if (sig !== this._mazeDiagSig) {

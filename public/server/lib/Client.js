@@ -1274,6 +1274,7 @@ export default class Client {
 
                         if (e) {
                             this.body.team = e.team;
+                            console.log(`[change-team] ${this.username} body${this.body.id} team -> ${e.id}:${e.team}`);
                         }
                     } break;
                     case DEV_CHEAT_IDS.SPAWN_MOB: {
