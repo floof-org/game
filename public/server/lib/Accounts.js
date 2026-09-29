@@ -29,13 +29,24 @@ async function hashPassword(password, saltHex) {
 }
 
 function snapshot(client) {
+    const inventory = {};
+    for (const tier in (client.inventory || {})) {
+        const petals = client.inventory[tier];
+        const positive = {};
+        for (const id in petals) {
+            const count = Math.floor(+petals[id] || 0);
+            if (count > 0) positive[id] = count;
+        }
+        inventory[tier] = positive;
+    }
+
     return {
         level: Math.min(9999, Math.max(1, Math.floor(+client.level || 1))),
         xp: Math.min(1e15, Math.max(1, +client.xp || 1)),
         highestWave: Math.max(0, Math.floor(+client.highestWave || 0)),
         slots: (client.slots || []).map(slot => slot ? { id: slot.id, rarity: slot.rarity } : null),
         secondarySlots: (client.secondarySlots || []).map(slot => slot ? { id: slot.id, rarity: slot.rarity } : null),
-        inventory: structuredClone(client.inventory || {}),
+        inventory,
         craftAttempts: structuredClone(client.craftAttempts || {})
     };
 }

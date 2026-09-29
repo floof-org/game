@@ -1780,12 +1780,22 @@ export default class Client {
                     for (const rarity in inv) {
                         if (!(rarity in this.inventory)) continue;
                         for (const id in inv[rarity]) {
-                            const amount = Math.max(1, Math.floor(+inv[rarity][id] || 0));
+                            const amount = Math.floor(+inv[rarity][id] || 0);
                             if (amount > 0) this.inventory[rarity][id] = amount;
                         }
                     }
 
                     this.addXP(0);
+                }
+
+                if (this.body && !this.body.health.isDead) {
+                    this.body.initSlots(this.slots.length);
+
+                    for (let i = 0; i < this.slots.length; i++) {
+                        if (this.slots[i]) {
+                            this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
+                        }
+                    }
                 }
 
                 this.auth = {
@@ -1796,6 +1806,9 @@ export default class Client {
                 ONLINE_USERS.set(user.toLowerCase(), this);
 
                 this.grantOwnerPermissions();
+
+                const invSummary = tiers.map(t => `${t.name}:${Object.values(this.inventory[t.name] || {}).reduce((a, b) => a + b, 0)}`).join(" ");
+                console.log(`[login] ${user} slots=${this.slots.filter(s => s && s.id).length} secondary=${this.secondarySlots.filter(s => s && s.id).length} inv={${invSummary}}`);
 
                 this.systemMessage(`Logged in as ${user}`, "#55ff55");
             })();
