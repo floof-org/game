@@ -1494,6 +1494,15 @@ export class Player extends Entity {
     }
 
     update() {
+        if (state.gamemode === GAMEMODES.MAZE && !this.health.isDead && (this.health.invulnerable || this.phases || this.team !== this.id)) {
+            if (!this._mazeDiagLogged) {
+                this._mazeDiagLogged = true;
+                console.log(`[maze-diag] ${this.name} invulnerable=${this.health.invulnerable} phases=${!!this.phases} team=${this.team} self=${this.id} hp=${this.health.health.toFixed(1)}`);
+            }
+        } else {
+            this._mazeDiagLogged = false;
+        }
+
         if (this.health.isDead) {
             for (const slot of this.petalSlots) {
                 if (slot.config.tiers[slot.rarity].deathDefying?.duration > 0 && slot.petals.some(petal => petal && !petal.health.isDead)) {
