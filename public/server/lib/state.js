@@ -28,6 +28,7 @@ const state = {
     announceRarity: 7,
 
     gamemode: GAMEMODES.FFA,
+    useCraftingProtocol: false,
 
     isTDM: false,
     teamCount: 2,
@@ -459,13 +460,13 @@ const state = {
 
                 terrainWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
                 terrainWriter.setUint16(id);
-                terrainWriter.setUint8(113);
+                terrainWriter.setUint8(CLIENT_BOUND.TERRAIN_SCORES);
 
                 terrainWriter.setUint32(cells.length);
 
                 for (const cell of cells) {
-                    terrainWriter.setUint16(cell.x);
-                    terrainWriter.setUint16(cell.y);
+                    terrainWriter.setUint32(cell.x);
+                    terrainWriter.setUint32(cell.y);
                     terrainWriter.setFloat32(cell.score ?? 0);
                 }
 

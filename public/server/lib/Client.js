@@ -4,6 +4,7 @@ import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, ROUT
 import { mobConfigs, petalConfigs, petalIDOf, tiers } from "./config.js";
 import { colors, formatLargeNumber } from "../../lib/util.js";
 import { endTutorial, startTutorial, tutorialInventory, tutorialSecondarySlots, tutorialSlots, tutorialState } from "./gridTutorial.js";
+import craftManager from "./CraftManager.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -711,6 +712,7 @@ class Disconnect {
         this.secondarySlots = client.secondarySlots;
         this.team = client.team;
         this.inventory = client.inventory;
+        this.craftAttempts = client.craftAttempts;
         this.maxKilledRarity = client.maxKilledRarity;
 
         Client.disconnects.set(this.userId, this);
@@ -736,6 +738,8 @@ export default class Client {
         this.nameColor = ["#FFFFFF", "#D85555"][+masterPermissions];
         this.masterPermissions = +masterPermissions;
         this.inventory = {};
+        this.craftAttempts = {};
+        this.handlingCraft = false;
         this.camera = new Camera();
         this.sentTerrain = false;
         this.sentBiome = undefined;
@@ -981,6 +985,7 @@ export default class Client {
 
                 tiers.forEach(tier => {
                     this.inventory[tier.name] = {};
+                    this.craftAttempts[tier.name] = {};
                     petalConfigs.forEach(config => {
                         this.inventory[tier.name][config.id] = 0;
                     });
@@ -997,6 +1002,7 @@ export default class Client {
                     this.secondarySlots = dc.secondarySlots;
                     this.team = dc.team;
                     this.inventory = dc.inventory;
+                    this.craftAttempts = dc.craftAttempts;
                     this.maxKilledRarity = dc.maxKilledRarity;
                     this.addXP(0);
 
@@ -1008,6 +1014,7 @@ export default class Client {
 
                 state.playerCount++;
 
+
                 const sendReadyInterval = setInterval(() => {
                     // Do not tell client that we are ready until everything is initialized
                     if (!state.initialized) {
@@ -1018,7 +1025,11 @@ export default class Client {
 
                     this.talk(CLIENT_BOUND.READY);
                     this.sendRoom();
-                    state.sendTerrain(this.id, this);
+                    state.sendTerrain(this.id, this);    
+            
+                    if (state.useCraftingProtocol) {
+                        this.talk(CLIENT_BOUND.CRAFT_INIT);
+                    }
 
                     this.sendWelcomeMessage();
                 }, 100);
@@ -1696,6 +1707,14 @@ export default class Client {
                 this.lastChat = performance.now();
                 state.clients.forEach(c => c.chatMessage(this.username, message, this.nameColor));
             } break;
+            case SERVER_BOUND.CRAFT_REQUEST:
+                if (!state.useCraftingProtocol) {
+                    return this.systemMessage("Error: This lobby has crafting disabled!", colors.legendary);
+                }
+
+                // Craft request data should be in the following order: Rarity, Petal ID, Amount.
+                craftManager.handleCraftRequest(this, reader.getUint8(), reader.getUint8(), reader.getUint32());
+                break;
         }
     }
 
@@ -1745,6 +1764,38 @@ export default class Client {
 
                 writer.setStringUTF8(data.message);
                 writer.setStringUTF8(data.color);
+                break;
+            case CLIENT_BOUND.CRAFT_INIT: // Craft init packet
+                if (!state.useCraftingProtocol) {
+                    return;
+                }
+
+                // Also send pity data
+                for (let i = 0; i < tiers.length; i++) {
+                    for (let j = 0; j < petalConfigs.length; j++) {
+                        this.craftAttempts[tiers[i].name] ??= {};
+                        this.craftAttempts[tiers[i].name][j] ??= 0;
+                        const attempts = this.craftAttempts[tiers[i].name][j];
+                        writer.setFloat32(craftManager.calculateChance(i, attempts));
+                    }
+                }
+                break;
+            case CLIENT_BOUND.CRAFT_RESULT: // Craft result packet
+                if (!state.useCraftingProtocol) {
+                    return;
+                }
+
+                if (data.error) {
+                    writer.setUint8(1);
+                    writer.setStringUTF8(data.errorMsg);
+                } else {
+                    writer.setUint8(0);
+                    writer.setUint8(data.rarity);
+                    writer.setUint8(data.petalId);
+                    writer.setUint32(data.crafted);
+                    writer.setUint32(data.attempts);
+                    writer.setFloat32(data.pity);
+                }
                 break;
         }
 
@@ -1902,30 +1953,6 @@ export default class Client {
         });
 
         state.router.postMessage(writer.build());
-
-        const minimapWriter = new Writer(true);
-        minimapWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
-        minimapWriter.setUint16(this.id);
-        minimapWriter.setUint8(112);
-
-        const players = [];
-
-        for (const [, obj] of state.entities) {
-            if (!obj) continue;
-            if (obj.type !== ENTITY_TYPES.PLAYER) continue;
-
-            players.push(obj);
-        }
-
-        minimapWriter.setUint16(players.length);
-
-        for (const player of players) {
-            minimapWriter.setUint32(player.id ?? 0);
-            minimapWriter.setFloat32(Number(player.x) || 0);
-            minimapWriter.setFloat32(Number(player.y) || 0);
-        }
-
-        state.router.postMessage(minimapWriter.build());
     }
 
     sendRoom(biomeOverride) {

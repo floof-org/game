@@ -1,11 +1,19 @@
 import { getPetalIcon, petalTooltip } from "./renders.js";
 import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net.js";
 import { formatAmount } from "../index.js";
+import { SERVER_BOUND } from "./protocol.js";
 
 var craftRef = null;
 
 (function () {
   var craft = {};
+  state.craftMenu = craft;
+
+  /**
+   * Whether or not to communicate using the standardized crafting protocol
+   * instead of "/craft" chat messages.
+   */
+  craft.useCraftingProtocol = false;
 
   craft.btn = null;
   craft.panel = null;
@@ -199,6 +207,26 @@ var craftRef = null;
     return undefined;
   };
 
+  /**
+   * Initializes this crafting menu with the given pity data. Also tells this
+   * crafting menu that the server will support the crafting protocol.
+   * 
+   * @param {number[][]} pityData An array of crafting rates, organized by `[rarity][petalID]`.
+   */
+  craft.protocolInit = function (pityData) {
+    craft.useCraftingProtocol = true;
+
+    for (let i = 0; i < state.tiers.length - 1; i++) {
+      const tierName = state.tiers[i + 1].name;
+      craft.pityRates[tierName] ??= {};
+      for (let j = 0; j < state.petalConfigs.length; j++) {
+        const petalName = state.petalConfigs[j].name;
+        // Multiply by 100 because it is displayed as a percentage
+        craft.pityRates[tierName][petalName] = pityData[i][j] * 100;
+      }
+    }
+  }
+
   craft.startPityInterceptor = function () {
     if (craft.pityInterceptorStarted) return;
     if (typeof captureChatMessage !== 'function') return;
@@ -309,6 +337,7 @@ var craftRef = null;
   };
 
   craft.fetchPityForTier = function (targetTier, petalName) {
+    if (craft.useCraftingProtocol) return;
     if (typeof sendChatMessage !== 'function') return;
     var s = state;
     if (!s || !s.socket || s.socket.readyState !== WebSocket.OPEN) return;
@@ -382,6 +411,18 @@ var craftRef = null;
     craft.dlog('Pity Update: ' + materialTier.name + ' ' + petalName);
     craft.fetchPityForTier(materialTier.name, petalName);
   };
+
+  /**
+   * Updates this crafting menu's pity rates for a single petal type.
+   */
+  craft.updatePity = function (rarity, petalIdx, pity) {
+    const tierName = state.tiers[rarity + 1]?.name;
+    const petalName = state.petalConfigs[petalIdx]?.name;
+    if (tierName && petalName) {
+      // Multiply by 100 because it is displayed as a percentage
+      craft.pityRates[tierName][petalName] = pity * 100;
+    }
+  }
 
   craft.detectLobby = function (s) {
     if (!s || !Array.isArray(s.tiers)) return null;
@@ -606,7 +647,7 @@ var craftRef = null;
       craft.clearCellCaches();
       craft._fsWidth = null;
     }
-    var shouldShow = !!lobby;
+    var shouldShow = craft.useCraftingProtocol || !!lobby;
     var newDisplay = shouldShow ? '' : 'none';
     if (craft.btn.style.display !== newDisplay) {
       craft.btn.style.display = newDisplay;
@@ -684,6 +725,16 @@ var craftRef = null;
     }
   };
 
+  craft.scheduleResult = function (result) {
+    if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
+    var tokenAtSchedule = craft.craftResultToken;
+    setTimeout(function () {
+      if (craft.craftResultToken !== tokenAtSchedule) return;
+      if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
+      craft.setCraftResult(result);
+    }, craft.FALL_DURATION_MS);
+  }
+
   craft.setupCraftChatLogger = function () {
     craft.dlog('craft chat listener registered');
     onChatMessage(function (evt) {
@@ -691,30 +742,17 @@ var craftRef = null;
       if (!evt) return;
       var msg = String(evt.message || '');
 
-      function scheduleResult(prev, build) {
-        if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
-        var result = build();
-        var tokenAtSchedule = craft.craftResultToken;
-        setTimeout(function () {
-          if (craft.craftResultToken !== tokenAtSchedule) return;
-          if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
-          craft.setCraftResult(result);
-        }, craft.FALL_DURATION_MS);
-      }
-
       var ok = /Crafted\s+(\d+)\b[^()]*\((\d+)\s*left/i.exec(msg);
       if (ok) {
         var gained = parseInt(ok[1], 10);
         craft.dlog('craft success (Desert), crafted ' + gained + ', ' + ok[2] + ' left');
         var prevS = craft.craftResult || {};
-        scheduleResult(prevS, function () {
-          return {
-            type: 'success',
-            delta: gained,
-            petalIdx: prevS.petalIdx,
-            fromRarity: prevS.fromRarity,
-            slots: prevS.slots,
-          };
+        craft.scheduleResult({
+          type: 'success',
+          delta: gained,
+          petalIdx: prevS.petalIdx,
+          fromRarity: prevS.fromRarity,
+          slots: prevS.slots,
         });
         craft.firePityRefresh(prevS.petalIdx, prevS.fromRarity);
         return;
@@ -727,27 +765,23 @@ var craftRef = null;
         if (gained > 0) {
           craft.dlog('craft success (Line multi), crafted ' + gained);
           var prevS = craft.craftResult || {};
-          scheduleResult(prevS, function () {
-            return {
-              type: 'success',
-              delta: gained,
-              petalIdx: prevS.petalIdx,
-              fromRarity: prevS.fromRarity,
-              slots: prevS.slots,
-            };
+          craft.scheduleResult({
+            type: 'success',
+            delta: gained,
+            petalIdx: prevS.petalIdx,
+            fromRarity: prevS.fromRarity,
+            slots: prevS.slots,
           });
         } else {
           var attemptsMulti = Math.max(1, Math.round(consumedMulti / 5));
           craft.dlog('craft failed (Line multi, 0 gained), consumed ' + consumedMulti + ', ~' + attemptsMulti + ' attempts');
           var prevF = craft.craftResult || {};
-          scheduleResult(prevF, function () {
-            return {
-              type: 'fail',
-              attempts: attemptsMulti,
-              petalIdx: prevF.petalIdx,
-              fromRarity: prevF.fromRarity,
-              slots: prevF.slots,
-            };
+          craft.scheduleResult({
+            type: 'fail',
+            attempts: attemptsMulti,
+            petalIdx: prevF.petalIdx,
+            fromRarity: prevF.fromRarity,
+            slots: prevF.slots,
           });
         }
         return;
@@ -756,14 +790,12 @@ var craftRef = null;
       if (/^Crafted\s+[A-Za-z]/.test(msg) && !/\(/.test(msg) && !/Mass\s*craft/i.test(msg)) {
         craft.dlog('craft success (Line single), crafted 1');
         var prevS = craft.craftResult || {};
-        scheduleResult(prevS, function () {
-          return {
-            type: 'success',
-            delta: 1,
-            petalIdx: prevS.petalIdx,
-            fromRarity: prevS.fromRarity,
-            slots: prevS.slots,
-          };
+        craft.scheduleResult({
+          type: 'success',
+          delta: 1,
+          petalIdx: prevS.petalIdx,
+          fromRarity: prevS.fromRarity,
+          slots: prevS.slots,
         });
         return;
       }
@@ -774,14 +806,12 @@ var craftRef = null;
         craft.dlog('craft failed (Desert), ' + fail[2] + ' left');
 
         var prevF = craft.craftResult || {};
-        scheduleResult(prevF, function () {
-          return {
-            type: 'fail',
-            attempts: attempts,
-            petalIdx: prevF.petalIdx,
-            fromRarity: prevF.fromRarity,
-            slots: prevF.slots,
-          };
+        craft.scheduleResult({
+          type: 'fail',
+          attempts: attempts,
+          petalIdx: prevF.petalIdx,
+          fromRarity: prevF.fromRarity,
+          slots: prevF.slots,
         });
         craft.firePityRefresh(prevF.petalIdx, prevF.fromRarity);
         return;
@@ -794,14 +824,12 @@ var craftRef = null;
         var attempts = Math.max(1, Math.round(consumed / 5));
         craft.dlog('craft failed (Line), consumed ' + consumed + ', ~' + attempts + ' attempts');
         var prevF = craft.craftResult || {};
-        scheduleResult(prevF, function () {
-          return {
-            type: 'fail',
-            attempts: attempts,
-            petalIdx: prevF.petalIdx,
-            fromRarity: prevF.fromRarity,
-            slots: prevF.slots,
-          };
+        craft.scheduleResult({
+          type: 'fail',
+          attempts: attempts,
+          petalIdx: prevF.petalIdx,
+          fromRarity: prevF.fromRarity,
+          slots: prevF.slots,
         });
         return;
       }
@@ -841,6 +869,16 @@ var craftRef = null;
       }
     }, craft.CRAFT_RESULT_TTL_MS);
   };
+
+  /**
+   * Aborts the craft attempt by setting `craftResult` to `null`.
+   */
+  craft.abortCraft = function () {
+    craft.craftResult = null;
+    clearInterval(craft.poll);
+    craft.clearCraft();
+    if (craft.panel && craft.panel.style.display !== 'none') craft.render();
+  }
 
   craft.loadCraft = function (petalIdx, rarity, owned, shift) {
 
@@ -901,7 +939,15 @@ var craftRef = null;
     var tierName = (s.tiers[craft.craftRarity] || {}).name || '';
     var petalName = craft.getCraftPetalName(s, craft.craftPetalIdx);
 
-    sendChatMessage('/craft ' + tierName + ' ' + petalName + ' ' + total);
+    if (craft.useCraftingProtocol) {
+      state.socket.talk(SERVER_BOUND.CRAFT_REQUEST, {
+        rarity: craft.craftRarity,
+        petalId: craft.craftPetalIdx,
+        amount: total,
+      });
+    } else {
+      sendChatMessage('/craft ' + tierName + ' ' + petalName + ' ' + total);
+    }
 
     craft.orbitLastPositions = [];
     craft.setCraftResult({
@@ -915,11 +961,11 @@ var craftRef = null;
 
     var snapshot = JSON.stringify(s.inventory);
     var deadline = Date.now() + 3000;
-    var poll = setInterval(function () {
+    craft.poll = setInterval(function () {
       var st = state;
       var fresh = JSON.stringify(st && st.inventory);
       if (fresh !== snapshot || Date.now() > deadline) {
-        clearInterval(poll);
+        clearInterval(craft.poll);
         craft.clearCraft();
 
         if (craft.panel && craft.panel.style.display !== 'none' && !craft.craftResult) {
@@ -1289,11 +1335,14 @@ var craftRef = null;
         var pname = craft.craftPetalIdx != null ? craft.getCraftPetalName(st, craft.craftPetalIdx) : null;
         var pityRate = pname && craft.pityRates[tn] && craft.pityRates[tn][pname];
         if (pityRate != null) {
-          rateText = String(pityRate);
+          rateText = craft.formatRate(pityRate);
         } else {
           var rate = craft.getCraftRate(tn);
-          if (rate != null) rateText = String(rate);
+          if (rate != null) rateText = craft.formatRate(rate);
         }
+      } else {
+        // If next rarity doesn't exist, the craft chance is assumed to be zero
+        rateText = "0";
       }
     }
     var sr = document.createElement('div');
@@ -1553,6 +1602,20 @@ var craftRef = null;
       craft.derror('render failed', err);
     }
   };
+
+  /**
+   * A helper function to convert the given success rate into a string rounded
+   * to two significant figures.
+   */
+  craft.formatRate = function(rate) {
+    if (rate >= 99.5) {
+      return "100";
+    } else if (rate <= 0) {
+      return "0";
+    } else {
+      return rate.toPrecision(2);
+    }
+  }
 
   craft.showTooltip = function (target) {
     try {
