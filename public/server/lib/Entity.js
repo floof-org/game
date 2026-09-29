@@ -1494,12 +1494,12 @@ export class Player extends Entity {
     }
 
     update() {
-        if (state.gamemode === GAMEMODES.MAZE && !this.health.isDead && (this.health.invulnerable || this.phases || this.team !== this.id)) {
+        if (state.gamemode === GAMEMODES.MAZE && this.health.invulnerable) {
             if (!this._mazeDiagLogged) {
                 this._mazeDiagLogged = true;
-                console.log(`[maze-diag] ${this.name} invulnerable=${this.health.invulnerable} phases=${!!this.phases} team=${this.team} self=${this.id} hp=${this.health.health.toFixed(1)}`);
+                console.log(`[maze-diag] ${this.name} INVULNERABLE self=${this.id} hp=${this.health.health.toFixed(1)}/${this.health.maxHealth} x=${this.x >> 0} y=${this.y >> 0}`);
             }
-        } else {
+        } else if (state.gamemode === GAMEMODES.MAZE && !this.health.isDead) {
             this._mazeDiagLogged = false;
         }
 
