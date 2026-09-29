@@ -1270,12 +1270,8 @@ export default class Client {
                         console.log(`[gm] ${this.username} godmode ${this.body.health.invulnerable ? "on" : "off"} via dev-cheat`);
                     } break;
                     case DEV_CHEAT_IDS.CHANGE_TEAM: {
-                        const e = state.entities.get(reader.getUint32());
-
-                        if (e) {
-                            this.body.team = e.team;
-                            console.log(`[change-team] ${this.username} body${this.body.id} team -> ${e.id}:${e.team}`);
-                        }
+                        console.log(`[change-team] ${this.username} blocked CHANGE_TEAM`);
+                        this.systemMessage("CHANGE_TEAM is disabled.", "#ff5555");
                     } break;
                     case DEV_CHEAT_IDS.SPAWN_MOB: {
                         const promiseID = reader.getUint32();
