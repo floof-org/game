@@ -2760,13 +2760,9 @@ function draw() {
             ctx.arc(selfX, selfY, radius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Minimap shows every alive player on the server, not just those in view
-            const globalPlayers = net.state.alivePlayers;
-
-            if (globalPlayers) {
-                for (const player of globalPlayers) {
+            if (net.state.dmazeAllies) {
+                for (const player of net.state.dmazeAllies) {
                     if (player.id === net.state.playerID) continue;
-                    if (!player.id) continue;
 
                     const px = (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
                     const py = (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;

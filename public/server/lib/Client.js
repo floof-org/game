@@ -2573,9 +2573,6 @@ export default class Client {
             writer.setUint8(entity.team);
             writer.setUint8(entity.highestRarity);
             writer.setFloat32(entity.xp / 10000);
-            writer.setFloat32(entity.body?.x ?? 0);
-            writer.setFloat32(entity.body?.y ?? 0);
-            writer.setUint32(entity.body?.id ?? 0);
             writer.setStringUTF8(entity.auth?.loggedIn ? entity.auth.username : "Guest");
         }
 
