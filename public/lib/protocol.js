@@ -1148,7 +1148,7 @@ export class MobConfig {
                 petalIndex: projectile.petalIndex ?? 0,
                 cooldown: projectile.cooldown ?? 10,
                 health: (projectile.health ?? 1) * Math.pow(PetalTier.HEALTH_SCALE, i),
-                damage: (projectile.damage ?? 1) * Math.pow(PetalTier.DAMAGE_SCALE, i),
+                damage: ((projectile.damage ?? 1) * Math.pow(PetalTier.DAMAGE_SCALE, i)) * .75,
                 speed: projectile.speed ?? 5,
                 range: (projectile.range ?? 50) * Math.pow(MobTier.SIZE_SCALE * .8, i),
                 size: projectile.size ?? .35,
