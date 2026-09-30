@@ -169,7 +169,8 @@ const state = {
                     highestRarity: c.highestRarity,
                     x: c.body.x,
                     y: c.body.y,
-                    size: c.body.size
+                    size: c.body.size,
+                    fov: c.camera?.fov ?? 1256
                 });
             }
         });
@@ -183,29 +184,32 @@ const state = {
 
         const body = bodies[Math.floor(Math.random() * bodies.length)];
 
+        const halfView = body.fov / 1.85;
+        const minDist = body.size * 2 + 48;
+
         let position,
             k = 0,
-            minDist = body.size + 512,
-            distLength = 2048,
             isGood = false,
             rarity = 0;
 
         do {
-            const angle = Math.random() * Math.PI * 2;
-            const dist = minDist + Math.random() * distLength;
-
             position = {
-                x: body.x + Math.cos(angle) * dist,
-                y: body.y + Math.sin(angle) * dist
+                x: body.x + (Math.random() - .5) * 2 * halfView,
+                y: body.y + (Math.random() - .5) * 2 * halfView
             };
 
             const dx = body.x - position.x;
             const dy = body.y - position.y;
 
             if (dx * dx + dy * dy > minDist * minDist && state.isValidMapSpawn(position.x, position.y)) {
-                const baseRarity = state.mapSpawnClosestTo(position.x, position.y).rarity;
-                const goesUp = Math.random() > .5 * Math.pow(1.1015, baseRarity);
-                rarity = Math.min(tiers.length - 1, Math.max(0, goesUp ? baseRarity + 1 : baseRarity - (Math.random() * 2 | 0)));
+                const cell = state.mapDataAt(position.x, position.y);
+                const baseRarity = cell?.score !== undefined
+                    ? Math.round(cell.score * state.mapData.maxRarity)
+                    : (state.mapSpawnClosestTo(position.x, position.y)?.rarity ?? 0);
+
+                const clamped = Math.max(0, Math.min(tiers.length - 1, baseRarity));
+                const low = Math.max(0, clamped - 2);
+                rarity = low + Math.floor(Math.random() * (clamped - low + 1));
 
                 const retrieved = state.spatialHash.retrieve({
                     _AABB: {
