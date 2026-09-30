@@ -1159,6 +1159,10 @@ export class Entity {
         for (const id in this.damagedBy) {
             const [damage, type, name, clientID] = this.damagedBy[id];
 
+            if (damage <= 0) {
+                continue;
+            }
+
             if (filterType !== -1 && type !== filterType) {
                 continue;
             }
@@ -2826,14 +2830,16 @@ export class Pentagram {
             const distSqr = dx * dx + dy * dy;
 
             if (distSqr < this.size * this.size) {
-                entity.health.damage(this.damage);
+                const dealt = entity.health.damage(this.damage);
 
-                if (entity.parent && entity.config?.name === "Leech") {
-                    entity.parent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                    entity.parent.damagedBy[this.parent.id][0] += this.damage;
-                } else {
-                    entity.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                    entity.damagedBy[this.parent.id][0] += this.damage;
+                if (dealt > 0) {
+                    if (entity.parent && entity.config?.name === "Leech") {
+                        entity.parent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
+                        entity.parent.damagedBy[this.parent.id][0] += dealt;
+                    } else {
+                        entity.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
+                        entity.damagedBy[this.parent.id][0] += dealt;
+                    }
                 }
 
                 entity.poison.timer = this.poisonTime;
@@ -2942,14 +2948,16 @@ export class Lightning {
                     }
                 }
 
-                ent.health.damage(this.damage);
+                const dealt = ent.health.damage(this.damage);
 
-                if (ent.parent && ent.config?.name === "Leech") {
-                    ent.parent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                    ent.parent.damagedBy[this.parent.id][0] += this.damage;
-                } else {
-                    ent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                    ent.damagedBy[this.parent.id][0] += this.damage;
+                if (dealt > 0) {
+                    if (ent.parent && ent.config?.name === "Leech") {
+                        ent.parent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
+                        ent.parent.damagedBy[this.parent.id][0] += dealt;
+                    } else {
+                        ent.damagedBy[this.parent.id] ??= [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
+                        ent.damagedBy[this.parent.id][0] += dealt;
+                    }
                 }
 
                 if (ent.type === ENTITY_TYPES.MOB && ent.neutral) {
