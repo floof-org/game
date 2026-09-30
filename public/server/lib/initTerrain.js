@@ -152,8 +152,8 @@ export default async function initTerrain(type) {
                 object.gridY = j;
             } else {
                 const spawn = {
-                    x: (i / state.terrainGridWidth) - .5,
-                    y: (j / state.terrainGridHeight) - .5,
+                    x: ((i + .5) / state.terrainGridWidth) - .5,
+                    y: ((j + .5) / state.terrainGridHeight) - .5,
                     rarity: Math.round(generator.get(i, j).score * generator.maxRarity)
                 };
 
