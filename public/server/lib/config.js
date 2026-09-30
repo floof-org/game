@@ -1565,7 +1565,7 @@ for (const config of mobConfigs) {
     const baseSize = config.tiers[0].size;
 
     for (let i = 0; i < config.tiers.length; i++) {
-        config.tiers[i].size = baseSize * Math.pow(1.06, i);
+        config.tiers[i].size = baseSize * Math.pow(1.065, i);
     }
 }
 
