@@ -2787,6 +2787,10 @@ function draw() {
                     ctx.fill();
                 }
             }
+
+            const trackedCount = net.state.globalPlayers ? net.state.globalPlayers.length : "null";
+            ctx.textAlign = "left";
+            text(`tracked:${trackedCount} shown:${globalPlayers ? globalPlayers.length : 0}`, x, y - 6, 14, colors.white, ctx);
         }
 
         {
