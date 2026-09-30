@@ -1612,7 +1612,11 @@ export class Player extends Entity {
         super.destroy();
 
         if (this.client !== null) {
-            const topDamagers = this.getTopDamagers(10);
+            const allDamagers = this.getTopDamagers(10);
+            const damageThreshold = this.health.maxHealth * 0.05;
+            const topDamagers = state.gamemode === GAMEMODES.MAZE
+                ? allDamagers.filter(damager => damager.damage >= damageThreshold)
+                : allDamagers;
             const playerKillers = [];
             const mobKillers = {};
 
@@ -2635,16 +2639,16 @@ export class Mob extends Entity {
         }
 
         const topDamagers = this.getTopDamagers(3, ENTITY_TYPES.PLAYER);
+        const damageThreshold = this.health.maxHealth * 0.05;
+        const qualifyingDamagers = state.gamemode === GAMEMODES.MAZE
+            ? topDamagers.filter(damager => damager.damage >= damageThreshold)
+            : topDamagers;
         let killText = '';
-        topDamagers.forEach(damager => {
+        qualifyingDamagers.forEach(damager => {
             if (damager.clientID > 0) {
                 const client = state.clients.get(damager.clientID);
 
                 if (client) {
-                    if (state.gamemode === GAMEMODES.MAZE && damager.damage < this.health.maxHealth * 0.05) {
-                        return;
-                    }
-
                     client.addXP((Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1));
 
                     const output = [];
@@ -2696,32 +2700,23 @@ export class Mob extends Entity {
             !["Queen Ant Egg", "Termite Overmind Egg", "Queen Fire Ant Egg"].includes(this.config.name) &&
             this.rarity >= state.announceRarity
         ) {
-            if (topDamagers.length > 0) {
-                killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by ";
-                for (let index = 0, max = topDamagers.length; index < max; index++) {
-                    if (!state.clients.has(topDamagers[index].clientID)) {
-                        continue;
-                    }
+            const killerNames = qualifyingDamagers
+                .filter(damager => state.clients.has(damager.clientID))
+                .map(damager => state.clients.get(damager.clientID).username);
 
-                    const name = state.clients.get(topDamagers[index].clientID).username;
-                    if (index === max - 1) {
-                        if (max === 1) {
-                            killText += name;
-                        } else if (max === 2) {
-                            killText += " and " + name;
-                        } else {
-                            killText += ", and " + name;
-                        };
-                    } else if (index === 0) {
-                        killText += name;
-                    } else {
-                        killText += ", " + name;
-                    };
-                }
-            } else {
+            if (killerNames.length > 0) {
+                const last = killerNames[killerNames.length - 1];
+                const rest = killerNames.slice(0, -1);
+
+                killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by "
+                    + (rest.length > 0 ? rest.join(", ") + (rest.length > 1 ? ", and " : " and ") : "") + last;
+            } else if (topDamagers.length === 0) {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " despawned";
             }
-            state.clients.forEach(c => c.systemMessage(killText, tiers[this.rarity].color));
+
+            if (killText) {
+                state.clients.forEach(c => c.systemMessage(killText, tiers[this.rarity].color));
+            }
         }
     }
 }
