@@ -2568,7 +2568,7 @@ export default class Client {
             writer.setUint8(entity.team);
             writer.setUint8(entity.highestRarity);
             writer.setFloat32(entity.xp / 10000);
-            writer.setStringUTF8(entity.auth?.loggedIn ? entity.auth.username : "未登录");
+            writer.setStringUTF8(entity.auth?.loggedIn ? entity.auth.username : "Guest");
         }
 
         writer.setUint8(state.playerCount);
@@ -2598,7 +2598,7 @@ export default class Client {
                 alliesWriter.setFloat32(entity.body?.y ?? 0);
                 alliesWriter.setUint8(entity.team);
                 alliesWriter.setUint8(entity.highestRarity);
-                alliesWriter.setStringUTF8(entity.auth?.loggedIn ? entity.auth.username : "未登录");
+                alliesWriter.setStringUTF8(entity.auth?.loggedIn ? entity.auth.username : "Guest");
             }
 
             state.router.postMessage(alliesWriter.build());
