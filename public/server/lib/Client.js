@@ -2590,6 +2590,16 @@ export default class Client {
             });
         });
 
+        const tracked = state.alivePlayers.slice(0, 255);
+        writer.setUint8(0xFE);
+        writer.setUint8(tracked.length);
+
+        for (const entity of tracked) {
+            writer.setUint32(entity.body?.id ?? 0);
+            writer.setFloat32(entity.body?.x ?? 0);
+            writer.setFloat32(entity.body?.y ?? 0);
+        }
+
         if (state.gamemode === GAMEMODES.MAZE) {
             const alliesWriter = new Writer(true);
             alliesWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);

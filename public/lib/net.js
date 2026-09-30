@@ -1748,6 +1748,28 @@ export class ClientSocket extends WebSocket {
 
                     state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 }
+
+                {
+                    const remaining = reader.view.byteLength - reader._o;
+
+                    if (remaining >= 2 && reader.getUint8() === 0xFE) {
+                        const count = reader.getUint8();
+
+                        if (reader.view.byteLength - reader._o >= count * 12) {
+                            const tracked = [];
+
+                            for (let i = 0; i < count; i++) {
+                                const trackedId = reader.getUint32();
+                                const trackedX = reader.getFloat32();
+                                const trackedY = reader.getFloat32();
+
+                                tracked.push({ id: trackedId, x: trackedX, y: trackedY });
+                            }
+
+                            state.globalPlayers = tracked;
+                        }
+                    }
+                }
                 break;
             case CLIENT_BOUND.UNUSED_DROPS_UPDATE: {
                 const count = reader.getUint16();
@@ -2300,6 +2322,7 @@ export const state = {
 
     playerID: 0,
     dmazeAllies: null,
+    globalPlayers: null,
 
     /** @type {Map<number, ClientPlayer>} */
     players: new Map(),

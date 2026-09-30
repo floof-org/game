@@ -2760,9 +2760,11 @@ function draw() {
             ctx.arc(selfX, selfY, radius, 0, Math.PI * 2);
             ctx.fill();
 
-            if (net.state.dmazeAllies) {
-                for (const player of net.state.dmazeAllies) {
-                    if (player.id === net.state.playerID) continue;
+            const globalPlayers = net.state.globalPlayers ?? net.state.dmazeAllies;
+
+            if (globalPlayers) {
+                for (const player of globalPlayers) {
+                    if (!player.id || player.id === net.state.playerID) continue;
 
                     const px = (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
                     const py = (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
