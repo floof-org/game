@@ -850,6 +850,7 @@ export default class Client {
         }
 
         this.slots = new Array(5).fill(null).map(() => ({ id: 0, rarity: 0 }));
+        this.firstSpawn = true;
         this.slotRatios = new Array(5).fill(0).map(() => 0);
         this.secondarySlots = new Array(5).fill(null).map(() => null);
         this.level = 1;
@@ -1013,16 +1014,19 @@ export default class Client {
                 if (dc) {
                     this.level = dc.level;
                     this.xp = dc.xp;
-                    this.slots = dc.slots;
-                    this.secondarySlots = dc.secondarySlots;
                     this.team = dc.team;
-                    this.inventory = dc.inventory;
-                    this.craftAttempts = dc.craftAttempts;
                     this.addXP(0);
 
-                    if (dc.body) {
+                    if (dc.body && !dc.body.health.isDead) {
+                        this.firstSpawn = false;
                         this.body = dc.body;
                         this.body.client = this;
+                        this.body.initSlots(this.slots.length);
+                        for (let i = 0; i < this.slots.length; i++) {
+                            if (this.slots[i]) {
+                                this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
+                            }
+                        }
                     }
 
                     clearTimeout(dc.timeout);
@@ -1048,6 +1052,7 @@ export default class Client {
                 }
 
                 this.body = new Player(state.getPlayerSpawn(this));
+                this.firstSpawn = false;
                 this.body.name = this.username;
                 this.body.nameColor = this.nameColor;
                 this.body.client = this;
