@@ -2600,11 +2600,6 @@ export default class Client {
             writer.setFloat32(entity.body?.y ?? 0);
         }
 
-        if (!this._trackedLogged) {
-            this._trackedLogged = true;
-            console.log(`[tracked] client=${this.id} alive=${state.alivePlayers.length} written=${tracked.length} bytes=${2 + tracked.length * 12} gamemode=${state.gamemode}`);
-        }
-
         if (state.gamemode === GAMEMODES.MAZE) {
             const alliesWriter = new Writer(true);
             alliesWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
@@ -2624,7 +2619,14 @@ export default class Client {
             state.router.postMessage(alliesWriter.build());
         }
 
-        state.router.postMessage(writer.build());
+        const worldPacket = writer.build();
+
+        if (!this._trackedLogged) {
+            this._trackedLogged = true;
+            console.log(`[tracked] client=${this.id} alive=${state.alivePlayers.length} written=${tracked.length} tail=${2 + tracked.length * 12} total=${worldPacket.length} tailAt=${worldPacket.length - (2 + tracked.length * 12)} gamemode=${state.gamemode}`);
+        }
+
+        state.router.postMessage(worldPacket);
 
         if (state.gamemode === GAMEMODES.MAZE) {
             const dropAmountsWriter = new Writer(true);

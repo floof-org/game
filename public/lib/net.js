@@ -1750,7 +1750,8 @@ export class ClientSocket extends WebSocket {
                 }
 
                 {
-                    const remaining = reader.view.byteLength - reader._o;
+                    const readTo = reader._o;
+                    const remaining = reader.view.byteLength - readTo;
 
                     if (remaining >= 2 && reader.getUint8() === 0xFE) {
                         const count = reader.getUint8();
@@ -1768,6 +1769,9 @@ export class ClientSocket extends WebSocket {
 
                             state.globalPlayers = tracked;
                         }
+                    } else if (!state._trackedDiag && remaining > 0) {
+                        state._trackedDiag = true;
+                        console.log(`[tracked-cl] total=${reader.view.byteLength} readTo=${readTo} remaining=${remaining} peek=${reader.view.getUint8(readTo)}`);
                     }
                 }
                 break;
