@@ -1712,8 +1712,11 @@ export class ClientSocket extends WebSocket {
                         const team = reader.getUint8();
                         const highestRarity = reader.getUint8();
                         const xp = reader.getFloat32() * 10000;
+                        const x = reader.getFloat32();
+                        const y = reader.getFloat32();
+                        const id = reader.getUint32();
                         const username = reader.getStringUTF8();
-                        alivePlayers.push({ xp, username, team, highestRarity });
+                        alivePlayers.push({ xp, username, team, highestRarity, x, y, id });
                     }
 
                     state.alivePlayers = alivePlayers;
