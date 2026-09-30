@@ -1203,7 +1203,7 @@ export class MobConfig {
     setSize(baseSize, scalar = MobTier.SIZE_SCALE, minRand = 1, maxRand = 0) {
         this.size = baseSize;
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].size = baseSize * Math.pow(1.075, i);
+            this.tiers[i].size = baseSize * Math.pow(1.0725, i);
         }
         this.sizeRand = {
             min: minRand,
