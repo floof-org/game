@@ -1974,7 +1974,7 @@ export class Mob extends Entity {
 
         this.health.set(tier.health);
         this.damage = tier.damage;
-        this.size = tier.size * (.98 + Math.random() * .04) * (config.sizeRand.min + Math.random() * config.sizeRand.max);
+        this.size = tier.size;
         this.speed = config.speed;
         this.index = config.id;
         this.rarity = rarity;

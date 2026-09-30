@@ -267,7 +267,7 @@ export class MobTier {
 
         this.health = health * (rarityData.health ?? 1);
         this.damage = damage * (rarityData.damage ?? 1);
-        this.size = size * (rarityData.size ?? 1);
+        this.size = size;
         this.armor = rarityData.armor ?? 0;
 
         this.damageReduction = 0;
@@ -1203,7 +1203,7 @@ export class MobConfig {
     setSize(baseSize, scalar = MobTier.SIZE_SCALE, minRand = 1, maxRand = 0) {
         this.size = baseSize;
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].size = baseSize * Math.pow(scalar, i);
+            this.tiers[i].size = baseSize * Math.pow(1.1, i);
         }
         this.sizeRand = {
             min: minRand,
