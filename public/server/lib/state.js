@@ -69,20 +69,15 @@ const state = {
         let spawns = state.mapSpawns[type];
 
         if (type == ENTITY_TYPES.PLAYER) {
-            let highestSpawnRarity = 0
             spawns = spawns.filter((spawn) => {
-                if (spawn.rarity <= client.highestRarity) {
+                if (spawn.rarity === 1) {
                     return true
                 }
             })
 
-            spawns.forEach((data) => {
-                highestSpawnRarity = Math.max(data.rarity, highestSpawnRarity)
-            })
-
-            spawns = spawns.filter((data) => {
-                if (data.rarity >= highestSpawnRarity) return true
-            })
+            if (spawns.length === 0) {
+                return state.random();
+            }
         }
 
         const spawn = spawns[Math.floor(Math.random() * spawns.length)];
