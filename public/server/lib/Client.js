@@ -2623,7 +2623,7 @@ export default class Client {
 
         if (!this._trackedLogged) {
             this._trackedLogged = true;
-            console.log(`[tracked] client=${this.id} alive=${state.alivePlayers.length} written=${tracked.length} tail=${2 + tracked.length * 12} total=${worldPacket.length} tailAt=${worldPacket.length - (2 + tracked.length * 12)} gamemode=${state.gamemode}`);
+            console.log(`[tracked] client=${this.id} slots=${this.slots.length} sec=${this.secondarySlots.length} tiers=${tiers.length} lb=${state.alivePlayers.length} written=${tracked.length} tail=${2 + tracked.length * 12} total=${worldPacket.length} tailAt=${worldPacket.length - (2 + tracked.length * 12)} gamemode=${state.gamemode}`);
         }
 
         state.router.postMessage(worldPacket);

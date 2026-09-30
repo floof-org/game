@@ -1752,6 +1752,7 @@ export class ClientSocket extends WebSocket {
                 {
                     const readTo = reader._o;
                     const remaining = reader.view.byteLength - readTo;
+                    let trackedOk = false;
 
                     if (remaining >= 2 && reader.getUint8() === 0xFE) {
                         const count = reader.getUint8();
@@ -1768,10 +1769,16 @@ export class ClientSocket extends WebSocket {
                             }
 
                             state.globalPlayers = tracked;
+                            trackedOk = true;
                         }
-                    } else if (!state._trackedDiag && remaining > 0) {
+                    }
+
+                    if (!state._trackedDiag) {
                         state._trackedDiag = true;
-                        console.log(`[tracked-cl] total=${reader.view.byteLength} readTo=${readTo} remaining=${remaining} peek=${reader.view.getUint8(readTo)}`);
+
+                        const peekAt = Math.min(readTo, Math.max(0, reader.view.byteLength - 1));
+
+                        console.log(`[tracked-cl] ok=${trackedOk} total=${reader.view.byteLength} readTo=${readTo} remaining=${remaining} peek=${reader.view.getUint8(peekAt)} slots=${state.slots.length} sec=${state.secondarySlots.length} tiers=${state.tiers?.length} lb=${state.alivePlayers?.length}`);
                     }
                 }
                 break;
