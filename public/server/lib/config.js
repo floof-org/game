@@ -1039,21 +1039,22 @@ export const mobConfigs = [
         .setPushability(0)
         .addDrop(petalIDOf("Dirt"))
         .addDrop(petalIDOf("Ant Egg"), .5),
-    new MobConfig("Baby Fire Ant", 10, 10, 10, 2)
-        .setSizeStep(5)
+    new MobConfig("Baby Fire Ant", 10, 10, 20, 2)
+        .setSizeStep(2)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Worker Fire Ant", 15, 10, 10, 3.25)
-        .setSizeStep(5)
+    new MobConfig("Worker Fire Ant", 15, 10, 20, 3.25)
+        .setSizeStep(2)
         .setNeutral(1)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Soldier Fire Ant", 25, 10, 10, 3.5)
-        .setSizeStep(5)
+    new MobConfig("Soldier Fire Ant", 25, 10, 20, 3.5)
+        .setSizeStep(2)
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)
         .addDrop(petalIDOf("Glass"), .5),
     new MobConfig("Queen Fire Ant", 100, 10, 25, 3.5)
+        .setSizeStep(2)
         .setAggressive(1)
         .setPushability(0.8)
         .addDrop(petalIDOf("Primrose"), .5)
@@ -1098,7 +1099,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Ant Egg", 20, 1, 15, 0),
     new MobConfig("Fire Ant Egg", 20, 2, 10, 0)
-        .setSizeStep(5)
+        .setSizeStep(2)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Fire Ant Egg", 20, 2, 15, 0),
     new MobConfig("Termite Egg", 30, 1, 15, 0)
