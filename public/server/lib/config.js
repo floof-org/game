@@ -1296,13 +1296,13 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Leaf")),
     new MobConfig("Hell Centipede", 25, 10, 22.5, 4)
         .setAggressive(1)
-        .setSize(22.5, MobTier.SIZE_SCALE, .75, .25)
+        .setSize(22.5)
         .addDrop(petalIDOf("Powder"), .5)
         .addDrop(petalIDOf("Dust"), .5),
     new MobConfig("Hell Centipede", 25, 10, 22.5, 4)
         .setSystem(1)
         .setAggressive(1)
-        .setSize(22.5, MobTier.SIZE_SCALE, .75, .25)
+        .setSize(22.5)
         .addDrop(petalIDOf("Powder"), .5)
         .addDrop(petalIDOf("Dust"), .5),
     new MobConfig("Wilt", 25, 10, 30, 0)
@@ -1315,7 +1315,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Branch"))
         .addDrop(petalIDOf("Leaf"), .6),
     new MobConfig("Pumpkin", 40, 10, 20, 0)
-        .setSize(20, MobTier.SIZE_SCALE, .75, .25)
+        .setSize(20)
         .addDrop(petalIDOf("Leaf"), .5)
         .addDrop(petalIDOf("Candy"), .6)
         .addDrop(petalIDOf("Lantern"), .1),
@@ -1565,7 +1565,7 @@ for (const config of mobConfigs) {
     const baseSize = config.tiers[0].size;
 
     for (let i = 0; i < config.tiers.length; i++) {
-        config.tiers[i].size = baseSize * Math.pow(1.0725, i);
+        config.tiers[i].size = baseSize + MobTier.SIZE_STEP * i;
     }
 }
 

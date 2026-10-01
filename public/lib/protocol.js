@@ -259,8 +259,8 @@ export const SUMMON_STATS = {
 export class MobTier {
     static HEALTH_SCALE = 3.15;
     static DAMAGE_SCALE = 3;
-    static SIZE_SCALE = 1.235;
-    static SIZE_SCALE_LARGE = 1.25;
+    static SIZE_STEP = 0.05;
+    static RANGE_SCALE = 0.988;
 
     constructor(tier, health, damage, size) {
         const rarityData = RARITY_TABLE[Math.min(tier, 29)] ?? {};
@@ -1150,7 +1150,7 @@ export class MobConfig {
                 health: (projectile.health ?? 1) * Math.pow(PetalTier.HEALTH_SCALE, i),
                 damage: ((projectile.damage ?? 1) * Math.pow(PetalTier.DAMAGE_SCALE, i)) * .75,
                 speed: projectile.speed ?? 5,
-                range: (projectile.range ?? 50) * Math.pow(MobTier.SIZE_SCALE * .8, i),
+                range: (projectile.range ?? 50) * Math.pow(MobTier.RANGE_SCALE, i),
                 size: projectile.size ?? .35,
                 multiShot: projectile.multiShot ?? null,
                 runs: projectile.runs ?? false,
@@ -1200,14 +1200,10 @@ export class MobConfig {
         return this;
     }
 
-    setSize(baseSize, scalar = MobTier.SIZE_SCALE, minRand = 1, maxRand = 0) {
+    setSize(baseSize, sizeStep = MobTier.SIZE_STEP) {
         this.size = baseSize;
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].size = baseSize * Math.pow(1.0725, i);
-        }
-        this.sizeRand = {
-            min: minRand,
-            max: maxRand
+            this.tiers[i].size = baseSize + sizeStep * i;
         }
 
         return this;
