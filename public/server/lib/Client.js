@@ -101,6 +101,22 @@ function findTargetClient(playerName) {
     return null;
 }
 
+/**
+ * 处罚目标：优先用在线玩家的 Discord ID（权威），离线时回退到已处罚记录里的账号名
+ * @param {string} playerName
+ */
+function resolveModerationTarget(playerName) {
+    const client = findTargetClient(playerName);
+
+    if (client) {
+        return { discordId: String(client.userId ?? ""), accountName: client.auth?.username || client.discordName || client.username, client };
+    }
+
+    const discordId = accounts.findModerated(playerName);
+
+    return discordId ? { discordId, accountName: playerName, client: null } : null;
+}
+
 function formatNumber(num) {
     const abs = Math.abs(num);
     const suffixes = [
@@ -1039,9 +1055,15 @@ export default class Client {
 
                 this.username = reader.getStringUTF8();
                 this.discordName = this.username;
-                const lowercase = this.username.toLowerCase();
                 this.verified = true;
                 console.log(`Client ${this.id} verified as ${this.username}`);
+
+                const banLeft = accounts.banRemaining(this.userId);
+
+                if (banLeft > 0) {
+                    this.kick(`You are banned${banLeft === Infinity ? " permanently" : ` for ${formatDuration(banLeft)}`}.`);
+                    return;
+                }
                 this.talk(CLIENT_BOUND.READY);
                 this.sendRoom();
                 state.sendTerrain(this.id);
@@ -1457,7 +1479,7 @@ export default class Client {
                 }
 
                 const message = reader.getStringUTF8();
-                const mutedLeft = this.auth?.loggedIn ? accounts.muteRemaining(this.auth.username) : 0;
+                const mutedLeft = accounts.muteRemaining(this.userId);
 
                 if (mutedLeft > 0) {
                     this.systemMessage(`You're muted. ${mutedLeft === Infinity ? "This mute is permanent." : `Muted for ${formatDuration(mutedLeft)} more.`}`, "#ff5555");
@@ -1607,9 +1629,13 @@ export default class Client {
                 "/give [player] [petal] [rarity] - Gives a player a petal.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
                 "/kick [player] - Kicks a player from the game.",
-                "/mute [player] [seconds] - Mutes a player's chat. 0 is permanent, max 30 days.",
+                "/mute [player] [seconds] - Mutes a player. 0 is permanent, max 30 days.",
                 "/unmute [player] - Removes a player's mute.",
-                "/ban [player] [seconds] - Bans a player from logging in. 0 is permanent, max 10 years."
+                "/ban [player] [seconds] - Bans a player. 0 is permanent, max 10 years.",
+                "",
+                "Bans and mutes are tied to the player's Discord ID, so renaming,",
+                "logging out or creating a new account does not remove them.",
+                "Player can be given as their account name or Discord name."
             ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
             return;
         }
@@ -1657,27 +1683,28 @@ export default class Client {
                 }
 
                 const [playerName, durationArg] = args;
-                const target = findTargetClient(playerName);
+                const target = resolveModerationTarget(playerName);
 
-                if (!target?.auth?.loggedIn) {
-                    this.systemMessage(`Player "${playerName}" is not online with an account.`, "#ff5555");
+                if (!target) {
+                    this.systemMessage(`Player "${playerName}" is not online and has no ban/mute on record.`, "#ff5555");
                     return;
                 }
 
-                if (target.masterPermissions >= this.masterPermissions) {
-                    this.systemMessage(`You cannot mute ${target.username}.`, "#ff5555");
+                if (target.client && target.client.masterPermissions >= this.masterPermissions) {
+                    this.systemMessage(`You cannot mute ${target.client.username}.`, "#ff5555");
                     return;
                 }
 
-                const result = await accounts.mute(target.auth.username, durationArg);
+                const result = await accounts.mute(target.discordId, durationArg, target.accountName);
 
                 if (!result.ok) {
                     this.systemMessage(result.error, "#ff5555");
                     return;
                 }
 
-                target.systemMessage(`You have been muted${result.duration === Infinity ? " permanently" : ` for ${formatDuration(result.duration * 1000)}`}.`, "#ff5555");
-                this.systemMessage(`Muted ${target.username}${result.duration === Infinity ? " permanently" : ` for ${formatDuration(result.duration * 1000)}`}.`, "#55ff55");
+                const when = result.duration === Infinity ? "permanently" : `for ${formatDuration(result.duration * 1000)}`;
+                target.client?.systemMessage(`You have been muted ${when}.`, "#ff5555");
+                this.systemMessage(`Muted ${target.accountName} ${when}.`, "#55ff55");
             })();
 
             return;
@@ -1696,18 +1723,22 @@ export default class Client {
                 }
 
                 const [playerName] = args;
-                const target = findTargetClient(playerName);
-                const username = target?.auth?.username || playerName;
+                const target = resolveModerationTarget(playerName);
 
-                const result = await accounts.unmute(username);
+                if (!target) {
+                    this.systemMessage(`Player "${playerName}" not found.`, "#ff5555");
+                    return;
+                }
+
+                const result = await accounts.unmute(target.discordId);
 
                 if (!result.ok) {
                     this.systemMessage(result.error, "#ff5555");
                     return;
                 }
 
-                target?.systemMessage("You have been unmuted.", "#55ff55");
-                this.systemMessage(`Unmuted ${username}.`, "#55ff55");
+                target.client?.systemMessage("You have been unmuted.", "#55ff55");
+                this.systemMessage(`Unmuted ${target.accountName}.`, "#55ff55");
             })();
 
             return;
@@ -1733,8 +1764,15 @@ export default class Client {
                     return;
                 }
 
-                const username = target?.auth?.username || playerName;
-                const result = await accounts.ban(username, durationArg);
+                // 被封的人可以离线操作：优先找已有的处罚记录，没有就只针对在线玩家
+                const resolved = resolveModerationTarget(playerName);
+
+                if (!resolved) {
+                    this.systemMessage(`Player "${playerName}" is not online and has no ban on record.`, "#ff5555");
+                    return;
+                }
+
+                const result = await accounts.ban(resolved.discordId, durationArg, resolved.accountName);
 
                 if (!result.ok) {
                     this.systemMessage(result.error, "#ff5555");
@@ -1742,11 +1780,10 @@ export default class Client {
                 }
 
                 const reason = result.duration === Infinity ? "permanently" : `for ${formatDuration(result.duration * 1000)}`;
-                const name = target?.username || username;
 
                 if (target) target.kick(`Banned ${reason} by ${this.username}`);
 
-                this.systemMessage(`Banned ${name} ${reason}.`, "#55ff55");
+                this.systemMessage(`Banned ${resolved.accountName} ${reason}.`, "#55ff55");
             })();
 
             return;
@@ -1765,14 +1802,21 @@ export default class Client {
                 }
 
                 const [playerName] = args;
-                const result = await accounts.unban(playerName);
+                const target = resolveModerationTarget(playerName);
+
+                if (!target) {
+                    this.systemMessage(`Player "${playerName}" has no ban on record.`, "#ff5555");
+                    return;
+                }
+
+                const result = await accounts.unban(target.discordId);
 
                 if (!result.ok) {
                     this.systemMessage(result.error, "#ff5555");
                     return;
                 }
 
-                this.systemMessage(`Unbanned ${playerName}.`, "#55ff55");
+                this.systemMessage(`Unbanned ${target.accountName}.`, "#55ff55");
             })();
 
             return;
@@ -1992,13 +2036,6 @@ export default class Client {
                 }
 
                 const account = result.account;
-                const banLeft = accounts.banRemaining(user);
-
-                if (banLeft > 0) {
-                    this.systemMessage(`This account is banned${banLeft === Infinity ? " permanently" : ` for ${formatDuration(banLeft)}`}.`, "#ff5555");
-                    return;
-                }
-
                 const existing = ONLINE_USERS.get(user.toLowerCase());
 
                 if (existing && existing !== this) {

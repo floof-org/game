@@ -6,6 +6,9 @@ const PBKDF2_KEYLEN = 256;
 
 const ACCOUNTS_FILE = (typeof Bun !== "undefined" && Bun.env.ACCOUNTS_FILE) || "./accounts.json";
 
+// 单独存放封禁/禁言的顶层键。用 $ 开头，因为账号名只允许 [A-Za-z0-9_]，不会撞。
+const MODERATION_KEY = "$moderation";
+
 function hexEncode(bytes) {
     return Array.from(bytes).map(byte => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -71,6 +74,8 @@ class Accounts {
     constructor() {
         /** @type {Map<string, object>} */
         this.accounts = new Map();
+        /** @type {Map<string, object>} Discord user id -> { bannedUntil, mutedUntil } */
+        this.moderation = new Map();
         this.loaded = false;
         /** @type {Promise<void>} */
         this.ready = this.load();
@@ -91,14 +96,22 @@ class Accounts {
 
             const data = await file.json();
 
-            for (const username in data) {
-                const account = data[username];
+            for (const key in data) {
+                if (key === MODERATION_KEY) {
+                    const entries = data[key];
+                    for (const discordId in entries) {
+                        this.moderation.set(String(discordId), entries[discordId]);
+                    }
+                    continue;
+                }
+
+                const account = data[key];
                 if (account?.password?.salt && account?.password?.hash && account?.data) {
-                    this.accounts.set(normalizeName(username), account);
+                    this.accounts.set(normalizeName(key), account);
                 }
             }
 
-            console.log(`[Accounts] Loaded ${this.accounts.size} account(s)`);
+            console.log(`[Accounts] Loaded ${this.accounts.size} account(s), ${this.moderation.size} moderation record(s)`);
         } catch (err) {
             console.warn(`[Accounts] Failed to load ${ACCOUNTS_FILE}, starting fresh:`, err);
         } finally {
@@ -126,8 +139,7 @@ class Accounts {
                 salt: saltHex,
                 hash: await hashPassword(password, saltHex)
             },
-            bannedUntil: 0,
-            mutedUntil: 0,
+            discordId: String(client.userId ?? ""),
             data: snapshot(client),
             createdAt: Date.now(),
             lastLogin: Date.now()
@@ -176,93 +188,135 @@ class Accounts {
         return value;
     }
 
-    /** 剩余封禁时长，未封禁返回 0 */
-    banRemaining(username) {
-        const account = this.find(username);
-        if (!account) return 0;
+    /**
+     * 取某个 Discord ID 的封禁/禁言记录，accountName 只用于日志和排查改名
+     * @param {string} discordId
+     */
+    record(discordId, accountName = "") {
+        const id = String(discordId ?? "");
 
-        // 兼容旧存档里的 banned: true / banned: false
-        if (typeof account.banned === "boolean" && !("bannedUntil" in account)) {
-            return account.banned ? PERMANENT : 0;
+        if (!id) return null;
+
+        let entry = this.moderation.get(id);
+
+        if (!entry) {
+            entry = { accountName: "", bannedUntil: 0, mutedUntil: 0 };
+            this.moderation.set(id, entry);
         }
 
-        return remaining(Accounts.fromStored(account.bannedUntil));
+        if (accountName && !entry.accountName) entry.accountName = accountName;
+
+        return entry;
+    }
+
+    /** 剩余封禁时长，未封禁返回 0 */
+    banRemaining(discordId) {
+        const entry = this.moderation.get(String(discordId ?? ""));
+        if (!entry) return 0;
+
+        return remaining(Accounts.fromStored(entry.bannedUntil));
     }
 
     /** 剩余禁言时长，未禁言返回 0 */
-    muteRemaining(username) {
-        const account = this.find(username);
-        if (!account) return 0;
+    muteRemaining(discordId) {
+        const entry = this.moderation.get(String(discordId ?? ""));
+        if (!entry) return 0;
 
-        return remaining(Accounts.fromStored(account.mutedUntil));
+        return remaining(Accounts.fromStored(entry.mutedUntil));
     }
 
-    isBanned(username) {
-        return this.banRemaining(username) > 0;
+    isBanned(discordId) {
+        return this.banRemaining(discordId) > 0;
     }
 
-    isMuted(username) {
-        return this.muteRemaining(username) > 0;
+    isMuted(discordId) {
+        return this.muteRemaining(discordId) > 0;
     }
 
     /**
-     * @param {string} username
+     * @param {string} discordId
      * @param {number} seconds 0 = 永久
      */
-    async ban(username, seconds) {
-        const account = this.find(username);
-        if (!account) return { ok: false, error: `Player "${username}" not found.` };
+    async ban(discordId, seconds, accountName = "") {
+        const entry = this.record(discordId, accountName);
+        if (!entry) return { ok: false, error: "Missing Discord ID." };
 
         const duration = parseDuration(seconds, MAX_BAN_SECONDS);
         if (duration === null) return { ok: false, error: "Duration must be a positive number of seconds (0 for permanent)." };
 
-        account.bannedUntil = Accounts.toStored(duration === PERMANENT ? PERMANENT : Date.now() + duration * 1000);
-        delete account.banned;
+        entry.bannedUntil = Accounts.toStored(duration === PERMANENT ? PERMANENT : Date.now() + duration * 1000);
 
         await this.persist();
 
-        return { ok: true, account, duration };
+        return { ok: true, entry, duration };
     }
 
     /**
-     * @param {string} username
+     * @param {string} discordId
      * @param {number} seconds 0 = 永久
      */
-    async mute(username, seconds) {
-        const account = this.find(username);
-        if (!account) return { ok: false, error: `Player "${username}" not found.` };
+    async mute(discordId, seconds, accountName = "") {
+        const entry = this.record(discordId, accountName);
+        if (!entry) return { ok: false, error: "Missing Discord ID." };
 
         const duration = parseDuration(seconds, MAX_MUTE_SECONDS);
         if (duration === null) return { ok: false, error: "Duration must be a positive number of seconds (0 for permanent)." };
 
-        account.mutedUntil = Accounts.toStored(duration === PERMANENT ? PERMANENT : Date.now() + duration * 1000);
+        entry.mutedUntil = Accounts.toStored(duration === PERMANENT ? PERMANENT : Date.now() + duration * 1000);
 
         await this.persist();
 
-        return { ok: true, account, duration };
+        return { ok: true, entry, duration };
     }
 
-    async unmute(username) {
-        const account = this.find(username);
-        if (!account) return { ok: false, error: `Player "${username}" not found.` };
+    async unmute(discordId) {
+        const entry = this.moderation.get(String(discordId ?? ""));
+        if (!entry) return { ok: false, error: "That player has no mute on record." };
 
-        account.mutedUntil = 0;
+        entry.mutedUntil = 0;
 
         await this.persist();
 
-        return { ok: true, account };
+        return { ok: true, entry };
     }
 
-    async unban(username) {
-        const account = this.find(username);
-        if (!account) return { ok: false, error: `Player "${username}" not found.` };
+    async unban(discordId) {
+        const entry = this.moderation.get(String(discordId ?? ""));
+        if (!entry) return { ok: false, error: "That player has no ban on record." };
 
-        account.bannedUntil = 0;
-        delete account.banned;
+        entry.bannedUntil = 0;
 
         await this.persist();
 
-        return { ok: true, account };
+        return { ok: true, entry };
+    }
+
+    /**
+     * 账号名 / Discord 显示名 -> 已有处罚记录的 Discord ID（用于离线查找）
+     * 处罚是按 Discord ID 存的，这里靠处罚当时的账号名反查
+     */
+    findModerated(query) {
+        const lower = normalizeName(query);
+        let fallback = null;
+
+        for (const [discordId, entry] of this.moderation) {
+            if (normalizeName(entry.accountName) !== lower) continue;
+
+            // 有实际处罚的记录优先返回
+            if (Accounts.fromStored(entry.bannedUntil) > 0 || Accounts.fromStored(entry.mutedUntil) > 0) {
+                return discordId;
+            }
+
+            fallback ??= discordId;
+        }
+
+        // 处罚记录里的名字对不上时，退回按账号本身记录的 Discord ID 找
+        const account = this.find(query);
+        if (account?.discordId && this.moderation.has(account.discordId)) {
+            return account.discordId;
+        }
+
+        return fallback;
     }
 
     saveClient(client) {
@@ -285,6 +339,15 @@ class Accounts {
             for (const [id, account] of this.accounts) {
                 output[account.username || id] = account;
             }
+
+            // 只写还没过期的记录，避免存档无限膨胀
+            const moderation = {};
+            for (const [discordId, entry] of this.moderation) {
+                if (entry.bannedUntil === 0 && entry.mutedUntil === 0) continue;
+                moderation[discordId] = entry;
+            }
+
+            if (Object.keys(moderation).length > 0) output[MODERATION_KEY] = moderation;
 
             const target = ACCOUNTS_FILE + ".tmp";
             await Bun.write(target, JSON.stringify(output, null, 2));
