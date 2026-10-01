@@ -220,7 +220,7 @@ const state = {
                     : (state.mapSpawnClosestTo(position.x, position.y)?.rarity ?? 0);
 
                 const clamped = Math.max(0, Math.min(tiers.length - 1, baseRarity));
-                const low = Math.max(0, clamped - 2);
+                const low = Math.max(0, clamped - 1);
                 rarity = low + Math.floor(Math.random() * (clamped - low + 1));
 
                 const retrieved = state.spatialHash.retrieve({
