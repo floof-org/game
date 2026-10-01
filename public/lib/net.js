@@ -1751,7 +1751,7 @@ export class ClientSocket extends WebSocket {
                     state._inventoryVersion = (state._inventoryVersion || 0) + 1;
                 }
                 break;
-            case CLIENT_BOUND.UNUSED_DROPS_UPDATE: {
+            case CLIENT_BOUND.DROPS_AMOUNT_UPDATE: {
                 const count = reader.getUint16();
 
                 for (let i = 0; i < count; i++) {
