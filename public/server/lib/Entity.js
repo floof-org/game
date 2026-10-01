@@ -1617,10 +1617,11 @@ export class Player extends Entity {
 
         if (this.client !== null) {
             const allDamagers = this.getTopDamagers(10);
+
+            // 严格 looting：造成伤害低于 5% 最大血量的人不算击杀者
             const damageThreshold = this.health.maxHealth * 0.05;
-            const topDamagers = state.gamemode === GAMEMODES.MAZE
-                ? allDamagers.filter(damager => damager.damage >= damageThreshold)
-                : allDamagers;
+            const topDamagers = allDamagers.filter(damager => damager.damage >= damageThreshold);
+
             const playerKillers = [];
             const mobKillers = {};
 
@@ -1629,14 +1630,12 @@ export class Player extends Entity {
 
             topDamagers.forEach(damager => {
                 if (damager.type === ENTITY_TYPES.PLAYER) {
-                    playerKillers.push(damager.name);
+                    const client = state.clients.get(damager.clientID);
 
-                    if (damager.clientID !== null) {
-                        const client = state.clients.get(damager.clientID);
+                    playerKillers.push(client ? client.lootName() : damager.name);
 
-                        if (client) {
-                            client.addXP(xpToGift);
-                        }
+                    if (client) {
+                        client.addXP(xpToGift);
                     }
                 }
 
@@ -1850,7 +1849,10 @@ export class AIPlayer extends Player {
         }
         state.livingMobCount--;
 
-        const topDamagers = this.getTopDamagers(10).filter(damager => damager.type === ENTITY_TYPES.PLAYER);
+        // 严格 looting：同样要求至少 5% 最大血量的伤害
+        const damageThreshold = this.health.maxHealth * 0.05;
+        const topDamagers = this.getTopDamagers(10)
+            .filter(damager => damper.type === ENTITY_TYPES.PLAYER && damper.damage >= damageThreshold);
         topDamagers.forEach(damager => {
             const client = state.clients.get(damager.clientID);
 
@@ -2643,10 +2645,11 @@ export class Mob extends Entity {
         }
 
         const topDamagers = this.getTopDamagers(3, ENTITY_TYPES.PLAYER);
+
+        // 严格 looting：必须造成至少 5% 最大血量的伤害才能获得掉落、经验和击杀播报
         const damageThreshold = this.health.maxHealth * 0.05;
-        const qualifyingDamagers = state.gamemode === GAMEMODES.MAZE
-            ? topDamagers.filter(damager => damager.damage >= damageThreshold)
-            : topDamagers;
+        const qualifyingDamagers = topDamagers.filter(damager => damager.damage >= damageThreshold);
+
         let killText = '';
         qualifyingDamagers.forEach(damager => {
             if (damager.clientID > 0) {
@@ -2706,7 +2709,7 @@ export class Mob extends Entity {
         ) {
             const killerNames = qualifyingDamagers
                 .filter(damager => state.clients.has(damager.clientID))
-                .map(damager => state.clients.get(damager.clientID).username);
+                .map(damager => state.clients.get(damager.clientID).lootName());
 
             if (killerNames.length > 0) {
                 const last = killerNames[killerNames.length - 1];

@@ -927,6 +927,11 @@ export default class Client {
         }
     }
 
+    /** 击杀播报里显示的名字：登录后用账号名，否则用 Discord 名 */
+    lootName() {
+        return this.auth?.loggedIn ? this.auth.username : this.username;
+    }
+
     addXP(x) {
         if (!Number.isFinite(x)) {
             return;
