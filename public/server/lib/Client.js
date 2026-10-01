@@ -31,7 +31,7 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/createaccount", "/login", "/give", "/online",
+    "/createaccount", "/login", "/give", "/addall", "/online",
     "/mute", "/kick", "/ban", "/unban", "/unmute"
 ]);
 
