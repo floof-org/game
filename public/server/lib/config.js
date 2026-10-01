@@ -1039,14 +1039,17 @@ export const mobConfigs = [
         .setPushability(0)
         .addDrop(petalIDOf("Dirt"))
         .addDrop(petalIDOf("Ant Egg"), .5),
-    new MobConfig("Baby Fire Ant", 10, 10, 1, 2)
+    new MobConfig("Baby Fire Ant", 10, 10, 10, 2)
+        .setSizeStep(5)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Worker Fire Ant", 15, 10, 1, 3.25)
+    new MobConfig("Worker Fire Ant", 15, 10, 10, 3.25)
+        .setSizeStep(5)
         .setNeutral(1)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Soldier Fire Ant", 25, 10, 1, 3.5)
+    new MobConfig("Soldier Fire Ant", 25, 10, 10, 3.5)
+        .setSizeStep(5)
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)
         .addDrop(petalIDOf("Glass"), .5),
@@ -1094,7 +1097,8 @@ export const mobConfigs = [
     new MobConfig("Ant Egg", 20, 1, 15, 0)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Ant Egg", 20, 1, 15, 0),
-    new MobConfig("Fire Ant Egg", 20, 2, 1, 0)
+    new MobConfig("Fire Ant Egg", 20, 2, 10, 0)
+        .setSizeStep(5)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Fire Ant Egg", 20, 2, 15, 0),
     new MobConfig("Termite Egg", 30, 1, 15, 0)
@@ -1563,9 +1567,10 @@ export const mobConfigs = [
 
 for (const config of mobConfigs) {
     const baseSize = config.tiers[0].size;
+    const sizeStep = config.sizeStep ?? MobTier.SIZE_STEP;
 
     for (let i = 0; i < config.tiers.length; i++) {
-        config.tiers[i].size = baseSize + MobTier.SIZE_STEP * i;
+        config.tiers[i].size = baseSize + sizeStep * i;
     }
 }
 

@@ -1040,6 +1040,13 @@ export class MobConfig {
         this.aggressive = false;
         this.neutral = false;
 
+        /**
+         * 每档 rarity 的体型增量。默认跟 MobTier.SIZE_STEP 一致，
+         * 个别 mob 可以调小，让高 rarity 不会变得过大。
+         * @type {number}
+         */
+        this.sizeStep = MobTier.SIZE_STEP;
+
         this.spawnable = true;
         this.sandstormMovement = false;
         this.damageReflection = {
@@ -1202,10 +1209,19 @@ export class MobConfig {
 
     setSize(baseSize, sizeStep = MobTier.SIZE_STEP) {
         this.size = baseSize;
+        this.sizeStep = sizeStep;
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].size = baseSize + sizeStep * i;
         }
 
+        return this;
+    }
+
+    /**
+     * 只调每档 rarity 的体型增量，保持基础体型不变。
+     */
+    setSizeStep(sizeStep) {
+        this.sizeStep = sizeStep;
         return this;
     }
 
