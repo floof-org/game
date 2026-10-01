@@ -692,6 +692,7 @@ export class MobConfig {
         this.isBiomeGridOfficial = isBiomeGridOfficial;
         this.periodicHeal = undefined;
         this.totalOnDamageProjectiles = 0;
+        this.attachesToPlayer = false;
     }
 
     setSystem(isSystem) {
@@ -976,6 +977,11 @@ export class MobConfig {
 
     setDescription(description) {
         this.description = description;
+        return this;
+    }
+
+    setAttachesToPlayer(attachesToPlayer) {
+        this.attachesToPlayer = attachesToPlayer;
         return this;
     }
 }

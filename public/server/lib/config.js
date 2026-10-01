@@ -1250,6 +1250,7 @@ export function applyBiomeGridConfigs() {
     mobConfigs[mobIDOf("Leech")] = new MobConfig("Leech", 60, 1, 16, 5.5, true, mobIDOf("Leech"))
         .setDescription("A soft and agile predator. May have trouble with destroying your petals.")
         .setAggressive(1)
+        .setAttachesToPlayer(true)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Faster"))
         .addDrop(petalIDOf("Fang"), .75);
@@ -1286,7 +1287,7 @@ export function applyBiomeGridConfigs() {
     petalConfigs[petalIDOf("Pincer")] = new PetalConfig("Pincer", 22.5 * 1, 7.5, 7.5, true, petalIDOf("Pincer"))
         .setSize(1.2)
         .setPoison(15, 5)
-        .setEnemySpeedMultiplier(.6, 5)
+        .setEnemySpeedMultiplier(.4, 5)
         .setDescription("Poisonous, and it slows down your enemies. A perfect double whammy.");
     
     // Damage: 5 -> 1
@@ -1483,8 +1484,6 @@ export function applyBiomeGridConfigs() {
         .addDrop(petalIDOf("Privet"));
 
 
-    // Todo: Probably add crafting
-    // Todo: Hopefully implement tutorial rooms?
     // Todo: Give player more ways to deal with Toxic Remnants
     // Todo: Knockback vs non-bubble projectiles
     // Todo: Should Privet also inflict Toxic Remnants?
@@ -1492,7 +1491,9 @@ export function applyBiomeGridConfigs() {
     // Todo: Baby Fire Ant should shoot projectiles farther at higher rarities
     // Todo: Make player unable to kill mobs with Powder equipped
     // Todo: Make lightning able to hit the same mob multiple times
-    // Todo: Does Antennae vision cause lag?
+    
+    // Todo: Why is this lobby sending 100 kB per second? SleepyMaze is able to achieve only 5 kB per second
+    // Todo: Fix the "health discrepancy!" checker to account for healing via bumblebee
 
     // Todo: One of these 2 ideas:
     // 1. Ocean ecosystem: Leeches eat from sponges and (rarely) jf, while jf can shock and stun leeches in self-defence

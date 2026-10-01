@@ -817,6 +817,14 @@ export class Entity {
             }
         };
 
+        // Leech head segments will be able to attach to the player.
+        // While attached, the head segment no longer deals knockback to the
+        // player, and it also deals damage every ~0.4s instead of every tick
+        // (similar to Florr's leech behaviour).
+        this.attachesToPlayer = false;
+        this.attachedPlayer = null;
+        this.attachDamageTimer = 0;
+
         if (state.isBiomeGrid) {
             this.poisonDrain = 0;
             
@@ -950,6 +958,23 @@ export class Entity {
             this.dandelionCooldown--
         }
 
+        if (this.attachesToPlayer) {
+            this.attachDamageTimer--;
+            
+            if (this.attachedPlayer) {
+                // Detach from the player if the player is suddenly more than 300 units away
+                // (e.g., if the player used /tp)
+                if (this.attachedPlayer.health.isDead || quickDiff(this, this.attachedPlayer) > 90000) {
+                    this.attachedPlayer = null;
+                } else {
+                    const atan2 = Math.atan2(this.attachedPlayer.y - this.y, this.attachedPlayer.x - this.x);
+                    this.x = this.attachedPlayer.x - Math.cos(atan2) * (this.size + this.attachedPlayer.size + 1);
+                    this.y = this.attachedPlayer.y - Math.sin(atan2) * (this.size + this.attachedPlayer.size + 1);
+                    this.facing = atan2;
+                }
+            }
+        }
+
         if (state.isBiomeGrid) {
             // Poison Drain gets removed gradually over time
             if (this instanceof Player) {
@@ -992,6 +1017,10 @@ export class Entity {
     collide() {
         const collisions = state.spatialHash.retrieve(this);
 
+        if (this.attachedPlayer) {
+            collisions.set(this.attachedPlayer.id, this.attachedPlayer);
+        }
+
         collisions.forEach(/** @param {Entity} other */ other => {
             // Do not collide if the collision has already been processed
             if (this.collisionIDs.has(other.id) || other.collisionIDs.has(this.id)) {
@@ -1029,7 +1058,10 @@ export class Entity {
             const distSqr = dx * dx + dy * dy;
 
             if (distSqr === 0 || this.size + other.size < Math.sqrt(distSqr)) {
-                return;
+                // Leech can be a tiny distance away from the player it attaches to
+                if (other !== this.attachedPlayer && this !== other.attachedPlayer) {
+                    return;
+                }
             }
 
             if (this.type === ENTITY_TYPES.PETAL && other.type !== ENTITY_TYPES.PETAL) {
@@ -1063,7 +1095,33 @@ export class Entity {
             }
 
             if (this.parent.team !== other.parent.team && !this.spawnInvincibility && !other.spawnInvincibility) {
-                if (!this.nullCollision && !other.nullCollision) {
+                // Handle Leech-like mobs attaching to players here
+                // (This means Leeches cannot attach to players during their spawn invincibility)
+                if (this.parent.team !== other.parent.team) {
+                    if (this.attachesToPlayer && !this.attachedPlayer && other.type === ENTITY_TYPES.PLAYER) {
+                        this.attachedPlayer = other;
+                    } else if (other.attachesToPlayer && !other.attachedPlayer && this.type === ENTITY_TYPES.PLAYER) {
+                        other.attachedPlayer = this;
+                    }
+                }
+                
+                // Handle attachDamageTimer here
+                let cancelAttachDamage = false;
+                if (this.attachedPlayer === other) {
+                    if (this.attachDamageTimer > 0) {
+                        cancelAttachDamage = true;
+                    } else {
+                        this.attachDamageTimer = 22.5 * .4;
+                    }
+                } else if (other.attachedPlayer === this) {
+                    if (other.attachDamageTimer > 0) {
+                        cancelAttachDamage = true;
+                    } else {
+                        other.attachDamageTimer = 22.5 * .4;
+                    }
+                }
+
+                if (!this.nullCollision && !other.nullCollision && !cancelAttachDamage) {
                     let otherDamageDone = 0,
                         thisDamageDone = 0;
 
@@ -1389,20 +1447,20 @@ export class Entity {
             if (!this.nullCollision && !other.nullCollision && !this.phases && !other.phases) {
                 const angle = Math.atan2(dy, dx);
                 const combinedSize = this.size + other.size;
-                const strength = combinedSize - Math.sqrt(distSqr);
+                const strength = Math.max(0, combinedSize - Math.sqrt(distSqr));
                 const mySizeRatio = this.size / combinedSize;
                 const otherSizeRatio = other.size / combinedSize;
                 
                 // Special case: Player takes knockback from mobs, regardless of pushability/density.
                 // This makes this genre's zero i-frame combat a bit more fair for the player.
-                if (state.isBiomeGrid && this instanceof Player && other instanceof Mob) {
+                if (state.isBiomeGrid && this instanceof Player && other instanceof Mob && this !== other.attachedPlayer) {
                     this.knockbackAngles.push(angle);
                 } else {
                     this.velocity.x += Math.cos(angle) * strength * this.pushability * other.density * otherSizeRatio;
                     this.velocity.y += Math.sin(angle) * strength * this.pushability * other.density * otherSizeRatio;
                 }
 
-                if (state.isBiomeGrid && other instanceof Player && this instanceof Mob) {
+                if (state.isBiomeGrid && other instanceof Player && this instanceof Mob && other !== this.attachedPlayer) {
                     other.knockbackAngles.push(angle + Math.PI);
                 } else {
                     other.velocity.x -= Math.cos(angle) * strength * other.pushability * this.density * mySizeRatio;
@@ -2441,6 +2499,8 @@ export class Mob extends Entity {
                 targetRetries: 0,
             };
         }
+
+        this.warnedHealthDiscrepancy = false;
     }
 
     get countsTowardsMobCount() {
@@ -2795,6 +2855,11 @@ export class Mob extends Entity {
                 }
             }
         }
+
+        // Make sure only the Leech's head can attach to the player
+        if (config.attachesToPlayer && !this.head) {
+            this.attachesToPlayer = true;
+        }
     }
 
     update() {
@@ -2843,6 +2908,8 @@ export class Mob extends Entity {
             this.x = this.head.x - Math.cos(atan2) * (this.size + this.head.size + 1);
             this.y = this.head.y - Math.sin(atan2) * (this.size + this.head.size + 1);
             this.facing = atan2;
+        } else if (this.attachedPlayer !== null) {
+            // Do nothing, this case is handled in `super.update()` instead
         } else if (this.speed > 0) {
             let facingOffset = 0;
 
@@ -3527,10 +3594,12 @@ export class Mob extends Entity {
             && !GRID_GARDEN_MOBS.includes(this.config.id)
             && (this.config.name !== "Leech" || !this.head)
             && this.health.health > 0
+            && !this.warnedHealthDiscrepancy
         ) {
             const totalDmg = Object.values(this.damagedBy).map(d => d[0]).reduce((a, b) => a + b, 0);
             if (Math.abs(this.health.maxHealth - this.health.health - totalDmg) > 0.1) {
                 console.warn("Health discrepancy!", this);
+                this.warnedHealthDiscrepancy = true;
             }
         }
     }
