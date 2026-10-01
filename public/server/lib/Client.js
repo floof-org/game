@@ -2580,6 +2580,7 @@ export default class Client {
 
         writer.setUint16(this.level);
         writer.setFloat32(this.levelProgress);
+        writer.setUint8(tiers.length);
         tiers.forEach(tier => {
             const petals = this.inventory[tier.name];
             const petalIds = Object.keys(petals);

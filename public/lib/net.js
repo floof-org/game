@@ -1724,25 +1724,23 @@ export class ClientSocket extends WebSocket {
                 state.level = reader.getUint16();
                 state.levelProgressTarget = reader.getFloat32();
 
-                const TIER_COUNT = state.tiers?.length ?? 29;
+                const TIER_COUNT = reader.getUint8();
 
                 for (let ti = 0; ti < TIER_COUNT; ti++) {
-                    const tier = state.tiers?.[ti];
-                    if (!tier?.name) continue;
-
                     const petalCount = reader.getUint16();
+                    const tierName = state.tiers?.[ti]?.name;
 
-                    if (!state.usesNewInventory) {
+                    if (!state.usesNewInventory && tierName) {
                         state.inventory ??= {};
-                        state.inventory[tier.name] ??= {};
+                        state.inventory[tierName] ??= {};
                     }
 
                     for (let i = 0; i < petalCount; i++) {
                         const petalId = reader.getUint16();
                         const amount = reader.getUint16();
 
-                        if (!state.usesNewInventory) {
-                            state.inventory[tier.name][petalId] = amount;
+                        if (!state.usesNewInventory && tierName) {
+                            state.inventory[tierName][petalId] = amount;
                         }
                     }
 
