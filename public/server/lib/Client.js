@@ -745,6 +745,11 @@ export default class Client {
         this.sentBiome = undefined;
         this.maxKilledRarity = 0;
 
+        /**
+         * A record of the inventory petals sent most recently to the client.
+         */
+        this.lastSentInventory = {};
+
         this.doingTutorial = false;
 
         /** @type {Player|null} */
@@ -1942,9 +1947,24 @@ export default class Client {
 
         writer.setUint16(this.level);
         writer.setFloat32(this.levelProgress);
+
+        this.lastSentInventory ??= {};
         tiers.forEach(tier => {
+            this.lastSentInventory[tier.name] ??= {};
+
             const petals = this.inventory[tier.name];
-            const petalIds = Object.keys(petals);
+            const petalIds = [];
+
+            // Optimization: Only send updates for petal amounts that actually changed.
+            // This is required for this lobby because it clears the player's inventory
+            // by setting ALL petal amounts to 0.
+            for (let id in petals) {
+                if (petals[id] !== this.lastSentInventory[tier.name][id]) {
+                    petalIds.push(id);
+                    this.lastSentInventory[tier.name][id] = petals[id];
+                }
+            }
+
             writer.setUint16(petalIds.length);
             petalIds.forEach(id => {
                 writer.setUint16(parseInt(id));

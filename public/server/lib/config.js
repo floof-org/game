@@ -1491,8 +1491,7 @@ export function applyBiomeGridConfigs() {
     // Todo: Baby Fire Ant should shoot projectiles farther at higher rarities
     // Todo: Make player unable to kill mobs with Powder equipped
     // Todo: Make lightning able to hit the same mob multiple times
-    
-    // Todo: Why is this lobby sending 100 kB per second? SleepyMaze is able to achieve only 5 kB per second
+
     // Todo: Fix the "health discrepancy!" checker to account for healing via bumblebee
 
     // Todo: One of these 2 ideas:
