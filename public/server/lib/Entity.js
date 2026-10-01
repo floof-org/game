@@ -965,29 +965,30 @@ export class Entity {
                         other.target = this.parent;
                     }
 
-                    if (otherDealt > 0 && (this.type === ENTITY_TYPES.PLAYER || this.type === ENTITY_TYPES.MOB)) {
+                    // thisDealt 是 this 承受的伤害，otherDealt 是 other 承受的伤害
+                    if (thisDealt > 0 && (this.type === ENTITY_TYPES.PLAYER || this.type === ENTITY_TYPES.MOB)) {
                         if (this.parent && this.config?.name === "Leech") {
                             let existing = this.parent.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
-                            existing[0] += otherDealt;
+                            existing[0] += thisDealt;
 
                             this.parent.damagedBy[other.parent.id] = existing;
                         } else {
                             let existing = this.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
-                            existing[0] += otherDealt;
+                            existing[0] += thisDealt;
 
                             this.damagedBy[other.parent.id] = existing;
                         }
                     }
 
-                    if (thisDealt > 0 && (other.type === ENTITY_TYPES.PLAYER || other.type === ENTITY_TYPES.MOB)) {
+                    if (otherDealt > 0 && (other.type === ENTITY_TYPES.PLAYER || other.type === ENTITY_TYPES.MOB)) {
                         if (other.parent && other.config?.name === "Leech") {
                             let existing = other.parent.damagedBy[this.parent.id] || [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                            existing[0] += thisDealt;
+                            existing[0] += otherDealt;
 
                             other.parent.damagedBy[this.parent.id] = existing;
                         } else {
                             let existing = other.damagedBy[this.parent.id] || [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                            existing[0] += thisDealt;
+                            existing[0] += otherDealt;
 
                             other.damagedBy[this.parent.id] = existing;
                         }
