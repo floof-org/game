@@ -1579,6 +1579,21 @@ for (const config of mobConfigs) {
 
 export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 
+// 每只非 queen 的 ant 有 3% 概率直接生成成 Shiny Soldier Ant。
+// 取代原先在 Ant Hole / Fire Ant Hole 的 spawns 里单列 shiny 怪的做法。
+const SHINY_ANT_CHANCE = .03;
+
+for (const name of [
+    "Baby Ant",
+    "Worker Ant",
+    "Soldier Ant",
+    "Baby Fire Ant",
+    "Worker Fire Ant",
+    "Soldier Fire Ant"
+]) {
+    mobConfigs[mobIDOf(name)].setShinyVariant(mobIDOf("Shiny Soldier Ant"), SHINY_ANT_CHANCE);
+}
+
 petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
 petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
 petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
@@ -1629,10 +1644,6 @@ mobConfigs[mobIDOf("Fire Ant Hole")].setAntHoleSpawns([{
 }, {
     index: mobIDOf("Fire Ant Egg"),
     count: 5
-}, {
-    index: mobIDOf("Shiny Soldier Ant"),
-    count: 1,
-    chance: 0.005
 }, {
     index: mobIDOf("Queen Fire Ant"),
     count: 1,

@@ -1986,6 +1986,10 @@ export class Mob extends Entity {
 
     /** @param {MobConfig} config */
     define(config, rarity = 0) {
+        if (config.shinyChance > 0 && config.shinyID && Math.random() < config.shinyChance) {
+            config = mobConfigs[config.shinyID];
+        }
+
         this.config = config;
         rarity = Math.min(config.tiers.length - 1, rarity);
         const tier = config.tiers[rarity];

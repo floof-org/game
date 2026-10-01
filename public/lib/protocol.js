@@ -1047,6 +1047,19 @@ export class MobConfig {
          */
         this.sizeStep = MobTier.SIZE_STEP;
 
+        /**
+         * 该 mob 生成时，有此概率直接变成 shiny 版本的 mob。
+         * 用于替代原先在 ant hole spawns 里单列 shiny 怪的做法。
+         * @type {number}
+         */
+        this.shinyChance = 0;
+
+        /**
+         * shiny 变体对应的 mob id，0 表示未设置。
+         * @type {number}
+         */
+        this.shinyID = 0;
+
         this.spawnable = true;
         this.sandstormMovement = false;
         this.damageReflection = {
@@ -1222,6 +1235,17 @@ export class MobConfig {
      */
     setSizeStep(sizeStep) {
         this.sizeStep = sizeStep;
+        return this;
+    }
+
+    /**
+     * 设置 shiny 变体：生成该 mob 时有 shinyChance 概率替换成 shinyID 指向的 mob。
+     * @param {number} shinyID
+     * @param {number} shinyChance
+     */
+    setShinyVariant(shinyID, shinyChance) {
+        this.shinyID = shinyID;
+        this.shinyChance = shinyChance;
         return this;
     }
 
