@@ -1039,14 +1039,14 @@ export const mobConfigs = [
         .setPushability(0)
         .addDrop(petalIDOf("Dirt"))
         .addDrop(petalIDOf("Ant Egg"), .5),
-    new MobConfig("Baby Fire Ant", 10, 10, 15, 2)
+    new MobConfig("Baby Fire Ant", 10, 10, 10, 2)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Worker Fire Ant", 15, 10, 15, 3.25)
+    new MobConfig("Worker Fire Ant", 15, 10, 10, 3.25)
         .setNeutral(1)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Soldier Fire Ant", 25, 10, 15, 3.5)
+    new MobConfig("Soldier Fire Ant", 25, 10, 10, 3.5)
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)
         .addDrop(petalIDOf("Glass"), .5),
@@ -1056,7 +1056,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Primrose"), .5)
         .addDrop(petalIDOf("Dirt"), .5)
         .addDrop(petalIDOf("Ant Egg"), .8),
-    new MobConfig("Fire Ant Hole", 250, 2, 25, 0)
+    new MobConfig("Fire Ant Hole", 250, 2, 22, 0)
         .setPushability(0)
         .addDrop(petalIDOf("Dirt"))
         .addDrop(petalIDOf("Ant Egg"), .5)
@@ -1094,7 +1094,7 @@ export const mobConfigs = [
     new MobConfig("Ant Egg", 20, 1, 15, 0)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Ant Egg", 20, 1, 15, 0),
-    new MobConfig("Fire Ant Egg", 20, 2, 15, 0)
+    new MobConfig("Fire Ant Egg", 20, 2, 10, 0)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Fire Ant Egg", 20, 2, 15, 0),
     new MobConfig("Termite Egg", 30, 1, 15, 0)
@@ -1125,11 +1125,11 @@ export const mobConfigs = [
         .setCentipedeMovement(1)
         .addDrop(petalIDOf("Peas"), .5)
         .addDrop(petalIDOf("Leaf"), .5),
-    new MobConfig("Desert Centipede", 20, 10, 19, 5)
+    new MobConfig("Desert Centipede", 20, 10, 16, 5)
         .setDesertCentipedeMovement(1)
         .addDrop(petalIDOf("Powder"), .5)
         .addDrop(petalIDOf("Sand"), .5),
-    new MobConfig("Desert Centipede", 20, 10, 19, 5)
+    new MobConfig("Desert Centipede", 20, 10, 16, 5)
         .setSystem(1)
         .setDesertCentipedeMovement(1)
         .addDrop(petalIDOf("Powder"), .5)
@@ -1442,11 +1442,11 @@ export const mobConfigs = [
     new MobConfig("Firestorm (Summon)", 135, 45, 35, 3).setSandstormMovement(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, "date_0.0025").addAction("paint", "#fce803", .3, 0).addAction("beginPath").addAction("polygon", 7, .75, "date_-0.002").addAction("paint", "#e3d642", .3, 0).addAction("beginPath").addAction("polygon", 7, .5, "date_0.0015").addAction("paint", "#c9bf47", .3, 0).addAction("beginPath").addAction("polygon", 7, .25, "date_-0.001").addAction("paint", "#999243", .3, 0)
         ),
-    new MobConfig("Evil Desert Centipede", 25, 10, 19, 5.5).setAggressive(1).setCentipedeMovement(1)
+    new MobConfig("Evil Desert Centipede", 25, 10, 16, 5.5).setAggressive(1).setCentipedeMovement(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, -0.875, 0.375).addAction("circle", 0, 0.875, 0.375).addAction("closePath").addAction("paint", "#222222", .2, 0).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#e86d48", .2, .2).addAction("beginPath").addAction("moveTo", 0.75, -0.2).addAction("quadraticCurveTo", 1.2, -0.3, 1.3, -0.5).addAction("moveTo", 0.75, 0.2).addAction("quadraticCurveTo", 1.2, 0.3, 1.3, 0.5).addAction("paint", "#222222", .2, 0).addAction("closePath")
         )
         ,
-    new MobConfig("Evil Desert Centipede", 25, 10, 19, 5.5).setSystem(1).setAggressive(1).setCentipedeMovement(1)
+    new MobConfig("Evil Desert Centipede", 25, 10, 16, 5.5).setSystem(1).setAggressive(1).setCentipedeMovement(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, -0.875, 0.375).addAction("circle", 0, 0.875, 0.375).addAction("closePath").addAction("paint", "#222222", .2, 0).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#e86d48", .2, .2)
         ),
     new MobConfig("Jelly (Summon)", 0.00001, 0.00001, 15, 0)
