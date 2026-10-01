@@ -38,12 +38,22 @@ function normalizeName(str) {
     return str.toLowerCase().replace(/\s+/g, "");
 }
 
+const MIN_SLOTS = 5;
+const MAX_SLOTS = 10;
+
+function sanitizeSlotLength(length) {
+    const value = Math.floor(+length);
+    if (!Number.isFinite(value)) return MIN_SLOTS;
+    return Math.min(MAX_SLOTS, Math.max(MIN_SLOTS, value));
+}
+
 function sanitizeSlots(slots, length, nullable = false) {
-    const output = new Array(length);
+    const count = sanitizeSlotLength(length);
+    const output = new Array(count);
     const maxId = petalConfigs.length - 1;
     const maxRarity = tiers.length - 1;
 
-    for (let i = 0; i < length; i++) {
+    for (let i = 0; i < count; i++) {
         const slot = slots?.[i];
 
         if (!slot || slot.id === 0) {
@@ -784,42 +794,9 @@ export class Camera {
     }
 }
 
-class Disconnect {
-    /** @param {Client} client  */
-    constructor(client) {
-        this.userId = client.userId;
-        this.username = client.username;
-        this.level = client.level;
-        this.xp = client.xp;
-        this.slots = client.slots;
-        this.secondarySlots = client.secondarySlots;
-        this.body = client.body;
-        this.team = client.team;
-        this.inventory = client.inventory;
-        this.craftAttempts = client.craftAttempts;
-
-        Client.disconnects.set(this.userId, this);
-
-        if (this.body) {
-            this.body.client = null;
-        }
-
-        this.timeout = setTimeout(() => {
-            Client.disconnects.delete(this.userId);
-
-            if (this.body && !this.body.health.isDead) {
-                this.body.destroy();
-            }
-        }, 1000 * 3600 * 24);
-    }
-}
-
 export default class Client {
     /** @type {Map<number, Client>} */
     static clients = new Map();
-
-    /** @type {Map<number,Disconnect>} */
-    static disconnects = new Map();
 
     constructor(id, userId, masterPermissions = 0) {
         this.id = id;
@@ -858,6 +835,48 @@ export default class Client {
 
         this.lastChat = 0;
         this.frownyMessages = 0;
+    }
+
+    /** @param {object} data account.data 存档内容 */
+    restoreFromData(data) {
+        this.level = Math.min(9999, Math.max(1, Math.floor(+data.level || 1)));
+        this.xp = Math.min(1e15, Math.max(1, +data.xp || 1));
+
+        const slotLength = sanitizeSlotLength(data.slots?.length || this.slots.length);
+        this.slots = sanitizeSlots(data.slots, slotLength);
+        this.secondarySlots = sanitizeSlots(data.secondarySlots, slotLength, true);
+
+        const inv = data.inventory || {};
+        tiers.forEach(tier => this.inventory[tier.name] = {});
+        for (const rarity in inv) {
+            if (!(rarity in this.inventory)) continue;
+            for (const id in inv[rarity]) {
+                const amount = Math.floor(+inv[rarity][id] || 0);
+                if (amount > 0) this.inventory[rarity][id] = amount;
+            }
+        }
+
+        const attempts = data.craftAttempts || {};
+        tiers.forEach(tier => this.craftAttempts[tier.name] = {});
+        for (const rarity in attempts) {
+            if (!(rarity in this.craftAttempts)) continue;
+            for (const id in attempts[rarity]) {
+                const count = Math.floor(+attempts[rarity][id] || 0);
+                if (count > 0) this.craftAttempts[rarity][id] = count;
+            }
+        }
+
+        this.addXP(0);
+
+        if (this.body && !this.body.health.isDead) {
+            this.body.initSlots(this.slots.length);
+
+            for (let i = 0; i < this.slots.length; i++) {
+                if (this.slots[i]) {
+                    this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
+                }
+            }
+        }
     }
 
     addXP(x) {
@@ -1009,31 +1028,6 @@ export default class Client {
 
                 if (this.userId === state.secretKey && this.masterPermissions < 1) this.nameColor = "#F5D230";
 
-                const dc = Client.disconnects.get(this.userId);
-
-                if (dc) {
-                    this.level = dc.level;
-                    this.xp = dc.xp;
-                    this.team = dc.team;
-                    this.addXP(0);
-
-                    if (dc.body && !dc.body.health.isDead) {
-                        this.firstSpawn = false;
-                        this.body = dc.body;
-                        this.body.client = this;
-                        this.body.initSlots(this.slots.length);
-                        for (let i = 0; i < this.slots.length; i++) {
-                            if (this.slots[i]) {
-                                this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
-                            }
-                        }
-                    }
-
-                    clearTimeout(dc.timeout);
-                    Client.disconnects.delete(this.userId);
-
-                    console.log(`Client ${this.id} reconnected as ${this.username}`);
-                }
                 state.playerCount++;
                 
                 if (state.useCraftingProtocol) {
@@ -1805,32 +1799,7 @@ export default class Client {
                 }
 
                 if (account.data) {
-                    this.level = Math.min(9999, Math.max(1, Math.floor(+account.data.level || 1)));
-                    this.xp = Math.min(1e15, Math.max(1, +account.data.xp || 1));
-                    this.slots = sanitizeSlots(account.data.slots, account.data.slots?.length || this.slots.length);
-                    this.secondarySlots = sanitizeSlots(account.data.secondarySlots, account.data.secondarySlots?.length || this.secondarySlots.length, true);
-
-                    const inv = account.data.inventory || {};
-                    tiers.forEach(tier => this.inventory[tier.name] = {});
-                    for (const rarity in inv) {
-                        if (!(rarity in this.inventory)) continue;
-                        for (const id in inv[rarity]) {
-                            const amount = Math.floor(+inv[rarity][id] || 0);
-                            if (amount > 0) this.inventory[rarity][id] = amount;
-                        }
-                    }
-
-                    this.addXP(0);
-                }
-
-                if (this.body && !this.body.health.isDead) {
-                    this.body.initSlots(this.slots.length);
-
-                    for (let i = 0; i < this.slots.length; i++) {
-                        if (this.slots[i]) {
-                            this.body.setSlot(i, this.slots[i].id, this.slots[i].rarity);
-                        }
-                    }
+                    this.restoreFromData(account.data);
                 }
 
                 this.auth = {
@@ -2472,14 +2441,13 @@ export default class Client {
 
             if (this.auth?.loggedIn) {
                 ONLINE_USERS.delete(this.auth.username.toLowerCase());
-                accounts.saveClient(this);
             }
 
-            // if (this.body /* && !this.body.health.isDead && this.level >= 20 */) {
-            new Disconnect(this);
-            // } else 
             this.body?.destroy();
-            // }
+
+            if (this.auth?.loggedIn) {
+                accounts.saveClient(this);
+            }
         } else {
             console.log(`Client ${this.id} disconnected`);
         }

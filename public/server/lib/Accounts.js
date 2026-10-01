@@ -43,7 +43,6 @@ function snapshot(client) {
     return {
         level: Math.min(9999, Math.max(1, Math.floor(+client.level || 1))),
         xp: Math.min(1e15, Math.max(1, +client.xp || 1)),
-        highestWave: Math.max(0, Math.floor(+client.highestWave || 0)),
         slots: (client.slots || []).map(slot => slot ? { id: slot.id, rarity: slot.rarity } : null),
         secondarySlots: (client.secondarySlots || []).map(slot => slot ? { id: slot.id, rarity: slot.rarity } : null),
         inventory,
@@ -58,6 +57,8 @@ class Accounts {
         this.loaded = false;
         /** @type {Promise<void>} */
         this.ready = this.load();
+        /** @type {Promise<void>} */
+        this.pending = Promise.resolve();
     }
 
     async load() {
@@ -153,13 +154,28 @@ class Accounts {
     async persist() {
         if (typeof Bun === "undefined") return;
 
-        const output = {};
+        const write = async () => {
+            const output = {};
 
-        for (const [id, account] of this.accounts) {
-            output[account.username || id] = account;
-        }
+            for (const [id, account] of this.accounts) {
+                output[account.username || id] = account;
+            }
 
-        await Bun.write(ACCOUNTS_FILE, JSON.stringify(output, null, 2));
+            const target = ACCOUNTS_FILE + ".tmp";
+            await Bun.write(target, JSON.stringify(output, null, 2));
+            await Bun.$`mv ${target} ${ACCOUNTS_FILE}`.quiet();
+        };
+
+        this.pending = this.pending.then(write, write).catch(err => {
+            console.warn("[Accounts] Persist failed:", err);
+        });
+
+        return this.pending;
+    }
+
+    /** 等待所有排队中的写入落盘（进程退出前调用） */
+    async flush() {
+        await this.pending;
     }
 }
 

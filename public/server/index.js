@@ -422,11 +422,19 @@ switch (globalThis.environmentName) {
             wait.forEach(fn => fn());
         }
 
-        lobbySocket.onclose = () => {
+        lobbySocket.onclose = async () => {
             console.log("Disconnected from server");
 
             state.clients.forEach(c => c.kick("Connection to lobby server lost"));
-            setTimeout(() => process.exit(), 1000);
+
+            // kick 只是发起关闭，等 onClose 跑完存档再退出
+            setTimeout(async () => {
+                state.clients.forEach(c => {
+                    if (c.auth?.loggedIn) accounts.saveClient(c);
+                });
+                await accounts.flush();
+                process.exit();
+            }, 1000);
         }
 
         state.router.postMessage = u8 => {
