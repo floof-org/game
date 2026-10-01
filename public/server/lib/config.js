@@ -1039,14 +1039,14 @@ export const mobConfigs = [
         .setPushability(0)
         .addDrop(petalIDOf("Dirt"))
         .addDrop(petalIDOf("Ant Egg"), .5),
-    new MobConfig("Baby Fire Ant", 10, 10, 5, 2)
+    new MobConfig("Baby Fire Ant", 10, 10, 1, 2)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Worker Fire Ant", 15, 10, 5, 3.25)
+    new MobConfig("Worker Fire Ant", 15, 10, 1, 3.25)
         .setNeutral(1)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Soldier Fire Ant", 25, 10, 5, 3.5)
+    new MobConfig("Soldier Fire Ant", 25, 10, 1, 3.5)
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)
         .addDrop(petalIDOf("Glass"), .5),
@@ -1094,7 +1094,7 @@ export const mobConfigs = [
     new MobConfig("Ant Egg", 20, 1, 15, 0)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Ant Egg", 20, 1, 15, 0),
-    new MobConfig("Fire Ant Egg", 20, 2, 5, 0)
+    new MobConfig("Fire Ant Egg", 20, 2, 1, 0)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Fire Ant Egg", 20, 2, 15, 0),
     new MobConfig("Termite Egg", 30, 1, 15, 0)
