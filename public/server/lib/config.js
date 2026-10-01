@@ -1384,7 +1384,7 @@ export const mobConfigs = [
         .addAction("closePath")
         )
         ,
-    new MobConfig("Shiny Soldier Ant", 12, 22, 15, 5).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2, 250).setProjectile({
+    new MobConfig("Shiny Soldier Ant", 12, 22, 20, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2, 250).setProjectile({
         petalIndex: petalIDOf("Missile"),
         cooldown: 45,
         health: 0.000000000002,
