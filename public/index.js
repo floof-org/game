@@ -2789,8 +2789,7 @@ function draw() {
             }
 
             const trackedCount = net.state.globalPlayers ? net.state.globalPlayers.length : "null";
-            ctx.textAlign = "left";
-            text(`tracked:${trackedCount} shown:${globalPlayers ? globalPlayers.length : 0}`, x, y - 8, 13, colors.yellow, ctx);
+            text(`tracked:${trackedCount} shown:${globalPlayers ? globalPlayers.length : 0}`, x, y - 8, 13, colors.playerYellow, ctx);
         }
 
         {
