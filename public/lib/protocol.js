@@ -259,7 +259,7 @@ export const SUMMON_STATS = {
 export class MobTier {
     static HEALTH_SCALE = 3.15;
     static DAMAGE_SCALE = 3;
-    static SIZE_STEP = 1;
+    static SIZE_STEP = 5;
     static RANGE_SCALE = 0.988;
 
     constructor(tier, health, damage, size) {
