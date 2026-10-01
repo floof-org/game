@@ -888,6 +888,10 @@ export class Entity {
                         otherDamageDone += other.damage * other.extraDamage.multiplier;
                     }
 
+                    // 记录实际造成的伤害，被 armor / damageReduction 完全挡下的伤害不应计入 loot
+                    let thisDealt = 0,
+                        otherDealt = 0;
+
                     if (this.absorbStacks.size > 0) {
                         let done = false;
 
@@ -898,10 +902,10 @@ export class Entity {
                         });
 
                         if (!done) {
-                            this.health.damage(otherDamageDone);
+                            thisDealt = this.health.damage(otherDamageDone);
                         }
                     } else {
-                        this.health.damage(otherDamageDone);
+                        thisDealt = this.health.damage(otherDamageDone);
                     }
 
                     if (other.absorbStacks.size > 0) {
@@ -914,10 +918,10 @@ export class Entity {
                         });
 
                         if (!done) {
-                            other.health.damage(thisDamageDone);
+                            otherDealt = other.health.damage(thisDamageDone);
                         }
                     } else {
-                        other.health.damage(thisDamageDone);
+                        otherDealt = other.health.damage(thisDamageDone);
                     }
 
                     if (this.config?.name === "Starfish" && this.type === ENTITY_TYPES.MOB && other.config?.name === "Dandelion") {
@@ -961,29 +965,29 @@ export class Entity {
                         other.target = this.parent;
                     }
 
-                    if (this.type === ENTITY_TYPES.PLAYER || this.type === ENTITY_TYPES.MOB) {
+                    if (otherDealt > 0 && (this.type === ENTITY_TYPES.PLAYER || this.type === ENTITY_TYPES.MOB)) {
                         if (this.parent && this.config?.name === "Leech") {
                             let existing = this.parent.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
-                            existing[0] += other.damage;
+                            existing[0] += otherDealt;
 
                             this.parent.damagedBy[other.parent.id] = existing;
                         } else {
                             let existing = this.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
-                            existing[0] += other.damage;
+                            existing[0] += otherDealt;
 
                             this.damagedBy[other.parent.id] = existing;
                         }
                     }
 
-                    if (other.type === ENTITY_TYPES.PLAYER || other.type === ENTITY_TYPES.MOB) {
+                    if (thisDealt > 0 && (other.type === ENTITY_TYPES.PLAYER || other.type === ENTITY_TYPES.MOB)) {
                         if (other.parent && other.config?.name === "Leech") {
                             let existing = other.parent.damagedBy[this.parent.id] || [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                            existing[0] += this.damage;
+                            existing[0] += thisDealt;
 
                             other.parent.damagedBy[this.parent.id] = existing;
                         } else {
                             let existing = other.damagedBy[this.parent.id] || [0, this.parent.type, this.parent.type === ENTITY_TYPES.PLAYER ? this.parent.name : this.parent.index, this.parent.type === ENTITY_TYPES.PLAYER && this.parent.client ? this.parent.client.id : null];
-                            existing[0] += this.damage;
+                            existing[0] += thisDealt;
 
                             other.damagedBy[this.parent.id] = existing;
                         }
