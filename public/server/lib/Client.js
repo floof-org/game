@@ -31,7 +31,8 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/createaccount", "/login", "/give", "/online"
+    "/createaccount", "/login", "/give", "/online",
+    "/mute", "/kick", "/ban", "/unban", "/unmute"
 ]);
 
 function normalizeName(str) {
@@ -67,6 +68,37 @@ function sanitizeSlots(slots, length, nullable = false) {
     }
 
     return output;
+}
+
+function formatDuration(ms) {
+    if (!Number.isFinite(ms)) return "permanently";
+
+    let seconds = Math.ceil(ms / 1000);
+    const days = Math.floor(seconds / 86400); seconds %= 86400;
+    const hours = Math.floor(seconds / 3600); seconds %= 3600;
+    const minutes = Math.floor(seconds / 60); seconds %= 60;
+
+    const parts = [];
+    if (days) parts.push(`${days}d`);
+    if (hours) parts.push(`${hours}h`);
+    if (minutes) parts.push(`${minutes}m`);
+    if (seconds || !parts.length) parts.push(`${seconds}s`);
+
+    return parts.join(" ");
+}
+
+function findTargetClient(playerName) {
+    const lower = playerName.toLowerCase();
+
+    for (const client of state.clients.values()) {
+        if (!client.verified || client === undefined) continue;
+
+        if (client.auth?.loggedIn && client.auth.username.toLowerCase() === lower) return client;
+        if (client.username.toLowerCase() === lower) return client;
+        if (client.discordName?.toLowerCase() === lower) return client;
+    }
+
+    return null;
 }
 
 function formatNumber(num) {
@@ -1425,6 +1457,13 @@ export default class Client {
                 }
 
                 const message = reader.getStringUTF8();
+                const mutedLeft = this.auth?.loggedIn ? accounts.muteRemaining(this.auth.username) : 0;
+
+                if (mutedLeft > 0) {
+                    this.systemMessage(`You're muted. ${mutedLeft === Infinity ? "This mute is permanent." : `Muted for ${formatDuration(mutedLeft)} more.`}`, "#ff5555");
+                    return;
+                }
+
                 if (!/^[\w\s,.!?'"@#%^&*()_\-+=:;<>\/\\|[\]{}~`\u00A0-\uFFFF]{1,128}$/.test(message)) {
                     this.systemMessage("That message is too long or contains invalid characters.", "#CACA22");
                     this.frownyMessages++;
@@ -1566,8 +1605,176 @@ export default class Client {
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode.",
                 "/give [player] [petal] [rarity] - Gives a player a petal.",
-                "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory."
+                "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
+                "/kick [player] - Kicks a player from the game.",
+                "/mute [player] [seconds] - Mutes a player's chat. 0 is permanent, max 30 days.",
+                "/unmute [player] - Removes a player's mute.",
+                "/ban [player] [seconds] - Bans a player from logging in. 0 is permanent, max 10 years."
             ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
+            return;
+        }
+
+        // /kick
+        if (commandCheck("/kick")) {
+            if (!requireAdmin()) return;
+
+            const args = e.slice(5).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 1) {
+                this.systemMessage("Usage: /kick [player]", "#ffaa00");
+                return;
+            }
+
+            const [playerName] = args;
+            const target = findTargetClient(playerName);
+
+            if (!target) {
+                this.systemMessage(`Player "${playerName}" is not online.`, "#ff5555");
+                return;
+            }
+
+            if (target.masterPermissions >= this.masterPermissions) {
+                this.systemMessage(`You cannot kick ${target.username}.`, "#ff5555");
+                return;
+            }
+
+            const name = target.username;
+            target.kick(`Kicked by ${this.username}`);
+            this.systemMessage(`Kicked ${name}.`, "#55ff55");
+            return;
+        }
+
+        // /mute
+        if (commandCheck("/mute")) {
+            (async () => {
+                if (!requireAdmin()) return;
+
+                const args = e.slice(5).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 2) {
+                    this.systemMessage("Usage: /mute [player] [seconds]", "#ffaa00");
+                    return;
+                }
+
+                const [playerName, durationArg] = args;
+                const target = findTargetClient(playerName);
+
+                if (!target?.auth?.loggedIn) {
+                    this.systemMessage(`Player "${playerName}" is not online with an account.`, "#ff5555");
+                    return;
+                }
+
+                if (target.masterPermissions >= this.masterPermissions) {
+                    this.systemMessage(`You cannot mute ${target.username}.`, "#ff5555");
+                    return;
+                }
+
+                const result = await accounts.mute(target.auth.username, durationArg);
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                target.systemMessage(`You have been muted${result.duration === Infinity ? " permanently" : ` for ${formatDuration(result.duration * 1000)}`}.`, "#ff5555");
+                this.systemMessage(`Muted ${target.username}${result.duration === Infinity ? " permanently" : ` for ${formatDuration(result.duration * 1000)}`}.`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /unmute
+        if (commandCheck("/unmute")) {
+            (async () => {
+                if (!requireAdmin()) return;
+
+                const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 1) {
+                    this.systemMessage("Usage: /unmute [player]", "#ffaa00");
+                    return;
+                }
+
+                const [playerName] = args;
+                const target = findTargetClient(playerName);
+                const username = target?.auth?.username || playerName;
+
+                const result = await accounts.unmute(username);
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                target?.systemMessage("You have been unmuted.", "#55ff55");
+                this.systemMessage(`Unmuted ${username}.`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /ban
+        if (commandCheck("/ban")) {
+            (async () => {
+                if (!requireAdmin()) return;
+
+                const args = e.slice(4).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 2) {
+                    this.systemMessage("Usage: /ban [player] [seconds]", "#ffaa00");
+                    return;
+                }
+
+                const [playerName, durationArg] = args;
+                const target = findTargetClient(playerName);
+
+                if (target?.masterPermissions >= this.masterPermissions && target !== this) {
+                    this.systemMessage(`You cannot ban ${target.username}.`, "#ff5555");
+                    return;
+                }
+
+                const username = target?.auth?.username || playerName;
+                const result = await accounts.ban(username, durationArg);
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                const reason = result.duration === Infinity ? "permanently" : `for ${formatDuration(result.duration * 1000)}`;
+                const name = target?.username || username;
+
+                if (target) target.kick(`Banned ${reason} by ${this.username}`);
+
+                this.systemMessage(`Banned ${name} ${reason}.`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /unban
+        if (commandCheck("/unban")) {
+            (async () => {
+                if (!requireOwner()) return;
+
+                const args = e.slice(6).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 1) {
+                    this.systemMessage("Usage: /unban [player]", "#ffaa00");
+                    return;
+                }
+
+                const [playerName] = args;
+                const result = await accounts.unban(playerName);
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                this.systemMessage(`Unbanned ${playerName}.`, "#55ff55");
+            })();
+
             return;
         }
 
@@ -1785,9 +1992,10 @@ export default class Client {
                 }
 
                 const account = result.account;
+                const banLeft = accounts.banRemaining(user);
 
-                if (account.banned) {
-                    this.systemMessage("This account is banned.", "#ff5555");
+                if (banLeft > 0) {
+                    this.systemMessage(`This account is banned${banLeft === Infinity ? " permanently" : ` for ${formatDuration(banLeft)}`}.`, "#ff5555");
                     return;
                 }
 

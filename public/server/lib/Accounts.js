@@ -50,6 +50,23 @@ function snapshot(client) {
     };
 }
 
+const PERMANENT = Infinity;
+const MAX_BAN_SECONDS = 10 * 365 * 24 * 3600;
+const MAX_MUTE_SECONDS = 30 * 24 * 3600;
+
+function parseDuration(arg, max) {
+    const seconds = Math.floor(Number(arg));
+
+    if (!Number.isFinite(seconds) || seconds < 0) return null;
+
+    return seconds === 0 ? PERMANENT : Math.min(max, seconds);
+}
+
+function remaining(until) {
+    if (until === PERMANENT) return PERMANENT;
+    return Math.max(0, until - Date.now());
+}
+
 class Accounts {
     constructor() {
         /** @type {Map<string, object>} */
@@ -109,7 +126,8 @@ class Accounts {
                 salt: saltHex,
                 hash: await hashPassword(password, saltHex)
             },
-            banned: false,
+            bannedUntil: 0,
+            mutedUntil: 0,
             data: snapshot(client),
             createdAt: Date.now(),
             lastLogin: Date.now()
@@ -135,6 +153,113 @@ class Accounts {
         }
 
         account.lastLogin = Date.now();
+        await this.persist();
+
+        return { ok: true, account };
+    }
+
+    /**
+     * Infinity 存进 JSON 会变成 null，所以永久用 -1 表示
+     * @param {number} until
+     */
+    static toStored(until) {
+        return until === PERMANENT ? -1 : until;
+    }
+
+    /** @param {number} stored */
+    static fromStored(stored) {
+        const value = +stored;
+
+        if (value === -1) return PERMANENT;
+        if (!Number.isFinite(value) || value <= 0) return 0;
+
+        return value;
+    }
+
+    /** 剩余封禁时长，未封禁返回 0 */
+    banRemaining(username) {
+        const account = this.find(username);
+        if (!account) return 0;
+
+        // 兼容旧存档里的 banned: true / banned: false
+        if (typeof account.banned === "boolean" && !("bannedUntil" in account)) {
+            return account.banned ? PERMANENT : 0;
+        }
+
+        return remaining(Accounts.fromStored(account.bannedUntil));
+    }
+
+    /** 剩余禁言时长，未禁言返回 0 */
+    muteRemaining(username) {
+        const account = this.find(username);
+        if (!account) return 0;
+
+        return remaining(Accounts.fromStored(account.mutedUntil));
+    }
+
+    isBanned(username) {
+        return this.banRemaining(username) > 0;
+    }
+
+    isMuted(username) {
+        return this.muteRemaining(username) > 0;
+    }
+
+    /**
+     * @param {string} username
+     * @param {number} seconds 0 = 永久
+     */
+    async ban(username, seconds) {
+        const account = this.find(username);
+        if (!account) return { ok: false, error: `Player "${username}" not found.` };
+
+        const duration = parseDuration(seconds, MAX_BAN_SECONDS);
+        if (duration === null) return { ok: false, error: "Duration must be a positive number of seconds (0 for permanent)." };
+
+        account.bannedUntil = Accounts.toStored(duration === PERMANENT ? PERMANENT : Date.now() + duration * 1000);
+        delete account.banned;
+
+        await this.persist();
+
+        return { ok: true, account, duration };
+    }
+
+    /**
+     * @param {string} username
+     * @param {number} seconds 0 = 永久
+     */
+    async mute(username, seconds) {
+        const account = this.find(username);
+        if (!account) return { ok: false, error: `Player "${username}" not found.` };
+
+        const duration = parseDuration(seconds, MAX_MUTE_SECONDS);
+        if (duration === null) return { ok: false, error: "Duration must be a positive number of seconds (0 for permanent)." };
+
+        account.mutedUntil = Accounts.toStored(duration === PERMANENT ? PERMANENT : Date.now() + duration * 1000);
+
+        await this.persist();
+
+        return { ok: true, account, duration };
+    }
+
+    async unmute(username) {
+        const account = this.find(username);
+        if (!account) return { ok: false, error: `Player "${username}" not found.` };
+
+        account.mutedUntil = 0;
+
+        await this.persist();
+
+        return { ok: true, account };
+    }
+
+    async unban(username) {
+        const account = this.find(username);
+        if (!account) return { ok: false, error: `Player "${username}" not found.` };
+
+        account.bannedUntil = 0;
+        delete account.banned;
+
         await this.persist();
 
         return { ok: true, account };
