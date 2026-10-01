@@ -1053,7 +1053,7 @@ export const mobConfigs = [
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)
         .addDrop(petalIDOf("Glass"), .5),
-    new MobConfig("Queen Fire Ant", 100, 10, 25, 3.5)
+    new MobConfig("Queen Fire Ant", 100, 10, 35, 3.5)
         .setSizeStep(2)
         .setAggressive(1)
         .setPushability(0.8)
@@ -1101,7 +1101,8 @@ export const mobConfigs = [
     new MobConfig("Fire Ant Egg", 20, 2, 10, 0)
         .setSizeStep(2)
         .addDrop(petalIDOf("Ant Egg")),
-    new MobConfig("Queen Fire Ant Egg", 20, 2, 15, 0),
+    new MobConfig("Queen Fire Ant Egg", 20, 2, 10, 0)
+        .setSizeStep(2),
     new MobConfig("Termite Egg", 30, 1, 15, 0)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Evil Ladybug", 25, 15, 25, 2.5)

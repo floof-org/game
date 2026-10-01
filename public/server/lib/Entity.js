@@ -2621,9 +2621,11 @@ export class Mob extends Entity {
 
         this.targetTick--;
         if (this.aggressive) {
+            const aggroRange = this.size * 12 + 50;
+
             if (this.targetTick <= 0 || this.target === null || this.target.health.isDead) {
                 this.targetTick = 25 + Math.random() * 100 | 0;
-                this.target = this.findTarget(this.size * 12 + 50);
+                this.target = this.findTarget(aggroRange);
             }
 
             if (this.target?.health.ratio > 0) {
@@ -2633,7 +2635,8 @@ export class Mob extends Entity {
                     this.extraTicker--;
 
                     if (this.extraTicker <= 0) {
-                        new Lightning(this).define(lightning.damage, lightning.range, lightning.bounces).bounce();
+                        // 闪电射程不超过该怪的仇恨感知距离，避免隔着一段距离电到玩家
+                        new Lightning(this).define(lightning.damage, Math.min(lightning.range, aggroRange), lightning.bounces).bounce();
                         this.extraTicker = lightning.cooldown * (.95 + Math.random() * .1);
                     }
                 }
