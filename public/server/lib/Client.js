@@ -1630,7 +1630,7 @@ export default class Client {
                 "/resetmobs - Resets all mobs.",
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode.",
-                "/give [player] [petal] [rarity] - Gives a player a petal.",
+                "/give [player] [petal] [rarity] <amount> - Gives a player a petal. Petal names may omit spaces (e.g. firemissile). Amount defaults to 1.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
                 "/kick [player] - Kicks a player from the game.",
                 "/mute [player] [seconds] - Mutes a player. 0 is permanent, max 30 days.",
@@ -1834,17 +1834,36 @@ export default class Client {
                 const args = e.slice(5).trim().split(/\s+/).filter(Boolean);
 
                 if (args.length < 3) {
-                    this.systemMessage("Usage: /give [player] [petal] [rarity]", "#ffaa00");
+                    this.systemMessage("Usage: /give [player] [petal] [rarity] <amount>", "#ffaa00");
                     return;
                 }
 
-                const [playerName, petalName, rarityArg] = args;
+                const [playerName, petalArg, rarityArg, amountArg] = args;
 
-                const petalIndex = petalConfigs.findIndex(petal => petal?.name?.toLowerCase() === petalName.toLowerCase());
+                // 花瓣名允许省略空格: "fire missile" 和 "firemissile" 都能识别
+                const normalize = s => s.toLowerCase().replace(/\s+/g, "");
+                const normalizedPetal = normalize(petalArg);
+
+                let petalIndex = petalConfigs.findIndex(petal => petal?.name?.toLowerCase() === petalArg.toLowerCase());
 
                 if (petalIndex < 0) {
-                    this.systemMessage(`Petal "${petalName}" not found.`, "#ff5555");
+                    petalIndex = petalConfigs.findIndex(petal => petal?.name && normalize(petal.name) === normalizedPetal);
+                }
+
+                if (petalIndex < 0) {
+                    this.systemMessage(`Petal "${petalArg}" not found.`, "#ff5555");
                     return;
+                }
+
+                let amount = 1;
+
+                if (amountArg !== undefined) {
+                    amount = parseInt(amountArg);
+
+                    if (isNaN(amount) || amount < 1) {
+                        this.systemMessage(`Invalid amount: ${amountArg}`, "#ff5555");
+                        return;
+                    }
                 }
 
                 let rarityIndex = null;
@@ -1879,11 +1898,13 @@ export default class Client {
 
                 if (target) {
                     if (!target.inventory[rarity.name]) target.inventory[rarity.name] = {};
-                    target.inventory[rarity.name][petalIndex] = (target.inventory[rarity.name][petalIndex] || 0) + 1;
+                    target.inventory[rarity.name][petalIndex] = (target.inventory[rarity.name][petalIndex] || 0) + amount;
                     accounts.saveClient(target);
 
-                    target.systemMessage(`You received a ${rarity.name} ${petalConfigs[petalIndex].name}!`, "#55ff55");
-                    this.systemMessage(`Gave ${rarity.name} ${petalConfigs[petalIndex].name} to ${target.username}.`, "#55ff55");
+                    const label = amount === 1 ? "" : ` x${amount}`;
+
+                    target.systemMessage(`You received ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${label}!`, "#55ff55");
+                    this.systemMessage(`Gave ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${label} to ${target.username}.`, "#55ff55");
                     return;
                 }
 
@@ -1896,10 +1917,12 @@ export default class Client {
 
                 account.data.inventory ??= {};
                 account.data.inventory[rarity.name] ??= {};
-                account.data.inventory[rarity.name][petalIndex] = (account.data.inventory[rarity.name][petalIndex] || 0) + 1;
+                account.data.inventory[rarity.name][petalIndex] = (account.data.inventory[rarity.name][petalIndex] || 0) + amount;
                 accounts.persist().catch(err => console.warn("[Accounts] Save failed:", err));
 
-                this.systemMessage(`Gave ${rarity.name} ${petalConfigs[petalIndex].name} to ${account.username} offline.`, "#55ff55");
+                const offlineLabel = amount === 1 ? "" : ` x${amount}`;
+
+                this.systemMessage(`Gave ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${offlineLabel} to ${account.username} offline.`, "#55ff55");
             })();
 
             return;
