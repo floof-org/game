@@ -1502,13 +1502,16 @@ export class Player extends Entity {
         }
     }
 
-    update() {
-        if (state.gamemode === GAMEMODES.MAZE && this._godmodeExpires && this._godmodeExpires < Date.now() && this.health.invulnerable) {
-            this.health.invulnerable = false;
-            this._godmodeExpires = 0;
-            console.log(`[gm] ${this.name} godmode expired`);
-        }
+    /**
+     * /godmode 开关。开启后一直有效，直到再次调用传入 false。
+     * 用 _godmode 独立记录，避免被 deathDefying 等临时无敌的开关覆盖。
+     */
+    setGodmode(enabled) {
+        this._godmode = !!enabled;
+        this.health.invulnerable = this._godmode;
+    }
 
+    update() {
         if (state.gamemode === GAMEMODES.MAZE && this.team === -69 && this.name !== "guest" && !this.name.startsWith(":")) {
             this.team = 0;
             this._mazeTeamCorrected = (this._mazeTeamCorrected || 0) + 1;
@@ -1547,7 +1550,7 @@ export class Player extends Entity {
 
                     if (!this.health.invulnerable) {
                         this.health.invulnerable = true;
-                        setTimeout(() => this.health.invulnerable = false, slot.config.tiers[slot.rarity].deathDefying.duration * 1000);
+                        setTimeout(() => this.health.invulnerable = this._godmode ?? false, slot.config.tiers[slot.rarity].deathDefying.duration * 1000);
                     }
                     break;
                 }

@@ -1341,9 +1341,8 @@ export default class Client {
                         this.body.y += reader.getFloat32();
                     } break;
                     case DEV_CHEAT_IDS.GODMODE: {
-                        this.body.health.invulnerable = !this.body.health.invulnerable;
-                        this.body._godmodeExpires = this.body.health.invulnerable ? Date.now() + 10e3 : 0;
-                        console.log(`[gm] ${this.username} godmode ${this.body.health.invulnerable ? "on" : "off"} via dev-cheat`);
+                        this.body.setGodmode(!this.body._godmode);
+                        console.log(`[gm] ${this.username} godmode ${this.body._godmode ? "on" : "off"} via dev-cheat`);
                     } break;
                     case DEV_CHEAT_IDS.CHANGE_TEAM: {
                         console.log(`[change-team] ${this.username} blocked CHANGE_TEAM`);
@@ -2432,11 +2431,10 @@ export default class Client {
                 return;
             }
 
-            this.body.health.invulnerable = !this.body.health.invulnerable;
-            this.body._godmodeExpires = this.body.health.invulnerable ? Date.now() + 10e3 : 0;
-            console.log(`[gm] ${this.username} godmode ${this.body.health.invulnerable ? "on" : "off"} via chat`);
+            this.body.setGodmode(!this.body._godmode);
+            console.log(`[gm] ${this.username} godmode ${this.body._godmode ? "on" : "off"} via chat`);
             this.systemMessage(
-                `Godmode ${this.body.health.invulnerable ? "enabled" : "disabled"}.`,
+                `Godmode ${this.body._godmode ? "enabled" : "disabled"}.`,
                 "#55ff55"
             );
 
