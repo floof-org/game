@@ -903,7 +903,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Faster"))
         .addDrop(petalIDOf("Web"), .5)
         .addDrop(petalIDOf("Third Eye"), .025, 5),
-    new MobConfig("Beetle", 30, 10, 30, 3)
+    new MobConfig("Beetle", 30, 10, 33, 3)
         .setAggressive(1)
         .addDrop(petalIDOf("Iris"))
         .addDrop(petalIDOf("Pincer"), .8)
@@ -949,7 +949,7 @@ export const mobConfigs = [
         })
         .addDrop(petalIDOf("Peas"))
         .addDrop(petalIDOf("Antennae"), .5, 2),
-    new MobConfig("Pupa", 40, 10, 30, 1)
+    new MobConfig("Pupa", 40, 10, 33, 1)
         .setAggressive(1)
         .setProjectile({
             petalIndex: petalIDOf("Rock"),
@@ -973,7 +973,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Sand"))
         .addDrop(petalIDOf("Glass"), .7)
         .addDrop(petalIDOf("Stick"), .2, 2),
-    new MobConfig("Scorpion", 45, 54.5, 32.5, 3)
+    new MobConfig("Scorpion", 45, 54.5, 33, 3)
         .setAggressive(1)
         .setStrafes(30, 15, 1.25)
         .setProjectile({
@@ -1125,11 +1125,11 @@ export const mobConfigs = [
         .setCentipedeMovement(1)
         .addDrop(petalIDOf("Peas"), .5)
         .addDrop(petalIDOf("Leaf"), .5),
-    new MobConfig("Desert Centipede", 20, 10, 22.5, 5)
+    new MobConfig("Desert Centipede", 20, 10, 19, 5)
         .setDesertCentipedeMovement(1)
         .addDrop(petalIDOf("Powder"), .5)
         .addDrop(petalIDOf("Sand"), .5),
-    new MobConfig("Desert Centipede", 20, 10, 22.5, 5)
+    new MobConfig("Desert Centipede", 20, 10, 19, 5)
         .setSystem(1)
         .setDesertCentipedeMovement(1)
         .addDrop(petalIDOf("Powder"), .5)
@@ -1353,7 +1353,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Square Egg"), .1)
         .addDrop(petalIDOf("Triangle Egg"), .05)
         .addDrop(petalIDOf("Pentagon Egg"), .01),
-    new MobConfig("Sandstone", 75, 5, 35, 0)
+    new MobConfig("Sandstone", 75, 5, 32, 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, .3, 0).addAction("paint", "#d4be94", .225, .2).addAction("beginPath").addAction("dipPolygon", 8, .6, .3, 0).addAction("fill", "#dbc9a6").addAction("beginPath").addAction("dipPolygon", 8, .4, .3, 0).addAction("fill", "#d4be94")
         )
         ,
@@ -1442,11 +1442,11 @@ export const mobConfigs = [
     new MobConfig("Firestorm (Summon)", 135, 45, 35, 3).setSandstormMovement(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, "date_0.0025").addAction("paint", "#fce803", .3, 0).addAction("beginPath").addAction("polygon", 7, .75, "date_-0.002").addAction("paint", "#e3d642", .3, 0).addAction("beginPath").addAction("polygon", 7, .5, "date_0.0015").addAction("paint", "#c9bf47", .3, 0).addAction("beginPath").addAction("polygon", 7, .25, "date_-0.001").addAction("paint", "#999243", .3, 0)
         ),
-    new MobConfig("Evil Desert Centipede", 25, 10, 22.5, 5.5).setAggressive(1).setCentipedeMovement(1)
+    new MobConfig("Evil Desert Centipede", 25, 10, 19, 5.5).setAggressive(1).setCentipedeMovement(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, -0.875, 0.375).addAction("circle", 0, 0.875, 0.375).addAction("closePath").addAction("paint", "#222222", .2, 0).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#e86d48", .2, .2).addAction("beginPath").addAction("moveTo", 0.75, -0.2).addAction("quadraticCurveTo", 1.2, -0.3, 1.3, -0.5).addAction("moveTo", 0.75, 0.2).addAction("quadraticCurveTo", 1.2, 0.3, 1.3, 0.5).addAction("paint", "#222222", .2, 0).addAction("closePath")
         )
         ,
-    new MobConfig("Evil Desert Centipede", 25, 10, 22.5, 5.5).setSystem(1).setAggressive(1).setCentipedeMovement(1)
+    new MobConfig("Evil Desert Centipede", 25, 10, 19, 5.5).setSystem(1).setAggressive(1).setCentipedeMovement(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, -0.875, 0.375).addAction("circle", 0, 0.875, 0.375).addAction("closePath").addAction("paint", "#222222", .2, 0).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#e86d48", .2, .2)
         ),
     new MobConfig("Jelly (Summon)", 0.00001, 0.00001, 15, 0)
@@ -1481,7 +1481,7 @@ export const mobConfigs = [
         .addAction("closePath")
         .addAction("fill", "#d4b4d3")
         ),
-    new MobConfig("Sunlit Frog", 25, 10, 20, 30).setMovesInBursts(1).setNeutral(1)
+    new MobConfig("Sunlit Frog", 25, 10, 18, 30).setMovesInBursts(1).setNeutral(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", -.50, .75).addAction("lineTo", .23, 1.09).addAction("moveTo", .23, 1.09).addAction("lineTo", .36, 1.26).addAction("moveTo", .23, 1.09).addAction("lineTo", .45, 1.08).addAction("stroke", "#ada259", .12, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -.50, -.75).addAction("lineTo", .23, -1.09).addAction("moveTo", .23, -1.09).addAction("lineTo", .45, -1.08).addAction("moveTo", .23, -1.09).addAction("lineTo", .36, -1.26).addAction("stroke", "#ada259", .12, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", .60, .30).addAction("lineTo", 1.16, .51).addAction("moveTo", 1.16, .51).addAction("lineTo", 1.28, .63).addAction("moveTo", 1.16, .51).addAction("lineTo", 1.33, .49).addAction("stroke", "#ada259", .11, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", .60, -.30).addAction("lineTo", 1.16, -.51).addAction("moveTo", 1.16, -.51).addAction("lineTo", 1.33, -.49).addAction("moveTo", 1.16, -.51).addAction("lineTo", 1.28, -.63).addAction("stroke", "#ada259", .11, 0).addAction("closePath")
         .addAction("beginPath")
         .addAction("moveTo", .12, .92)
@@ -1523,7 +1523,7 @@ export const mobConfigs = [
         .addAction("fill", "#000000")
         .addAction("beginPath").addAction("circle", .55, .50, .20).addAction("fill", "#000000").addAction("beginPath").addAction("circle", .55, -.50, .20).addAction("fill", "#000000")
         ),
-    new MobConfig("Moonlit Frog", 25, 10, 20, 32).setMovesInBursts(1).setNeutral(1)
+    new MobConfig("Moonlit Frog", 25, 10, 18, 32).setMovesInBursts(1).setNeutral(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", -.50, .75).addAction("lineTo", .23, 1.09).addAction("moveTo", .23, 1.09).addAction("lineTo", .36, 1.26).addAction("moveTo", .23, 1.09).addAction("lineTo", .45, 1.08).addAction("stroke", "#3d178e", .12, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -.50, -.75).addAction("lineTo", .23, -1.09).addAction("moveTo", .23, -1.09).addAction("lineTo", .45, -1.08).addAction("moveTo", .23, -1.09).addAction("lineTo", .36, -1.26).addAction("stroke", "#3d178e", .12, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", .60, .30).addAction("lineTo", 1.16, .51).addAction("moveTo", 1.16, .51).addAction("lineTo", 1.28, .63).addAction("moveTo", 1.16, .51).addAction("lineTo", 1.33, .49).addAction("stroke", "#3d178e", .11, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", .60, -.30).addAction("lineTo", 1.16, -.51).addAction("moveTo", 1.16, -.51).addAction("lineTo", 1.33, -.49).addAction("moveTo", 1.16, -.51).addAction("lineTo", 1.28, -.63).addAction("stroke", "#3d178e", .11, 0).addAction("closePath")
         .addAction("beginPath")
         .addAction("moveTo", .12, .92)
