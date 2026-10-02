@@ -954,7 +954,7 @@ export const mobConfigs = [
         .setProjectile({
             petalIndex: petalIDOf("Rock"),
             cooldown: 22.5 * 3.5,
-            health: .8,
+            health: .8 * .5,
             damage: 1.1,
             speed: 4,
             range: 45,
@@ -979,7 +979,7 @@ export const mobConfigs = [
         .setProjectile({
             petalIndex: petalIDOf("Scorpion Missile.projectile"),
             cooldown: 22.5 * 2,
-            health: 2,
+            health: 2 * .5,
             damage: 2,
             speed: 5,
             range: 65,
@@ -1009,7 +1009,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Fire Spellbook"), .03),
     new MobConfig("Jellyfish", 62, 74, 35, 2.5)
         .setAggressive(1)
-        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2)
+        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2 * .5)
         .addDrop(petalIDOf("Lightning"))
         .addDrop(petalIDOf("Jelly")),
     new MobConfig("Cactus", 50, 20, 30, 0)
@@ -1385,7 +1385,7 @@ export const mobConfigs = [
         .addAction("closePath")
         )
         ,
-    new MobConfig("Shiny Soldier Ant", 12, 22, 20, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2, 250).setProjectile({
+    new MobConfig("Shiny Soldier Ant", 12, 22, 20, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5).setProjectile({
         petalIndex: petalIDOf("Missile"),
         cooldown: 45,
         health: 0.000000000002,
