@@ -427,7 +427,7 @@ switch (globalThis.environmentName) {
 
             state.clients.forEach(c => c.kick("Connection to lobby server lost"));
 
-            // kick 只是发起关闭，等 onClose 跑完存档再退出
+            // kick only initiates the close, exit after onClose has finished saving
             setTimeout(async () => {
                 state.clients.forEach(c => {
                     if (c.auth?.loggedIn) accounts.saveClient(c);

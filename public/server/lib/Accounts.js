@@ -6,7 +6,7 @@ const PBKDF2_KEYLEN = 256;
 
 const ACCOUNTS_FILE = (typeof Bun !== "undefined" && Bun.env.ACCOUNTS_FILE) || "./accounts.json";
 
-// 单独存放封禁/禁言的顶层键。用 $ 开头，因为账号名只允许 [A-Za-z0-9_]，不会撞。
+// Top level key holding bans and mutes on their own. Prefixed with $ because account names only allow [A-Za-z0-9_] and cannot collide.
 const MODERATION_KEY = "$moderation";
 
 function hexEncode(bytes) {
@@ -171,7 +171,7 @@ class Accounts {
     }
 
     /**
-     * Infinity 存进 JSON 会变成 null，所以永久用 -1 表示
+     * Infinity serializes to null in JSON, so permanent is stored as -1
      * @param {number} until
      */
     static toStored(until) {
@@ -189,7 +189,7 @@ class Accounts {
     }
 
     /**
-     * 取某个 Discord ID 的封禁/禁言记录，accountName 只用于日志和排查改名
+     * Get the ban/mute record for a Discord ID, accountName is only used for logging and tracking renames
      * @param {string} discordId
      */
     record(discordId, accountName = "") {
@@ -209,7 +209,7 @@ class Accounts {
         return entry;
     }
 
-    /** 剩余封禁时长，未封禁返回 0 */
+    /** remaining ban duration, 0 when not banned */
     banRemaining(discordId) {
         const entry = this.moderation.get(String(discordId ?? ""));
         if (!entry) return 0;
@@ -217,7 +217,7 @@ class Accounts {
         return remaining(Accounts.fromStored(entry.bannedUntil));
     }
 
-    /** 剩余禁言时长，未禁言返回 0 */
+    /** remaining mute duration, 0 when not muted */
     muteRemaining(discordId) {
         const entry = this.moderation.get(String(discordId ?? ""));
         if (!entry) return 0;
@@ -235,7 +235,7 @@ class Accounts {
 
     /**
      * @param {string} discordId
-     * @param {number} seconds 0 = 永久
+     * @param {number} seconds 0 = permanent
      */
     async ban(discordId, seconds, accountName = "") {
         const entry = this.record(discordId, accountName);
@@ -253,7 +253,7 @@ class Accounts {
 
     /**
      * @param {string} discordId
-     * @param {number} seconds 0 = 永久
+     * @param {number} seconds 0 = permanent
      */
     async mute(discordId, seconds, accountName = "") {
         const entry = this.record(discordId, accountName);
@@ -292,8 +292,8 @@ class Accounts {
     }
 
     /**
-     * 账号名 / Discord 显示名 -> 已有处罚记录的 Discord ID（用于离线查找）
-     * 处罚是按 Discord ID 存的，这里靠处罚当时的账号名反查
+     * account name / Discord display name -> Discord ID that already has a punishment record (for offline lookup)
+     * Punishments are keyed by Discord ID, so look up the other way using the account name at punishment time
      */
     findModerated(query) {
         const lower = normalizeName(query);
@@ -302,7 +302,7 @@ class Accounts {
         for (const [discordId, entry] of this.moderation) {
             if (normalizeName(entry.accountName) !== lower) continue;
 
-            // 有实际处罚的记录优先返回
+            // prefer a record that actually carries a punishment
             if (Accounts.fromStored(entry.bannedUntil) > 0 || Accounts.fromStored(entry.mutedUntil) > 0) {
                 return discordId;
             }
@@ -310,7 +310,7 @@ class Accounts {
             fallback ??= discordId;
         }
 
-        // 处罚记录里的名字对不上时，退回按账号本身记录的 Discord ID 找
+        // when the name in the punishment record does not match, fall back to the Discord ID stored on the account
         const account = this.find(query);
         if (account?.discordId && this.moderation.has(account.discordId)) {
             return account.discordId;
@@ -340,7 +340,7 @@ class Accounts {
                 output[account.username || id] = account;
             }
 
-            // 只写还没过期的记录，避免存档无限膨胀
+            // only write records that have not expired, so the save file cannot grow without bound
             const moderation = {};
             for (const [discordId, entry] of this.moderation) {
                 if (entry.bannedUntil === 0 && entry.mutedUntil === 0) continue;
@@ -361,7 +361,7 @@ class Accounts {
         return this.pending;
     }
 
-    /** 等待所有排队中的写入落盘（进程退出前调用） */
+    /** wait for all queued writes to hit disk (call before process exit) */
     async flush() {
         await this.pending;
     }

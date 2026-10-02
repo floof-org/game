@@ -665,7 +665,8 @@ let cuteLittleAnimations = {
 const buttonsContainer = document.getElementById("menus2");
 const menu = buttonsContainer.children.item("inventory");
 
-// 背包里可能有两千多个图标, 悬停用事件委托处理, 避免每帧对所有图标做 getBoundingClientRect
+// The inventory can hold thousands of icons, so hover uses event delegation instead of
+// calling getBoundingClientRect on every icon on every frame
 let inventoryHoverIcon = null;
 
 menu.addEventListener("pointermove", (ev) => {
@@ -678,7 +679,7 @@ menu.addEventListener("pointerleave", () => {
     inventoryHoverIcon = null;
 });
 
-// 快速滚动时 scroll 事件能每秒触发上百次, 必须每帧最多重画一次
+// Fast scrolling can fire hundreds of scroll events per second, so repaint at most once per frame
 let inventoryRenderQueued = false;
 
 function queueInventoryRender() {
@@ -717,13 +718,14 @@ inventoryTooltipBox.appendChild(inventoryTooltipCanvas);
 inventoryTooltipLayer.appendChild(inventoryTooltipBox);
 let _tooltipDrawKey = null;
 
-// 之前是每帧新建一个 350x350 的 canvas 再 replaceChildren 掉旧的。
-// 悬停背包时这条路径全程开着, 每秒几十 MB 的 canvas 内存 churn, 直接把标签页撑爆。
-// 现在只建一次, 只有换了花瓣才重画, 挪位置只改 style。
+// This used to build a fresh 350x350 canvas every frame and discard the old one via
+// replaceChildren. That path stays active the whole time the cursor is over the inventory,
+// churning tens of MB of canvas memory per second until the tab dies. Now it is built once,
+// repainted only when the petal changes; moving it just updates style.
 function renderInventoryTooltip(img, anchorX, anchorY) {
   const { x, y, bw, bh } = petalTooltipBox(img, anchorX, anchorY, window.innerWidth, window.innerHeight);
 
-  // 改 width/height 会清空 canvas, 所以尺寸变了必须重画
+  // Changing width/height clears the canvas, so a size change forces a repaint
   if (inventoryTooltipCanvas.width !== bw || inventoryTooltipCanvas.height !== bh) {
     inventoryTooltipCanvas.width = bw;
     inventoryTooltipCanvas.height = bh;
@@ -751,7 +753,8 @@ function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   return { x, y, bw, bh };
 }
 
-// 背包最多能有几十个稀有度乘以一百多个花瓣, 用 JSON.stringify 比较会产生几 MB 字符串
+// With thirty-odd rarities times a hundred-odd petals, comparing with JSON.stringify
+// allocates multi-MB strings
 function isSameInventory(a, b) {
     if (a === b) return true;
     if (!a || !b) return false;
@@ -778,11 +781,11 @@ function isSameInventory(a, b) {
     return true;
 }
 
-// 原地同步快照, 避免每次变化都深拷贝一遍
+// Sync the snapshot in place so a change does not deep clone the whole inventory
 function syncInventory(dst, src) {
     if (!src) return null;
 
-    // inventory2 可能被重置成 undefined
+    // inventory2 can get reset to undefined
     dst ??= {};
 
     for (const tier in dst) {
@@ -808,7 +811,8 @@ function syncInventory(dst, src) {
 const INVENTORY_ITEM_SIZE = 56;
 const INVENTORY_GAP = 5;
 
-// 全 addall 之后有三千多项, 全量建 DOM 每次重建都要几百毫秒, 所以只渲染刚好露在可视区里的那几行
+// A full addall leaves thousands of entries and building all the DOM costs hundreds of ms per
+// rebuild, so only the rows actually poking into the viewport get rendered
 let inventoryItems = [];
 let inventoryColumns = 1;
 let inventoryBox = null;
@@ -839,7 +843,7 @@ function buildInventoryItems() {
     return items;
 }
 
-// canvas 只建一次, 之后靠重画复用, 快速滚动时不会反复分配 canvas
+// Canvases are created once and reused by repainting, so fast scrolling does not keep reallocating
 function createInventoryIcon() {
     const icon = document.createElement("canvas");
 
@@ -850,8 +854,8 @@ function createInventoryIcon() {
     icon.style.height = INVENTORY_ITEM_SIZE + "px";
     icon.style.flex = "0 0 auto";
 
-    // 字体和描边状态留在 context 上, 重画时就不用再设。
-    // 反复设 ctx.font 每次都要重新解析字体, 带数量的图标一多就很贵。
+    // Font and stroke state stays on the context so a repaint does not set it again.
+    // Reassigning ctx.font re-resolves the font every time, which is costly with many counted icons.
     const c = icon.getContext("2d");
 
     c.fillStyle = colors.white;
@@ -865,13 +869,13 @@ function createInventoryIcon() {
 }
 
 function paintInventoryIcon(icon, item) {
-    // 事件用委托处理, 这里只挂数据, 避免上千个监听器
+    // Events are delegated, so this only carries data and avoids thousands of listeners
     icon.dataset.petalIndex = item.index;
     icon.dataset.petalRarity = item.rarity;
 
     const c = icon.getContext("2d");
 
-    // 必须先清掉, 否则上一次的 x123 会留在图上
+    // Must clear first, otherwise the previous x123 stays burned into the image
     c.clearRect(0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
     c.drawImage(getPetalIcon(Number(item.index), item.rarity, "oneshot"), 0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
 
@@ -889,24 +893,26 @@ function renderInventoryWindow() {
     const totalItems = inventoryItems.length;
     const totalRows = Math.max(1, Math.ceil(totalItems / inventoryColumns));
 
-    // 只渲染刚好露在可视区里的行, 上下那行可能只露一半, 也要画出来。
-    // 行数要固定: 用 ceil(scrollTop + 视口高) 会随滚动在 6 行和 7 行之间抖,
-    // 抖一下就要增删一次 canvas 元素, 快速滚动时反而比重建还糟。
-    // 330px 的视口最多能同时碰到 7 行, 所以固定 6+1 行。
+    // Render only the rows poking into the viewport; the top and bottom row can be half
+    // visible and still have to be drawn. The row count must stay fixed, because
+    // ceil(scrollTop + viewport height) flips between 6 and 7 rows while scrolling, and each
+    // flip adds and removes canvas elements, which is worse than a full rebuild under fast
+    // scroll. A 330px viewport touches at most 7 rows, so render a fixed 6+1.
     const startRow = Math.max(0, Math.floor(menu.scrollTop / rowHeight));
     const endRow = Math.min(totalRows, startRow + Math.ceil(menu.clientHeight / rowHeight) + 1);
 
     const start = startRow * inventoryColumns;
     const end = Math.min(totalItems, endRow * inventoryColumns);
 
-    // 上下留白撑出总高度, 只让可视行真正存在于 DOM 里
+    // The top and bottom padding fake the full height so only visible rows exist in the DOM
     inventoryBox.style.paddingTop = startRow * rowHeight + "px";
     inventoryBox.style.paddingBottom = Math.max(0, (totalRows - endRow) * rowHeight) + "px";
 
     const needed = end - start;
     const icons = inventoryBox.children;
 
-    // 只在不够时补, 多出来的隐藏而不是删掉, 这样滚完整份背包也不会再动 DOM 结构
+    // Only grow when short; hide the extras instead of removing them, so scrolling the whole
+    // inventory never mutates the DOM structure
     while (icons.length < needed) inventoryBox.appendChild(createInventoryIcon());
 
     for (let i = needed; i < icons.length; i++) {
@@ -920,8 +926,9 @@ function renderInventoryWindow() {
         paintInventoryIcon(icon, inventoryItems[i]);
     }
 
-    // 这里不要清 inventoryHoverIcon: 元素是复用的, 清了之后鼠标不动就没有 pointermove 补回来,
-    // tooltip 会一直消失。悬停是否还成立交给 draw 循环里的鼠标位置校验。
+    // Do not clear inventoryHoverIcon here: the elements are reused, and once cleared a mouse that
+    // is not moving produces no further pointermove, so the tooltip would stay gone.
+    // Whether the hover still holds is decided by the mouse position check in the draw loop.
 }
 
 function drawInventory() {
@@ -952,7 +959,7 @@ function drawInventory() {
 
     inventoryBox = box;
 
-    // 列数跟着 CSS 走, 不写死
+    // Column count follows the CSS instead of being hardcoded
     const contentWidth = box.clientWidth;
     inventoryColumns = contentWidth > 0
         ? Math.max(1, Math.floor((contentWidth + INVENTORY_GAP) / (INVENTORY_ITEM_SIZE + INVENTORY_GAP)))
@@ -3065,8 +3072,9 @@ function draw() {
         const mouseX = mouse.x / window.devicePixelRatio;
         const mouseY = mouse.y / window.devicePixelRatio;
 
-        // 滚动时图标会被重画, 但复用的是同一个元素, 所以要重新确认鼠标确实还压在它上面。
-        // 鼠标不动时不会再有 pointermove, 光靠事件委托判断不出来。
+        // Scrolling repaints the icons, but the same element is reused, so re-check that the mouse is
+        // still sitting on it. A mouse that does not move fires no pointermove, so event
+        // delegation alone cannot tell.
         const stillUnderMouse = rect.width > 0
             && mouseX >= rect.left && mouseX <= rect.right
             && mouseY >= rect.top && mouseY <= rect.bottom;

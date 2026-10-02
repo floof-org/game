@@ -124,7 +124,7 @@ export class PetalTier {
     static DAMAGE_SCALE = 3;
 
     constructor(tier, health, damage) {
-        // 数组只是各 rarity 的基准值, 仍然要乘 rarity 倍数
+        // arrays are only the per-rarity baseline values, they still get the rarity multiplier
         this.health = (Array.isArray(health) ? health[Math.min(tier, health.length - 1)] : health) * petalTierMultiplier(tier);
         this.damage = (Array.isArray(damage) ? damage[Math.min(tier, damage.length - 1)] : damage) * petalTierMultiplier(tier);
 
@@ -313,7 +313,7 @@ export class PetalConfig {
         this.launchedSpeed = 0;
         this.launchedRange = 0;
 
-        /** 发射时的自动锁定半角（弧度），0 表示用默认锁定 */
+        /** auto lock half angle on fire, in radians, 0 means use the default lock */
         this.autoLockAngle = 0;
 
         this.wingMovement = false;
@@ -391,9 +391,9 @@ export class PetalConfig {
     }
 
     /**
-     * @param {number|number[]} count 每个 rarity 的体节数
-     * @param {boolean|number} clumps 体节是否聚成一团
-     * @param {boolean} splitDamage 已废弃：体节不再分摊伤害，每节都造成完整伤害
+     * @param {number|number[]} count segments per rarity
+     * @param {boolean|number} clumps whether the segments clump into one ball
+     * @param {boolean} splitDamage deprecated: segments no longer split damage, each deals full damage
      */
     setMulti(count, clumps, splitDamage = false) {
         for (let i = 0; i < this.tiers.length; i++) {
@@ -486,9 +486,9 @@ export class PetalConfig {
     }
 
     /**
-     * 发射时自动锁定：射程方向左右各 angle 弧度内，锁定离玩家最近的敌人。
-     * 不设则沿用默认的"离自己最近"锁定。
-     * @param {number} angle 半角（弧度）。Math.PI * .15 约等于左右各 27 度
+     * Auto lock on fire: among the enemies within angle radians of the firing direction, lock the nearest the player.
+     * When unset, keeps the default nearest-to-self lock.
+     * @param {number} angle half angle in radians. Math.PI * .15 is about 27 degrees to either side
      */
     setAutoLock(angle) {
         this.autoLockAngle = angle;
@@ -1043,21 +1043,21 @@ export class MobConfig {
         this.neutral = false;
 
         /**
-         * 每档 rarity 的体型增量。默认跟 MobTier.SIZE_STEP 一致，
-         * 个别 mob 可以调小，让高 rarity 不会变得过大。
+         * Per-rarity size step. Defaults to matching MobTier.SIZE_STEP,
+         * individual mobs can lower it so high rarities do not grow too large.
          * @type {number}
          */
         this.sizeStep = MobTier.SIZE_STEP;
 
         /**
-         * 该 mob 生成时，有此概率直接变成 shiny 版本的 mob。
-         * 用于替代原先在 ant hole spawns 里单列 shiny 怪的做法。
+         * Chance that this mob spawns directly as its shiny variant.
+         * Replaces listing shiny mobs separately in the ant hole spawns.
          * @type {number}
          */
         this.shinyChance = 0;
 
         /**
-         * shiny 变体对应的 mob id，0 表示未设置。
+         * Mob id of the shiny variant, 0 means unset.
          * @type {number}
          */
         this.shinyID = 0;
@@ -1233,7 +1233,7 @@ export class MobConfig {
     }
 
     /**
-     * 只调每档 rarity 的体型增量，保持基础体型不变。
+     * Only adjusts the per-rarity size step, the base size is unchanged.
      */
     setSizeStep(sizeStep) {
         this.sizeStep = sizeStep;
@@ -1241,7 +1241,7 @@ export class MobConfig {
     }
 
     /**
-     * 设置 shiny 变体：生成该 mob 时有 shinyChance 概率替换成 shinyID 指向的 mob。
+     * Sets the shiny variant: when this mob spawns it has a shinyChance of being replaced by the mob shinyID points at.
      * @param {number} shinyID
      * @param {number} shinyChance
      */

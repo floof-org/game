@@ -1580,8 +1580,8 @@ for (const config of mobConfigs) {
 
 export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 
-// 每只非 queen 的 ant 有 3% 概率直接生成成 Shiny Soldier Ant。
-// 取代原先在 Ant Hole / Fire Ant Hole 的 spawns 里单列 shiny 怪的做法。
+// Every non-queen ant has a 3% chance of spawning directly as a Shiny Soldier Ant.
+// Replaces listing shiny mobs separately in the Ant Hole / Fire Ant Hole spawns.
 const SHINY_ANT_CHANCE = .03;
 
 for (const name of [
