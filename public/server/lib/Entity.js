@@ -429,11 +429,25 @@ export class PetalSlot {
                         petal.launched = true;
                         petal.speed *= this.config.launchedSpeed;
                         petal.range = this.config.launchedRange;
-                        const [ang, targ] = petal.findTargetAngleWithinRadianArc(petal.facing, Math.PI * 2 / (7.5 - (.4 * this.rarity)));
-                        petal.launchedAt = targ;
-                        petal.moveAngle = ang;
-                        petal.facing = petal.moveAngle;
-                        petal.moveStrength = 1;
+
+                        // 指定了 autoLock 的花瓣锁定离玩家最近的怪，其余沿用离自己最近的默认锁定
+                        if (petal.config.autoLockAngle > 0) {
+                            const [ang, targ] = petal.findTargetByPlayerDistanceWithinArc(petal.facing, petal.config.autoLockAngle);
+
+                            petal.launchedAt = targ;
+                            petal.moveAngle = ang;
+                            petal.facing = petal.moveAngle;
+                            petal.moveStrength = 1;
+                        } else {
+                            // rarity >= 19 时分母会变负导致永不锁定，夹到 9 使弧度封顶 ±46.2°
+                            const defaultArc = Math.PI * 2 / (7.5 - (.4 * Math.min(this.rarity, 9)));
+                            const [ang, targ] = petal.findTargetAngleWithinRadianArc(petal.facing, defaultArc);
+
+                            petal.launchedAt = targ;
+                            petal.moveAngle = ang;
+                            petal.facing = petal.moveAngle;
+                            petal.moveStrength = 1;
+                        }
 
                         this.player.petalSlots[petal.slotIndex].petals[petal.petalIndex] = null;
                         petal.slotIndex = -1;
@@ -1354,6 +1368,45 @@ export class Petal extends Entity {
         return [targetAngle, targ];
     }
 
+    /**
+     * 自动锁定：射向左右各半角范围内，选离玩家最近的敌人。
+     * 与 findTargetAngleWithinRadianArc 的区别是距离基准从花瓣换成了玩家。
+     * @param {number} myAngle 射向
+     * @param {number} halfAngle 半角（弧度）
+     */
+    findTargetByPlayerDistanceWithinArc(myAngle, halfAngle) {
+        let targetAngle = myAngle,
+            nearestDist = Infinity,
+            targ = null;
+
+        const player = this.parent;
+
+        state.entities.forEach(entity => {
+            if (entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || entity.type === ENTITY_TYPES.PETAL) {
+                return;
+            }
+
+            const angle = Math.atan2(entity.y - this.y, entity.x - this.x);
+
+            if (Math.abs(angleDiff(myAngle, angle)) > halfAngle) {
+                return;
+            }
+
+            // 距离以玩家为基准，而不是以发射的花瓣为基准
+            const dx = player.x - entity.x;
+            const dy = player.y - entity.y;
+            const distSqr = dx * dx + dy * dy;
+
+            if (distSqr < nearestDist) {
+                targetAngle = angle;
+                nearestDist = distSqr;
+                targ = entity;
+            }
+        });
+
+        return [targetAngle, targ];
+    }
+
     update() {
         if (this.dandelionBind) {
             this.x = this.dandelionBind.x + Math.cos(this.facing) * (this.size + this.dandelionBind.size * 1.2);
@@ -1634,7 +1687,6 @@ export class Player extends Entity {
             const mobKillers = {};
 
             const xpToGift = this.petalSlots.reduce((acc, slot) => acc + Math.pow(slot.rarity + 1, 3), 0);
-            this.client.addXP(-Math.random() * .1 * this.client.xp);
 
             topDamagers.forEach(damager => {
                 if (damager.type === ENTITY_TYPES.PLAYER) {

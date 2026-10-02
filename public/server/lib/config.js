@@ -69,6 +69,7 @@ export const petalConfigs = [
         .setDescription("A bunch of oranges. They're pretty juicy."),
     new PetalConfig("Missile", 22.5, 4, 18.5)
         .setLaunchable(.7, 45)
+        .setAutoLock(Math.PI * .15)
         .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setDescription("You can actually shoot this one!"),
     new PetalConfig("Pea.projectile", 22.5 * 100, 3, 3)
@@ -281,6 +282,7 @@ export const petalConfigs = [
     new PetalConfig("Dust", 22.5 * .75, 6, 7.5)
         .setMulti(3, true)
         .setLaunchable(.7, 55)
+        .setAutoLock(Math.PI * .15)
         .setDensity(1.00005)
         .setDescription("A cloud of dust that can be launched at enemies."),
     new PetalConfig("Armor", 0, 0, 0)
@@ -536,7 +538,7 @@ export const petalConfigs = [
     new PetalConfig("Blood Light", 10.155, 20, 52).setIcon(.6, [1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], "Light", 0).setBloodLight(0.01).setMulti([1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], 0, true)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#a82f2f", .4, .2)
         ).setDescription(["Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 0.05", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 0.31", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.04", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 3.33", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 8.32", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 33.28", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 249.6", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.25k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 10.48k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 53.91k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 431.31k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 2.59m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 38.82m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 139.74m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.4b", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 8.38b"]),
-    new PetalConfig("Fire Missile", 15.5, 6, 150.5).setIcon(1, 1, "Missile", -45).setLaunchable(.7, 45).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setPoison(41.5, 5).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 0, true)
+    new PetalConfig("Fire Missile", 15.5, 6, 150.5).setIcon(1, 1, "Missile", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setPoison(41.5, 5).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 0, true)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#862100", .6, 0)
         ).setDescription("You can actually shoot this one and now with an extra ingredient: poison!"),
     new PetalConfig("Shovel", 30, 1, 1).setIcon(.8, 1, "Shovel", -45)
@@ -756,7 +758,7 @@ export const petalConfigs = [
     new PetalConfig("Resin.projectile", 2250, 1e5, 15).setSize(35).setEnemySpeedMultiplier(.334, .05).setIgnoreWalls(1).setPacifyAbility(0.0001)
         .setDrawing(new Drawing().addAction("opacity", .45).addAction("beginPath").addAction("dipPolygon", 5, 1, -1.3, 0).addAction("fill", "#fcebff").addAction("opacity", 1).addAction("stroke", "#fcebff", .2, 0).addAction("opacity", .6).addAction("beginPath").addAction("dipPolygon", 5, .45, -1.6, Math.PI).addAction("fill", "#fcebff")
         ).setDescription("[object null object]"),
-    new PetalConfig("Thorn", 25, 80, 60).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setSize(1.35)
+    new PetalConfig("Thorn", 25, 80, 60).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("Spiky."),
     new PetalConfig("Thorn.projectile", 25, 6, 0.005).setSize(1.35)

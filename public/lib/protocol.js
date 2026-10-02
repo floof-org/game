@@ -325,6 +325,9 @@ export class PetalConfig {
         this.launchedSpeed = 0;
         this.launchedRange = 0;
 
+        /** 发射时的自动锁定半角（弧度），0 表示用默认锁定 */
+        this.autoLockAngle = 0;
+
         this.wingMovement = false;
         this.yinYangMovement = false;
         this.wearable = false;
@@ -490,6 +493,16 @@ export class PetalConfig {
         this.launchable = true;
         this.launchedSpeed = launchedSpeed;
         this.launchedRange = launchedRange;
+        return this;
+    }
+
+    /**
+     * 发射时自动锁定：射程方向左右各 angle 弧度内，锁定离玩家最近的敌人。
+     * 不设则沿用默认的"离自己最近"锁定。
+     * @param {number} angle 半角（弧度）。Math.PI * .15 约等于左右各 27 度
+     */
+    setAutoLock(angle) {
+        this.autoLockAngle = angle;
         return this;
     }
 
