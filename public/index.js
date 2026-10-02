@@ -2048,7 +2048,15 @@ function draw() {
             ctx.stroke();
         }
 
-        if (!options.hideEntityUI && !net.state.mobConfigs[entity.index].hideUI) {
+        // Centipede body segments share the head's shape but are system mobs, whose UI is
+        // normally hidden, so only the head showed a bar. Both centipede families now draw
+        // the same bar on every segment. The hideUI flag is the server's isSystem bit, so
+        // this has to stay client-side: flipping the flag in the config would change the
+        // wire format and desync the production client.
+        const mobConfig = net.state.mobConfigs[entity.index];
+        const centipedeSegment = mobConfig.hideUI && (mobConfig.name === "Centipede" || mobConfig.name === "Desert Centipede");
+
+        if (!options.hideEntityUI && (!mobConfig.hideUI || centipedeSegment)) {
             const barSize = Math.max(size, 30 * scale);
             const barthicc = (5 + entity.size * 0.1) * scale;
 
