@@ -2,6 +2,7 @@ import { state } from "./net.js";
 import { ctx as _ctx, drawWrappedText, mixColors, roundedRectangle, text } from "./canvas.js";
 import { formatLargeNumber, colors, options } from "./util.js";
 import { Drawing, PetalConfig } from "./protocol.js";
+import { createEvictionQueue } from "./boundedCache.js";
 
 const TAU = Math.PI * 2;
 
@@ -2743,6 +2744,32 @@ function getBorderStyle(t) {
 const petalIconCache = [];
 const petalIconIntervals = [];
 
+// Neither this cache nor the tooltip cache below was ever evicted. Walking a full addall
+// inventory touches thirty-odd rarities times a hundred-odd petals, which grew the icon
+// cache past 200MB and the tooltip cache past 2.4GB, and the tab was killed with a white
+// screen. Entries are now dropped oldest first once these caps are reached, which is far
+// more than the handful of petals visible at any moment.
+const PETAL_ICON_CACHE_CAP = 1024;
+const PETAL_TOOLTIP_CACHE_CAP = 96;
+
+const petalIconEvictions = createEvictionQueue(PETAL_ICON_CACHE_CAP);
+
+/** Free one icon, including the animation bookkeeping that keeps it alive. */
+function evictPetalIcon(index, rarity, modeKey) {
+    const draw = petalIconIntervals[index]?.[rarity]?.[modeKey];
+
+    if (draw) {
+        __ANIMATED_ICONS__.delete(draw);
+        delete petalIconIntervals[index][rarity][modeKey];
+    }
+
+    delete petalIconCache[index]?.[rarity]?.[modeKey];
+}
+
+function trackPetalIcon(index, rarity, modeKey) {
+    petalIconEvictions.push([index, rarity, modeKey], ([i, r, m]) => evictPetalIcon(i, r, m));
+}
+
 function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
     const permanentAnimated = animated === true;
     const oneshot = animated === "oneshot";
@@ -2879,6 +2906,7 @@ function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
     }
 
     petalIconCache[index][rarity][modeKey] = canvas;
+    trackPetalIcon(index, rarity, modeKey);
 
     return canvas;
 }
@@ -5948,7 +5976,11 @@ function createMobTooltip(index, rarityIndex) {
 }
 
 const cache = [];
+const petalTooltipEvictions = createEvictionQueue(PETAL_TOOLTIP_CACHE_CAP);
 
+// Each tooltip canvas is roughly 350x530, so an unbounded cache reached multiple GB once
+// the cursor swept a full inventory. Oldest entries are dropped first; the cap is still far
+// more than anyone can read at once.
 export function petalTooltip(index, rarity) {
     if (!cache[index]) {
         cache[index] = [];
@@ -5956,6 +5988,9 @@ export function petalTooltip(index, rarity) {
 
     if (!cache[index][rarity]) {
         cache[index][rarity] = createPetalTooltip(index, rarity);
+        petalTooltipEvictions.push([index, rarity], ([i, r]) => {
+            delete cache[i]?.[r];
+        });
     }
 
     return cache[index][rarity];

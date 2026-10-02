@@ -496,6 +496,81 @@ describe("itemAt and anchorFor", () => {
     });
 });
 
+describe("repaint coalescing", () => {
+    function makeCoalescingSurface() {
+        const frames = [];
+        const surface = makeSurface(makeHost(), {
+            requestFrame: fn => frames.push(fn),
+        });
+        return { surface, frames };
+    }
+
+    test("a burst of wheel events schedules a single frame", () => {
+        const { surface, frames } = makeCoalescingSurface();
+        surface.show(items(3465));
+
+        for (let i = 0; i < 40; i++) surface.handleWheel({ deltaY: 40 });
+
+        expect(frames).toHaveLength(1);
+    });
+
+    test("the offset still tracks every event even though painting is deferred", () => {
+        const { surface, frames } = makeCoalescingSurface();
+        surface.show(items(3465));
+
+        for (let i = 0; i < 40; i++) surface.handleWheel({ deltaY: 40 });
+
+        expect(surface.scrollTop).toBe(40 * 40);
+        expect(frames).toHaveLength(1);
+    });
+
+    test("the deferred paint uses the final offset, not the first", () => {
+        const { surface, frames } = makeCoalescingSurface();
+        surface.show(items(3465));
+
+        for (let i = 0; i < 10; i++) surface.handleWheel({ deltaY: ROW });
+        resetCalls(surface);
+        frames[0]();
+
+        // Ten rows down means the tenth row is pinned to the top edge.
+        expect(drawn(surface)[0][3]).toBe(0);
+        expect(drawn(surface)[COLUMNS][3]).toBe(ROW);
+    });
+
+    test("asks for one screenful of icons per frame, not one per event", () => {
+        const { surface, frames } = makeCoalescingSurface();
+        surface.show(items(3465));
+
+        for (let i = 0; i < 30; i++) surface.handleWheel({ deltaY: 30 });
+        resetCalls(surface);
+        frames[0]();
+
+        expect(drawn(surface).length).toBeLessThanOrEqual(VISIBLE_ROWS * COLUMNS);
+    });
+
+    test("accepts another burst once the frame has run", () => {
+        const { surface, frames } = makeCoalescingSurface();
+        surface.show(items(3465));
+
+        surface.handleWheel({ deltaY: 40 });
+        frames[0]();
+
+        surface.handleWheel({ deltaY: 40 });
+
+        expect(frames).toHaveLength(2);
+    });
+
+    test("paints synchronously when no frame scheduler is supplied", () => {
+        const surface = makeSurface();
+        surface.show(items(3465));
+        resetCalls(surface);
+
+        surface.handleWheel({ deltaY: 40 });
+
+        expect(drawn(surface).length).toBeGreaterThan(0);
+    });
+});
+
 describe("a full addall cycle", () => {
     test("mounts, scrolls and resolves every target with one DOM node", () => {
         const host = makeHost();

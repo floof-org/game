@@ -680,6 +680,7 @@ menu.style.overflow = "hidden";
 const inventorySurface = createInventorySurface({
     host: menu,
     createCanvas: () => document.createElement("canvas"),
+    requestFrame: requestAnimationFrame,
     measure: () => ({ contentWidth: menu.clientWidth, contentHeight: menu.clientHeight }),
     rendererOptions: {
         getPetalIcon,

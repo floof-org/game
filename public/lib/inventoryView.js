@@ -120,8 +120,14 @@ const WHEEL_LINE_HEIGHT = 16;
  * reconciled with the menu padding, which is not something that can be reasoned about
  * reliably without a browser. Owning the offset makes the whole thing deterministic.
  */
-export function createInventorySurface({ host, createCanvas, measure, rendererOptions = {} }) {
+export function createInventorySurface({ host, createCanvas, measure, requestFrame, rendererOptions = {} }) {
     const renderer = createInventoryRenderer(rendererOptions);
+
+    // A trackpad can fire a dozen wheel events in one frame. Repainting each one asks the
+    // icon cache for a whole screenful of petals per event, and every cache miss builds a
+    // fresh OffscreenCanvas, so the repaints are coalesced into one per frame. The offset
+    // still updates immediately so hit testing stays in step with the wheel.
+    const scheduleFrame = requestFrame ?? (fn => fn());
 
     let canvas = null;
     let ctx = null;
@@ -130,6 +136,7 @@ export function createInventorySurface({ host, createCanvas, measure, rendererOp
     let scrollTop = 0;
     let viewportWidth = 0;
     let viewportHeight = 0;
+    let repaintQueued = false;
 
     // Cached so the game loop never reads layout. Reading a rect after the loop has
     // dirtied layout forces a synchronous reflow of the whole document, and doing that
@@ -196,6 +203,17 @@ export function createInventorySurface({ host, createCanvas, measure, rendererOp
         });
     }
 
+    /** Repaint at most once per frame, however many events arrived. */
+    function queueRepaint() {
+        if (repaintQueued) return;
+
+        repaintQueued = true;
+        scheduleFrame(() => {
+            repaintQueued = false;
+            paint();
+        });
+    }
+
     /**
      * Show a new item list, rebuilding the surface only when it is not already mounted.
      * Returns false when there is nothing to show.
@@ -235,7 +253,7 @@ export function createInventorySurface({ host, createCanvas, measure, rendererOp
         if (next === scrollTop) return false;
 
         scrollTop = next;
-        paint();
+        queueRepaint();
         return true;
     }
 
@@ -291,6 +309,7 @@ export function createInventorySurface({ host, createCanvas, measure, rendererOp
     return {
         show,
         paint,
+        queueRepaint,
         resize,
         refreshRect,
         handleWheel,
