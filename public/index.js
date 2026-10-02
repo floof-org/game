@@ -2054,7 +2054,7 @@ function draw() {
         // this has to stay client-side: flipping the flag in the config would change the
         // wire format and desync the production client.
         const mobConfig = net.state.mobConfigs[entity.index];
-        const centipedeSegment = mobConfig.hideUI && (mobConfig.name === "Centipede" || mobConfig.name === "Desert Centipede");
+        const centipedeSegment = mobConfig.hideUI && mobConfig.name.endsWith("Centipede");
 
         if (!options.hideEntityUI && (!mobConfig.hideUI || centipedeSegment)) {
             const barSize = Math.max(size, 30 * scale);

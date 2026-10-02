@@ -2191,12 +2191,21 @@ function getUIPetalName(index) {
         case 67:
             return "Eggs";
         default:
-            const tier = state.petalConfigs[index].tiers[0];
-            let name = state.petalConfigs[index].name;
-            if (tier.icon) {
+            const config = state.petalConfigs[index];
+
+            if (!config) {
+                return "Unknown";
+            }
+
+            const tier = config.tiers?.[0];
+
+            let name = config.name;
+
+            if (tier?.icon) {
                 name = tier.icon.name;
             }
-            return name;
+
+            return name ?? "Unknown";
     }
 }
 
@@ -2776,6 +2785,22 @@ function trackPetalIcon(index, rarity, modeKey) {
     petalIconEvictions.push([index, rarity, modeKey], ([i, r, m]) => evictPetalIcon(i, r, m));
 }
 
+/**
+ * Neutral tile for a petal the client has not loaded a config for. Drawing one of those
+ * used to throw on its first frame and take the whole screen with it.
+ */
+const unknownPetalIcon = (() => {
+    const canvas = new OffscreenCanvas(128, 128);
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#444444";
+    ctx.beginPath();
+    ctx.roundRect(4, 4, 120, 120, 10);
+    ctx.fill();
+
+    return canvas;
+})();
+
 function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
     const permanentAnimated = animated === true;
     const oneshot = animated === "oneshot";
@@ -2813,6 +2838,13 @@ function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
         }
 
         return cached;
+    }
+
+    // A petal whose config (or tier) the client has not loaded used to throw here the
+    // first time it was drawn, blanking the whole screen. It now renders a neutral tile,
+    // matching how getUIPetalName and petalTooltip fall back.
+    if (!state.petalConfigs[index] || !state.tiers?.[rarity]) {
+        return unknownPetalIcon;
     }
 
     const canvas = new OffscreenCanvas(128, 128);
@@ -5457,10 +5489,42 @@ function formatNegativeOrPositive(number, type = 1) {
         return formatLargeNumber(Math.abs(number));
     }
 }
+/**
+ * Fallback tooltip for a petal without a client-side config. Hovering one of those could
+ * only crash, so they get a neutral card instead.
+ */
+function createUnknownTooltip(index, rarityIndex) {
+    const width = 350;
+    const height = 120;
+
+    const canvas = new OffscreenCanvas(width * 2, height * 2);
+    const ctx = canvas.getContext("2d");
+
+    ctx.scale(2, 2);
+    ctx.beginPath();
+    ctx.roundRect(0, 0, width, height, width / 20);
+    ctx.globalAlpha = 0.334;
+    ctx.fillStyle = "#000000";
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    text("Unknown Petal " + (index ?? ""), 10, 10, 22.5, "#FFFFFF", ctx);
+    text("Tier " + (rarityIndex ?? ""), 10, 35, 15, "#FFFFFF", ctx);
+
+    return canvas;
+}
+
 function createPetalTooltip(index, rarityIndex) {
     /** @type {PetalConfig} */
     const petal = state.petalConfigs[index];
-    const tier = petal.tiers[rarityIndex];
+    const tier = petal?.tiers?.[rarityIndex];
+
+    if (!petal || !tier || !state.tiers?.[rarityIndex]) {
+        return createUnknownTooltip(index, rarityIndex);
+    }
 
     let width = 350,
         height = 60 + drawWrappedText(tier.description, -10000, -10000, 15, width - 20) + 30;
