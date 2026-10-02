@@ -1414,11 +1414,11 @@ export const CLIENT_BOUND = {
 
     CUSTOM_GRADIENTS: 111,
     TERRAIN_SCORES: 113,
+    DROPS_AMOUNT_UPDATE: 250,
 
     // Section: Options that seem to be unused by server.
-    // Both sets of data are sent via `CLIENT_BOUND.WORLD_UPDATE` instead.
+    // This info is sent via `CLIENT_BOUND.WORLD_UPDATE` instead.
     UNUSED_INVENTORY_UPDATE: 110,
-    UNUSED_DROPS_UPDATE: 250,
 };
 
 export const SERVER_BOUND = {

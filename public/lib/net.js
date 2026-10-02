@@ -1770,7 +1770,7 @@ export class ClientSocket extends WebSocket {
                     }
                 }
                 break;
-            case CLIENT_BOUND.UNUSED_DROPS_UPDATE: {
+            case CLIENT_BOUND.DROPS_AMOUNT_UPDATE: {
                 const count = reader.getUint16();
 
                 for (let i = 0; i < count; i++) {
