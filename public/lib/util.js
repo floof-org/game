@@ -252,6 +252,29 @@ export function xpForLevel(level) {
     return Math.pow(level, 2.35) + Math.exp(level / 25);
 }
 
+/**
+ * Level for a cumulative xp total, mirroring Client#addXP: the level is the highest L with
+ * xpForLevel(L - 1) <= xp < xpForLevel(L).
+ */
+export function levelForXP(xp) {
+    let level = 1;
+
+    while (xp >= xpForLevel(level)) {
+        level++;
+    }
+
+    return level;
+}
+
+/** Fraction of the way from `level` to the next level, matching Client#levelProgress. */
+export function levelProgress(xp, level = levelForXP(xp)) {
+    if (level < 2) {
+        return xp / xpForLevel(level);
+    }
+
+    return (xp - xpForLevel(level - 1)) / (xpForLevel(level) - xpForLevel(level - 1));
+}
+
 export function pickWeighted(entries) {
     if (!entries || entries.length === 0) {
         return null;

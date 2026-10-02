@@ -2700,11 +2700,13 @@ export class Mob extends Entity {
             return;
         }
 
-        const topDamagers = this.getTopDamagers(3, ENTITY_TYPES.PLAYER);
+        const topDamagers = this.getTopDamagers(Infinity, ENTITY_TYPES.PLAYER);
 
-        // strict looting: at least 5% of max health damage is required to earn drops, xp and the kill message
+        // strict looting: at least 5% of max health damage is required to earn drops, xp and the kill message.
+        // Every damager is filtered first and the top qualifiers are picked after: sorting before
+        // filtering used to drop anyone ranked 4th or lower, even when they had dealt over 5% of the mob.
         const damageThreshold = this.health.maxHealth * 0.05;
-        const qualifyingDamagers = topDamagers.filter(damager => damager.damage >= damageThreshold);
+        const qualifyingDamagers = topDamagers.filter(damager => damager.damage >= damageThreshold).slice(0, 3);
 
         let killText = '';
         qualifyingDamagers.forEach(damager => {

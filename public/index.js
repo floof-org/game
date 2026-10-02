@@ -1,7 +1,7 @@
 import { canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
 import * as net from "./lib/net.js";
 import { mouse, keyMap, pruneFloatingTextTrackers } from "./lib/net.js";
-import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
+import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber, levelForXP, levelProgress } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
@@ -2813,6 +2813,16 @@ function draw() {
         }
     }
 
+    // The leaderboard replaces each player's raw xp with "level.progress", where the two
+    // digits after the dot are the percentage of the way to the next level (3.50 = level 3,
+    // halfway to 4).
+    const levelLabel = xp => {
+        const level = levelForXP(xp);
+        const pct = Math.max(0, Math.min(99, Math.round(levelProgress(xp, level) * 100)));
+
+        return `${level}.${String(pct).padStart(2, "0")}`;
+    };
+
     if (net.state.alivePlayers && net.state.alivePlayers.length > 0) {
         // Leaderboard
         const spacing = 30;
@@ -2835,7 +2845,7 @@ function draw() {
             drawBar(x, x + barMaxWidth, y, barSize, colors.lighterBlack);
             drawBar(x, x + barWidth, y, barSize * 0.75, color);
 
-            let w = x + text(`${player.username} - ${formatLargeNumber(player.xp.toFixed(2))}`, x, y, barSize * 0.45, colors.white);
+            let w = x + text(`${player.username} - ${levelLabel(player.xp)}`, x, y, barSize * 0.45, colors.white);
             w += text(` [${net.state.tiers[player.highestRarity].name.charAt(0)}]`, w, y, barSize * 0.45, net.state.tiers[player.highestRarity].color);
 
             x -= 45;
