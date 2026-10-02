@@ -1631,6 +1631,7 @@ export default class Client {
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode.",
                 "/give [player] [petal] [rarity] <amount> - Gives a player a petal. Petal names may omit spaces (e.g. firemissile). Amount defaults to 1.",
+                "/remove [petal] [rarity] <amount> - Removes a petal of the given rarity from your own inventory. Amount defaults to 1.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
                 "/kick [player] - Kicks a player from the game.",
                 "/mute [player] [seconds] - Mutes a player. 0 is permanent, max 30 days.",
@@ -1923,6 +1924,89 @@ export default class Client {
                 const offlineLabel = amount === 1 ? "" : ` x${amount}`;
 
                 this.systemMessage(`Gave ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${offlineLabel} to ${account.username} offline.`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /remove
+        if (commandCheck("/remove")) {
+            (async () => {
+                if (!requireOwner()) return;
+
+                const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 2) {
+                    this.systemMessage("Usage: /remove [petal] [rarity] <amount>", "#ffaa00");
+                    return;
+                }
+
+                const [petalArg, rarityArg, amountArg] = args;
+
+                // petal names may omit spaces: both "fire missile" and "firemissile" resolve
+                const normalize = s => s.toLowerCase().replace(/\s+/g, "");
+                const normalizedPetal = normalize(petalArg);
+
+                let petalIndex = petalConfigs.findIndex(petal => petal?.name?.toLowerCase() === petalArg.toLowerCase());
+
+                if (petalIndex < 0) {
+                    petalIndex = petalConfigs.findIndex(petal => petal?.name && normalize(petal.name) === normalizedPetal);
+                }
+
+                if (petalIndex < 0) {
+                    this.systemMessage(`Petal "${petalArg}" not found.`, "#ff5555");
+                    return;
+                }
+
+                let amount = 1;
+
+                if (amountArg !== undefined) {
+                    amount = parseInt(amountArg);
+
+                    if (isNaN(amount) || amount < 1) {
+                        this.systemMessage(`Invalid amount: ${amountArg}`, "#ff5555");
+                        return;
+                    }
+                }
+
+                let rarityIndex = null;
+
+                if (!isNaN(rarityArg)) {
+                    rarityIndex = parseInt(rarityArg);
+                } else {
+                    const lower = rarityArg.toLowerCase();
+
+                    for (let i = 0; i < tiers.length; i++) {
+                        if (tiers[i].name.toLowerCase() === lower) {
+                            rarityIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
+                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                    return;
+                }
+
+                const rarity = tiers[rarityIndex];
+                const owned = this.inventory[rarity.name]?.[petalIndex] || 0;
+
+                if (owned <= 0) {
+                    this.systemMessage(`You do not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
+                    return;
+                }
+
+                const removed = Math.min(amount, owned);
+                this.inventory[rarity.name][petalIndex] -= removed;
+
+                if (this.inventory[rarity.name][petalIndex] <= 0) {
+                    delete this.inventory[rarity.name][petalIndex];
+                }
+
+                accounts.saveClient(this);
+
+                this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}!`, "#55ff55");
             })();
 
             return;
