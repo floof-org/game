@@ -780,8 +780,13 @@ window.addEventListener("keydown", (e) => {
         }
     }
     if (e.key === "z" && !net.ChatMessage.showInput) {
+        const opening = !menu.classList.contains("active");
+
         menu.classList.toggle("active");
-        drawInventory();
+
+        if (opening) {
+            drawInventory();
+        }
     }
 });
 
@@ -1629,14 +1634,6 @@ window.addEventListener("keyup", e => {
         return;
 
     isJDown = false;
-
-    net.state.minimapImg = renderTerrainForMap(
-        net.state.terrain.width,
-        net.state.terrain.blocks,
-        net.state.tiers,
-        net.state.terrainScores,
-        false
-    );
 });
 
 function convert(g) {

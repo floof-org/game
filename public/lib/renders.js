@@ -2790,18 +2790,11 @@ function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
     petalIconIntervals[index] ??= [];
     petalIconIntervals[index][rarity] ??= {};
 
-    for (const key of [0, 1, 2]) {
-        if (key === modeKey) continue;
-
-        const oldDraw = petalIconIntervals[index][rarity][key];
-
-        if (oldDraw) {
-            __ANIMATED_ICONS__.delete(oldDraw);
-            delete petalIconIntervals[index][rarity][key];
-        }
-
-        delete petalIconCache[index][rarity][key];
-    }
+    // Modes used to delete one another, so the inventory's one-shot renders were throwing
+    // away the loadout's persistently animated icons of the same petals, forcing the main
+    // loop to rebuild them the next frame. Opening and closing the inventory therefore
+    // stuttered every time. The three modes are now independent, and the eviction queue
+    // below still bounds how much of each stays resident.
 
     const cached = petalIconCache[index][rarity][modeKey];
 
