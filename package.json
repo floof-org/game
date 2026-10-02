@@ -6,6 +6,7 @@
     "type": "module",
     "scripts": {
         "build": "webpack --config ./webpack.config.js",
+        "test": "bun test test/",
         "deploy": "bun run build && rsync -av --delete ./build/ /var/www/floof.supercord.dev/",
         "deploy:dev": "bun run build && rsync -av --delete ./build/ /var/www/dev.floof.supercord.dev/",
         "watch": "webpack --watch --mode development"
