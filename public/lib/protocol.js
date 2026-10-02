@@ -115,21 +115,8 @@ export const RARITY_SIZE_MULTIPLIERS = [
     2.16, 2.3, 2.5, 2.61, 2.7, 2.9, 3.1, 3.3, 3.5
 ];
 
-export const PETAL_TIER_TABLE = [
-    1, 2, 4, 8, 16, 32, 160, 480, 2880, 17280, 103680,
-    1244160, 14929920, 89579520, 268738560, 1612431360,
-    16124313600, 16124313600, 161243136000, 161243136000,
-    161243136000, 1612431360000
-];
-
-let petalTierMode = false;
-
-export function setPetalTierMode(enabled) {
-    petalTierMode = enabled;
-}
-
 export function petalTierMultiplier(tier) {
-    return petalTierMode ? PETAL_TIER_TABLE[Math.min(tier, PETAL_TIER_TABLE.length - 1)] : Math.pow(PetalTier.HEALTH_SCALE, tier);
+    return Math.pow(PetalTier.HEALTH_SCALE, tier);
 }
 
 export class PetalTier {
@@ -137,8 +124,9 @@ export class PetalTier {
     static DAMAGE_SCALE = 3;
 
     constructor(tier, health, damage) {
-        this.health = Array.isArray(health) ? health[Math.min(tier, health.length - 1)] : health * petalTierMultiplier(tier);
-        this.damage = Array.isArray(damage) ? damage[Math.min(tier, damage.length - 1)] : damage * petalTierMultiplier(tier);
+        // 数组只是各 rarity 的基准值, 仍然要乘 rarity 倍数
+        this.health = (Array.isArray(health) ? health[Math.min(tier, health.length - 1)] : health) * petalTierMultiplier(tier);
+        this.damage = (Array.isArray(damage) ? damage[Math.min(tier, damage.length - 1)] : damage) * petalTierMultiplier(tier);
 
         this.extraHealth = 0;
         this.constantHeal = 0;
@@ -402,15 +390,16 @@ export class PetalConfig {
         return this;
     }
 
+    /**
+     * @param {number|number[]} count 每个 rarity 的体节数
+     * @param {boolean|number} clumps 体节是否聚成一团
+     * @param {boolean} splitDamage 已废弃：体节不再分摊伤害，每节都造成完整伤害
+     */
     setMulti(count, clumps, splitDamage = false) {
         for (let i = 0; i < this.tiers.length; i++) {
             let x = count instanceof Array ? (count[i] ?? count[count.length - 1]) : count;
             this.tiers[i].count = x;
             this.tiers[i].clumps = Boolean(clumps);
-            if (splitDamage) {
-                this.damage /= x;
-                this.tiers[i].damage /= x
-            }
         }
 
         return this;

@@ -1,15 +1,13 @@
-import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig, setPetalTierMode } from "../../lib/protocol.js";
+import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig } from "../../lib/protocol.js";
 import { DROP_TABLES } from "./dropTables.js";
 export const tiers = structuredClone(_tiers);
 export { Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig };
-
-setPetalTierMode(Bun.env.GAMEMODE === "maze");
 
 export const petalConfigs = [
     new PetalConfig("Basic", 22.5 * 1, 10, 10)
         .setDescription("A simple petal. Not too strong, not too weak."),
     new PetalConfig("Light", 22.5 * .25, 6.5, 17)
-        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 0, true)
+        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 0)
         .setSize(.75)
         .setDescription("It's very light and recharges quickly, at the cost of damage."),
     new PetalConfig("Faster", 22.5 * .65, 12, 7)
@@ -21,7 +19,7 @@ export const petalConfigs = [
         .setDensity(6.5)
         .setDescription("A more chunky petal that hits harder but takes longer to recharge."),
     new PetalConfig("Stinger", 101.25, 1, 46)
-        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1, true)
+        .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setDescription("A fragile petal that deals lots of damage."),
     new PetalConfig("Rice", 0, .5, 5)
         .setSize(1.25)
@@ -62,7 +60,7 @@ export const petalConfigs = [
         .setDescription("It's a piece of corn. They say ants like to snack on it."),
     new PetalConfig("Sand", 22.5 * .45, 5, 16)
         .setSize(.85)
-        .setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1, true)
+        .setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setDescription("Some fine grains of sand. They recharge quickly and can pack a punch."),
     new PetalConfig("Orange", 22.5 * .75, 12.5, 7.5)
         .setMulti(3, true)
@@ -77,7 +75,7 @@ export const petalConfigs = [
     new PetalConfig("Rose", 22.5 * 1.5, 5, 5)
         .setHealing(12.5)
         .setHuddles(1)
-        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6], 1, true)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6], 1)
         .setDescription("Not great at combat, but it's healing properties are amazing."),
     new PetalConfig("Yin Yang", 22.5 * 1, 9, 11)
         .setYinYang(1)
@@ -85,7 +83,7 @@ export const petalConfigs = [
     new PetalConfig("Pollen", 22.5 * .75, 13, 13)
         .setSize(.6)
         .setLaunchable(0, 75)
-        .setMulti([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5], false, true)
+        .setMulti([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5], false)
         .setDescription("It makes you sneeze. Don't drop it!"),
     new PetalConfig("Honey", 22.5 * .5, 7.5, 7.5)
         .setSize(1.1)
@@ -134,7 +132,7 @@ export const petalConfigs = [
         .setDescription("[object null object]"),
     new PetalConfig("Dahlia", 22.5 * .75, 5, 5)
         .setHealing(3)
-        .setMulti([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 8, 8], 1, true)
+        .setMulti([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 8, 8], 1)
         .setSize(.5)
         .setHuddles(1)
         .setDescription("A very consistent trickle heal."),
@@ -142,7 +140,7 @@ export const petalConfigs = [
         .setSize(1.3)
         .setHuddles(1)
         .setHealSpit(22.5 * 3, 125, 10)
-        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6], 1, true)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6], 1)
         .setDescription("Said to be from a mystical covenant of witches who specialized in healing nature."),
     new PetalConfig("Fire Spellbook", 22.5 * 1.25, 15, 5)
         .setSize(1.2)
@@ -171,7 +169,7 @@ export const petalConfigs = [
         .setWingMovement(1)
         .setLightning([5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10], 32 * 16, 128)
         .setDescription("A petal that channels the power of all that came before."),
-    new PetalConfig("Lightning", 22.5 * 1, 1e-15, [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 17])
+    new PetalConfig("Lightning", 22.5 * 1, 1e-15, [5])
         .setLightning([3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9], 256, 7)
         .setDescription("Shockingly shocking!"),
     new PetalConfig("Powder", 22.5 * .75, 3, 5)
@@ -188,7 +186,7 @@ export const petalConfigs = [
         .setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7], "Yucca", 0)
         .setSize(1.2)
         .setConstantHeal(7.5, true)
-        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7], 1, true)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7], 1)
         .setDescription("A strange leaf that heals you but only when you're in defensive mode."),
     new PetalConfig("Magnet", 22.5 * 2, 9, 6)
         .setSize(1.55)
@@ -352,10 +350,10 @@ export const petalConfigs = [
         .setDescription("This isn't from this world..."),
     new PetalConfig("Dice", 22.5, 5, 17.5).setDiceAbility(0.05, 20).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
         .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 5% chance of dealing 20x damage. Criticals will only apply if the base dice damage is higher than the mob armor."),
-    new PetalConfig("Fire Sand", 10.125, 5, 48).setIcon(0.575, [4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], "Sand", 0).setSize(.85).setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1, true)
+    new PetalConfig("Fire Sand", 10.125, 5, 48).setIcon(0.575, [4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], "Sand", 0).setSize(.85).setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("closePath").addAction("paint", "#e86d48", .445, .2)
         ).setDescription("Some fine grains of sand on fire. They deal 3x damage than normal sand."),
-    new PetalConfig("Cinderbrick", 100.125, 5, 128).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], "Cinderbrick", 0).setSize(1.05).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 1, true)
+    new PetalConfig("Cinderbrick", 100.125, 5, 128).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], "Cinderbrick", 0).setSize(1.05).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 5, 1, .4, 0).addAction("paint", "#c9b48c", .225, .2).addAction("beginPath").addAction("dipPolygon", 5, .5, .4, 180 * Math.PI / 180).addAction("fill", "#b4a27e")
         ).setDescription("A really hard piece of rock."),
     new PetalConfig("Rare Cactus", 25, 40, 40).setIcon(1, 1, "Cactus", 0).setSize(1.25).setExtraHealth(175).setDrawing(new Drawing()
@@ -535,10 +533,10 @@ export const petalConfigs = [
         .addAction("beginPath")
         .addAction("circle", 0, 0, 1).addAction("fill", "#C69B2E").addAction("stroke", "#F5bF39", .2, 0).addAction("beginPath").addAction("arc", 0, 0, .4, Math.PI / 4, Math.PI * 1.8).addAction("stroke", "#FFE783", .25, 0).addAction("beginPath").addAction("line", .05, .4, -.1, .6).addAction("line", -.05, -.4, .1, -.6).addAction("stroke", "#FFE783", .2, 0).addAction("closePath")
         ).setDescription("Coin."),
-    new PetalConfig("Blood Light", 10.155, 20, 52).setIcon(.6, [1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], "Light", 0).setBloodLight(0.01).setMulti([1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], 0, true)
+    new PetalConfig("Blood Light", 10.155, 20, 52).setIcon(.6, [1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], "Light", 0).setBloodLight(0.01).setMulti([1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#a82f2f", .4, .2)
         ).setDescription(["Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 0.05", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 0.31", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.04", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 3.33", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 8.32", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 33.28", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 249.6", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.25k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 10.48k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 53.91k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 431.31k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 2.59m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 38.82m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 139.74m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.4b", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 8.38b"]),
-    new PetalConfig("Fire Missile", 15.5, 6, 150.5).setIcon(1, 1, "Missile", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setPoison(41.5, 5).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 0, true)
+    new PetalConfig("Fire Missile", 15.5, 6, 150.5).setIcon(1, 1, "Missile", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setPoison(41.5, 5).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#862100", .6, 0)
         ).setDescription("You can actually shoot this one and now with an extra ingredient: poison!"),
     new PetalConfig("Shovel", 30, 1, 1).setIcon(.8, 1, "Shovel", -45)
@@ -779,7 +777,7 @@ export const petalConfigs = [
     new PetalConfig("Salt", 32.5, 11, 44).setSize(1.2).setDamageReflection(globalThis.salt_table)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("paint", "#FFFFFF", .25, .2)
         ).setDescription("Reflects damage."),
-    new PetalConfig("Rubber", 15, 95, 1.1).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5], "Rubber", 0).setSize(1.55).setAttractsLightning(1).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5], 0, true).setDescription("Attracts lightning. Does not stack.")
+    new PetalConfig("Rubber", 15, 95, 1.1).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5], "Rubber", 0).setSize(1.55).setAttractsLightning(1).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5], 0).setDescription("Attracts lightning. Does not stack.")
         .setDrawing(new Drawing().addAction("rotate", -15).addAction("beginPath").addAction("dipPolygon", 4, 1, 0, 0).addAction("paint", "#ebeef5", .2, .2).addAction("beginPath").addAction("dipPolygon", 4, .5, Math.PI, 0).addAction("fill", "#ffffff")
         ),
     new PetalConfig("Amulet of Fire", 15, 95, 1.1).setIcon(1, 1, "Amulet", 0).setSize(1.55).setDescription("A rare relic infused with the power of fire. An aura emanates from the player once it is equipped which deals massive damage to mobs. It converts sandstorm summons into firestorms. Does not stack. For more info type /info [rarity] amuletoffire.")
@@ -812,7 +810,7 @@ export const petalConfigs = [
     new PetalConfig("Amulet of Grace", 225, 1.1, 1.1).setIcon(1, 1, "Amulet", 0).setSize(1.1).setDescription("A rare relic believed to have the power of delaying the inevitable, costing more mana if the wave is higher. Only works in Waves. Check /waveinfo on wave state timeout.")
         .setDrawing(new Drawing().addAction("rotate", 25).addAction("beginPath").addAction("polygon", 5, 1.1, 0).addAction("paint", "#f4c952", .3, .2).addAction("closePath").addAction("beginPath").addAction("polygon", 5, .52, 0).addAction("paint", "#ffb6c1", .31, .1).addAction("closePath")
         ),
-    new PetalConfig("Compass", 22, 1.1, 1.1).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5, 5, 5, 8, 8, 8, 8, 10, 10, 10, 14, 14, 14, 16], "Compass", 0).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5, 5, 5, 8, 8, 8, 8, 10, 10, 10, 14, 14, 14, 16], 1, true).setSize(0.75).setDescription("Broadcasts the color of the highest rarity due to spawn in a wave. Only works in Waves.")
+    new PetalConfig("Compass", 22, 1.1, 1.1).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5, 5, 5, 8, 8, 8, 8, 10, 10, 10, 14, 14, 14, 16], "Compass", 0).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5, 5, 5, 8, 8, 8, 8, 10, 10, 10, 14, 14, 14, 16], 1).setSize(0.75).setDescription("Broadcasts the color of the highest rarity due to spawn in a wave. Only works in Waves.")
         .setDrawing(new Drawing()
         .addAction("beginPath").addAction("circle", 0, 0, 1.0).addAction("paint", "#d7d7d7", 0.08, 0.15).addAction("closePath").addAction("beginPath").addAction("circle", 0, 0, 0.82).addAction("fill", "#4fa3df").addAction("closePath")
         .addAction("beginPath").addAction("moveTo", 0.9599999785423279, 0).addAction("lineTo", 0.9599999785423279, 0).addAction("fill", "#d7d7d7").addAction("closePath").addAction("beginPath").addAction("moveTo", 0.7999999821186066, 0).addAction("lineTo", 0.7999999821186066, 0).addAction("fill", "#4fa3df").addAction("closePath").addAction("beginPath").addAction("moveTo", 0, 0).addAction("lineTo", -0.17999999597668648, -0.17999999597668648).addAction("lineTo", -0.6999999843537807, 0.6999999843537807).addAction("lineTo", 0.17999999597668648, 0.17999999597668648).addAction("lineTo", 0, 0).addAction("fill", "#ffffff").addAction("closePath").addAction("beginPath").addAction("moveTo", 0, 0).addAction("lineTo", 0.17999999597668648, 0.17999999597668648).addAction("lineTo", 0.6999999843537807, -0.6999999843537807).addAction("lineTo", -0.17999999597668648, -0.17999999597668648).addAction("lineTo", 0, 0).addAction("fill", "#e74c3c").addAction("closePath").addAction("beginPath").addAction("moveTo", 0.09999999776482582, 0).addAction("lineTo", 0.09999999776482582, 0).addAction("fill", "#bfbfbf").addAction("closePath")
