@@ -665,6 +665,28 @@ let cuteLittleAnimations = {
 const buttonsContainer = document.getElementById("menus2");
 const menu = buttonsContainer.children.item("inventory");
 
+// 背包里可能有两千多个图标, 悬停用事件委托处理, 避免每帧对所有图标做 getBoundingClientRect
+let inventoryHoverIcon = null;
+
+menu.addEventListener("pointermove", (ev) => {
+    const target = ev.target;
+
+    inventoryHoverIcon = target?.closest?.("[data-petal-index]") ?? null;
+});
+
+menu.addEventListener("pointerleave", () => {
+    inventoryHoverIcon = null;
+});
+
+menu.addEventListener("scroll", () => {
+    // 只有滚出已渲染的行范围才重新建 DOM, 否则一次滚动要重画几十个 canvas
+    const firstVisibleRow = Math.floor(menu.scrollTop / inventoryRowHeight());
+
+    if (firstVisibleRow < inventoryStartRow || firstVisibleRow + inventoryViewportRows() > inventoryEndRow) {
+        renderInventoryWindow();
+    }
+});
+
 const inventoryTooltipLayer = document.createElement("div");
 inventoryTooltipLayer.style.position = "fixed";
 inventoryTooltipLayer.style.left = "0";
@@ -697,43 +719,82 @@ function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   return { x, y, bw, bh };
 }
 
-function drawInventory() {
-    net.state.petalElements = [];
-    menu.innerHTML = "";
+// 背包最多能有几十个稀有度乘以一百多个花瓣, 用 JSON.stringify 比较会产生几 MB 字符串
+function isSameInventory(a, b) {
+    if (a === b) return true;
+    if (!a || !b) return false;
 
-    if (!net.state.inventory) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
-    }
+    const aTiers = Object.keys(a);
 
-    let inventoryEmpty = true;
-    Object.values(net.state.inventory).forEach((tier) => {
-        if (Object.values(tier).some((count) => count > 0)) {
-            inventoryEmpty = false;
+    if (aTiers.length !== Object.keys(b).length) return false;
+
+    for (const tier of aTiers) {
+        const aPetals = a[tier];
+        const bPetals = b[tier];
+
+        if (!bPetals) return false;
+
+        const aKeys = Object.keys(aPetals);
+
+        if (aKeys.length !== Object.keys(bPetals).length) return false;
+
+        for (const key of aKeys) {
+            if (aPetals[key] !== bPetals[key]) return false;
         }
-    });
-
-    if (inventoryEmpty) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
     }
 
-    const petal = document.createElement("div");
-    petal.style.display = "flex";
-    petal.style.flexWrap = "wrap";
-    petal.style.padding = "0px";
-    petal.style.gap = "5px";
-    menu.appendChild(petal);
+    return true;
+}
 
-    const petalSize = 56;
+// 原地同步快照, 避免每次变化都深拷贝一遍
+function syncInventory(dst, src) {
+    if (!src) return null;
 
-    let sortedTiers = Object.entries(net.state.inventory).sort(([a], [b]) => {
+    // inventory2 可能被重置成 undefined
+    dst ??= {};
+
+    for (const tier in dst) {
+        if (!(tier in src)) delete dst[tier];
+    }
+
+    for (const tier in src) {
+        if (!dst[tier]) dst[tier] = {};
+
+        const target = dst[tier];
+        const source = src[tier];
+
+        for (const key in target) {
+            if (!(key in source)) delete target[key];
+        }
+
+        for (const key in source) target[key] = source[key];
+    }
+
+    return dst;
+}
+
+const INVENTORY_ITEM_SIZE = 56;
+const INVENTORY_GAP = 5;
+const INVENTORY_OVERSCAN_ROWS = 2;
+
+// 全 addall 之后有三千多项, 全量建 DOM 每次重建都要几百毫秒, 所以只渲染视口附近的几行
+let inventoryItems = [];
+let inventoryColumns = 1;
+let inventoryStartRow = 0;
+let inventoryEndRow = 0;
+let inventoryBox = null;
+
+const inventoryRowHeight = () => INVENTORY_ITEM_SIZE + INVENTORY_GAP;
+const inventoryViewportRows = () => Math.ceil(menu.clientHeight / inventoryRowHeight());
+
+function buildInventoryItems() {
+    const items = [];
+
+    Object.entries(net.state.inventory).sort(([a], [b]) => {
         const aIndex = net.state.tiers.findIndex((t) => t.name === a);
         const bIndex = net.state.tiers.findIndex((t) => t.name === b);
         return bIndex - aIndex;
-    });
-
-    sortedTiers.forEach(([tierName, petals]) => {
+    }).forEach(([tierName, petals]) => {
         const rarityIndex = net.state.tiers.findIndex((t) => t.name === tierName);
 
         Object.entries(petals)
@@ -743,60 +804,116 @@ function drawInventory() {
                 return aName.localeCompare(bName);
             })
             .forEach(([petalIndex, count]) => {
-                if (count <= 0) return;
-
-                const petalCanvas = getPetalIcon(Number(petalIndex), rarityIndex, "oneshot");
-
-                const icon = document.createElement("canvas");
-
-                icon.addEventListener("pointerenter", (ev) => {
-                    const r = ev.currentTarget.getBoundingClientRect();
-                    net.state.inventoryPetalHover = [Number(petalIndex), rarityIndex, r.left + r.width / 2, r.top + r.height / 2];
-                });
-
-                icon.addEventListener("pointermove", (ev) => {
-                    const r = ev.currentTarget.getBoundingClientRect();
-                    net.state.inventoryPetalHover = [Number(petalIndex), rarityIndex, r.left + r.width / 2, r.top + r.height / 2];
-                });
-
-                icon.addEventListener("pointerleave", () => {
-                    net.state.inventoryPetalHover = null;
-                });
-
-                icon.width = petalSize;
-                icon.height = petalSize;
-
-                icon.style.width = petalSize + "px";
-                icon.style.height = petalSize + "px";
-                icon.style.flex = "0 0 auto";
-
-                const c = icon.getContext("2d");
-                c.drawImage(petalCanvas, 0, 0, petalSize, petalSize);
-
-                if (count > 1) {
-                    c.fillStyle = colors.white;
-                    c.strokeStyle = "#000000";
-                    c.lineWidth = 2;
-                    c.font = `bold ${petalSize * 0.25}px Ubuntu`;
-                    c.textAlign = "right";
-                    c.textBaseline = "top";
-
-                    const text = `x${formatAmount(count)}`;
-                    c.strokeText(text, petalSize - 4, 4);
-                    c.fillText(text, petalSize - 4, 4);
-                }
-
-                petal.appendChild(icon);
-
-                net.state.petalElements.push({
-                    icon,
-                    index: Number(petalIndex),
-                    rarity: rarityIndex,
-                    width: petalSize,
-                    height: petalSize,
-                });
+                if (count > 0) items.push({ index: petalIndex, rarity: rarityIndex, count });
             });
     });
+
+    return items;
+}
+
+function createInventoryIcon(item) {
+    const petalCanvas = getPetalIcon(Number(item.index), item.rarity, "oneshot");
+
+    const icon = document.createElement("canvas");
+
+    // 事件用委托处理, 这里只挂数据, 避免上千个监听器
+    icon.dataset.petalIndex = item.index;
+    icon.dataset.petalRarity = item.rarity;
+
+    icon.width = INVENTORY_ITEM_SIZE;
+    icon.height = INVENTORY_ITEM_SIZE;
+
+    icon.style.width = INVENTORY_ITEM_SIZE + "px";
+    icon.style.height = INVENTORY_ITEM_SIZE + "px";
+    icon.style.flex = "0 0 auto";
+
+    const c = icon.getContext("2d");
+    c.drawImage(petalCanvas, 0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
+
+    if (item.count > 1) {
+        c.fillStyle = colors.white;
+        c.strokeStyle = "#000000";
+        c.lineWidth = 2;
+        c.font = `bold ${INVENTORY_ITEM_SIZE * 0.25}px Ubuntu`;
+        c.textAlign = "right";
+        c.textBaseline = "top";
+
+        const text = `x${formatAmount(item.count)}`;
+        c.strokeText(text, INVENTORY_ITEM_SIZE - 4, 4);
+        c.fillText(text, INVENTORY_ITEM_SIZE - 4, 4);
+    }
+
+    return icon;
+}
+
+function renderInventoryWindow() {
+    if (!inventoryBox) return;
+
+    const rowHeight = inventoryRowHeight();
+    const totalItems = inventoryItems.length;
+    const totalRows = Math.max(1, Math.ceil(totalItems / inventoryColumns));
+
+    const firstVisibleRow = Math.floor(menu.scrollTop / rowHeight);
+    const startRow = Math.max(0, firstVisibleRow - INVENTORY_OVERSCAN_ROWS);
+    const endRow = Math.min(totalRows, firstVisibleRow + inventoryViewportRows() + INVENTORY_OVERSCAN_ROWS);
+
+    const start = startRow * inventoryColumns;
+    const end = Math.min(totalItems, endRow * inventoryColumns);
+
+    inventoryStartRow = startRow;
+    inventoryEndRow = endRow;
+
+    // 上下留白撑出总高度, 只让可视行真正存在于 DOM 里
+    inventoryBox.textContent = "";
+    inventoryBox.style.paddingTop = startRow * rowHeight + "px";
+    inventoryBox.style.paddingBottom = Math.max(0, (totalRows - endRow) * rowHeight) + "px";
+
+    const fragment = document.createDocumentFragment();
+    for (let i = start; i < end; i++) {
+        fragment.appendChild(createInventoryIcon(inventoryItems[i]));
+    }
+    inventoryBox.appendChild(fragment);
+
+    inventoryHoverIcon = null;
+}
+
+function drawInventory() {
+    const scrollTop = menu.scrollTop;
+
+    menu.textContent = "";
+    inventoryBox = null;
+    inventoryHoverIcon = null;
+
+    if (!net.state.inventory) {
+        menu.textContent = "Your inventory is empty :(";
+        return;
+    }
+
+    inventoryItems = buildInventoryItems();
+
+    if (inventoryItems.length === 0) {
+        menu.textContent = "Your inventory is empty :(";
+        return;
+    }
+
+    const box = document.createElement("div");
+    box.style.display = "flex";
+    box.style.flexWrap = "wrap";
+    box.style.padding = "0px";
+    box.style.gap = INVENTORY_GAP + "px";
+    menu.appendChild(box);
+
+    inventoryBox = box;
+
+    // 列数跟着 CSS 走, 不写死
+    const contentWidth = box.clientWidth;
+    inventoryColumns = contentWidth > 0
+        ? Math.max(1, Math.floor((contentWidth + INVENTORY_GAP) / (INVENTORY_ITEM_SIZE + INVENTORY_GAP)))
+        : 1;
+
+    renderInventoryWindow();
+
+    menu.scrollTop = scrollTop;
 }
 
 window.addEventListener("keydown", (e) => {
@@ -2882,41 +2999,36 @@ function draw() {
 
     if (now - (net.state._lastInventoryCheck ?? 0) >= 250) {
         net.state._lastInventoryCheck = now;
-    if (JSON.stringify(net.state.inventory2) !== JSON.stringify(net.state.inventory)) {
-        if (menu.classList.contains("active")) {
-            drawInventory();
+
+        if (!isSameInventory(net.state.inventory2, net.state.inventory)) {
+            if (menu.classList.contains("active")) {
+                drawInventory();
+            }
+
+            net.state.inventory2 = syncInventory(net.state.inventory2, net.state.inventory);
         }
-        net.state.inventory2 = JSON.parse(JSON.stringify(net.state.inventory));
-    }
     }
 
     net.state._foundHover = false;
 
-    if (menu.classList.contains("active") && net.state.petalElements) {
+    if (menu.classList.contains("active") && inventoryHoverIcon) {
         const menuRect = menu.getBoundingClientRect();
-        const petalRects = net.state.petalElements.map(petalElement => petalElement.icon.getBoundingClientRect());
-        const mouseX = mouse.x / window.devicePixelRatio;
-        const mouseY = mouse.y / window.devicePixelRatio;
+        const rect = inventoryHoverIcon.getBoundingClientRect();
 
-        net.state.petalElements.forEach((petal, i) => {
-            const rect = petalRects[i]
-            const visible = rect.top >= menuRect.top && rect.bottom <= menuRect.bottom && rect.left >= menuRect.left && rect.right <= menuRect.right;
-            const hovered = visible && mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom;
+        const petalIndex = Number(inventoryHoverIcon.dataset.petalIndex);
+        const rarityIndex = Number(inventoryHoverIcon.dataset.petalRarity);
 
-            if (hovered) {
-                net.state._foundHover = true;
-                net.state.inventoryPetalHover = [petal.index, petal.rarity, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
+        net.state._foundHover = true;
+        net.state.inventoryPetalHover = [petalIndex, rarityIndex, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
 
-                if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
-                    beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petal.index, petal.rarity);
-                    menu.classList.toggle("active");
-                    inventoryDragConfig.index = petal.index;
-                    inventoryDragConfig.rarity = petal.rarity;
-                    inventoryDragConfig.item.stableSize = rect.width;
-                    inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
-                }
-            }
-        });
+        if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
+            beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petalIndex, rarityIndex);
+            menu.classList.toggle("active");
+            inventoryDragConfig.index = petalIndex;
+            inventoryDragConfig.rarity = rarityIndex;
+            inventoryDragConfig.item.stableSize = rect.width;
+            inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
+        }
     }
 
     if (!net.state._foundHover) {
