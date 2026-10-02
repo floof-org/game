@@ -670,20 +670,17 @@ let cuteLittleAnimations = {
 const buttonsContainer = document.getElementById("menus2");
 const menu = buttonsContainer.children.item("inventory");
 
-const horizontalPadding = () => (parseFloat(getComputedStyle(menu).paddingLeft) || 0) + (parseFloat(getComputedStyle(menu).paddingRight) || 0);
-const verticalPadding = () => (parseFloat(getComputedStyle(menu).paddingTop) || 0) + (parseFloat(getComputedStyle(menu).paddingBottom) || 0);
+// The whole menu is one canvas that does its own scrolling. The old implementation built a
+// <canvas> per inventory entry, so a /addall put tens of thousands of nodes in the DOM and
+// measured each one every frame. Here the visible rows are painted into a single surface and the
+// entry under the cursor is resolved by arithmetic, so the game loop reads no layout at all.
+menu.style.padding = "0";
+menu.style.overflow = "hidden";
 
-// The whole menu is one canvas. The old implementation built a <canvas> per inventory entry, so
-// a /addall put tens of thousands of nodes in the DOM and measured each one every frame. Here the
-// visible rows are painted into a single sticky surface and the entry under the cursor is resolved
-// by arithmetic, so the only layout read in the game loop is one getBoundingClientRect.
 const inventorySurface = createInventorySurface({
     host: menu,
     createCanvas: () => document.createElement("canvas"),
-    measure: () => ({
-        contentWidth: menu.clientWidth - horizontalPadding(),
-        contentHeight: menu.clientHeight - verticalPadding(),
-    }),
+    measure: () => ({ contentWidth: menu.clientWidth, contentHeight: menu.clientHeight }),
     rendererOptions: {
         getPetalIcon,
         formatAmount: formatLargeNumber,
@@ -691,11 +688,21 @@ const inventorySurface = createInventorySurface({
     },
 });
 
-// Fast scrolling can fire hundreds of scroll events per second, so repaint at most once per frame
-const queueInventoryRender = () => inventorySurface.queueRepaint(requestAnimationFrame);
+// The surface owns the scroll offset, so the wheel is consumed here. It only reports that it
+// took the event when there is somewhere to scroll, which leaves page scrolling intact when
+// the whole inventory already fits.
+menu.addEventListener("wheel", (ev) => {
+    if (inventorySurface.handleWheel(ev)) ev.preventDefault();
+}, { passive: false });
 
-menu.addEventListener("scroll", queueInventoryRender, { passive: true });
-window.addEventListener("resize", queueInventoryRender, { passive: true });
+// The canvas keeps its position while scrolling, so its rect is only stale after the menu
+// opens, closes or the window resizes. Refreshing it here keeps the game loop free of layout
+// reads, which is what caused the menu to stutter.
+window.addEventListener("resize", () => {
+    inventorySurface.resize();
+    inventorySurface.refreshRect();
+    inventorySurface.paint();
+}, { passive: true });
 
 const inventoryTooltipLayer = document.createElement("div");
 inventoryTooltipLayer.style.position = "fixed";
@@ -756,18 +763,12 @@ function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
 }
 
 function drawInventory() {
-    const scrollTop = menu.scrollTop;
-
     // No per-entry nodes are created, so this is a repaint plus a scroll range update.
     const list = net.state.inventory
         ? buildInventoryItems(net.state.inventory, net.state.tiers, net.state.petalConfigs)
         : [];
 
     inventorySurface.show(list);
-
-    // Restoring the offset can fire a scroll event, which repaints through
-    // queueInventoryRender, so nothing extra is needed here.
-    menu.scrollTop = scrollTop;
 }
 
 window.addEventListener("keydown", (e) => {
@@ -2868,19 +2869,19 @@ function draw() {
 
     net.state._foundHover = false;
 
-    // One getBoundingClientRect for the whole menu, then the entry under the cursor is pure
-    // arithmetic. The old menu measured every icon rect on every frame.
+    // No layout is read here. The surface keeps a cached rect that is refreshed when the menu
+    // opens, closes or resizes, and the entry under the cursor is pure arithmetic on top of it.
     if (menu.classList.contains("active") && inventorySurface.mounted) {
-        const rect = inventorySurface.canvas.getBoundingClientRect();
-
         const mouseX = mouse.x / window.devicePixelRatio;
         const mouseY = mouse.y / window.devicePixelRatio;
 
-        const index = inventorySurface.indexAtScreen({ rect, screenX: mouseX, screenY: mouseY });
+        // The cursor is usually nowhere near the menu, so this bails before any hit testing.
+        const index = inventorySurface.indexAtScreen({ screenX: mouseX, screenY: mouseY });
 
         if (index < 0) {
             net.state.inventoryPetalHover = null;
         } else {
+            const rect = inventorySurface.rect;
             const item = inventorySurface.itemAt(index);
             const anchor = inventorySurface.anchorFor(index);
 
@@ -2890,6 +2891,7 @@ function draw() {
             if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left) {
                 beginInventoryDragDrop(((rect.left + anchor.x) * 1.1) / uScale, ((rect.top + anchor.y + 22) * 1.1) / uScale, INVENTORY_ITEM_SIZE, item.index, item.rarity);
                 menu.classList.toggle("active");
+                inventorySurface.refreshRect();
                 inventoryDragConfig.index = item.index;
                 inventoryDragConfig.rarity = item.rarity;
                 inventoryDragConfig.item.stableSize = INVENTORY_ITEM_SIZE;

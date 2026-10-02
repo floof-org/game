@@ -107,56 +107,79 @@ export function createInventoryRenderer({
 
 export const EMPTY_INVENTORY_TEXT = "Your inventory is empty :(";
 
-/**
- * Owns the single canvas and its scroll spacer inside the menu.
- *
- * The canvas is sticky so it stays pinned in the scrollport, and the spacer below it
- * carries the remaining height, which is what gives a 3000 row menu a scroll range while
- * only one element is ever in the DOM. Sizing and hit testing live here rather than in
- * the game loop so they can be covered by tests.
- */
-export function createInventorySurface({ host, createCanvas, createElement, measure, rendererOptions = {} }) {
-    const renderer = createInventoryRenderer(rendererOptions);
+// A wheel notch is roughly this many CSS pixels, used when the browser reports line units.
+const WHEEL_LINE_HEIGHT = 16;
 
-    const makeElement = createElement ?? (tag => host.ownerDocument.createElement(tag));
+/**
+ * Owns the single canvas inside the menu and does its own scrolling.
+ *
+ * Scrolling is handled here rather than by the menu's own overflow for three reasons:
+ * the menu hides its scrollbar, so native scrolling bought nothing; a 3000 row grid
+ * made the browser lay out a fifty thousand pixel scroll box next to a canvas that is
+ * repainted every frame; and position: sticky or a counter transform both have to be
+ * reconciled with the menu padding, which is not something that can be reasoned about
+ * reliably without a browser. Owning the offset makes the whole thing deterministic.
+ */
+export function createInventorySurface({ host, createCanvas, measure, rendererOptions = {} }) {
+    const renderer = createInventoryRenderer(rendererOptions);
 
     let canvas = null;
     let ctx = null;
-    let spacer = null;
     let columns = 1;
     let items = [];
-    let repaintQueued = false;
+    let scrollTop = 0;
+    let viewportWidth = 0;
+    let viewportHeight = 0;
+
+    // Cached so the game loop never reads layout. Reading a rect after the loop has
+    // dirtied layout forces a synchronous reflow of the whole document, and doing that
+    // every frame was enough to stutter the menu. The canvas only moves when the menu
+    // opens, closes or the window resizes.
+    let rect = null;
 
     function mount() {
         canvas = createCanvas();
-        // Not scaled by devicePixelRatio, matching how the per-icon canvases used to be
-        // sized, so the menu keeps the exact appearance it had.
-        canvas.style.position = "sticky";
+        // Absolute inside the already fixed menu, so it fills it without the padding
+        // getting in the way of the scroll maths.
+        canvas.style.position = "absolute";
+        canvas.style.left = "0";
         canvas.style.top = "0";
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
         canvas.style.display = "block";
-
-        spacer = makeElement("div");
         ctx = canvas.getContext("2d");
     }
+
+    /** Re-read the canvas position. Call when the menu may have moved. */
+    function refreshRect() {
+        rect = canvas ? canvas.getBoundingClientRect() : null;
+        return rect;
+    }
+
+    function maxScrollTop() {
+        if (!canvas) return 0;
+        return Math.max(0, renderer.contentHeight(items.length, columns) - viewportHeight);
+    }
+
+    const canScroll = () => maxScrollTop() > 0;
 
     function resize() {
         if (!canvas) return false;
 
-        const { contentWidth, contentHeight } = measure();
+        const measured = measure();
 
-        if (!(contentWidth > 0) || !(contentHeight > 0)) return false;
+        if (!(measured.contentWidth > 0) || !(measured.contentHeight > 0)) return false;
 
-        canvas.width = contentWidth;
-        canvas.height = contentHeight;
-        canvas.style.width = contentWidth + "px";
-        canvas.style.height = contentHeight + "px";
+        viewportWidth = measured.contentWidth;
+        viewportHeight = measured.contentHeight;
 
-        columns = computeColumns(contentWidth, INVENTORY_ITEM_SIZE, INVENTORY_GAP);
+        // Not scaled by devicePixelRatio, matching how the per-icon canvases used to be
+        // sized, so the menu keeps the exact appearance it had.
+        canvas.width = viewportWidth;
+        canvas.height = viewportHeight;
 
-        // Canvas plus spacer must add up to the full grid height, otherwise the sticky
-        // canvas eats into the scrollable range.
-        const grid = renderer.contentHeight(items.length, columns);
-        spacer.style.height = Math.max(0, grid - contentHeight) + "px";
+        columns = computeColumns(viewportWidth, INVENTORY_ITEM_SIZE, INVENTORY_GAP);
+        scrollTop = Math.min(scrollTop, maxScrollTop());
 
         return true;
     }
@@ -167,9 +190,9 @@ export function createInventorySurface({ host, createCanvas, createElement, meas
         renderer.draw(ctx, {
             items,
             columns,
-            scrollTop: host.scrollTop,
-            viewportWidth: canvas.width,
-            viewportHeight: canvas.height,
+            scrollTop,
+            viewportWidth,
+            viewportHeight,
         });
     }
 
@@ -184,46 +207,77 @@ export function createInventorySurface({ host, createCanvas, createElement, meas
             host.textContent = EMPTY_INVENTORY_TEXT;
             canvas = null;
             ctx = null;
-            spacer = null;
+            rect = null;
+            scrollTop = 0;
             return false;
         }
 
         if (!canvas) mount();
 
         // Also reattaches after a remount, so a menu that something else emptied still
-        // ends up holding the canvas and its spacer.
-        host.replaceChildren(canvas, spacer);
+        // ends up holding the canvas.
+        host.replaceChildren(canvas);
 
         if (!resize()) return false;
 
         paint();
+        // Resizing the canvas moves it, so the cached position is stale straight away.
+        refreshRect();
         return true;
     }
 
-    /** Coalesce bursts of scroll and resize events into one repaint per frame. */
-    function queueRepaint(requestFrame) {
-        if (repaintQueued) return;
+    /** Move the offset, clamped to the grid, and repaint if it actually moved. */
+    function scrollBy(delta) {
+        if (!canvas || !delta) return false;
 
-        repaintQueued = true;
-        requestFrame(() => {
-            repaintQueued = false;
-            paint();
-        });
+        const next = Math.max(0, Math.min(scrollTop + delta, maxScrollTop()));
+
+        if (next === scrollTop) return false;
+
+        scrollTop = next;
+        paint();
+        return true;
+    }
+
+    function scrollTo(next) {
+        return scrollBy(next - scrollTop);
     }
 
     /**
-     * Index under a viewport point, or -1.
-     *
-     * Takes the canvas rect rather than reading it so the caller controls how often the
-     * layout is read, and so tests can pass one in.
+     * Apply a wheel event. Returns true when the menu consumed it, which is the caller's
+     * cue to preventDefault so the page behind does not scroll as well.
      */
-    function indexAtScreen({ rect, screenX, screenY }) {
-        if (!canvas || !rect || !(rect.width > 0) || !(rect.height > 0)) return -1;
+    function handleWheel({ deltaY, deltaMode = 0 }) {
+        if (!canScroll()) return false;
+
+        const scale = deltaMode === 1 ? WHEEL_LINE_HEIGHT : deltaMode === 2 ? viewportHeight : 1;
+
+        return scrollBy(deltaY * scale);
+    }
+
+    /**
+     * Whether a viewport point is inside the canvas at all.
+     *
+     * Checked before any hit testing so the game loop can skip the work entirely when the
+     * cursor is somewhere else, which is the common case.
+     */
+    function containsScreenPoint(screenX, screenY) {
+        if (!rect || !(rect.width > 0) || !(rect.height > 0)) return false;
+
+        return screenX >= rect.left
+            && screenX <= rect.left + rect.width
+            && screenY >= rect.top
+            && screenY <= rect.top + rect.height;
+    }
+
+    /** Index under a viewport point, or -1. Uses the cached rect; never reads layout. */
+    function indexAtScreen({ screenX, screenY }) {
+        if (!canvas || !containsScreenPoint(screenX, screenY)) return -1;
 
         return renderer.indexAt({
             x: screenX - rect.left,
             y: screenY - rect.top,
-            scrollTop: host.scrollTop,
+            scrollTop,
             totalItems: items.length,
             columns,
         });
@@ -231,17 +285,24 @@ export function createInventorySurface({ host, createCanvas, createElement, meas
 
     /** Tooltip anchor for an index, in viewport coordinates relative to the canvas. */
     function anchorFor(index) {
-        return renderer.anchorFor(index, { columns, scrollTop: host.scrollTop });
+        return renderer.anchorFor(index, { columns, scrollTop });
     }
 
     return {
         show,
         paint,
         resize,
-        queueRepaint,
+        refreshRect,
+        handleWheel,
+        scrollBy,
+        scrollTo,
+        canScroll,
+        maxScrollTop,
         indexAtScreen,
         anchorFor,
         itemAt: index => items[index],
+        get rect() { return rect; },
+        get scrollTop() { return scrollTop; },
         get canvas() { return canvas; },
         get columns() { return columns; },
         get items() { return items; },
