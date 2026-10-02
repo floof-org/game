@@ -1084,6 +1084,14 @@ export class MobConfig {
 
         this.isSystem = false;
 
+        /**
+         * Wire-only override of the hideUI bit (the byte the client reads as hideUI while the
+         * server keeps isSystem). Used for centipede segments: their bar has to show on the
+         * stock client without touching the server's isSystem semantics.
+         * undefined falls back to isSystem.
+         */
+        this.wireHideUI = undefined;
+
         this.movesInBursts = false;
         this.moveInSines = false;
 
@@ -2289,7 +2297,7 @@ export function decodePetalConfigs(data, nTiers) {
 
 /** @param {MobConfig} config */
 function encodeMobConfig(config) {
-    const output = [config.id, config.name, +config.isSystem, config.drops, 0x00];
+    const output = [config.id, config.name, +(config.wireHideUI ?? config.isSystem), config.drops, 0x00];
 
     const flagsIndex = output.length - 1;
 

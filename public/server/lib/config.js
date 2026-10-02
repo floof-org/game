@@ -1782,6 +1782,18 @@ mobConfigs[mobIDOf("Desert Centipede")].segmentWith(queryMob(m => m.isSystem && 
 mobConfigs[mobIDOf("Evil Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Evil Centipede"));
 mobConfigs[mobIDOf("Evil Desert Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Evil Desert Centipede"));
 mobConfigs[mobIDOf("Hell Centipede")].segmentWith(queryMob(m => m.isSystem && m.name === "Hell Centipede"));
+
+// The wire bit the client reads as hideUI is the server's isSystem flag, so these segments
+// were never drawn with the head's bar. wireHideUI clears that bit on the wire only: the
+// stock client then shows the same bar as the head, while the server keeps isSystem (it
+// gates the kill announce and Spirit logic).
+for (const name of ["Desert Centipede", "Evil Desert Centipede"]) {
+    const segmentIndex = queryMob(m => m.isSystem && m.name === name);
+
+    if (segmentIndex !== -1) {
+        mobConfigs[segmentIndex].wireHideUI = 0;
+    }
+}
 mobConfigs[mobIDOf("Wilt")].branchWith(queryMob(m => m.isSystem && m.name === "Wilt"), 5, 2);
 
 export const DEFAULT_PETAL_COUNT = petalConfigs.length;
