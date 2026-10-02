@@ -1234,8 +1234,6 @@ export class ClientSocket extends WebSocket {
                         }
                     }
 
-                    console.log(clientID, slotID, index, rarity);
-
                     return this.devCheatListener.wait({
                         id: DEV_CHEAT_IDS.SET_PETAL,
                         clientID,
@@ -1752,7 +1750,6 @@ export class ClientSocket extends WebSocket {
                 {
                     const readTo = reader._o;
                     const remaining = reader.view.byteLength - readTo;
-                    let trackedOk = false;
 
                     if (remaining >= 2 && reader.getUint8() === 0xFE) {
                         const count = reader.getUint8();
@@ -1769,16 +1766,7 @@ export class ClientSocket extends WebSocket {
                             }
 
                             state.globalPlayers = tracked;
-                            trackedOk = true;
                         }
-                    }
-
-                    if (!state._trackedDiag) {
-                        state._trackedDiag = true;
-
-                        const peekAt = Math.min(readTo, Math.max(0, reader.view.byteLength - 1));
-
-                        console.log(`[tracked-cl] ok=${trackedOk} total=${reader.view.byteLength} readTo=${readTo} remaining=${remaining} peek=${reader.view.getUint8(peekAt)} slots=${state.slots.length} sec=${state.secondarySlots.length} tiers=${state.tiers?.length} lb=${state.alivePlayers?.length}`);
                     }
                 }
                 break;

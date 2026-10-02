@@ -430,7 +430,7 @@ export class PetalSlot {
                         petal.speed *= this.config.launchedSpeed;
                         petal.range = this.config.launchedRange;
 
-                        // 指定了 autoLock 的花瓣锁定离玩家最近的怪，其余沿用离自己最近的默认锁定
+                        // petals with autoLock set target the mob nearest the player, everything else keeps the default nearest-to-self lock
                         if (petal.config.autoLockAngle > 0) {
                             const [ang, targ] = petal.findTargetByPlayerDistanceWithinArc(petal.facing, petal.config.autoLockAngle);
 
@@ -439,7 +439,7 @@ export class PetalSlot {
                             petal.facing = petal.moveAngle;
                             petal.moveStrength = 1;
                         } else {
-                            // rarity >= 19 时分母会变负导致永不锁定，夹到 9 使弧度封顶 ±46.2°
+                            // at rarity >= 19 the denominator goes negative and never locks, so clamp to 9 and cap the arc at +/-46.2 degrees
                             const defaultArc = Math.PI * 2 / (7.5 - (.4 * Math.min(this.rarity, 9)));
                             const [ang, targ] = petal.findTargetAngleWithinRadianArc(petal.facing, defaultArc);
 
@@ -902,7 +902,7 @@ export class Entity {
                         otherDamageDone += other.damage * other.extraDamage.multiplier;
                     }
 
-                    // 记录实际造成的伤害，被 armor / damageReduction 完全挡下的伤害不应计入 loot
+                    // track the damage actually dealt; damage fully blocked by armor / damageReduction must not count toward loot
                     let thisDealt = 0,
                         otherDealt = 0;
 
@@ -979,7 +979,7 @@ export class Entity {
                         other.target = this.parent;
                     }
 
-                    // thisDealt 是 this 承受的伤害，otherDealt 是 other 承受的伤害
+                    // thisDealt is the damage this took, otherDealt is the damage other took
                     if (thisDealt > 0 && (this.type === ENTITY_TYPES.PLAYER || this.type === ENTITY_TYPES.MOB)) {
                         if (this.parent && this.config?.name === "Leech") {
                             let existing = this.parent.damagedBy[other.parent.id] || [0, other.parent.type, other.parent.type === ENTITY_TYPES.PLAYER ? other.parent.name : other.parent.index, other.parent.type === ENTITY_TYPES.PLAYER && other.parent.client ? other.parent.client.id : null];
@@ -1369,10 +1369,10 @@ export class Petal extends Entity {
     }
 
     /**
-     * 自动锁定：射向左右各半角范围内，选离玩家最近的敌人。
-     * 与 findTargetAngleWithinRadianArc 的区别是距离基准从花瓣换成了玩家。
-     * @param {number} myAngle 射向
-     * @param {number} halfAngle 半角（弧度）
+     * Auto lock: among the enemies within halfAngle of the firing direction, pick the nearest the player.
+     * Unlike findTargetAngleWithinRadianArc, distance is measured from the player instead of the petal.
+     * @param {number} myAngle firing direction
+     * @param {number} halfAngle half angle in radians
      */
     findTargetByPlayerDistanceWithinArc(myAngle, halfAngle) {
         let targetAngle = myAngle,
@@ -1392,7 +1392,7 @@ export class Petal extends Entity {
                 return;
             }
 
-            // 距离以玩家为基准，而不是以发射的花瓣为基准
+            // distance is measured from the player, not from the firing petal
             const dx = player.x - entity.x;
             const dy = player.y - entity.y;
             const distSqr = dx * dx + dy * dy;
@@ -1556,8 +1556,8 @@ export class Player extends Entity {
     }
 
     /**
-     * /godmode 开关。开启后一直有效，直到再次调用传入 false。
-     * 用 _godmode 独立记录，避免被 deathDefying 等临时无敌的开关覆盖。
+     * /godmode toggle. Once enabled it stays on until called again with false.
+     * tracked separately in _godmode so temporary invulnerability flags like deathDefying cannot clobber it
      */
     setGodmode(enabled) {
         this._godmode = !!enabled;
@@ -1567,32 +1567,6 @@ export class Player extends Entity {
     update() {
         if (state.gamemode === GAMEMODES.MAZE && this.team === -69 && this.name !== "guest" && !this.name.startsWith(":")) {
             this.team = 0;
-            this._mazeTeamCorrected = (this._mazeTeamCorrected || 0) + 1;
-            console.log(`[maze-diag] ${this.name} self=${this.id} TEAM-CORRECTED -69->0 count=${this._mazeTeamCorrected}`);
-        } else if (state.gamemode === GAMEMODES.MAZE && this._mazeTeamCorrected && this.team !== -69) {
-            this._mazeTeamCorrected = 0;
-        }
-
-        if (state.gamemode === GAMEMODES.MAZE) {
-            const sig = `${!!this.health.invulnerable}|${!!this.phases}|${this.team}|${!!this.nullCollision}|${!!this.spawnInvincibility}`;
-            if (sig !== this._mazeDiagSig) {
-                this._mazeDiagSig = sig;
-                console.log(`[maze-diag] ${this.name} self=${this.id} inv=${this.health.invulnerable} phases=${!!this.phases} team=${this.team} nullColl=${!!this.nullCollision} spawnInv=${!!this.spawnInvincibility} hp=${this.health.health.toFixed(1)}/${this.health.maxHealth} x=${this.x >> 0} y=${this.y >> 0}`);
-
-                if (this._AABB) {
-                    const nearby = state.spatialHash.retrieve(this).values();
-                    const teams = {};
-                    const sameTeamOthers = [];
-                    for (const e of nearby) {
-                        const t = e.parent?.team ?? -1;
-                        teams[t] = (teams[t] || 0) + 1;
-                        if (e.parent?.team === this.team && e.parent.type !== undefined && e.parent.id !== this.id) {
-                            sameTeamOthers.push(`${ENTITY_TYPES[e.type]}(${e.parent.id}->${e.id})`);
-                        }
-                    }
-                    console.log(`[maze-diag] ${this.name} nearby=${nearby.length} teams=${JSON.stringify(teams)} sameTeam=${sameTeamOthers.slice(0, 8).join(",")}`);
-                }
-            }
         }
 
         if (this.health.isDead) {
@@ -1679,7 +1653,7 @@ export class Player extends Entity {
         if (this.client !== null) {
             const allDamagers = this.getTopDamagers(10);
 
-            // 严格 looting：造成伤害低于 5% 最大血量的人不算击杀者
+            // strict looting: anyone who dealt under 5% of max health does not count as the killer
             const damageThreshold = this.health.maxHealth * 0.05;
             const topDamagers = allDamagers.filter(damager => damager.damage >= damageThreshold);
 
@@ -1909,7 +1883,7 @@ export class AIPlayer extends Player {
         }
         state.livingMobCount--;
 
-        // 严格 looting：同样要求至少 5% 最大血量的伤害
+        // strict looting: same requirement of at least 5% of max health damage
         const damageThreshold = this.health.maxHealth * 0.05;
         const topDamagers = this.getTopDamagers(10)
             .filter(damager => damper.type === ENTITY_TYPES.PLAYER && damper.damage >= damageThreshold);
@@ -2687,7 +2661,7 @@ export class Mob extends Entity {
                     this.extraTicker--;
 
                     if (this.extraTicker <= 0) {
-                        // 闪电射程不超过该怪的仇恨感知距离，避免隔着一段距离电到玩家
+                        // keep the lightning range within the mob aggro sense distance so it cannot zap the player from across the map
                         new Lightning(this).define(lightning.damage, Math.min(lightning.range, aggroRange), lightning.bounces).bounce();
                         this.extraTicker = lightning.cooldown * (.95 + Math.random() * .1);
                     }
@@ -2713,7 +2687,7 @@ export class Mob extends Entity {
 
         const topDamagers = this.getTopDamagers(3, ENTITY_TYPES.PLAYER);
 
-        // 严格 looting：必须造成至少 5% 最大血量的伤害才能获得掉落、经验和击杀播报
+        // strict looting: at least 5% of max health damage is required to earn drops, xp and the kill message
         const damageThreshold = this.health.maxHealth * 0.05;
         const qualifyingDamagers = topDamagers.filter(damager => damager.damage >= damageThreshold);
 

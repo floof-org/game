@@ -102,7 +102,7 @@ function findTargetClient(playerName) {
 }
 
 /**
- * 处罚目标：优先用在线玩家的 Discord ID（权威），离线时回退到已处罚记录里的账号名
+ * Punishment target: prefer the online player's Discord ID (authoritative), fall back to the account name in the punishment record when offline
  * @param {string} playerName
  */
 function resolveModerationTarget(playerName) {
@@ -885,7 +885,7 @@ export default class Client {
         this.frownyMessages = 0;
     }
 
-    /** @param {object} data account.data 存档内容 */
+    /** @param {object} data account.data save contents */
     restoreFromData(data) {
         this.level = Math.min(9999, Math.max(1, Math.floor(+data.level || 1)));
         this.xp = Math.min(1e15, Math.max(1, +data.xp || 1));
@@ -927,7 +927,7 @@ export default class Client {
         }
     }
 
-    /** 击杀播报里显示的名字：登录后用账号名，否则用 Discord 名 */
+    /** name shown in the kill message: the account name once logged in, otherwise the Discord name */
     lootName() {
         return this.auth?.loggedIn ? this.auth.username : this.username;
     }
@@ -1768,7 +1768,7 @@ export default class Client {
                     return;
                 }
 
-                // 被封的人可以离线操作：优先找已有的处罚记录，没有就只针对在线玩家
+                // banned players can act offline: look for an existing punishment record first, otherwise only target online players
                 const resolved = resolveModerationTarget(playerName);
 
                 if (!resolved) {
@@ -1840,7 +1840,7 @@ export default class Client {
 
                 const [playerName, petalArg, rarityArg, amountArg] = args;
 
-                // 花瓣名允许省略空格: "fire missile" 和 "firemissile" 都能识别
+                // petal names may omit spaces: both "fire missile" and "firemissile" resolve
                 const normalize = s => s.toLowerCase().replace(/\s+/g, "");
                 const normalizedPetal = normalize(petalArg);
 
@@ -2859,11 +2859,6 @@ export default class Client {
         }
 
         const worldPacket = writer.build();
-
-        if (!this._trackedLogged) {
-            this._trackedLogged = true;
-            console.log(`[tracked] client=${this.id} slots=${this.slots.length} sec=${this.secondarySlots.length} tiers=${tiers.length} lb=${state.alivePlayers.length} written=${tracked.length} tail=${2 + tracked.length * 12} total=${worldPacket.length} tailAt=${worldPacket.length - (2 + tracked.length * 12)} gamemode=${state.gamemode}`);
-        }
 
         state.router.postMessage(worldPacket);
 
