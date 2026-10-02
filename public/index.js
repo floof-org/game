@@ -678,14 +678,21 @@ menu.addEventListener("pointerleave", () => {
     inventoryHoverIcon = null;
 });
 
-menu.addEventListener("scroll", () => {
-    // 只有滚出已渲染的行范围才重新建 DOM, 否则一次滚动要重画几十个 canvas
-    const firstVisibleRow = Math.floor(menu.scrollTop / inventoryRowHeight());
+// 快速滚动时 scroll 事件能每秒触发上百次, 必须每帧最多重画一次
+let inventoryRenderQueued = false;
 
-    if (firstVisibleRow < inventoryStartRow || firstVisibleRow + inventoryViewportRows() > inventoryEndRow) {
+function queueInventoryRender() {
+    if (inventoryRenderQueued) return;
+
+    inventoryRenderQueued = true;
+
+    requestAnimationFrame(() => {
+        inventoryRenderQueued = false;
         renderInventoryWindow();
-    }
-});
+    });
+}
+
+menu.addEventListener("scroll", queueInventoryRender, { passive: true });
 
 const inventoryTooltipLayer = document.createElement("div");
 inventoryTooltipLayer.style.position = "fixed";
@@ -775,17 +782,13 @@ function syncInventory(dst, src) {
 
 const INVENTORY_ITEM_SIZE = 56;
 const INVENTORY_GAP = 5;
-const INVENTORY_OVERSCAN_ROWS = 2;
 
-// 全 addall 之后有三千多项, 全量建 DOM 每次重建都要几百毫秒, 所以只渲染视口附近的几行
+// 全 addall 之后有三千多项, 全量建 DOM 每次重建都要几百毫秒, 所以只渲染刚好露在可视区里的那几行
 let inventoryItems = [];
 let inventoryColumns = 1;
-let inventoryStartRow = 0;
-let inventoryEndRow = 0;
 let inventoryBox = null;
 
 const inventoryRowHeight = () => INVENTORY_ITEM_SIZE + INVENTORY_GAP;
-const inventoryViewportRows = () => Math.ceil(menu.clientHeight / inventoryRowHeight());
 
 function buildInventoryItems() {
     const items = [];
@@ -811,14 +814,9 @@ function buildInventoryItems() {
     return items;
 }
 
-function createInventoryIcon(item) {
-    const petalCanvas = getPetalIcon(Number(item.index), item.rarity, "oneshot");
-
+// canvas 只建一次, 之后靠重画复用, 快速滚动时不会反复分配 canvas
+function createInventoryIcon() {
     const icon = document.createElement("canvas");
-
-    // 事件用委托处理, 这里只挂数据, 避免上千个监听器
-    icon.dataset.petalIndex = item.index;
-    icon.dataset.petalRarity = item.rarity;
 
     icon.width = INVENTORY_ITEM_SIZE;
     icon.height = INVENTORY_ITEM_SIZE;
@@ -827,8 +825,19 @@ function createInventoryIcon(item) {
     icon.style.height = INVENTORY_ITEM_SIZE + "px";
     icon.style.flex = "0 0 auto";
 
+    return icon;
+}
+
+function paintInventoryIcon(icon, item) {
+    // 事件用委托处理, 这里只挂数据, 避免上千个监听器
+    icon.dataset.petalIndex = item.index;
+    icon.dataset.petalRarity = item.rarity;
+
     const c = icon.getContext("2d");
-    c.drawImage(petalCanvas, 0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
+
+    // 必须先清掉, 否则上一次的 x123 会留在图上
+    c.clearRect(0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
+    c.drawImage(getPetalIcon(Number(item.index), item.rarity, "oneshot"), 0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
 
     if (item.count > 1) {
         c.fillStyle = colors.white;
@@ -842,8 +851,6 @@ function createInventoryIcon(item) {
         c.strokeText(text, INVENTORY_ITEM_SIZE - 4, 4);
         c.fillText(text, INVENTORY_ITEM_SIZE - 4, 4);
     }
-
-    return icon;
 }
 
 function renderInventoryWindow() {
@@ -853,26 +860,36 @@ function renderInventoryWindow() {
     const totalItems = inventoryItems.length;
     const totalRows = Math.max(1, Math.ceil(totalItems / inventoryColumns));
 
-    const firstVisibleRow = Math.floor(menu.scrollTop / rowHeight);
-    const startRow = Math.max(0, firstVisibleRow - INVENTORY_OVERSCAN_ROWS);
-    const endRow = Math.min(totalRows, firstVisibleRow + inventoryViewportRows() + INVENTORY_OVERSCAN_ROWS);
+    // 只渲染刚好露在可视区里的行, 上下那行可能只露一半, 也要画出来。
+    // 行数要固定: 用 ceil(scrollTop + 视口高) 会随滚动在 6 行和 7 行之间抖,
+    // 抖一下就要增删一次 canvas 元素, 快速滚动时反而比重建还糟。
+    // 330px 的视口最多能同时碰到 7 行, 所以固定 6+1 行。
+    const startRow = Math.max(0, Math.floor(menu.scrollTop / rowHeight));
+    const endRow = Math.min(totalRows, startRow + Math.ceil(menu.clientHeight / rowHeight) + 1);
 
     const start = startRow * inventoryColumns;
     const end = Math.min(totalItems, endRow * inventoryColumns);
 
-    inventoryStartRow = startRow;
-    inventoryEndRow = endRow;
-
     // 上下留白撑出总高度, 只让可视行真正存在于 DOM 里
-    inventoryBox.textContent = "";
     inventoryBox.style.paddingTop = startRow * rowHeight + "px";
     inventoryBox.style.paddingBottom = Math.max(0, (totalRows - endRow) * rowHeight) + "px";
 
-    const fragment = document.createDocumentFragment();
-    for (let i = start; i < end; i++) {
-        fragment.appendChild(createInventoryIcon(inventoryItems[i]));
+    const needed = end - start;
+    const icons = inventoryBox.children;
+
+    // 只在不够时补, 多出来的隐藏而不是删掉, 这样滚完整份背包也不会再动 DOM 结构
+    while (icons.length < needed) inventoryBox.appendChild(createInventoryIcon());
+
+    for (let i = needed; i < icons.length; i++) {
+        icons[i].style.display = "none";
     }
-    inventoryBox.appendChild(fragment);
+
+    for (let i = start; i < end; i++) {
+        const icon = inventoryBox.children[i - start];
+
+        icon.style.display = "";
+        paintInventoryIcon(icon, inventoryItems[i]);
+    }
 
     inventoryHoverIcon = null;
 }
