@@ -1583,9 +1583,9 @@ export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 // Shiny Soldier Ant no longer replaces every non-queen ant's spawn at random. Only ants
 // produced by the Fire Ant Hole can turn shiny, one roll per spawned ant: each of its
 // baby / worker / soldier fire ants has a 3% chance to come out as a Shiny Soldier Ant.
-// antShiny is a server-only rule on the hole config and is never serialized to the
-// client; the hole spawn loop in Entity.js consults it.
-mobConfigs[mobIDOf("Fire Ant Hole")].antShiny = {
+// antShiny is a server-only rule on the config and is never serialized to the client; the
+// hole spawn loop and the Queen Fire Ant egg hatch in Entity.js consult it.
+const fireAntShinyRule = {
     variants: [
         mobIDOf("Baby Fire Ant"),
         mobIDOf("Worker Fire Ant"),
@@ -1594,6 +1594,13 @@ mobConfigs[mobIDOf("Fire Ant Hole")].antShiny = {
     index: mobIDOf("Shiny Soldier Ant"),
     chance: .03
 };
+
+mobConfigs[mobIDOf("Fire Ant Hole")].antShiny = fireAntShinyRule;
+mobConfigs[mobIDOf("Queen Fire Ant")].antShiny = fireAntShinyRule;
+
+// The queen only ever produces six eggs (each hatching one shiny-rolled soldier), then
+// stops. maxPoops is a server-only cap consulted by the poop loop in Entity.js.
+mobConfigs[mobIDOf("Queen Fire Ant")].maxPoops = 6;
 
 petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
 petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);

@@ -4,6 +4,17 @@ import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, r
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
+// Roll a config's antShiny rule (if any): when the produced ant matches one of the rule's
+// variants it has a chance of coming out as the shiny variant instead. Fallback: the same
+// index. Used by the Fire Ant Hole spawn loop and Queen Fire Ant egg hatching.
+function rollShiny(rule, index) {
+    if (!rule || !rule.variants.includes(index) || Math.random() >= rule.chance) {
+        return index;
+    }
+
+    return rule.index;
+}
+
 export class HealthComponent {
     constructor(x) {
         this.health = x;
@@ -2088,22 +2099,13 @@ export class Mob extends Entity {
             // When a hole declares an antShiny rule, every matching ant it produces has a
             // chance of coming out as the shiny variant instead. Only the Fire Ant Hole
             // sets this, so no other hole or wild spawn can turn ants shiny.
-            const shinyRoll = index => {
-                const rule = this.config.antShiny;
-
-                if (!rule || !rule.variants.includes(index) || Math.random() >= rule.chance) {
-                    return index;
-                }
-
-                return rule.index;
-            };
 
             for (const spawn of spawns) {
                 if (spawn.count > 4) {
                     for (let i = 0, n = Math.random() * 4 | 0; i < n; i++) {
                         setTimeout(() => {
                             const rarity = Math.max(0, this.rarity - (Math.random() * 2 | 0));
-                            const index = shinyRoll(spawn.index);
+                            const index = rollShiny(this.config.antShiny, spawn.index);
                             const mob = new Mob(sp(mobConfigs[index].tiers[rarity].size));
                             mob.define(mobConfigs[index], rarity);
                             mob.team = this.team;
@@ -2129,7 +2131,7 @@ export class Mob extends Entity {
                     if (!!!spawn.minHealthRatio || this.health.ratio <= spawn.minHealthRatio) {
                         while (spawn.count > 0 && (spawn.minHealthRatio < 1 || this.health.ratio <= (spawn.count + 1) / spawn.maxCount)) {
                             const rarity = spawn.maxCount === 1 ? this.rarity : Math.max(0, this.rarity - (Math.random() * 2 | 0));
-                            const index = shinyRoll(spawn.index);
+                            const index = rollShiny(this.config.antShiny, spawn.index);
                             const mob = new Mob(sp(mobConfigs[index].tiers[rarity].size));
                             mob.define(mobConfigs[index], rarity);
                             mob.aggressive = true;
@@ -2357,8 +2359,13 @@ export class Mob extends Entity {
             if (this.hatchable.time <= 0) {
                 this.destroy();
 
+                // Queen-produced eggs carry their parent (the queen), whose config carries
+                // the antShiny rule: each hatched soldier still rolls its 3% shiny chance.
+                const rule = this.parent?.config?.antShiny;
+                const index = rollShiny(rule, this.hatchable.index);
+
                 const mob = new Mob(this);
-                mob.define(mobConfigs[this.hatchable.index], this.rarity);
+                mob.define(mobConfigs[index], this.rarity);
                 mob.target = this.parent.target;
                 mob.team = this.team;
                 mob.friendly = this.friendly;
@@ -2396,17 +2403,24 @@ export class Mob extends Entity {
                     if (this.poopable.ticker >= this.poopable.interval) {
                         this.poopable.ticker = 0;
 
-                        const poop = new Mob(this);
-                        poop.x -= Math.cos(this.facing) * this.size * 2;
-                        poop.y -= Math.sin(this.facing) * this.size * 2;
-                        poop.define(mobConfigs[this.poopable.index], Math.max(0, this.rarity - 1));
-                        poop.team = this.team;
-                        poop.parent = this;
-                        poop.friendly = this.friendly;
+                        // A maxPoops config (Queen Fire Ant) lets the entity only ever
+                        // produce a fixed number of eggs; once the cap is hit it stops.
+                        if (this.config.maxPoops && (this.poopsMade || 0) >= this.config.maxPoops) {
+                            this.poopable = null;
+                        } else {
+                            const poop = new Mob(this);
+                            poop.x -= Math.cos(this.facing) * this.size * 2;
+                            poop.y -= Math.sin(this.facing) * this.size * 2;
+                            poop.define(mobConfigs[this.poopable.index], Math.max(0, this.rarity - 1));
+                            poop.team = this.team;
+                            poop.parent = this;
+                            poop.friendly = this.friendly;
+                            this.poopsMade = (this.poopsMade || 0) + 1;
 
-                        if (state.isWaves) {
-                            state.maxMobs++;
-                            state.aliveMobs.push(poop);
+                            if (state.isWaves) {
+                                state.maxMobs++;
+                                state.aliveMobs.push(poop);
+                            }
                         }
                     }
                 }
