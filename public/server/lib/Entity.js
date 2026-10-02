@@ -2085,13 +2085,27 @@ export class Mob extends Entity {
                 spawns[i].maxCount = spawns[i].count;
             }
 
+            // When a hole declares an antShiny rule, every matching ant it produces has a
+            // chance of coming out as the shiny variant instead. Only the Fire Ant Hole
+            // sets this, so no other hole or wild spawn can turn ants shiny.
+            const shinyRoll = index => {
+                const rule = this.config.antShiny;
+
+                if (!rule || !rule.variants.includes(index) || Math.random() >= rule.chance) {
+                    return index;
+                }
+
+                return rule.index;
+            };
+
             for (const spawn of spawns) {
                 if (spawn.count > 4) {
                     for (let i = 0, n = Math.random() * 4 | 0; i < n; i++) {
                         setTimeout(() => {
                             const rarity = Math.max(0, this.rarity - (Math.random() * 2 | 0));
-                            const mob = new Mob(sp(mobConfigs[spawn.index].tiers[rarity].size));
-                            mob.define(mobConfigs[spawn.index], rarity);
+                            const index = shinyRoll(spawn.index);
+                            const mob = new Mob(sp(mobConfigs[index].tiers[rarity].size));
+                            mob.define(mobConfigs[index], rarity);
                             mob.team = this.team;
                             mob.friendly = this.friendly;
                             spawn.count--;
@@ -2115,8 +2129,9 @@ export class Mob extends Entity {
                     if (!!!spawn.minHealthRatio || this.health.ratio <= spawn.minHealthRatio) {
                         while (spawn.count > 0 && (spawn.minHealthRatio < 1 || this.health.ratio <= (spawn.count + 1) / spawn.maxCount)) {
                             const rarity = spawn.maxCount === 1 ? this.rarity : Math.max(0, this.rarity - (Math.random() * 2 | 0));
-                            const mob = new Mob(sp(mobConfigs[spawn.index].tiers[rarity].size));
-                            mob.define(mobConfigs[spawn.index], rarity);
+                            const index = shinyRoll(spawn.index);
+                            const mob = new Mob(sp(mobConfigs[index].tiers[rarity].size));
+                            mob.define(mobConfigs[index], rarity);
                             mob.aggressive = true;
                             mob.team = this.team;
                             mob.friendly = this.friendly;

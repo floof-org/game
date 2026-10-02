@@ -1580,20 +1580,20 @@ for (const config of mobConfigs) {
 
 export const mobIDOf = name => mobConfigs.findIndex(m => m.name === name);
 
-// Every non-queen ant has a 3% chance of spawning directly as a Shiny Soldier Ant.
-// Replaces listing shiny mobs separately in the Ant Hole / Fire Ant Hole spawns.
-const SHINY_ANT_CHANCE = .03;
-
-for (const name of [
-    "Baby Ant",
-    "Worker Ant",
-    "Soldier Ant",
-    "Baby Fire Ant",
-    "Worker Fire Ant",
-    "Soldier Fire Ant"
-]) {
-    mobConfigs[mobIDOf(name)].setShinyVariant(mobIDOf("Shiny Soldier Ant"), SHINY_ANT_CHANCE);
-}
+// Shiny Soldier Ant no longer replaces every non-queen ant's spawn at random. Only ants
+// produced by the Fire Ant Hole can turn shiny, one roll per spawned ant: each of its
+// baby / worker / soldier fire ants has a 3% chance to come out as a Shiny Soldier Ant.
+// antShiny is a server-only rule on the hole config and is never serialized to the
+// client; the hole spawn loop in Entity.js consults it.
+mobConfigs[mobIDOf("Fire Ant Hole")].antShiny = {
+    variants: [
+        mobIDOf("Baby Fire Ant"),
+        mobIDOf("Worker Fire Ant"),
+        mobIDOf("Soldier Fire Ant")
+    ],
+    index: mobIDOf("Shiny Soldier Ant"),
+    chance: .03
+};
 
 petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
 petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 4);
