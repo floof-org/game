@@ -888,7 +888,7 @@ export default class Client {
     /** @param {object} data account.data save contents */
     restoreFromData(data) {
         this.level = Math.min(9999, Math.max(1, Math.floor(+data.level || 1)));
-        this.xp = Math.min(1e15, Math.max(1, +data.xp || 1));
+        this.xp = Math.min(1e21, Math.max(1, +data.xp || 1));
 
         const slotLength = sanitizeSlotLength(data.slots?.length || this.slots.length);
         this.slots = sanitizeSlots(data.slots, slotLength);

@@ -45,7 +45,7 @@ function snapshot(client) {
 
     return {
         level: Math.min(9999, Math.max(1, Math.floor(+client.level || 1))),
-        xp: Math.min(1e15, Math.max(1, +client.xp || 1)),
+        xp: Math.min(1e21, Math.max(1, +client.xp || 1)),
         slots: (client.slots || []).map(slot => slot ? { id: slot.id, rarity: slot.rarity } : null),
         secondarySlots: (client.secondarySlots || []).map(slot => slot ? { id: slot.id, rarity: slot.rarity } : null),
         inventory,

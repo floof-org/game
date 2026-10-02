@@ -146,33 +146,19 @@ export function chatGradient(speed, type, c1 = "#000000", c2 = "#ffffff") {
 }
 
 export function formatLargeNumber(number, type = 0) {
-    let returnedNumber = number;
-    if (type === 1) {
-        if (number >= 1e15) {
-            returnedNumber = (number / 1e15).toFixed(1) + "q";
-        } else if (number >= 1e12) {
-            returnedNumber = (number / 1e12).toFixed(2) + "t";
-        } else if (number >= 1e9) {
-            returnedNumber = (number / 1e9).toFixed(2) + "b";
-        } else if (number >= 1e6) {
-            returnedNumber = (number / 1e6).toFixed(2) + "m";
-        } else if (number >= 1e3) {
-            returnedNumber = (number / 1e3).toFixed(1) + "k";
-        }
-    } else {
-        if (number >= 1e15) {
-            returnedNumber = (number / 1e15).toFixed(2) + "q";
-        } else if (number >= 1e12) {
-            returnedNumber = (number / 1e12).toFixed(2) + "t";
-        } else if (number >= 1e9) {
-            returnedNumber = (number / 1e9).toFixed(2) + "b";
-        } else if (number >= 1e6) {
-            returnedNumber = (number / 1e6).toFixed(2) + "m";
-        } else if (number >= 1e3) {
-            returnedNumber = (number / 1e3).toFixed(2) + "k";
+    const suffixes = [
+        ["Nv", 1e30], ["Oc", 1e27], ["Sp", 1e24], ["Sx", 1e21],
+        ["Qt", 1e18], ["Qd", 1e15], ["t", 1e12], ["b", 1e9], ["m", 1e6], ["k", 1e3]
+    ];
+
+    for (const [suffix, value] of suffixes) {
+        if (number >= value) {
+            const decimals = type === 1 ? (value >= 1e15 || value === 1e3 ? 1 : 2) : 2;
+            return (number / value).toFixed(decimals) + suffix;
         }
     }
-    return returnedNumber;
+
+    return number;
 }
 
 const threshold = .6375;
