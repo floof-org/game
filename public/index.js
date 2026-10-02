@@ -8,6 +8,8 @@ import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAI
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
 import { updateAccountMenu } from './lib/auth.js';
 import SpatialHashGrid from "./server/lib/SpatialHashGrid.js";
+import { INVENTORY_ITEM_SIZE, buildInventoryItems, isSameInventory, syncInventory } from "./lib/inventoryLayout.js";
+import { createInventorySurface } from "./lib/inventoryView.js";
 import "./lib/craftMenu.js";
 
 const mobRenderSpatialHash = new SpatialHashGrid();
@@ -668,35 +670,32 @@ let cuteLittleAnimations = {
 const buttonsContainer = document.getElementById("menus2");
 const menu = buttonsContainer.children.item("inventory");
 
-// The inventory can hold thousands of icons, so hover uses event delegation instead of
-// calling getBoundingClientRect on every icon on every frame
-let inventoryHoverIcon = null;
+const horizontalPadding = () => (parseFloat(getComputedStyle(menu).paddingLeft) || 0) + (parseFloat(getComputedStyle(menu).paddingRight) || 0);
+const verticalPadding = () => (parseFloat(getComputedStyle(menu).paddingTop) || 0) + (parseFloat(getComputedStyle(menu).paddingBottom) || 0);
 
-menu.addEventListener("pointermove", (ev) => {
-    const target = ev.target;
-
-    inventoryHoverIcon = target?.closest?.("[data-petal-index]") ?? null;
-});
-
-menu.addEventListener("pointerleave", () => {
-    inventoryHoverIcon = null;
+// The whole menu is one canvas. The old implementation built a <canvas> per inventory entry, so
+// a /addall put tens of thousands of nodes in the DOM and measured each one every frame. Here the
+// visible rows are painted into a single sticky surface and the entry under the cursor is resolved
+// by arithmetic, so the only layout read in the game loop is one getBoundingClientRect.
+const inventorySurface = createInventorySurface({
+    host: menu,
+    createCanvas: () => document.createElement("canvas"),
+    measure: () => ({
+        contentWidth: menu.clientWidth - horizontalPadding(),
+        contentHeight: menu.clientHeight - verticalPadding(),
+    }),
+    rendererOptions: {
+        getPetalIcon,
+        formatAmount: formatLargeNumber,
+        white: colors.white,
+    },
 });
 
 // Fast scrolling can fire hundreds of scroll events per second, so repaint at most once per frame
-let inventoryRenderQueued = false;
-
-function queueInventoryRender() {
-    if (inventoryRenderQueued) return;
-
-    inventoryRenderQueued = true;
-
-    requestAnimationFrame(() => {
-        inventoryRenderQueued = false;
-        renderInventoryWindow();
-    });
-}
+const queueInventoryRender = () => inventorySurface.queueRepaint(requestAnimationFrame);
 
 menu.addEventListener("scroll", queueInventoryRender, { passive: true });
+window.addEventListener("resize", queueInventoryRender, { passive: true });
 
 const inventoryTooltipLayer = document.createElement("div");
 inventoryTooltipLayer.style.position = "fixed";
@@ -756,220 +755,18 @@ function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   return { x, y, bw, bh };
 }
 
-// With thirty-odd rarities times a hundred-odd petals, comparing with JSON.stringify
-// allocates multi-MB strings
-function isSameInventory(a, b) {
-    if (a === b) return true;
-    if (!a || !b) return false;
-
-    const aTiers = Object.keys(a);
-
-    if (aTiers.length !== Object.keys(b).length) return false;
-
-    for (const tier of aTiers) {
-        const aPetals = a[tier];
-        const bPetals = b[tier];
-
-        if (!bPetals) return false;
-
-        const aKeys = Object.keys(aPetals);
-
-        if (aKeys.length !== Object.keys(bPetals).length) return false;
-
-        for (const key of aKeys) {
-            if (aPetals[key] !== bPetals[key]) return false;
-        }
-    }
-
-    return true;
-}
-
-// Sync the snapshot in place so a change does not deep clone the whole inventory
-function syncInventory(dst, src) {
-    if (!src) return null;
-
-    // inventory2 can get reset to undefined
-    dst ??= {};
-
-    for (const tier in dst) {
-        if (!(tier in src)) delete dst[tier];
-    }
-
-    for (const tier in src) {
-        if (!dst[tier]) dst[tier] = {};
-
-        const target = dst[tier];
-        const source = src[tier];
-
-        for (const key in target) {
-            if (!(key in source)) delete target[key];
-        }
-
-        for (const key in source) target[key] = source[key];
-    }
-
-    return dst;
-}
-
-const INVENTORY_ITEM_SIZE = 56;
-const INVENTORY_GAP = 5;
-
-// A full addall leaves thousands of entries and building all the DOM costs hundreds of ms per
-// rebuild, so only the rows actually poking into the viewport get rendered
-let inventoryItems = [];
-let inventoryColumns = 1;
-let inventoryBox = null;
-
-const inventoryRowHeight = () => INVENTORY_ITEM_SIZE + INVENTORY_GAP;
-
-function buildInventoryItems() {
-    const items = [];
-
-    Object.entries(net.state.inventory).sort(([a], [b]) => {
-        const aIndex = net.state.tiers.findIndex((t) => t.name === a);
-        const bIndex = net.state.tiers.findIndex((t) => t.name === b);
-        return bIndex - aIndex;
-    }).forEach(([tierName, petals]) => {
-        const rarityIndex = net.state.tiers.findIndex((t) => t.name === tierName);
-
-        Object.entries(petals)
-            .sort(([a], [b]) => {
-                const aName = net.state.petalConfigs[Number(a)].name;
-                const bName = net.state.petalConfigs[Number(b)].name;
-                return aName.localeCompare(bName);
-            })
-            .forEach(([petalIndex, count]) => {
-                if (count > 0) items.push({ index: petalIndex, rarity: rarityIndex, count });
-            });
-    });
-
-    return items;
-}
-
-// Canvases are created once and reused by repainting, so fast scrolling does not keep reallocating
-function createInventoryIcon() {
-    const icon = document.createElement("canvas");
-
-    icon.width = INVENTORY_ITEM_SIZE;
-    icon.height = INVENTORY_ITEM_SIZE;
-
-    icon.style.width = INVENTORY_ITEM_SIZE + "px";
-    icon.style.height = INVENTORY_ITEM_SIZE + "px";
-    icon.style.flex = "0 0 auto";
-
-    // Font and stroke state stays on the context so a repaint does not set it again.
-    // Reassigning ctx.font re-resolves the font every time, which is costly with many counted icons.
-    const c = icon.getContext("2d");
-
-    c.fillStyle = colors.white;
-    c.strokeStyle = "#000000";
-    c.lineWidth = 2;
-    c.font = `bold ${INVENTORY_ITEM_SIZE * 0.25}px Ubuntu`;
-    c.textAlign = "right";
-    c.textBaseline = "top";
-
-    return icon;
-}
-
-function paintInventoryIcon(icon, item) {
-    // Events are delegated, so this only carries data and avoids thousands of listeners
-    icon.dataset.petalIndex = item.index;
-    icon.dataset.petalRarity = item.rarity;
-
-    const c = icon.getContext("2d");
-
-    // Must clear first, otherwise the previous x123 stays burned into the image
-    c.clearRect(0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
-    c.drawImage(getPetalIcon(Number(item.index), item.rarity, "oneshot"), 0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
-
-    if (item.count > 1) {
-        const text = `x${formatAmount(item.count)}`;
-        c.strokeText(text, INVENTORY_ITEM_SIZE - 4, 4);
-        c.fillText(text, INVENTORY_ITEM_SIZE - 4, 4);
-    }
-}
-
-function renderInventoryWindow() {
-    if (!inventoryBox) return;
-
-    const rowHeight = inventoryRowHeight();
-    const totalItems = inventoryItems.length;
-    const totalRows = Math.max(1, Math.ceil(totalItems / inventoryColumns));
-
-    // Render only the rows poking into the viewport; the top and bottom row can be half
-    // visible and still have to be drawn. The row count must stay fixed, because
-    // ceil(scrollTop + viewport height) flips between 6 and 7 rows while scrolling, and each
-    // flip adds and removes canvas elements, which is worse than a full rebuild under fast
-    // scroll. A 330px viewport touches at most 7 rows, so render a fixed 6+1.
-    const startRow = Math.max(0, Math.floor(menu.scrollTop / rowHeight));
-    const endRow = Math.min(totalRows, startRow + Math.ceil(menu.clientHeight / rowHeight) + 1);
-
-    const start = startRow * inventoryColumns;
-    const end = Math.min(totalItems, endRow * inventoryColumns);
-
-    // The top and bottom padding fake the full height so only visible rows exist in the DOM
-    inventoryBox.style.paddingTop = startRow * rowHeight + "px";
-    inventoryBox.style.paddingBottom = Math.max(0, (totalRows - endRow) * rowHeight) + "px";
-
-    const needed = end - start;
-    const icons = inventoryBox.children;
-
-    // Only grow when short; hide the extras instead of removing them, so scrolling the whole
-    // inventory never mutates the DOM structure
-    while (icons.length < needed) inventoryBox.appendChild(createInventoryIcon());
-
-    for (let i = needed; i < icons.length; i++) {
-        icons[i].style.display = "none";
-    }
-
-    for (let i = start; i < end; i++) {
-        const icon = inventoryBox.children[i - start];
-
-        icon.style.display = "";
-        paintInventoryIcon(icon, inventoryItems[i]);
-    }
-
-    // Do not clear inventoryHoverIcon here: the elements are reused, and once cleared a mouse that
-    // is not moving produces no further pointermove, so the tooltip would stay gone.
-    // Whether the hover still holds is decided by the mouse position check in the draw loop.
-}
-
 function drawInventory() {
     const scrollTop = menu.scrollTop;
 
-    menu.textContent = "";
-    inventoryBox = null;
-    inventoryHoverIcon = null;
+    // No per-entry nodes are created, so this is a repaint plus a scroll range update.
+    const list = net.state.inventory
+        ? buildInventoryItems(net.state.inventory, net.state.tiers, net.state.petalConfigs)
+        : [];
 
-    if (!net.state.inventory) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
-    }
+    inventorySurface.show(list);
 
-    inventoryItems = buildInventoryItems();
-
-    if (inventoryItems.length === 0) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
-    }
-
-    const box = document.createElement("div");
-    box.style.display = "flex";
-    box.style.flexWrap = "wrap";
-    box.style.padding = "0px";
-    box.style.gap = INVENTORY_GAP + "px";
-    menu.appendChild(box);
-
-    inventoryBox = box;
-
-    // Column count follows the CSS instead of being hardcoded
-    const contentWidth = box.clientWidth;
-    inventoryColumns = contentWidth > 0
-        ? Math.max(1, Math.floor((contentWidth + INVENTORY_GAP) / (INVENTORY_ITEM_SIZE + INVENTORY_GAP)))
-        : 1;
-
-    renderInventoryWindow();
-
+    // Restoring the offset can fire a scroll event, which repaints through
+    // queueInventoryRender, so nothing extra is needed here.
     menu.scrollTop = scrollTop;
 }
 
@@ -3071,35 +2868,31 @@ function draw() {
 
     net.state._foundHover = false;
 
-    if (menu.classList.contains("active") && inventoryHoverIcon) {
-        const menuRect = menu.getBoundingClientRect();
-        const rect = inventoryHoverIcon.getBoundingClientRect();
+    // One getBoundingClientRect for the whole menu, then the entry under the cursor is pure
+    // arithmetic. The old menu measured every icon rect on every frame.
+    if (menu.classList.contains("active") && inventorySurface.mounted) {
+        const rect = inventorySurface.canvas.getBoundingClientRect();
 
         const mouseX = mouse.x / window.devicePixelRatio;
         const mouseY = mouse.y / window.devicePixelRatio;
 
-        // Scrolling repaints the icons, but the same element is reused, so re-check that the mouse is
-        // still sitting on it. A mouse that does not move fires no pointermove, so event
-        // delegation alone cannot tell.
-        const stillUnderMouse = rect.width > 0
-            && mouseX >= rect.left && mouseX <= rect.right
-            && mouseY >= rect.top && mouseY <= rect.bottom;
+        const index = inventorySurface.indexAtScreen({ rect, screenX: mouseX, screenY: mouseY });
 
-        if (!stillUnderMouse) {
-            inventoryHoverIcon = null;
+        if (index < 0) {
+            net.state.inventoryPetalHover = null;
         } else {
-            const petalIndex = Number(inventoryHoverIcon.dataset.petalIndex);
-            const rarityIndex = Number(inventoryHoverIcon.dataset.petalRarity);
+            const item = inventorySurface.itemAt(index);
+            const anchor = inventorySurface.anchorFor(index);
 
             net.state._foundHover = true;
-            net.state.inventoryPetalHover = [petalIndex, rarityIndex, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
+            net.state.inventoryPetalHover = [item.index, item.rarity, rect.left + anchor.x, rect.top + anchor.y];
 
-            if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
-                beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petalIndex, rarityIndex);
+            if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left) {
+                beginInventoryDragDrop(((rect.left + anchor.x) * 1.1) / uScale, ((rect.top + anchor.y + 22) * 1.1) / uScale, INVENTORY_ITEM_SIZE, item.index, item.rarity);
                 menu.classList.toggle("active");
-                inventoryDragConfig.index = petalIndex;
-                inventoryDragConfig.rarity = rarityIndex;
-                inventoryDragConfig.item.stableSize = rect.width;
+                inventoryDragConfig.index = item.index;
+                inventoryDragConfig.rarity = item.rarity;
+                inventoryDragConfig.item.stableSize = INVENTORY_ITEM_SIZE;
                 inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
             }
         }

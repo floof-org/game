@@ -1,6 +1,7 @@
 import {
     INVENTORY_GAP,
     INVENTORY_ITEM_SIZE,
+    computeColumns,
     computeContentHeight,
     computeVisibleRange,
     hitTest,
@@ -101,5 +102,149 @@ export function createInventoryRenderer({
         indexAt,
         anchorFor,
         contentHeight: (totalItems, columns) => computeContentHeight(totalItems, columns, itemSize, gap),
+    };
+}
+
+export const EMPTY_INVENTORY_TEXT = "Your inventory is empty :(";
+
+/**
+ * Owns the single canvas and its scroll spacer inside the menu.
+ *
+ * The canvas is sticky so it stays pinned in the scrollport, and the spacer below it
+ * carries the remaining height, which is what gives a 3000 row menu a scroll range while
+ * only one element is ever in the DOM. Sizing and hit testing live here rather than in
+ * the game loop so they can be covered by tests.
+ */
+export function createInventorySurface({ host, createCanvas, createElement, measure, rendererOptions = {} }) {
+    const renderer = createInventoryRenderer(rendererOptions);
+
+    const makeElement = createElement ?? (tag => host.ownerDocument.createElement(tag));
+
+    let canvas = null;
+    let ctx = null;
+    let spacer = null;
+    let columns = 1;
+    let items = [];
+    let repaintQueued = false;
+
+    function mount() {
+        canvas = createCanvas();
+        // Not scaled by devicePixelRatio, matching how the per-icon canvases used to be
+        // sized, so the menu keeps the exact appearance it had.
+        canvas.style.position = "sticky";
+        canvas.style.top = "0";
+        canvas.style.display = "block";
+
+        spacer = makeElement("div");
+        ctx = canvas.getContext("2d");
+    }
+
+    function resize() {
+        if (!canvas) return false;
+
+        const { contentWidth, contentHeight } = measure();
+
+        if (!(contentWidth > 0) || !(contentHeight > 0)) return false;
+
+        canvas.width = contentWidth;
+        canvas.height = contentHeight;
+        canvas.style.width = contentWidth + "px";
+        canvas.style.height = contentHeight + "px";
+
+        columns = computeColumns(contentWidth, INVENTORY_ITEM_SIZE, INVENTORY_GAP);
+
+        // Canvas plus spacer must add up to the full grid height, otherwise the sticky
+        // canvas eats into the scrollable range.
+        const grid = renderer.contentHeight(items.length, columns);
+        spacer.style.height = Math.max(0, grid - contentHeight) + "px";
+
+        return true;
+    }
+
+    function paint() {
+        if (!ctx) return;
+
+        renderer.draw(ctx, {
+            items,
+            columns,
+            scrollTop: host.scrollTop,
+            viewportWidth: canvas.width,
+            viewportHeight: canvas.height,
+        });
+    }
+
+    /**
+     * Show a new item list, rebuilding the surface only when it is not already mounted.
+     * Returns false when there is nothing to show.
+     */
+    function show(nextItems) {
+        items = Array.isArray(nextItems) ? nextItems : [];
+
+        if (items.length === 0) {
+            host.textContent = EMPTY_INVENTORY_TEXT;
+            canvas = null;
+            ctx = null;
+            spacer = null;
+            return false;
+        }
+
+        if (!canvas) mount();
+
+        // Also reattaches after a remount, so a menu that something else emptied still
+        // ends up holding the canvas and its spacer.
+        host.replaceChildren(canvas, spacer);
+
+        if (!resize()) return false;
+
+        paint();
+        return true;
+    }
+
+    /** Coalesce bursts of scroll and resize events into one repaint per frame. */
+    function queueRepaint(requestFrame) {
+        if (repaintQueued) return;
+
+        repaintQueued = true;
+        requestFrame(() => {
+            repaintQueued = false;
+            paint();
+        });
+    }
+
+    /**
+     * Index under a viewport point, or -1.
+     *
+     * Takes the canvas rect rather than reading it so the caller controls how often the
+     * layout is read, and so tests can pass one in.
+     */
+    function indexAtScreen({ rect, screenX, screenY }) {
+        if (!canvas || !rect || !(rect.width > 0) || !(rect.height > 0)) return -1;
+
+        return renderer.indexAt({
+            x: screenX - rect.left,
+            y: screenY - rect.top,
+            scrollTop: host.scrollTop,
+            totalItems: items.length,
+            columns,
+        });
+    }
+
+    /** Tooltip anchor for an index, in viewport coordinates relative to the canvas. */
+    function anchorFor(index) {
+        return renderer.anchorFor(index, { columns, scrollTop: host.scrollTop });
+    }
+
+    return {
+        show,
+        paint,
+        resize,
+        queueRepaint,
+        indexAtScreen,
+        anchorFor,
+        itemAt: index => items[index],
+        get canvas() { return canvas; },
+        get columns() { return columns; },
+        get items() { return items; },
+        get mounted() { return canvas !== null; },
     };
 }
