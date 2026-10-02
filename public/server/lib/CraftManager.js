@@ -30,6 +30,9 @@ class CraftManager {
         const nextRarityName = tiers[rarity + 1]?.name;
         const petalName = petalConfigs[petalId].name;
 
+        // Make sure the client's petal amount is defined
+        client.inventory[rarityName][petalId] ??= 0;
+
         if (petalName === "Basic") {
             return client.talk(CLIENT_BOUND.CRAFT_RESULT, {
                 error: true,
@@ -45,7 +48,7 @@ class CraftManager {
                 error: true,
                 errorMsg: "Error: You cannot craft using more than 1,000,000 petals at a time!",
             });
-        } else if (amount > (client.inventory[rarityName][petalId] ?? 0)) {
+        } else if (amount > client.inventory[rarityName][petalId]) {
             return client.talk(CLIENT_BOUND.CRAFT_RESULT, {
                 error: true,
                 errorMsg: "Error: You cannot craft using petals that you do not own!",
@@ -66,11 +69,13 @@ class CraftManager {
 
             let chance = this.calculateChance(rarity, client.craftAttempts[rarityName][petalId]);
             if (Math.random() < chance) {
-                crafted++;
+                // Make sure the client's petal amount is defined
+                client.inventory[nextRarityName][petalId] ??= 0;
                 client.inventory[nextRarityName][petalId]++;
                 amount -= 5;
                 client.inventory[rarityName][petalId] -= 5;
                 client.craftAttempts[rarityName][petalId] = 0;
+                crafted++;
             } else {
                 const lost = Math.floor(1 + Math.random() * 4);
                 amount -= lost;
