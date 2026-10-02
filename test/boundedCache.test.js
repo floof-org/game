@@ -68,7 +68,7 @@ describe("createEvictionQueue", () => {
 
     test("bounds the render caches at the size that was killing the tab", () => {
         // 3465 distinct icon lookups is what a full addall inventory produces.
-        const icons = createEvictionQueue(1024);
+        const icons = createEvictionQueue(3584);
         const tooltips = createEvictionQueue(96);
 
         for (let rarity = 0; rarity < 33; rarity++) {
@@ -78,12 +78,25 @@ describe("createEvictionQueue", () => {
             }
         }
 
-        expect(icons.size).toBe(1024);
+        // A full inventory must not evict, or a fast scroll rebuilds icons and the fresh
+        // OffscreenCanvas allocations are what spike the tab's memory.
+        expect(icons.size).toBe(3465);
         expect(tooltips.size).toBe(96);
+    });
 
-        // 64KB per icon and roughly 724KB per tooltip.
-        const mb = (1024 * 128 * 128 * 4 + 96 * 350 * 530 * 4) / 1024 / 1024;
-        expect(mb).toBeLessThan(160);
+    test("the tooltip cap is what bounds the multi-gigabyte cache", () => {
+        const tooltips = createEvictionQueue(96);
+        let live = 0;
+
+        for (let rarity = 0; rarity < 33; rarity++) {
+            for (let index = 0; index < 105; index++) {
+                tooltips.push([index, rarity], () => live--);
+                live++;
+            }
+        }
+
+        // 96 tooltips of roughly 724KB, against 2452MB when unbounded.
+        expect(live * 350 * 530 * 4 / 1024 / 1024).toBeLessThan(70);
     });
 
     test("evicts the same key it was handed, for composite keys", () => {

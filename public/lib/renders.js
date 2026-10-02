@@ -3,6 +3,7 @@ import { ctx as _ctx, drawWrappedText, mixColors, roundedRectangle, text } from 
 import { formatLargeNumber, colors, options } from "./util.js";
 import { Drawing, PetalConfig } from "./protocol.js";
 import { createEvictionQueue } from "./boundedCache.js";
+import { fitFontSize } from "./textFit.js";
 
 const TAU = Math.PI * 2;
 
@@ -2747,9 +2748,14 @@ const petalIconIntervals = [];
 // Neither this cache nor the tooltip cache below was ever evicted. Walking a full addall
 // inventory touches thirty-odd rarities times a hundred-odd petals, which grew the icon
 // cache past 200MB and the tooltip cache past 2.4GB, and the tab was killed with a white
-// screen. Entries are now dropped oldest first once these caps are reached, which is far
-// more than the handful of petals visible at any moment.
-const PETAL_ICON_CACHE_CAP = 1024;
+// screen. Entries are now dropped oldest first once these caps are reached.
+//
+// The icon cap is deliberately larger than the tooltip cap because a full inventory
+// references about 3465 distinct icons. Capping icons below that made a fast scroll evict and
+// rebuild them, and every rebuild allocates a fresh 128x128 OffscreenCanvas, so the churn
+// produced the allocation spikes that killed the tab. Holding them resident trades a steady
+// 224MB for spikes that stay bounded, which is the safer failure mode.
+const PETAL_ICON_CACHE_CAP = 3584;
 const PETAL_TOOLTIP_CACHE_CAP = 96;
 
 const petalIconEvictions = createEvictionQueue(PETAL_ICON_CACHE_CAP);
@@ -2870,20 +2876,15 @@ function createPetalIcon(index, rarity, animated = isAnimatedRarity(rarity)) {
 
     ctx.restore();
 
-    let size = 26,
-        k = 0;
-
-    while (true) {
-        ctx.font = `bold ${size}px Ubuntu`;
-  
-        if (ctx.measureText(petalText).width < 96 || k++ > 512) {
-          break;
-        }
-  
-        size--;
+    // The label depends only on the petal index, so the fitted size is shared with
+    // renderPetal below. Re-measuring here on every icon was the single most expensive part
+    // of building an icon: fast scrolling asked for dozens of fresh icons per frame and each
+    // one re-ran the shrink loop, which was enough to blow the frame budget.
+    if (ratioFontSizeCache[index] === undefined) {
+        ratioFontSizeCache[index] = measureText(petalText, 96);
     }
 
-    text(petalText, 64, 98, size, "#FFFFFF", ctx);
+    text(petalText, 64, 98, ratioFontSizeCache[index], "#FFFFFF", ctx);
     }
 
     const draw = () => {
@@ -2928,20 +2929,11 @@ const measuringCanvas = new OffscreenCanvas(128, 128);
 const measuringCtx = measuringCanvas.getContext("2d");
 
 function measureText(text, max) {
-    let size = 26,
-        k = 0;
-
-    while (true) {
+    return fitFontSize(size => {
         measuringCtx.font = `bold ${size}px Ubuntu`;
 
-        if (measuringCtx.measureText(text).width < max || k++ > 512) {
-            break;
-        }
-
-        size--;
-    }
-
-    return size;
+        return measuringCtx.measureText(text).width;
+    }, max);
 }
 
 export function drawPetalIconWithRatio(index, rarity, x, y, size, ratio, ctx = _ctx) {
