@@ -714,7 +714,32 @@ const c2d = inventoryTooltipCanvas.getContext("2d");
 c2d.imageSmoothingEnabled = true;
 c2d.imageSmoothingQuality = "high";
 inventoryTooltipBox.appendChild(inventoryTooltipCanvas);
+inventoryTooltipLayer.appendChild(inventoryTooltipBox);
 let _tooltipDrawKey = null;
+
+// 之前是每帧新建一个 350x350 的 canvas 再 replaceChildren 掉旧的。
+// 悬停背包时这条路径全程开着, 每秒几十 MB 的 canvas 内存 churn, 直接把标签页撑爆。
+// 现在只建一次, 只有换了花瓣才重画, 挪位置只改 style。
+function renderInventoryTooltip(img, anchorX, anchorY) {
+  const { x, y, bw, bh } = petalTooltipBox(img, anchorX, anchorY, window.innerWidth, window.innerHeight);
+
+  // 改 width/height 会清空 canvas, 所以尺寸变了必须重画
+  if (inventoryTooltipCanvas.width !== bw || inventoryTooltipCanvas.height !== bh) {
+    inventoryTooltipCanvas.width = bw;
+    inventoryTooltipCanvas.height = bh;
+    _tooltipDrawKey = null;
+  }
+
+  inventoryTooltipBox.style.left = `${x}px`;
+  inventoryTooltipBox.style.top = `${y}px`;
+
+  if (_tooltipDrawKey !== img) {
+    c2d.drawImage(img, 0, 0, bw, bh);
+    _tooltipDrawKey = img;
+  }
+
+  inventoryTooltipLayer.style.display = "block";
+}
 
 function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   const bw = 350;
@@ -825,6 +850,17 @@ function createInventoryIcon() {
     icon.style.height = INVENTORY_ITEM_SIZE + "px";
     icon.style.flex = "0 0 auto";
 
+    // 字体和描边状态留在 context 上, 重画时就不用再设。
+    // 反复设 ctx.font 每次都要重新解析字体, 带数量的图标一多就很贵。
+    const c = icon.getContext("2d");
+
+    c.fillStyle = colors.white;
+    c.strokeStyle = "#000000";
+    c.lineWidth = 2;
+    c.font = `bold ${INVENTORY_ITEM_SIZE * 0.25}px Ubuntu`;
+    c.textAlign = "right";
+    c.textBaseline = "top";
+
     return icon;
 }
 
@@ -840,13 +876,6 @@ function paintInventoryIcon(icon, item) {
     c.drawImage(getPetalIcon(Number(item.index), item.rarity, "oneshot"), 0, 0, INVENTORY_ITEM_SIZE, INVENTORY_ITEM_SIZE);
 
     if (item.count > 1) {
-        c.fillStyle = colors.white;
-        c.strokeStyle = "#000000";
-        c.lineWidth = 2;
-        c.font = `bold ${INVENTORY_ITEM_SIZE * 0.25}px Ubuntu`;
-        c.textAlign = "right";
-        c.textBaseline = "top";
-
         const text = `x${formatAmount(item.count)}`;
         c.strokeText(text, INVENTORY_ITEM_SIZE - 4, 4);
         c.fillText(text, INVENTORY_ITEM_SIZE - 4, 4);
@@ -891,7 +920,8 @@ function renderInventoryWindow() {
         paintInventoryIcon(icon, inventoryItems[i]);
     }
 
-    inventoryHoverIcon = null;
+    // 这里不要清 inventoryHoverIcon: 元素是复用的, 清了之后鼠标不动就没有 pointermove 补回来,
+    // tooltip 会一直消失。悬停是否还成立交给 draw 循环里的鼠标位置校验。
 }
 
 function drawInventory() {
@@ -3032,19 +3062,32 @@ function draw() {
         const menuRect = menu.getBoundingClientRect();
         const rect = inventoryHoverIcon.getBoundingClientRect();
 
-        const petalIndex = Number(inventoryHoverIcon.dataset.petalIndex);
-        const rarityIndex = Number(inventoryHoverIcon.dataset.petalRarity);
+        const mouseX = mouse.x / window.devicePixelRatio;
+        const mouseY = mouse.y / window.devicePixelRatio;
 
-        net.state._foundHover = true;
-        net.state.inventoryPetalHover = [petalIndex, rarityIndex, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
+        // 滚动时图标会被重画, 但复用的是同一个元素, 所以要重新确认鼠标确实还压在它上面。
+        // 鼠标不动时不会再有 pointermove, 光靠事件委托判断不出来。
+        const stillUnderMouse = rect.width > 0
+            && mouseX >= rect.left && mouseX <= rect.right
+            && mouseY >= rect.top && mouseY <= rect.bottom;
 
-        if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
-            beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petalIndex, rarityIndex);
-            menu.classList.toggle("active");
-            inventoryDragConfig.index = petalIndex;
-            inventoryDragConfig.rarity = rarityIndex;
-            inventoryDragConfig.item.stableSize = rect.width;
-            inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
+        if (!stillUnderMouse) {
+            inventoryHoverIcon = null;
+        } else {
+            const petalIndex = Number(inventoryHoverIcon.dataset.petalIndex);
+            const rarityIndex = Number(inventoryHoverIcon.dataset.petalRarity);
+
+            net.state._foundHover = true;
+            net.state.inventoryPetalHover = [petalIndex, rarityIndex, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
+
+            if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
+                beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petalIndex, rarityIndex);
+                menu.classList.toggle("active");
+                inventoryDragConfig.index = petalIndex;
+                inventoryDragConfig.rarity = rarityIndex;
+                inventoryDragConfig.item.stableSize = rect.width;
+                inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
+            }
         }
     }
 
@@ -3061,36 +3104,8 @@ function draw() {
         const inventoryHover = Array.isArray(net.state.inventoryPetalHover) ? net.state.inventoryPetalHover : null;
 
         if (inventoryHover) {
-            const img = petalTooltip(...inventoryHover);
-
-      const { x, y, bw, bh } = petalTooltipBox(
-        img,
-        inventoryHover[2],
-        inventoryHover[3],
-        window.innerWidth,
-        window.innerHeight,
-      );
-
-      const box = document.createElement("div");
-      box.style.position = "fixed";
-      box.style.left = `${x}px`;
-      box.style.top = `${y}px`;
-
-      const cv = document.createElement("canvas");
-      cv.width = bw;
-      cv.height = bh;
-
-      const cx = cv.getContext("2d");
-      cx.imageSmoothingEnabled = true;
-      cx.imageSmoothingQuality = "high";
-      cx.drawImage(img, 0, 0, bw, bh);
-
-            box.appendChild(cv);
-
-            inventoryTooltipLayer.replaceChildren(box);
-            inventoryTooltipLayer.style.display = "block";
+            renderInventoryTooltip(petalTooltip(...inventoryHover), inventoryHover[2], inventoryHover[3]);
         } else {
-            inventoryTooltipLayer.replaceChildren();
             inventoryTooltipLayer.style.display = "none";
         }
 
