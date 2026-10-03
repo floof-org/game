@@ -1038,7 +1038,8 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Leaf"), .5)
         .addDrop(petalIDOf("Corn"), .5),
-    new MobConfig("Soldier Ant", 25, 5, 15, 3.75)
+    new MobConfig("Soldier Ant", 25, 5, 20, 3.75)
+        .setSizeStep(2)
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)
         .addDrop(petalIDOf("Wing"), .5),

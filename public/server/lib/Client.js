@@ -1,6 +1,6 @@
 import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
-import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, SUMMON_STATS } from "../../lib/protocol.js";
+import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE } from "../../lib/protocol.js";
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
 import { colors, xpForLevel } from "../../lib/util.js";
 import accounts from "./Accounts.js";
@@ -2256,9 +2256,10 @@ export default class Client {
             return;
         }
 
-        // /petalinfo
-        if (commandCheck("/petalinfo")) {
-            const args = e.substring(10).trim().split(/\s+/).filter(Boolean);
+        // /petalinfo (alias: /petal)
+        if (commandCheck("/petalinfo") || e.toLowerCase().startsWith("/petal ") || e.toLowerCase() === "/petal") {
+            const cmdLen = e.toLowerCase().startsWith("/petalinfo") ? 10 : 6;
+            const args = e.substring(cmdLen).trim().split(/\s+/).filter(Boolean);
 
             if (args.length < 1) {
                 this.systemMessage("Usage: /petalinfo [rarity] [petal]", "#ffe65d");
@@ -2324,21 +2325,24 @@ export default class Client {
             if (tier.damageReduction > 0) lines.push(`- Damage Reduction: ${Math.round(tier.damageReduction * 100)}%`);
             if (tier.armor > 0) lines.push(`- Armor: ${formatNumber(tier.armor)}`);
 
-            if (tier.spawnable) {
-                const mob = mobConfigs[tier.spawnable.index];
-                const summon = SUMMON_STATS[tier.spawnable.rarity];
-
-                if (mob && summon) {
-                    const mobTier = mob.tiers?.[tier.spawnable.rarity];
-                    lines.push(`- Summons: ${mob.name} · Health: ${formatNumber((mobTier?.health ?? 0) * summon.health)} · Damage: ${formatNumber((mobTier?.damage ?? 0) * summon.damage)}`);
-                }
-            }
-
             if (config.description) {
                 lines.push(`- ${config.description}`);
             }
 
             lines.forEach((line, i) => this.systemMessage(line, i === 0 ? tiers[rarityIndex]?.color || "#ffffff" : "#ffffff"));
+
+            if (tier.spawnable) {
+                const mob = mobConfigs[tier.spawnable.index];
+                const spawnRarity = Math.min(tier.spawnable.rarity, (mob?.tiers?.length ?? 1) - 1);
+                const mobTier = mob?.tiers?.[spawnRarity];
+
+                if (mob && mobTier) {
+                    this.systemMessage(`Summon ${mob.name}`, "#8fd3ff");
+                    this.systemMessage(`damage: ${formatNumber(mobTier.damage)}`, "#8fd3ff");
+                    this.systemMessage(`health: ${formatNumber(mobTier.health * 6)}`, "#8fd3ff");
+                }
+            }
+
             return;
         }
 
