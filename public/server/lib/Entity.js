@@ -500,7 +500,7 @@ export class PetalSlot {
 
                     if (petal.range <= 0) {
                         let spawnConfig = mobConfigs[this.config.tiers[this.rarity].spawnable.index];
-                        const spawnRarity = this.config.tiers[this.rarity].spawnable.rarity;
+                        const spawnRarity = this.rarity;
 
                         const fireAmuletIndex = petalIDOf("Amulet of Fire");
 
