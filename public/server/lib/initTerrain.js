@@ -154,7 +154,9 @@ export default async function initTerrain(type) {
                 const spawn = {
                     x: ((i + .5) / state.terrainGridWidth) - .5,
                     y: ((j + .5) / state.terrainGridHeight) - .5,
-                    rarity: Math.round(generator.get(i, j).score * generator.maxRarity)
+                    // spawn cells may be unscored (type 1/2): default to 0 instead of NaN,
+                    // otherwise a NaN rarity poisons spawn-picking near those cells.
+                    rarity: Math.round((generator.get(i, j).score ?? 0) * generator.maxRarity)
                 };
 
                 spawns[ENTITY_TYPES[generator.get(i, j).type === 1 || generator.get(i, j).type === 2 ? "PLAYER" : "MOB"]].push(spawn);

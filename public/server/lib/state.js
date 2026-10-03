@@ -214,12 +214,17 @@ const state = {
             const dy = body.y - position.y;
 
             if (dx * dx + dy * dy > minDist * minDist && state.isValidMapSpawn(position.x, position.y)) {
-                const cell = state.mapDataAt(position.x, position.y);
+                const cell = state.mapDataAt(body.x, body.y);
+
+                // Rarity follows the target PLAYER's own cell (their zone), never the exact
+                // spawn position: a spawn point inside the player's view can sit on an
+                // unscored cell or just across a zone boundary, which previously let
+                // higher-rarity mobs materialize in front of players camping a low area.
                 const baseRarity = cell?.score !== undefined
                     ? Math.round(cell.score * state.mapData.maxRarity)
-                    : (state.mapSpawnClosestTo(position.x, position.y)?.rarity ?? 0);
+                    : (state.mapSpawnClosestTo(body.x, body.y)?.rarity ?? 0);
 
-                const clamped = Math.max(0, Math.min(tiers.length - 1, baseRarity));
+                const clamped = Math.max(0, Math.min(tiers.length - 1, Number.isFinite(baseRarity) ? baseRarity : 0));
                 const low = Math.max(0, clamped - 1);
                 rarity = low + Math.floor(Math.random() * (clamped - low + 1));
 
