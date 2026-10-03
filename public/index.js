@@ -1,6 +1,6 @@
 import { canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
 import * as net from "./lib/net.js";
-import { mouse, keyMap, pruneFloatingTextTrackers } from "./lib/net.js";
+import { mouse, keyMap, releaseFloatingText } from "./lib/net.js";
 import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
@@ -2106,49 +2106,6 @@ function draw() {
         }
     });
 
-    const now = performance.now();
-    pruneFloatingTextTrackers(now);
-    net.state.floatingTexts = net.state.floatingTexts.filter((entry) => {
-        const timeUntilExpiry = entry.expiresAt - now;
-        if (timeUntilExpiry <= 0) return false;
-
-        if (entry.animation === "bounce") {
-            entry.velocityY += entry.gravity;
-            entry.y += entry.velocityY;
-            if (entry.velocityX) entry.x += entry.velocityX;
-        } else if (entry.animation === "rise") {
-            entry.y += entry.velocityY;
-        }
-
-        const drawX = entry.x * scale - cameraX + halfWidth;
-        const drawY = entry.y * scale - cameraY + halfHeight;
-
-        let alpha;
-        if (entry.fade) {
-            const totalLife = entry.expiresAt - entry.creation;
-            const elapsed = now - entry.creation;
-            alpha = totalLife > 0 ? Math.max(0, 1 - elapsed / totalLife) : 0;
-        } else {
-            alpha = timeUntilExpiry < 200 ? timeUntilExpiry / 200 : 1;
-        }
-
-        const oldAlpha = ctx.globalAlpha;
-        const oldTextAlign = ctx.textAlign;
-        const oldTextBaseline = ctx.textBaseline;
-
-        ctx.globalAlpha = alpha;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        text(entry.value, drawX, drawY, 12 * scale, entry.color);
-
-        ctx.globalAlpha = oldAlpha;
-        ctx.textAlign = oldTextAlign;
-        ctx.textBaseline = oldTextBaseline;
-        return true;
-    });
-
-    ctx.textAlign = "center";
-
     net.state.players.forEach((entity) => {
         entity.interpolate();
 
@@ -2283,6 +2240,67 @@ function draw() {
             ctx.textAlign = "center";
         }
     });
+
+    const now = performance.now();
+    const floatingTexts = net.state.floatingTexts;
+    let activeFloatingTextCount = 0;
+    for (let i = 0; i < floatingTexts.length; i++) {
+        const entry = floatingTexts[i];
+        const age = now - entry.creation;
+        const lifetime = entry.expiresAt - entry.creation;
+        if (age >= lifetime) {
+            releaseFloatingText(entry);
+            continue;
+        }
+
+        const deltaFrames = Math.max(0, Math.min(5, (now - entry.lastUpdate) / (1000 / 60)));
+        entry.lastUpdate = now;
+        entry.age = age / 1000;
+
+        if (entry.type === "heal") {
+            entry.velocityY *= Math.pow(0.98, deltaFrames);
+        } else {
+            entry.velocityY += 0.35 * deltaFrames;
+            entry.velocityY *= Math.pow(0.85, deltaFrames);
+        }
+        entry.offsetY += entry.velocityY * deltaFrames;
+
+        entry.driftX *= Math.pow(0.93, deltaFrames);
+        entry.xOffsetTotal = (entry.xOffsetTotal || 0) + entry.driftX * deltaFrames;
+
+        let progress = age / lifetime;
+        const mobTarget = entry.targetMob && net.state.mobs.get(entry.id) === entry.targetMob
+            ? entry.targetMob
+            : null;
+        const playerTarget = entry.targetPlayer && net.state.players.get(entry.id) === entry.targetPlayer
+            ? entry.targetPlayer
+            : null;
+        const anchorX = mobTarget?.x ?? playerTarget?.x ?? entry.x;
+        const anchorY = mobTarget?.y ?? playerTarget?.y ?? entry.y;
+        const drawX = anchorX * scale - cameraX + halfWidth + ((entry.spawnOffsetX + entry.xOffsetTotal) * scale);
+        const drawY = anchorY * scale - cameraY + halfHeight + (entry.offsetY * scale);
+        const fadeDuration = lifetime - entry.visibleUntil;
+        const alpha = age <= entry.visibleUntil ? 1 : 1 - (age - entry.visibleUntil) / fadeDuration;
+        const fontSize = 12 * scale * entry.sizeMultiplier;
+        const currentAnimScale = entry.type === "heal"
+            ? 1.15 - 0.35 * progress
+            : 1.0 + 0.55 * Math.pow(1 - progress, 2);
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.translate(drawX, drawY);
+        ctx.scale(currentAnimScale, currentAnimScale);
+        text(entry.value, 0, 0, fontSize, entry.color, ctx, 1.75 / fontSize);
+        ctx.restore();
+        floatingTexts[activeFloatingTextCount++] = entry;
+    }
+    floatingTexts.length = activeFloatingTextCount;
+
+    ctx.textAlign = "center";
 
     net.state.lightning.forEach((lightning) => {
         const alpha = lightning.alpha;
