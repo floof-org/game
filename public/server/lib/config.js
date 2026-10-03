@@ -863,6 +863,19 @@ export const petalConfigs = [
         ),
 ];
 
+// desert-maze balance: every sub-petal of a multi-petal flower deals 25% more
+// damage (Fire Missile is exempt since its damage scales through setMulti too).
+for (const petal of petalConfigs) {
+    if (petal.name === "Fire Missile") continue;
+
+    const hasSubPetals = petal.tiers.some(tier => tier.count > 1);
+    if (!hasSubPetals) continue;
+
+    for (const tier of petal.tiers) {
+        if (tier.count > 1) tier.damage = tier.damage * 1.25;
+    }
+}
+
 export const petalIDOf = name => petalConfigs.findIndex(p => p.name === name);
 
 // After references are set
