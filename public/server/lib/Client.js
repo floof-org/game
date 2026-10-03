@@ -736,6 +736,11 @@ export default class Client {
         this.handlingCraft = false;
         this.camera = new Camera();
 
+        /**
+         * A record of the inventory values last sent to the client.
+         */
+        this.lastSentInventory = {};
+
         /** @type {Player|null} */
         this.body = null;
 
@@ -1540,9 +1545,21 @@ export default class Client {
 
         writer.setUint16(this.level);
         writer.setFloat32(this.levelProgress);
+
         tiers.forEach(tier => {
+            this.lastSentInventory[tier.name] ??= {};
+
             const petals = this.inventory[tier.name];
-            const petalIds = Object.keys(petals);
+            const petalIds = [];
+
+            // Optimization: Only send updates for petal amounts that actually changed
+            for (let id in petals) {
+                if (petals[id] !== this.lastSentInventory[tier.name][id]) {
+                    petalIds.push(id);
+                    this.lastSentInventory[tier.name][id] = petals[id];
+                }
+            }
+
             writer.setUint16(petalIds.length);
             petalIds.forEach(id => {
                 writer.setUint16(parseInt(id));
