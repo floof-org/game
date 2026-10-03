@@ -1,4 +1,4 @@
-import { CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES } from "../../lib/protocol.js";
+import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
 import state from "./state.js";
@@ -1461,6 +1461,25 @@ export class Petal extends Entity {
             if (this.range <= 0) {
                 this.destroy();
                 return;
+            }
+        }
+
+        // desert maze: spinning sticks stir up a dust storm that drags mobs toward the player
+        if (this.config.name === "Stick" && this.petalIndex === 0 && !this.launched && state.biome === BIOME_TYPES.DESERT && this.parent) {
+            const pullRange = 300;
+            const mobs = state.spatialHash.retrieve({
+                _AABB: { x1: this.parent.x - pullRange, y1: this.parent.y - pullRange, x2: this.parent.x + pullRange, y2: this.parent.y + pullRange }
+            });
+
+            for (const mob of mobs.values()) {
+                if (mob.type !== ENTITY_TYPES.MOB || mob.parent.id === this.parent.id || mob.parent.team === this.parent.team) continue;
+
+                const distance = quickDiff(mob, this.parent);
+                if (distance > pullRange || distance === 0) continue;
+
+                const angle = Math.atan2(this.parent.y - mob.y, this.parent.x - mob.x);
+                mob.velocity.x += Math.cos(angle) * .5 * mob.pushability;
+                mob.velocity.y += Math.sin(angle) * .5 * mob.pushability;
             }
         }
 
