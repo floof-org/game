@@ -4,7 +4,7 @@ import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAME
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
 import { colors, xpForLevel } from "../../lib/util.js";
 import accounts from "./Accounts.js";
-import craftManager from "./CraftManager.js";
+import craftManager, { PETALS_PER_ATTEMPT } from "./CraftManager.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -29,7 +29,7 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/give", "/addall", "/remove", "/online",
+    "/give", "/addall", "/remove", "/craft", "/online",
     "/mute", "/kick", "/ban", "/unban", "/unmute"
 ]);
 
@@ -1572,6 +1572,7 @@ export default class Client {
                 "/petalinfo [rarity] [petal name] - Preview the stats of the specified petal and rarity.",
                 "/drops [rarity name] [mob name] - Shows the drop chances for the specified rarity and mob.",
                 "/rarities - Shows all rarities.",
+                "/craft [rarity] <petal> <amount> - Spends 5 of the same petal to roll for 1 petal of the next rarity. Amount defaults to everything you own of that petal.",
                 "/online - Shows all currently online players.",
                 "/die - Kills you.",
                 "/infocommands - Shows all related commands that give info of something.",
@@ -2021,6 +2022,131 @@ export default class Client {
                 accounts.saveClient(this);
 
                 this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}!`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /craft
+        if (commandCheck("/craft")) {
+            (async () => {
+                const args = e.slice(6).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 2) {
+                    this.systemMessage("Usage: /craft [rarity] <petal> <amount>", "#ffaa00");
+                    return;
+                }
+
+                // The trailing amount is optional, so peel it off before resolving the
+                // petal. It is only treated as an amount when there is something left
+                // over for a rarity and a petal name, otherwise a numeric petal id such
+                // as "/craft 5 3" would be misread.
+                let amount;
+
+                if (args.length > 2 && !isNaN(args[args.length - 1])) {
+                    const amountArg = args.pop();
+                    amount = parseInt(amountArg);
+
+                    if (isNaN(amount) || amount < 1) {
+                        this.systemMessage(`Invalid amount: ${amountArg}`, "#ff5555");
+                        return;
+                    }
+                }
+
+                const rarityArg = args[0];
+                let rarityIndex = null;
+                let rarityTokenCount = 1;
+
+                if (!isNaN(rarityArg)) {
+                    rarityIndex = parseInt(rarityArg);
+                } else {
+                    // "Absolute Fictional" is the one rarity name with a space in it, so
+                    // the rarity can span more than the first token. Take the shortest
+                    // prefix that names a rarity.
+                    for (let count = 1; count < args.length; count++) {
+                        const wanted = normalizeName(args.slice(0, count).join(" "));
+
+                        for (let i = 0; i < tiers.length; i++) {
+                            if (normalizeName(tiers[i].name) === wanted) {
+                                rarityIndex = i;
+                                rarityTokenCount = count;
+                                break;
+                            }
+                        }
+
+                        if (rarityIndex !== null) break;
+                    }
+                }
+
+                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
+                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                    return;
+                }
+
+                const rarity = tiers[rarityIndex];
+
+                // 23 of the petal names contain spaces ("Beetle Egg", "Yin Yang"), so
+                // everything left after the rarity is the name.
+                const petalArg = args.slice(rarityTokenCount).join(" ");
+
+                if (!petalArg) {
+                    this.systemMessage("Usage: /craft [rarity] <petal> <amount>", "#ffaa00");
+                    return;
+                }
+
+                const normalizedPetal = normalizeName(petalArg);
+
+                let petalIndex = petalConfigs.findIndex(petal => petal?.name?.toLowerCase() === petalArg.toLowerCase());
+
+                if (petalIndex < 0) {
+                    petalIndex = petalConfigs.findIndex(petal => petal?.name && normalizeName(petal.name) === normalizedPetal);
+                }
+
+                if (petalIndex < 0 && !isNaN(petalArg)) {
+                    const id = parseInt(petalArg);
+                    if (petalConfigs[id]) petalIndex = id;
+                }
+
+                if (petalIndex < 0) {
+                    this.systemMessage(`Petal "${petalArg}" not found.`, "#ff5555");
+                    return;
+                }
+
+                const petalName = petalConfigs[petalIndex].name;
+                const owned = this.inventory[rarity.name]?.[petalIndex] || 0;
+
+                if (owned < PETALS_PER_ATTEMPT) {
+                    this.systemMessage(`You need at least ${PETALS_PER_ATTEMPT} of the same petal to craft. You have ${owned} ${rarity.name} ${petalName}.`, "#ff5555");
+                    return;
+                }
+
+                // With no amount given, spend everything of that petal.
+                const result = craftManager.craft(this, rarityIndex, petalIndex, amount ?? owned);
+
+                if (result.error) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                accounts.saveClient(this);
+
+                if (result.crafted > 0) {
+                    this.systemMessage(`Crafted ${result.crafted} ${result.nextRarityName} ${petalName} from ${result.spent} ${rarity.name} ${petalName} in ${result.attempts} attempts.`, rarity.color);
+                } else {
+                    this.systemMessage(`No craft succeeded. Spent ${result.spent} ${rarity.name} ${petalName} over ${result.attempts} attempts.`, rarity.color);
+                }
+
+                if (result.lostToFailures > 0) {
+                    this.systemMessage(`${result.lostToFailures} extra ${petalName} lost to failed attempts.`, "#ff5555");
+                }
+
+                const bigPity = craftManager.bigPityAttempts(rarityIndex);
+
+                this.systemMessage(
+                    `${rarity.name} ${petalName} chance is now ${(result.pity * 100).toFixed(4)}% after ${result.pityAttempts} failed attempts` +
+                    (bigPity > 0 ? `. Big pity at ${bigPity} attempts.` : "."),
+                    rarity.color
+                );
             })();
 
             return;
