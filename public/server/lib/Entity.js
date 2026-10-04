@@ -1685,9 +1685,10 @@ export class Player extends Entity {
         super.destroy();
 
         if (this.client !== null) {
-            const allDamagers = this.getTopDamagers(10);
+            const allDamagers = this.getTopDamagers(Infinity);
 
-            // strict looting: anyone who dealt under 5% of max health does not count as the killer
+            // strict looting: anyone who dealt under 5% of max health does not count as the killer, and
+            // everyone who clears it does. No ranking, so being out-damaged never costs you the kill credit.
             const damageThreshold = this.health.maxHealth * 0.05;
             const topDamagers = allDamagers.filter(damager => damager.damage >= damageThreshold);
 
@@ -1917,10 +1918,13 @@ export class AIPlayer extends Player {
         }
         state.livingMobCount--;
 
-        // strict looting: same requirement of at least 5% of max health damage
+        // strict looting: same 5% of max health requirement, and no ranking on top of it.
+        // getTopDamagers(Infinity) keeps every damager so the threshold is the only gate; the previous
+        // limit of 10 dropped anyone past 10th place. Also fixes a `damper` typo that made this whole
+        // filter throw a ReferenceError, so a dying summon dropped nothing at all.
         const damageThreshold = this.health.maxHealth * 0.05;
-        const topDamagers = this.getTopDamagers(10)
-            .filter(damager => damper.type === ENTITY_TYPES.PLAYER && damper.damage >= damageThreshold);
+        const topDamagers = this.getTopDamagers(Infinity)
+            .filter(damager => damager.type === ENTITY_TYPES.PLAYER && damager.damage >= damageThreshold);
         topDamagers.forEach(damager => {
             const client = state.clients.get(damager.clientID);
 
@@ -2740,10 +2744,11 @@ export class Mob extends Entity {
         const topDamagers = this.getTopDamagers(Infinity, ENTITY_TYPES.PLAYER);
 
         // strict looting: at least 5% of max health damage is required to earn drops, xp and the kill message.
-        // Every damager is filtered first and the top qualifiers are picked after: sorting before
-        // filtering used to drop anyone ranked 4th or lower, even when they had dealt over 5% of the mob.
+        // Every damager that clears the threshold loots: there is no damage ranking on top of it, so being
+        // out-damaged by someone else must never cost you the drop. Ranking used to be applied before the
+        // threshold, which silently dropped anyone ranked 4th or lower even at 5% or more damage.
         const damageThreshold = this.health.maxHealth * 0.05;
-        const qualifyingDamagers = topDamagers.filter(damager => damager.damage >= damageThreshold).slice(0, 3);
+        const qualifyingDamagers = topDamagers.filter(damager => damager.damage >= damageThreshold);
 
         let killText = '';
         qualifyingDamagers.forEach(damager => {
@@ -2807,11 +2812,17 @@ export class Mob extends Entity {
                 .map(damager => state.clients.get(damager.clientID).lootName());
 
             if (killerNames.length > 0) {
-                const last = killerNames[killerNames.length - 1];
-                const rest = killerNames.slice(0, -1);
+                // Loot is granted to every qualifier, but the kill message only names the top few so a
+                // crowded fight cannot flood chat. Names stay in damage order, so the message still reads
+                // as the biggest hit first.
+                const shown = killerNames.slice(0, 4);
+                const hidden = killerNames.length - shown.length;
+                const last = shown[shown.length - 1];
+                const rest = shown.slice(0, -1);
 
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by "
-                    + (rest.length > 0 ? rest.join(", ") + (rest.length > 1 ? ", and " : " and ") : "") + last;
+                    + (rest.length > 0 ? rest.join(", ") + (rest.length > 1 ? ", and " : " and ") : "") + last
+                    + (hidden > 0 ? " and " + hidden + " more" : "");
             } else if (topDamagers.length === 0) {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " despawned";
             }
