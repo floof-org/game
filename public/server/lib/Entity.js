@@ -501,8 +501,14 @@ export class PetalSlot {
                     petal.range--;
 
                     if (petal.range <= 0) {
-                        let spawnConfig = mobConfigs[this.config.tiers[this.rarity].spawnable.index];
-                        const spawnRarity = this.rarity;
+                        const spawnable = this.config.tiers[this.rarity].spawnable;
+                        let spawnConfig = mobConfigs[spawnable.index];
+
+                        // The summon takes its rarity from the config table rather than from the summoning
+                        // petal, which is what every setSpawnable call already describes. Mob.define clamps
+                        // it to the mob's own tier count. The 6x health bonus below is kept as-is: it is a
+                        // deliberate summon buff, not part of the rarity's stats.
+                        const spawnRarity = spawnable.rarity;
 
                         const fireAmuletIndex = petalIDOf("Amulet of Fire");
 

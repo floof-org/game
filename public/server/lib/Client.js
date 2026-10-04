@@ -2239,7 +2239,7 @@ export default class Client {
                 if (mob && mobTier) {
                     this.systemMessage(`Summon ${mob.name}`, "#8fd3ff");
                     this.systemMessage(`damage: ${formatNumber(mobTier.damage)}`, "#8fd3ff");
-                    this.systemMessage(`health: ${formatNumber(mobTier.health * 6)}`, "#8fd3ff");
+                    this.systemMessage(`health: ${formatNumber(mobTier.health)}`, "#8fd3ff");
                 }
             }
 
