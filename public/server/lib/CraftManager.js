@@ -238,7 +238,12 @@ class CraftManager {
             while (budget >= PETALS_PER_ATTEMPT && client.inventory[rarityName][petalId] >= PETALS_PER_ATTEMPT) {
                 attempts++;
 
-                const chance = this.calculateChance(rarity, client.craftAttempts[rarityName][petalId]);
+                let chance = this.calculateChance(rarity, client.craftAttempts[rarityName][petalId]);
+                const bigPityReq = this.bigPityAttempts(rarity);
+                if (bigPityReq && client.craftAttempts[rarityName][petalId] >= bigPityReq) {
+                    const extraFails = client.craftAttempts[rarityName][petalId] - bigPityReq + 1;
+                    chance = Math.min(1, chance + extraFails * 0.025);
+                }
 
                 if (Math.random() < chance) {
                     client.inventory[nextRarityName] ??= {};
@@ -250,8 +255,6 @@ class CraftManager {
                     spent += PETALS_PER_ATTEMPT;
                     crafted++;
                 } else {
-                    // A failed attempt still costs the 5 petals, plus 1 to 4 more as a
-                    // penalty. Clamped so a small stack cannot be driven negative.
                     const extra = MIN_FAILURE_LOSS + Math.floor(Math.random() * (MAX_FAILURE_LOSS - MIN_FAILURE_LOSS + 1));
                     const loss = Math.min(client.inventory[rarityName][petalId], PETALS_PER_ATTEMPT + extra);
                     client.inventory[rarityName][petalId] -= loss;
