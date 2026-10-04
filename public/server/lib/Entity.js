@@ -1308,7 +1308,9 @@ export class Petal extends Entity {
         }
 
         if (config.phases) {
-            this.health.invulnerable = true;
+            // A petal that breaks apart into projectiles has to stay killable, otherwise it can
+            // never be stopped before it bursts. Phasing petals that do not split keep the protection.
+            this.health.invulnerable = !config.splits;
             this.phases = true;
         }
 
