@@ -146,19 +146,35 @@ export function chatGradient(speed, type, c1 = "#000000", c2 = "#ffffff") {
 }
 
 export function formatLargeNumber(number, type = 0) {
+    let n = number;
+    // handle big numbers safely
+    if (typeof n === "bigint") {
+        if (n >= BigInt("1000000000000000000")) { // >= 1e18
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        n = Number(n);
+    }
+    const num = Number(n);
+    if (!Number.isFinite(num)) {
+        return String(n);
+    }
+    if (num >= 1e15) {
+        const r = Math.round(num);
+        return r.toLocaleString();
+    }
     const suffixes = [
         ["Nv", 1e30], ["Oc", 1e27], ["Sp", 1e24], ["Sx", 1e21],
         ["Qt", 1e18], ["Qd", 1e15], ["t", 1e12], ["b", 1e9], ["m", 1e6], ["k", 1e3]
     ];
 
     for (const [suffix, value] of suffixes) {
-        if (number >= value) {
+        if (num >= value) {
             const decimals = type === 1 ? (value >= 1e15 || value === 1e3 ? 1 : 2) : 2;
-            return (number / value).toFixed(decimals) + suffix;
+            return (num / value).toFixed(decimals) + suffix;
         }
     }
 
-    return number;
+    return num;
 }
 
 const threshold = .6375;
