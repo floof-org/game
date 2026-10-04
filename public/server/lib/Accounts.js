@@ -7,8 +7,13 @@ function normalizeName(name) {
     return String(name).toLowerCase();
 }
 
-function isDiscordId(value) {
-    return /^\d+$/.test(String(value ?? ""));
+/** the auth server id can arrive as a string, a number or an object wrapping it */
+function toDiscordId(value) {
+    if (value && typeof value === "object") value = value.id ?? value.userId ?? value.discordId;
+
+    const id = String(value ?? "").trim();
+
+    return /^\d{1,32}$/.test(id) ? id : "";
 }
 
 function snapshot(client) {
@@ -78,7 +83,7 @@ class Accounts {
             const data = await file.json();
 
             let migrated = 0;
-            let dropped = 0;
+            const dropped = [];
 
             for (const key in data) {
                 if (key === MODERATION_KEY) {
@@ -93,12 +98,14 @@ class Accounts {
 
                 // legacy layout: keyed by account name, carrying a password hash plus the Discord id it was created from
                 if (entry?.password) {
-                    if (!isDiscordId(entry.discordId)) {
-                        dropped++;
+                    const discordId = toDiscordId(entry.discordId);
+
+                    if (!discordId) {
+                        dropped.push(entry.username || key);
                         continue;
                     }
 
-                    this.saves.set(String(entry.discordId), {
+                    this.saves.set(discordId, {
                         username: entry.username || key,
                         data: entry.data || null,
                         createdAt: +entry.createdAt || Date.now(),
@@ -109,12 +116,14 @@ class Accounts {
                     continue;
                 }
 
-                if (!isDiscordId(key)) {
-                    dropped++;
+                const discordId = toDiscordId(key);
+
+                if (!discordId) {
+                    dropped.push(entry?.username || key);
                     continue;
                 }
 
-                this.saves.set(String(key), {
+                this.saves.set(discordId, {
                     username: entry?.username || "",
                     data: entry?.data || null,
                     createdAt: +entry?.createdAt || Date.now(),
@@ -122,7 +131,11 @@ class Accounts {
                 });
             }
 
-            console.log(`[Accounts] Loaded ${this.saves.size} save(s)${migrated ? `, ${migrated} migrated off the old account layout` : ""}${dropped ? `, ${dropped} unusable record(s) dropped` : ""}, ${this.moderation.size} moderation record(s)`);
+            console.log(`[Accounts] Loaded ${this.saves.size} save(s)${migrated ? `, ${migrated} migrated off the old account layout` : ""}, ${this.moderation.size} moderation record(s)`);
+
+            if (dropped.length > 0) {
+                console.warn(`[Accounts] Dropped ${dropped.length} record(s) with no usable Discord id: ${dropped.join(", ")}`);
+            }
         } catch (err) {
             console.warn(`[Accounts] Failed to load ${ACCOUNTS_FILE}, starting fresh:`, err);
         } finally {
