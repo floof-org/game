@@ -6,8 +6,6 @@ import { colors, xpForLevel } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager from "./CraftManager.js";
 
-const ONLINE_USERS = new Map();
-
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
     blockList.push(...txt.replaceAll("\r", "").split("\n").map(e => e.trim()));
@@ -31,7 +29,7 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/createaccount", "/login", "/give", "/addall", "/online",
+    "/give", "/addall", "/remove", "/online",
     "/mute", "/kick", "/ban", "/unban", "/unmute"
 ]);
 
@@ -93,7 +91,6 @@ function findTargetClient(playerName) {
     for (const client of state.clients.values()) {
         if (!client.verified || client === undefined) continue;
 
-        if (client.auth?.loggedIn && client.auth.username.toLowerCase() === lower) return client;
         if (client.username.toLowerCase() === lower) return client;
         if (client.discordName?.toLowerCase() === lower) return client;
     }
@@ -109,7 +106,7 @@ function resolveModerationTarget(playerName) {
     const client = findTargetClient(playerName);
 
     if (client) {
-        return { discordId: String(client.userId ?? ""), accountName: client.auth?.username || client.discordName || client.username, client };
+        return { discordId: String(client.userId ?? ""), accountName: client.discordName || client.username, client };
     }
 
     const discordId = accounts.findModerated(playerName);
@@ -852,7 +849,6 @@ export default class Client {
         this.username = "unknown";
         this.discordName = "";
         this.userId = userId;
-        this.auth = null;
         this.nameColor = ["#FFFFFF", "#D85555", "#F5D230"][+masterPermissions] || "#FFFFFF";
         this.masterPermissions = +masterPermissions;
         this.inventory = {};
@@ -885,7 +881,7 @@ export default class Client {
         this.frownyMessages = 0;
     }
 
-    /** @param {object} data account.data save contents */
+    /** @param {object} data save contents */
     restoreFromData(data) {
         this.level = Math.min(9999, Math.max(1, Math.floor(+data.level || 1)));
         this.xp = Math.min(1e21, Math.max(1, +data.xp || 1));
@@ -927,9 +923,9 @@ export default class Client {
         }
     }
 
-    /** name shown in the kill message: the account name once logged in, otherwise the Discord name */
+    /** name shown in the kill message */
     lootName() {
-        return this.auth?.loggedIn ? this.auth.username : this.username;
+        return this.username;
     }
 
     addXP(x) {
@@ -977,29 +973,13 @@ export default class Client {
     }
 
     grantOwnerPermissions() {
-        if (!this.auth?.loggedIn) return;
+        const owners = ((typeof Bun !== "undefined" && Bun.env.OWNER_DISCORD_IDS) || "").split(",").map(id => id.trim()).filter(Boolean);
 
-        const owners = ((typeof Bun !== "undefined" && Bun.env.OWNER_ACCOUNTS) || "").split(",").map(name => name.trim().toLowerCase()).filter(Boolean);
-
-        if (owners.includes(this.auth.username.toLowerCase())) {
+        if (owners.includes(String(this.userId ?? ""))) {
             this.masterPermissions = Math.max(this.masterPermissions, 2);
             this.nameColor = "#F5D230";
             if (this.body) this.body.nameColor = "#F5D230";
             console.log(`Client ${this.id} (${this.username}) granted owner permissions.`);
-        }
-    }
-
-    applyDisplayName() {
-        const base = this.discordName || this.username;
-
-        if (this.auth?.loggedIn && this.auth.username && !base.includes(`(${this.auth.username})`)) {
-            this.username = `${base} (${this.auth.username})`;
-        } else {
-            this.username = base;
-        }
-
-        if (this.body && this.body.name !== this.username) {
-            this.body.name = this.username;
         }
     }
 
@@ -1069,6 +1049,7 @@ export default class Client {
                     this.kick(`You are banned${banLeft === Infinity ? " permanently" : ` for ${formatDuration(banLeft)}`}.`);
                     return;
                 }
+
                 this.talk(CLIENT_BOUND.READY);
                 this.sendRoom();
                 state.sendTerrain(this.id);
@@ -1077,13 +1058,17 @@ export default class Client {
                     this.craftAttempts[tier.name] = {};
                 });
 
+                // restores the save behind this Discord id, must run after the inventory tiers are initialized
+                accounts.attach(this);
+                this.grantOwnerPermissions();
+
                 const onlineCount = state.clients.size;
 
                 state.clients.forEach(client => {
                     if (client !== this) client.systemMessage(`${this.username} has joined the game! (${onlineCount} players online)`, "#00f2ff");
                 });
 
-                this.systemMessage("Welcome! Use /createaccount [user] [password] to create an account and save your progress, or /login [user] [password] to log in.", "#00f2ff");
+                this.systemMessage("Your progress is saved automatically.", "#00f2ff");
 
                 if (this.userId === state.secretKey && this.masterPermissions < 1) this.nameColor = "#F5D230";
 
@@ -1587,8 +1572,6 @@ export default class Client {
                 "/petalinfo [rarity] [petal name] - Preview the stats of the specified petal and rarity.",
                 "/drops [rarity name] [mob name] - Shows the drop chances for the specified rarity and mob.",
                 "/rarities - Shows all rarities.",
-                "/createaccount [user] [password] - Creates an account and auto-logs you into it, it will be auto-saved.",
-                "/login [user] [password] - Logs you into your previously made account which will restore all progress from the last game.",
                 "/online - Shows all currently online players.",
                 "/die - Kills you.",
                 "/infocommands - Shows all related commands that give info of something.",
@@ -1603,7 +1586,7 @@ export default class Client {
 
             this.systemMessage(`Online players (${online.length}):`, "#00f2ff");
             for (const client of online) {
-                this.systemMessage(`- ${client.username}${client.auth?.loggedIn && !client.username.includes(`(${client.auth.username})`) ? ` (${client.auth.username})` : ""}`, "#55ff55");
+                this.systemMessage(`- ${client.username}`, "#55ff55");
             }
             return;
         }
@@ -1631,7 +1614,7 @@ export default class Client {
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode.",
                 "/give [player] [petal] [rarity] <amount> - Gives a player a petal. Petal names may omit spaces (e.g. firemissile). Amount defaults to 1.",
-                "/remove [petal] [rarity] <amount> - Removes a petal of the given rarity from your own inventory. Amount defaults to 1.",
+                "/remove [rarity] <petal> <amount> - Removes petals of the given rarity from your own inventory. Omit the petal to remove every petal of that rarity. Amount defaults to 1.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
                 "/kick [player] - Kicks a player from the game.",
                 "/mute [player] [seconds] - Mutes a player. 0 is permanent, max 30 days.",
@@ -1891,7 +1874,9 @@ export default class Client {
                 let target = null;
 
                 for (const client of state.clients.values()) {
-                    if (client.auth?.loggedIn && client.auth.username.toLowerCase() === playerName.toLowerCase()) {
+                    if (!client.verified || client === undefined) continue;
+
+                    if (client.username.toLowerCase() === playerName.toLowerCase()) {
                         target = client;
                         break;
                     }
@@ -1909,21 +1894,22 @@ export default class Client {
                     return;
                 }
 
-                const account = accounts.find(playerName);
+                const match = accounts.findByName(playerName);
 
-                if (!account) {
+                if (!match) {
                     this.systemMessage(`Player "${playerName}" not found.`, "#ff5555");
                     return;
                 }
 
-                account.data.inventory ??= {};
-                account.data.inventory[rarity.name] ??= {};
-                account.data.inventory[rarity.name][petalIndex] = (account.data.inventory[rarity.name][petalIndex] || 0) + amount;
+                match.save.data ??= {};
+                match.save.data.inventory ??= {};
+                match.save.data.inventory[rarity.name] ??= {};
+                match.save.data.inventory[rarity.name][petalIndex] = (match.save.data.inventory[rarity.name][petalIndex] || 0) + amount;
                 accounts.persist().catch(err => console.warn("[Accounts] Save failed:", err));
 
                 const offlineLabel = amount === 1 ? "" : ` x${amount}`;
 
-                this.systemMessage(`Gave ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${offlineLabel} to ${account.username} offline.`, "#55ff55");
+                this.systemMessage(`Gave ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${offlineLabel} to ${match.save.username} offline.`, "#55ff55");
             })();
 
             return;
@@ -1936,12 +1922,54 @@ export default class Client {
 
                 const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
 
-                if (args.length < 2) {
-                    this.systemMessage("Usage: /remove [petal] [rarity] <amount>", "#ffaa00");
+                if (args.length < 1) {
+                    this.systemMessage("Usage: /remove [rarity] <petal> <amount>", "#ffaa00");
                     return;
                 }
 
-                const [petalArg, rarityArg, amountArg] = args;
+                const [rarityArg, ...rest] = args;
+
+                let rarityIndex = null;
+
+                if (!isNaN(rarityArg)) {
+                    rarityIndex = parseInt(rarityArg);
+                } else {
+                    const lower = rarityArg.toLowerCase();
+
+                    for (let i = 0; i < tiers.length; i++) {
+                        if (tiers[i].name.toLowerCase() === lower) {
+                            rarityIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
+                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                    return;
+                }
+
+                const rarity = tiers[rarityIndex];
+
+                // no petal given: wipe the whole rarity
+                if (rest.length === 0) {
+                    const petals = this.inventory[rarity.name] || {};
+                    const removed = Object.values(petals).reduce((sum, count) => sum + count, 0);
+
+                    if (removed <= 0) {
+                        this.systemMessage(`You do not have any ${rarity.name} petals.`, "#ff5555");
+                        return;
+                    }
+
+                    this.inventory[rarity.name] = {};
+                    accounts.saveClient(this);
+
+                    this.systemMessage(`Removed all ${removed} ${rarity.name} petals!`, "#55ff55");
+                    return;
+                }
+
+                const petalArg = rest[0];
+                const amountArg = rest[1];
 
                 // petal names may omit spaces: both "fire missile" and "firemissile" resolve
                 const normalize = s => s.toLowerCase().replace(/\s+/g, "");
@@ -1969,27 +1997,6 @@ export default class Client {
                     }
                 }
 
-                let rarityIndex = null;
-
-                if (!isNaN(rarityArg)) {
-                    rarityIndex = parseInt(rarityArg);
-                } else {
-                    const lower = rarityArg.toLowerCase();
-
-                    for (let i = 0; i < tiers.length; i++) {
-                        if (tiers[i].name.toLowerCase() === lower) {
-                            rarityIndex = i;
-                            break;
-                        }
-                    }
-                }
-
-                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
-                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
-                    return;
-                }
-
-                const rarity = tiers[rarityIndex];
                 const owned = this.inventory[rarity.name]?.[petalIndex] || 0;
 
                 if (owned <= 0) {
@@ -2062,120 +2069,6 @@ export default class Client {
                 accounts.saveClient(this);
 
                 this.systemMessage(`Added all ${available.length} obtainable ${rarity.name} petals to your inventory!`, "#55ff55");
-            })();
-
-            return;
-        }
-
-        // /createaccount
-        if (commandCheck("/createaccount")) {
-            (async () => {
-                if (this.auth?.loggedIn) {
-                    this.systemMessage("Already logged in.", "#ff5555");
-                    return;
-                }
-
-                if ((this.level ?? 0) < 25) {
-                    this.systemMessage("Reach level 25 to create an account.", "#ff5555");
-                    return;
-                }
-
-                const args = e.slice(14).trim().split(/\s+/).filter(Boolean);
-
-                if (args.length < 2) {
-                    this.systemMessage("Usage: /createaccount [username] [password]", "#ffe65d");
-                    return;
-                }
-
-                const [user, pass] = args;
-
-                if (!/^[A-Za-z0-9_]{1,64}$/.test(user)) {
-                    this.systemMessage("Username must be letters, numbers and underscores only (max 64).", "#ff5555");
-                    return;
-                }
-
-                if (pass.length < 6) {
-                    this.systemMessage("Password must be at least 6 characters.", "#ff5555");
-                    return;
-                }
-
-                const result = await accounts.create(user, pass, this);
-
-                if (!result.ok) {
-                    this.systemMessage(result.error, "#ff5555");
-                    return;
-                }
-
-                this.auth = {
-                    loggedIn: true,
-                    username: user
-                };
-
-                ONLINE_USERS.set(user.toLowerCase(), this);
-
-                this.grantOwnerPermissions();
-                this.applyDisplayName();
-
-                this.systemMessage(`Account '${user}' created and logged in.`, "#55ff55");
-            })();
-
-            return;
-        }
-
-        // /login
-        if (commandCheck("/login")) {
-            (async () => {
-                const args = e.slice(6).trim().split(/\s+/).filter(Boolean);
-
-                if (args.length < 2) {
-                    this.systemMessage("Usage: /login [username] [password]", "#ffe65d");
-                    return;
-                }
-
-                if (this.auth?.loggedIn) {
-                    this.systemMessage("Already logged in.", "#ffe65d");
-                    return;
-                }
-
-                const [user, pass] = args;
-
-                const result = await accounts.login(user, pass);
-
-                if (!result.ok) {
-                    this.systemMessage(result.error, "#ff5555");
-                    return;
-                }
-
-                const account = result.account;
-                const existing = ONLINE_USERS.get(user.toLowerCase());
-
-                if (existing && existing !== this) {
-                    this.systemMessage("Account already in use.", "#ff5555");
-                    return;
-                }
-
-                if (account.data) {
-                    this.restoreFromData(account.data);
-                }
-
-                this.auth = {
-                    loggedIn: true,
-                    username: user
-                };
-
-                ONLINE_USERS.set(user.toLowerCase(), this);
-
-                this.grantOwnerPermissions();
-
-                // Show owner's yellow name to other clients
-                if (this.body) this.body.nameColor = this.nameColor;
-
-                const invSummary = tiers.map(t => `${t.name}:${Object.values(this.inventory[t.name] || {}).reduce((a, b) => a + b, 0)}`).join(" ");
-                console.log(`[login] ${user} slots=${this.slots.filter(s => s && s.id).length} secondary=${this.secondarySlots.filter(s => s && s.id).length} inv={${invSummary}}`);
-
-                this.applyDisplayName();
-
-                this.systemMessage(`Logged in as ${user}`, "#55ff55");
             })();
 
             return;
@@ -2798,15 +2691,9 @@ export default class Client {
                 if (client !== this) client.systemMessage(`${this.username} has left the game. (${onlineCount} players online)`, "#00f2ff");
             });
 
-            if (this.auth?.loggedIn) {
-                ONLINE_USERS.delete(this.auth.username.toLowerCase());
-            }
-
             this.body?.destroy();
 
-            if (this.auth?.loggedIn) {
-                accounts.saveClient(this);
-            }
+            accounts.saveClient(this);
         } else {
             console.log(`Client ${this.id} disconnected`);
         }
@@ -2900,7 +2787,7 @@ export default class Client {
             writer.setUint8(entity.team);
             writer.setUint8(entity.highestRarity);
             writer.setFloat32(entity.xp / 10000);
-            writer.setStringUTF8(entity.auth?.loggedIn ? entity.auth.username : "Guest");
+            writer.setStringUTF8(entity.lootName());
         }
 
         writer.setUint8(state.playerCount);
@@ -2940,7 +2827,7 @@ export default class Client {
                 alliesWriter.setFloat32(entity.body?.y ?? 0);
                 alliesWriter.setUint8(entity.team);
                 alliesWriter.setUint8(entity.highestRarity);
-                alliesWriter.setStringUTF8(entity.auth?.loggedIn ? entity.auth.username : "Guest");
+                alliesWriter.setStringUTF8(entity.lootName());
             }
 
             state.router.postMessage(alliesWriter.build());

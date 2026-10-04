@@ -1,34 +1,14 @@
-const enc = new TextEncoder();
-const dec = new TextDecoder();
-
-const PBKDF2_ITERATIONS = 100000;
-const PBKDF2_KEYLEN = 256;
-
 const ACCOUNTS_FILE = (typeof Bun !== "undefined" && Bun.env.ACCOUNTS_FILE) || "./accounts.json";
 
-// Top level key holding bans and mutes on their own. Prefixed with $ because account names only allow [A-Za-z0-9_] and cannot collide.
+// Top level key holding bans and mutes on their own. Prefixed with $ because saves are keyed by numeric Discord ids and cannot collide.
 const MODERATION_KEY = "$moderation";
-
-function hexEncode(bytes) {
-    return Array.from(bytes).map(byte => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function hexDecode(hex) {
-    return Uint8Array.from((hex.match(/.{1,2}/g) || []).map(byte => parseInt(byte, 16)));
-}
 
 function normalizeName(name) {
     return String(name).toLowerCase();
 }
 
-async function hashPassword(password, saltHex) {
-    const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
-    const bits = await crypto.subtle.deriveBits(
-        { name: "PBKDF2", salt: hexDecode(saltHex), iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
-        key,
-        PBKDF2_KEYLEN
-    );
-    return hexEncode(new Uint8Array(bits));
+function isDiscordId(value) {
+    return /^\d+$/.test(String(value ?? ""));
 }
 
 function snapshot(client) {
@@ -67,14 +47,15 @@ function parseDuration(arg, max) {
 
 function remaining(until) {
     if (until === PERMANENT) return PERMANENT;
+
     return Math.max(0, until - Date.now());
 }
 
 class Accounts {
     constructor() {
-        /** @type {Map<string, object>} */
-        this.accounts = new Map();
-        /** @type {Map<string, object>} Discord user id -> { bannedUntil, mutedUntil } */
+        /** @type {Map<string, object>} Discord user id -> { username, data, createdAt, lastSeen } */
+        this.saves = new Map();
+        /** @type {Map<string, object>} Discord user id -> { accountName, bannedUntil, mutedUntil } */
         this.moderation = new Map();
         this.loaded = false;
         /** @type {Promise<void>} */
@@ -96,6 +77,9 @@ class Accounts {
 
             const data = await file.json();
 
+            let migrated = 0;
+            let dropped = 0;
+
             for (const key in data) {
                 if (key === MODERATION_KEY) {
                     const entries = data[key];
@@ -105,13 +89,40 @@ class Accounts {
                     continue;
                 }
 
-                const account = data[key];
-                if (account?.password?.salt && account?.password?.hash && account?.data) {
-                    this.accounts.set(normalizeName(key), account);
+                const entry = data[key];
+
+                // legacy layout: keyed by account name, carrying a password hash plus the Discord id it was created from
+                if (entry?.password) {
+                    if (!isDiscordId(entry.discordId)) {
+                        dropped++;
+                        continue;
+                    }
+
+                    this.saves.set(String(entry.discordId), {
+                        username: entry.username || key,
+                        data: entry.data || null,
+                        createdAt: +entry.createdAt || Date.now(),
+                        lastSeen: +entry.lastLogin || Date.now()
+                    });
+
+                    migrated++;
+                    continue;
                 }
+
+                if (!isDiscordId(key)) {
+                    dropped++;
+                    continue;
+                }
+
+                this.saves.set(String(key), {
+                    username: entry?.username || "",
+                    data: entry?.data || null,
+                    createdAt: +entry?.createdAt || Date.now(),
+                    lastSeen: +entry?.lastSeen || Date.now()
+                });
             }
 
-            console.log(`[Accounts] Loaded ${this.accounts.size} account(s), ${this.moderation.size} moderation record(s)`);
+            console.log(`[Accounts] Loaded ${this.saves.size} save(s)${migrated ? `, ${migrated} migrated off the old account layout` : ""}${dropped ? `, ${dropped} unusable record(s) dropped` : ""}, ${this.moderation.size} moderation record(s)`);
         } catch (err) {
             console.warn(`[Accounts] Failed to load ${ACCOUNTS_FILE}, starting fresh:`, err);
         } finally {
@@ -119,55 +130,58 @@ class Accounts {
         }
     }
 
-    find(username) {
-        return this.accounts.get(normalizeName(username));
+    /** @param {string} discordId */
+    find(discordId) {
+        return this.saves.get(String(discordId ?? ""));
     }
 
-    async create(username, password, client) {
-        const id = normalizeName(username);
+    /** last seen Discord name -> save, used when the player is offline */
+    findByName(query) {
+        const lower = normalizeName(query);
 
-        if (this.accounts.has(id)) {
-            return { ok: false, error: "An account with that username already exists." };
+        for (const [discordId, save] of this.saves) {
+            if (normalizeName(save.username) === lower) return { discordId, save };
         }
 
-        const salt = crypto.getRandomValues(new Uint8Array(16));
-        const saltHex = hexEncode(salt);
-
-        const account = {
-            username,
-            password: {
-                salt: saltHex,
-                hash: await hashPassword(password, saltHex)
-            },
-            discordId: String(client.userId ?? ""),
-            data: snapshot(client),
-            createdAt: Date.now(),
-            lastLogin: Date.now()
-        };
-
-        this.accounts.set(id, account);
-        await this.persist();
-
-        return { ok: true, account };
+        return null;
     }
 
-    async login(username, password) {
-        const account = this.find(username);
+    /** empty record for a Discord id that has no save yet */
+    blank(discordId) {
+        return { username: "", data: null, createdAt: Date.now(), lastSeen: Date.now() };
+    }
 
-        if (!account) {
-            return { ok: false, error: "Account not found. Try /login again or create one with /createaccount." };
-        }
+    /**
+     * Bind a verified client to the save behind its Discord id, restoring progress when one already exists
+     * @param {Client} client
+     */
+    attach(client) {
+        const id = String(client.userId ?? "");
+        if (!id) return null;
 
-        const hash = await hashPassword(password, account.password.salt);
+        const save = this.saves.get(id) || this.blank(id);
+        this.saves.set(id, save);
 
-        if (hash !== account.password.hash) {
-            return { ok: false, error: "Incorrect password." };
-        }
+        save.username = client.discordName || client.username || save.username;
+        save.lastSeen = Date.now();
 
-        account.lastLogin = Date.now();
-        await this.persist();
+        if (save.data) client.restoreFromData(save.data);
 
-        return { ok: true, account };
+        return save;
+    }
+
+    saveClient(client) {
+        const id = String(client?.userId ?? "");
+        if (!id) return;
+
+        const save = this.saves.get(id) || this.blank(id);
+        this.saves.set(id, save);
+
+        save.username = client.discordName || client.username || save.username;
+        save.lastSeen = Date.now();
+        save.data = snapshot(client);
+
+        this.persist().catch(err => console.warn("[Accounts] Save failed:", err));
     }
 
     /**
@@ -292,8 +306,8 @@ class Accounts {
     }
 
     /**
-     * account name / Discord display name -> Discord ID that already has a punishment record (for offline lookup)
-     * Punishments are keyed by Discord ID, so look up the other way using the account name at punishment time
+     * Discord name -> Discord ID that already has a punishment record (for offline lookup)
+     * Punishments are keyed by Discord ID, so look up the other way using the name recorded at punishment time
      */
     findModerated(query) {
         const lower = normalizeName(query);
@@ -310,24 +324,14 @@ class Accounts {
             fallback ??= discordId;
         }
 
-        // when the name in the punishment record does not match, fall back to the Discord ID stored on the account
-        const account = this.find(query);
-        if (account?.discordId && this.moderation.has(account.discordId)) {
-            return account.discordId;
+        // when the name in the punishment record does not match, fall back to the name on the save record
+        for (const [discordId, save] of this.saves) {
+            if (normalizeName(save.username) === lower && this.moderation.has(discordId)) {
+                return discordId;
+            }
         }
 
         return fallback;
-    }
-
-    saveClient(client) {
-        if (!client?.auth?.loggedIn) return;
-
-        const account = this.find(client.auth.username);
-
-        if (!account) return;
-
-        account.data = snapshot(client);
-        this.persist().catch(err => console.warn("[Accounts] Save failed:", err));
     }
 
     async persist() {
@@ -336,8 +340,10 @@ class Accounts {
         const write = async () => {
             const output = {};
 
-            for (const [id, account] of this.accounts) {
-                output[account.username || id] = account;
+            for (const [discordId, save] of this.saves) {
+                // a save without progress yet is just a player who connected, do not write those
+                if (!save.data) continue;
+                output[discordId] = save;
             }
 
             // only write records that have not expired, so the save file cannot grow without bound

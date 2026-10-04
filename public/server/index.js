@@ -233,11 +233,11 @@ setInterval(() => {
 // World update loop
 setInterval(() => state.clients.forEach(c => c.worldUpdate()), 1000 / 25);
 
-// Autosave logged in accounts (mirrors White's 20 minute autosave)
+// Autosave every connected player (mirrors White's 20 minute autosave)
 setInterval(() => {
     console.log("[AUTOSAVE] running...");
     state.clients.forEach(client => {
-        if (!client?.auth?.loggedIn) return;
+        if (!client?.verified) return;
         accounts.saveClient(client);
     });
 }, 20 * 60 * 1000);
@@ -429,9 +429,7 @@ switch (globalThis.environmentName) {
 
             // kick only initiates the close, exit after onClose has finished saving
             setTimeout(async () => {
-                state.clients.forEach(c => {
-                    if (c.auth?.loggedIn) accounts.saveClient(c);
-                });
+                state.clients.forEach(c => accounts.saveClient(c));
                 await accounts.flush();
                 process.exit();
             }, 1000);
