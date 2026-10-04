@@ -44,18 +44,19 @@ function normalizeName(str) {
 function announceCraft(client, result) {
     if (result.error) return;
 
-    if (result.crafted > 0) {
-        if (result.nextRarityIndex !== CRAFT_ANNOUNCE_RARITY) return;
+        if (result.crafted > 0) {
+            const nextIndex = result.nextRarityIndex;
+            if (nextIndex >= CRAFT_ANNOUNCE_RARITY) {
+                const text = result.crafted === 1
+                    ? `${client.lootName()} Has Crafted A ${result.nextRarityName} ${result.petalName}!`
+                    : `${client.lootName()} Has Crafted ${result.crafted}x ${result.nextRarityName} ${result.petalName}!`;
 
-        const text = result.crafted === 1
-            ? `${client.lootName()} Has Crafted A ${result.nextRarityName} ${result.petalName}!`
-            : `${client.lootName()} Has Crafted ${result.crafted}x ${result.nextRarityName} ${result.petalName}!`;
+                state.clients.forEach(other => other.systemMessage(text, tiers[result.nextRarityIndex].color));
+            }
+            return;
+        }
 
-        state.clients.forEach(other => other.systemMessage(text, tiers[result.nextRarityIndex].color));
-        return;
-    }
-
-    client.systemMessage(`Craft Failed... (-${result.spent} ${result.rarityName}) ${result.petalName}`, "#ff5555");
+        client.systemMessage(`Craft Failed... (-${result.spent} ${result.rarityName}) ${result.petalName}`, "#ff5555");
 }
 
 const MIN_SLOTS = 5;
