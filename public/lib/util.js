@@ -158,7 +158,7 @@ export function formatLargeNumber(number, type = 0) {
     if (!Number.isFinite(num)) {
         return String(n);
     }
-    if (num >= 1e15) {
+    if (num >= 1e13) {
         const r = Math.round(num);
         return r.toLocaleString();
     }
