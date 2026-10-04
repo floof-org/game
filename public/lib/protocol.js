@@ -545,14 +545,15 @@ export class PetalConfig {
         return this;
     }
 
-    setSpawnable(index, rarity, timer, damageMultiplier = 1) {
+    setSpawnable(index, rarity, timer, damageMultiplier = 1, healthMultiplier = 6) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].spawnable = {
                 index: index,
                 rarity: rarity instanceof Array ? (rarity[i] ?? rarity[rarity.length - 1]) : rarity,
                 timer: timer * 22.5,
-                // Server only: not part of the wire format, so the client never sees it.
-                damageMultiplier: damageMultiplier
+                // Server only: not part of the wire format, so the client never sees them.
+                damageMultiplier: damageMultiplier,
+                healthMultiplier: healthMultiplier
             };
         }
 
