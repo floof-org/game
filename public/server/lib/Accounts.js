@@ -7,13 +7,13 @@ function normalizeName(name) {
     return String(name).toLowerCase();
 }
 
-/** the auth server id can arrive as a string, a number or an object wrapping it */
+/** the auth server hands out an opaque id, it is not always a numeric Discord snowflake */
 function toDiscordId(value) {
     if (value && typeof value === "object") value = value.id ?? value.userId ?? value.discordId;
 
     const id = String(value ?? "").trim();
 
-    return /^\d{1,32}$/.test(id) ? id : "";
+    return /^[A-Za-z0-9_-]{3,64}$/.test(id) ? id : "";
 }
 
 function snapshot(client) {
@@ -80,7 +80,12 @@ class Accounts {
                 return;
             }
 
-            const data = await file.json();
+            const raw = await file.text();
+
+            // keep the untouched file around: a load that migrates or drops records must never leave the old copy as the only one
+            await Bun.write(ACCOUNTS_FILE + ".load-backup", raw).catch(() => {});
+
+            const data = JSON.parse(raw);
 
             let migrated = 0;
             const dropped = [];
@@ -132,6 +137,10 @@ class Accounts {
             }
 
             console.log(`[Accounts] Loaded ${this.saves.size} save(s)${migrated ? `, ${migrated} migrated off the old account layout` : ""}, ${this.moderation.size} moderation record(s)`);
+
+            for (const [discordId, save] of this.saves) {
+                console.log(`[Accounts]   save ${discordId} ${save.username || "(no name)"}`);
+            }
 
             if (dropped.length > 0) {
                 console.warn(`[Accounts] Dropped ${dropped.length} record(s) with no usable Discord id: ${dropped.join(", ")}`);

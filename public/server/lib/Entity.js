@@ -280,6 +280,7 @@ export class PetalSlot {
                         const conf = petalConfigs[this.config.shootsOut];
                         const tier = conf.tiers[this.rarity];
 
+                        newPet.config = conf;
                         newPet.rarity = this.rarity
                         newPet.size = conf.sizeRatio * Math.pow(1.3, this.rarity);
                         newPet.health.set(tier.health);
@@ -473,6 +474,7 @@ export class PetalSlot {
                         for (let i = 0; i < this.config.splits.count; i++) {
                             const newPet = new Petal(this.player, -1, -1);
                             newPet.rarity = this.rarity
+                            newPet.config = petal.config;
                             newPet.index = this.config.splits.index;
                             newPet.size = petal.size / this.config.splits.count * 3;
                             newPet.health.set(petal.health.health);
@@ -1465,7 +1467,7 @@ export class Petal extends Entity {
         }
 
         // desert maze: spinning sticks stir up a dust storm that drags mobs toward the player
-        if (this.config.name === "Stick" && this.petalIndex === 0 && !this.launched && state.biome === BIOME_TYPES.DESERT && this.parent) {
+        if (this.config?.name === "Stick" && this.petalIndex === 0 && !this.launched && state.biome === BIOME_TYPES.DESERT && this.parent) {
             const pullRange = 300;
             const mobs = state.spatialHash.retrieve({
                 _AABB: { x1: this.parent.x - pullRange, y1: this.parent.y - pullRange, x2: this.parent.x + pullRange, y2: this.parent.y + pullRange }
