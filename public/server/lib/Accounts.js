@@ -60,7 +60,7 @@ class Accounts {
     constructor() {
         /** @type {Map<string, object>} Discord user id -> { username, data, createdAt, lastSeen } */
         this.saves = new Map();
-        /** @type {Map<string, object>} Discord user id -> { accountName, bannedUntil, mutedUntil } */
+        /** @type {Map<string, object>} Discord user id -> { playerName, bannedUntil, mutedUntil } */
         this.moderation = new Map();
         this.loaded = false;
         /** @type {Promise<void>} */
@@ -94,7 +94,15 @@ class Accounts {
                 if (key === MODERATION_KEY) {
                     const entries = data[key];
                     for (const discordId in entries) {
-                        this.moderation.set(String(discordId), entries[discordId]);
+                        const entry = entries[discordId];
+
+                        // older records kept the name under accountName
+                        if (entry && entry.accountName !== undefined && entry.playerName === undefined) {
+                            entry.playerName = entry.accountName;
+                            delete entry.accountName;
+                        }
+
+                        this.moderation.set(String(discordId), entry);
                     }
                     continue;
                 }
@@ -225,10 +233,10 @@ class Accounts {
     }
 
     /**
-     * Get the ban/mute record for a Discord ID, accountName is only used for logging and tracking renames
+     * Get the ban/mute record for a Discord ID, playerName is only used for logging and tracking renames
      * @param {string} discordId
      */
-    record(discordId, accountName = "") {
+    record(discordId, playerName = "") {
         const id = String(discordId ?? "");
 
         if (!id) return null;
@@ -236,11 +244,11 @@ class Accounts {
         let entry = this.moderation.get(id);
 
         if (!entry) {
-            entry = { accountName: "", bannedUntil: 0, mutedUntil: 0 };
+            entry = { playerName: "", bannedUntil: 0, mutedUntil: 0 };
             this.moderation.set(id, entry);
         }
 
-        if (accountName && !entry.accountName) entry.accountName = accountName;
+        if (playerName && !entry.playerName) entry.playerName = playerName;
 
         return entry;
     }
@@ -273,8 +281,8 @@ class Accounts {
      * @param {string} discordId
      * @param {number} seconds 0 = permanent
      */
-    async ban(discordId, seconds, accountName = "") {
-        const entry = this.record(discordId, accountName);
+    async ban(discordId, seconds, playerName = "") {
+        const entry = this.record(discordId, playerName);
         if (!entry) return { ok: false, error: "Missing Discord ID." };
 
         const duration = parseDuration(seconds, MAX_BAN_SECONDS);
@@ -291,8 +299,8 @@ class Accounts {
      * @param {string} discordId
      * @param {number} seconds 0 = permanent
      */
-    async mute(discordId, seconds, accountName = "") {
-        const entry = this.record(discordId, accountName);
+    async mute(discordId, seconds, playerName = "") {
+        const entry = this.record(discordId, playerName);
         if (!entry) return { ok: false, error: "Missing Discord ID." };
 
         const duration = parseDuration(seconds, MAX_MUTE_SECONDS);
@@ -328,7 +336,7 @@ class Accounts {
     }
 
     /**
-     * Discord name -> Discord ID that already has a punishment record (for offline lookup)
+     * Discord username -> Discord ID that already has a punishment record (for offline lookup)
      * Punishments are keyed by Discord ID, so look up the other way using the name recorded at punishment time
      */
     findModerated(query) {
@@ -336,7 +344,7 @@ class Accounts {
         let fallback = null;
 
         for (const [discordId, entry] of this.moderation) {
-            if (normalizeName(entry.accountName) !== lower) continue;
+            if (normalizeName(entry.playerName) !== lower) continue;
 
             // prefer a record that actually carries a punishment
             if (Accounts.fromStored(entry.bannedUntil) > 0 || Accounts.fromStored(entry.mutedUntil) > 0) {

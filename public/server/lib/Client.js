@@ -99,19 +99,19 @@ function findTargetClient(playerName) {
 }
 
 /**
- * Punishment target: prefer the online player's Discord ID (authoritative), fall back to the account name in the punishment record when offline
+ * Punishment target: prefer the online player's Discord ID (authoritative), fall back to the Discord username in the punishment record when offline
  * @param {string} playerName
  */
 function resolveModerationTarget(playerName) {
     const client = findTargetClient(playerName);
 
     if (client) {
-        return { discordId: String(client.userId ?? ""), accountName: client.discordName || client.username, client };
+        return { discordId: String(client.userId ?? ""), playerName: client.discordName || client.username, client };
     }
 
     const discordId = accounts.findModerated(playerName);
 
-    return discordId ? { discordId, accountName: playerName, client: null } : null;
+    return discordId ? { discordId, playerName, client: null } : null;
 }
 
 function formatNumber(num) {
@@ -1621,9 +1621,9 @@ export default class Client {
                 "/unmute [player] - Removes a player's mute.",
                 "/ban [player] [seconds] - Bans a player. 0 is permanent, max 10 years.",
                 "",
-                "Bans and mutes are tied to the player's Discord ID, so renaming,",
-                "logging out or creating a new account does not remove them.",
-                "Player can be given as their account name or Discord name."
+                "Bans and mutes are tied to the player's Discord ID, so renaming",
+                "the Discord username does not remove them.",
+                "Player is given by their Discord username."
             ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
             return;
         }
@@ -1683,7 +1683,7 @@ export default class Client {
                     return;
                 }
 
-                const result = await accounts.mute(target.discordId, durationArg, target.accountName);
+                const result = await accounts.mute(target.discordId, durationArg, target.playerName);
 
                 if (!result.ok) {
                     this.systemMessage(result.error, "#ff5555");
@@ -1692,7 +1692,7 @@ export default class Client {
 
                 const when = result.duration === Infinity ? "permanently" : `for ${formatDuration(result.duration * 1000)}`;
                 target.client?.systemMessage(`You have been muted ${when}.`, "#ff5555");
-                this.systemMessage(`Muted ${target.accountName} ${when}.`, "#55ff55");
+                this.systemMessage(`Muted ${target.playerName} ${when}.`, "#55ff55");
             })();
 
             return;
@@ -1726,7 +1726,7 @@ export default class Client {
                 }
 
                 target.client?.systemMessage("You have been unmuted.", "#55ff55");
-                this.systemMessage(`Unmuted ${target.accountName}.`, "#55ff55");
+                this.systemMessage(`Unmuted ${target.playerName}.`, "#55ff55");
             })();
 
             return;
@@ -1760,7 +1760,7 @@ export default class Client {
                     return;
                 }
 
-                const result = await accounts.ban(resolved.discordId, durationArg, resolved.accountName);
+                const result = await accounts.ban(resolved.discordId, durationArg, resolved.playerName);
 
                 if (!result.ok) {
                     this.systemMessage(result.error, "#ff5555");
@@ -1771,7 +1771,7 @@ export default class Client {
 
                 if (target) target.kick(`Banned ${reason} by ${this.username}`);
 
-                this.systemMessage(`Banned ${resolved.accountName} ${reason}.`, "#55ff55");
+                this.systemMessage(`Banned ${resolved.playerName} ${reason}.`, "#55ff55");
             })();
 
             return;
@@ -1804,7 +1804,7 @@ export default class Client {
                     return;
                 }
 
-                this.systemMessage(`Unbanned ${target.accountName}.`, "#55ff55");
+                this.systemMessage(`Unbanned ${target.playerName}.`, "#55ff55");
             })();
 
             return;
