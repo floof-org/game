@@ -113,15 +113,24 @@ const MIN_FAILURE_LOSS = 1;
 const MAX_FAILURE_LOSS = 4;
 const MAX_PETALS_PER_REQUEST = 1000000;
 
+// The rarity whose crafts get announced lobby wide. Crafting rarity N produces
+// rarity N + 1, so this announces Omega petals.
+export const CRAFT_ANNOUNCE_RARITY = 9;
+
 function rarityKey(name) {
     return name.toLowerCase().replace(/\s+/g, "");
 }
 
 // Index aligned copies of the tables above. The craft loop runs once per attempt,
 // so keeping the lookups numeric avoids repeating the string work every iteration.
-const BASE_CHANCES = tiers.map(tier => (CRAFT_CHANCES[rarityKey(tier.name)] ?? 0) / 100);
-const PITY_STEPS = tiers.map(tier => (PITY_INCREMENTS[rarityKey(tier.name)] ?? 0) / 100);
+// The percent values are kept as authored and only divided when a chance is needed,
+// so display never picks up floating point noise like 0.00039999999999999996.
+const BASE_CHANCE_PERCENT = tiers.map(tier => CRAFT_CHANCES[rarityKey(tier.name)] ?? 0);
+const PITY_PERCENT = tiers.map(tier => PITY_INCREMENTS[rarityKey(tier.name)] ?? 0);
 const BIG_PITY_ATTEMPTS = tiers.map(tier => ATTEMPTS_FOR_BIG_PITY[rarityKey(tier.name)] ?? 0);
+
+const BASE_CHANCES = BASE_CHANCE_PERCENT.map(percent => percent / 100);
+const PITY_STEPS = PITY_PERCENT.map(percent => percent / 100);
 
 class CraftManager {
     /**
@@ -143,6 +152,20 @@ class CraftManager {
         const attemptsMade = Number.isFinite(attempts) ? Math.max(0, attempts) : 0;
 
         return Math.min(1, BASE_CHANCES[rarity] + attemptsMade * PITY_STEPS[rarity]);
+    }
+
+    /**
+     * The base chance of a first-attempt success, in percent, for display.
+     */
+    baseChancePercent(rarity) {
+        return BASE_CHANCE_PERCENT[rarity];
+    }
+
+    /**
+     * How many percentage points each consecutive failure adds, for display.
+     */
+    pityIncrementPercent(rarity) {
+        return PITY_PERCENT[rarity];
     }
 
     /**
@@ -252,6 +275,7 @@ class CraftManager {
         return {
             error: null,
             rarity,
+            nextRarityIndex: rarity + 1,
             petalId,
             rarityName,
             nextRarityName,
@@ -280,7 +304,7 @@ class CraftManager {
             });
         }
 
-        return client.talk(CLIENT_BOUND.CRAFT_RESULT, {
+        client.talk(CLIENT_BOUND.CRAFT_RESULT, {
             error: false,
             rarity: result.rarity,
             petalId: result.petalId,
@@ -288,6 +312,9 @@ class CraftManager {
             attempts: result.attempts,
             pity: result.pity
         });
+
+        // Returned so the caller can announce the craft lobby wide.
+        return result;
     }
 }
 
