@@ -1961,7 +1961,13 @@ export default class Client {
                         return;
                     }
 
-                    this.inventory[rarity.name] = {};
+                    // Zero the counts instead of dropping the keys: the client merges the world
+                    // update inventory per petal id and never forgets ids the server stops
+                    // sending, so a removed entry would keep showing up in the inventory view.
+                    for (const id of Object.keys(this.inventory[rarity.name])) {
+                        this.inventory[rarity.name][id] = 0;
+                    }
+
                     accounts.saveClient(this);
 
                     this.systemMessage(`Removed all ${removed} ${rarity.name} petals!`, "#55ff55");
@@ -2008,7 +2014,8 @@ export default class Client {
                 this.inventory[rarity.name][petalIndex] -= removed;
 
                 if (this.inventory[rarity.name][petalIndex] <= 0) {
-                    delete this.inventory[rarity.name][petalIndex];
+                    // Keep a zero count rather than deleting the key, see the whole-rarity branch above.
+                    this.inventory[rarity.name][petalIndex] = 0;
                 }
 
                 accounts.saveClient(this);
