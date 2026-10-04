@@ -4,7 +4,7 @@ import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAME
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
 import { colors, xpForLevel } from "../../lib/util.js";
 import accounts from "./Accounts.js";
-import craftManager, { PETALS_PER_ATTEMPT } from "./CraftManager.js";
+import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY } from "./CraftManager.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -29,12 +29,33 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/give", "/addall", "/remove", "/craft", "/online",
+    "/give", "/addall", "/remove", "/craft", "/pity", "/online",
     "/mute", "/kick", "/ban", "/unban", "/unmute"
 ]);
 
 function normalizeName(str) {
     return str.toLowerCase().replace(/\s+/g, "");
+}
+
+/**
+ * Reports the outcome of a craft. A successful craft of the announce rarity goes out
+ * to the whole lobby; anything else only tells the crafter what happened.
+ */
+function announceCraft(client, result) {
+    if (result.error) return;
+
+    if (result.crafted > 0) {
+        if (result.nextRarityIndex !== CRAFT_ANNOUNCE_RARITY) return;
+
+        const text = result.crafted === 1
+            ? `${client.lootName()} Has Crafted A ${result.nextRarityName} ${result.petalName}!`
+            : `${client.lootName()} Has Crafted ${result.crafted}x ${result.nextRarityName} ${result.petalName}!`;
+
+        state.clients.forEach(other => other.systemMessage(text, tiers[result.nextRarityIndex].color));
+        return;
+    }
+
+    client.systemMessage(`Craft Failed... (-${result.spent} ${result.rarityName}) ${result.petalName}`, "#ff5555");
 }
 
 const MIN_SLOTS = 5;
@@ -1539,7 +1560,14 @@ export default class Client {
                 }
 
                 // Craft request data should be in the following order: Rarity, Petal ID, Amount.
-                craftManager.handleCraftRequest(this, reader.getUint8(), reader.getUint8(), reader.getUint32());
+                const craftResult = craftManager.handleCraftRequest(this, reader.getUint8(), reader.getUint8(), reader.getUint32());
+
+                // The client renders its own result panel, but the lobby wide announce
+                // still has to come from the server.
+                if (craftResult) {
+                    accounts.saveClient(this);
+                    announceCraft(this, craftResult);
+                }
                 break;
         }
     }
@@ -1573,6 +1601,7 @@ export default class Client {
                 "/drops [rarity name] [mob name] - Shows the drop chances for the specified rarity and mob.",
                 "/rarities - Shows all rarities.",
                 "/craft [rarity] <petal> <amount> - Spends 5 of the same petal to roll for 1 petal of the next rarity. Amount defaults to everything you own of that petal.",
+                "/pity - Shows the craft chance of every rarity and how much pity each failure adds.",
                 "/online - Shows all currently online players.",
                 "/die - Kills you.",
                 "/infocommands - Shows all related commands that give info of something.",
@@ -2027,6 +2056,30 @@ export default class Client {
             return;
         }
 
+        // /pity
+        if (commandCheck("/pity")) {
+            for (let i = 0; i < tiers.length; i++) {
+                const tier = tiers[i];
+
+                // The highest rarity has nothing above it to craft into.
+                if (i >= tiers.length - 1) {
+                    this.systemMessage(`${i} - ${tier.name}: cannot be crafted`, tier.color);
+                    continue;
+                }
+
+                // Common is a guaranteed success with no pity, so it has no threshold.
+                const threshold = craftManager.bigPityAttempts(i);
+                const suffix = threshold > 0 ? `${threshold}` : "n/a";
+
+                this.systemMessage(
+                    `${i} - ${tier.name}: ${craftManager.baseChancePercent(i)}% (+${craftManager.pityIncrementPercent(i)} pity), PRNG starts at ${suffix}`,
+                    tier.color
+                );
+            }
+
+            return;
+        }
+
         // /craft
         if (commandCheck("/craft")) {
             (async () => {
@@ -2130,23 +2183,7 @@ export default class Client {
 
                 accounts.saveClient(this);
 
-                if (result.crafted > 0) {
-                    this.systemMessage(`Crafted ${result.crafted} ${result.nextRarityName} ${petalName} from ${result.spent} ${rarity.name} ${petalName} in ${result.attempts} attempts.`, rarity.color);
-                } else {
-                    this.systemMessage(`No craft succeeded. Spent ${result.spent} ${rarity.name} ${petalName} over ${result.attempts} attempts.`, rarity.color);
-                }
-
-                if (result.lostToFailures > 0) {
-                    this.systemMessage(`${result.lostToFailures} extra ${petalName} lost to failed attempts.`, "#ff5555");
-                }
-
-                const bigPity = craftManager.bigPityAttempts(rarityIndex);
-
-                this.systemMessage(
-                    `${rarity.name} ${petalName} chance is now ${(result.pity * 100).toFixed(4)}% after ${result.pityAttempts} failed attempts` +
-                    (bigPity > 0 ? `. Big pity at ${bigPity} attempts.` : "."),
-                    rarity.color
-                );
+                announceCraft(this, result);
             })();
 
             return;
