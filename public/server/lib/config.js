@@ -1,4 +1,4 @@
-import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig, SUMMON_STATS } from "../../lib/protocol.js";
+import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig, SUMMON_STATS, RARITY_TABLE } from "../../lib/protocol.js";
 import { DROP_TABLES } from "./dropTables.js";
 export const tiers = structuredClone(_tiers);
 export { Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig };
@@ -1942,6 +1942,39 @@ globalThis._itemList = petalConfigs;
 globalThis._mobList = mobConfigs;
 globalThis.RARITY_ORDER = tiers.slice(0, 30).map(tier => tier.name);
 globalThis.SUMMON_STATS = SUMMON_STATS;
+globalThis.RARITY_TABLE = RARITY_TABLE;
+globalThis.WAVES_RARITY_TABLE = {
+    0: { health: 2.25, damage: 0.01, size: 1 },
+    1: { health: 6.7, damage: 0.1, size: 1.05 },
+    2: { health: 17.5, damage: 0.5, size: 1.10 },
+    3: { health: 53.7, damage: 1, size: 1.15 },
+    4: { health: 114.6, damage: 2.85, size: 1.40 },
+    5: { health: 160.4, damage: 4, size: 1.80 },
+    6: { health: 460.7, damage: 6.7, size: 2.25 },
+    7: { health: 800.9, damage: 18.95, size: 3.10 },
+    8: { health: 1300.3, damage: 30.2, size: 3.65 },
+    9: { health: 4600.2, damage: 44.24, size: 4 },
+    10: { health: 19600, damage: 55.85, size: 4.25 },
+    11: { health: 51200, damage: 110, size: 4.4 },
+    12: { health: 304000, damage: 320, size: 4.6 },
+    13: { health: 921600, damage: 1200, size: 4.8 },
+    14: { health: 8440000, damage: 3100, size: 5 },
+    15: { health: 31880000, damage: 22000, size: 5.2 },
+    16: { health: 92076056, damage: 91000, size: 5.4 },
+    17: { health: 338190014, damage: 560000, size: 5.6 },
+    18: { health: 21312000000, damage: 3400000, size: 5.8 },
+    19: { health: 122280000000, damage: 5497500, size: 6 },
+    20: { health: 1504500000000, damage: 7750000, size: 6.2 },
+    21: { health: 3135000000000, damage: 12175000, size: 6.4 },
+    22: { health: 8600000000000, damage: 79717500, size: 6.6 },
+    23: { health: 43160000000000, damage: 291000000, size: 6.8 },
+    24: { health: 136000000000000, damage: 4900000000, size: 7 },
+    25: { health: 728000000000000, damage: 6000000000, size: 7.2 },
+    26: { health: 1850000000000000, damage: 34000000000, size: 7.4 },
+    27: { health: 560000000000000000, damage: 51000000000, size: 7.6 },
+    28: { health: 1072000000000000000, damage: 252000000000, size: 8 },
+    29: { health: 1700000000000000000, damage: 3700000000000, size: 10 },
+};
 globalThis.PETAL_TIER_TABLE = {
     0: { health: 1, damage: 1 },
     1: { health: 2, damage: 2 },

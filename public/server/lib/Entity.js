@@ -1654,6 +1654,9 @@ export class Player extends Entity {
         this.defend = false;
 
         this.petalRotation = 0;
+        // Per-tick petal spin speed. Faster petals raise it through extraRadians
+        // and Shiny Wing converts it into bonus damage, as in WhiteHole.js.
+        this.rotationSpeed = 0.125;
         this.size = 17;
         this.extraPickupRange = 0;
         this.armor = 0;
@@ -1802,6 +1805,12 @@ export class Player extends Entity {
 
             this.extraPickupRange = Math.max(this.extraPickupRange, slot.config.tiers[slot.rarity].extraPickupRange);
         });
+
+        // Track the spin applied this tick, clamped like WhiteHole.js, so Shiny
+        // Wing and /petalinfo report the live speed including Faster bonuses.
+        const maxRotationStep = 0.60;
+        this.rotationSpeed = Math.abs(Math.max(-maxRotationStep, Math.min(this.petalRotation - (this.lastPetalRotation ?? this.petalRotation), maxRotationStep)) || 0.125 * spin);
+        this.lastPetalRotation = this.petalRotation;
     }
 
     destroy() {
