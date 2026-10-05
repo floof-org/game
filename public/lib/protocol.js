@@ -1,3 +1,6 @@
+globalThis._mobList ??= [];
+globalThis._itemList ??= [];
+
 globalThis.BLOOD_LIGHT_TABLE = [
     0.01, 0.03, 0.05, 0.08, 0.1, 0.2, 0.3, 0.5,
     0.7, 0.6, 0.8, 0.4, 0.5, 0.6, 1, 1
@@ -303,6 +306,8 @@ export class PetalConfig {
     constructor(name, cooldown, health, damage) {
         this.id = PetalConfig.idAccumulator++;
         this.name = name;
+
+        globalThis._itemList.push(this);
 
         this.cooldown = cooldown;
         this.health = health;
@@ -1037,6 +1042,8 @@ export class MobConfig {
     constructor(name, health, damage, size, speed) {
         this.id = MobConfig.idAccumulator++;
         this.name = name;
+
+        globalThis._mobList.push(this);
 
         this.health = health;
         this.damage = damage;
