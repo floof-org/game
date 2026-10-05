@@ -125,7 +125,7 @@ export const petalConfigs = [
     new PetalConfig("Stick", 22.5, 25, 0.5)
         .setSize(1.25)
         .setHuddles(1)
-        .setPullBurst(500, 36)
+        .setPullBurst(750, [12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99])
         .setDescription("Attack to use up a stick and yank nearby mobs toward you."),
     new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 0.001, 0.0005)
         .setPoison(0.0001, 5)
