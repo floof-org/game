@@ -4,6 +4,31 @@ import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, r
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
+// Spawns a hostile copy of a mob the Emerald petal touches. Clone count is
+// capped per Emerald petal entity and expires with the clone. Migrated from
+// WhiteHole.js.
+function spawnEmeraldClone(originalMob, forcedRarity) {
+    const x = originalMob.x + (Math.random() - 0.5) * 20;
+    const y = originalMob.y + (Math.random() - 0.5) * 20;
+    const mob = new Mob({ x, y });
+    mob.define(originalMob.config, forcedRarity ?? originalMob.rarity);
+    mob.x = x;
+    mob.y = y;
+    if (mob.lastGoodPosition) {
+        mob.lastGoodPosition.x = x;
+        mob.lastGoodPosition.y = y;
+    }
+    mob.nullCollision = true;
+    setTimeout(() => { mob.nullCollision = false; }, 50);
+    mob.isEmeraldClone = true;
+    mob.isEmeraldCloned = true;
+    mob.parent = originalMob;
+    mob.owner = null;
+    mob.friendly = false;
+    mob.target = null;
+    return mob;
+}
+
 // Roll a config's antShiny rule (if any): when the produced ant matches one of the rule's
 // variants it has a chance of coming out as the shiny variant instead. Fallback: the same
 // index. Used by the Fire Ant Hole spawn loop and Queen Fire Ant egg hatching.
@@ -14,6 +39,15 @@ function rollShiny(rule, index) {
 
     return rule.index;
 }
+
+// Drop rarity/amount thresholds that trigger a lobby-wide drop
+// announcement, migrated from WhiteHole.js.
+const DROP_ANNOUNCE_REQ = [
+    { rarity: 13, minAmount: 5000000 },
+    { rarity: 14, minAmount: 575000 },
+    { rarity: 15, minAmount: 24 },
+    { rarity: 16, minAmount: 1 }
+];
 
 // Mobs that a Ruby summon must never copy, migrated from WhiteHole.js.
 const BLOCKED_RUBY_SUMMONS = new Set([
@@ -228,9 +262,60 @@ export class PetalSlot {
         if (this.player.client) {
             this.player.client.camera.lightingBoost += this.config.extraLighting;
         }
+
+        if (configType.name === "Shade") {
+            this.player.hasShade = true;
+        }
+
+        // Amulet of Fire aura migrated from WhiteHole.js: while equipped, a
+        // fire.aura petal follows the player and burns what it touches.
+        if (configType.name === "Amulet of Fire" && !this.player._fireAura) {
+            const auraIndex = petalIDOf("fire.aura");
+            if (auraIndex >= 0) {
+                const aura = new Petal(this.player, -1, -1);
+                aura.isAura = true;
+                aura.define(petalConfigs[auraIndex], this.rarity);
+                aura.parent = this.player;
+                aura.team = this.player.team;
+                aura.friendly = true;
+                aura.nullCollision = true;
+                aura.pushability = 0;
+                aura.launched = false;
+                aura.range = 999999;
+                aura.speed = 0;
+                aura.spinSpeed = 0;
+                this.player._fireAura = aura;
+                const oldUpdate = aura.update.bind(aura);
+                const player = this.player;
+                const slotRarity = this.rarity;
+                aura.update = () => {
+                    const sizes = globalThis.PETAL_RARITY_SIZES;
+                    aura.size = sizes[slotRarity] ?? sizes[sizes.length - 1];
+                    aura.x = player.x;
+                    aura.y = player.y;
+                    aura.velocity.x = player.velocity.x;
+                    aura.velocity.y = player.velocity.y;
+                    aura.facing = player.facing;
+                    if (player.health?.isDead) {
+                        aura.destroy();
+                        return;
+                    }
+                    oldUpdate();
+                };
+            }
+        }
     }
 
     destroy() {
+        if (this.config?.name === "Shade") {
+            this.player.hasShade = false;
+        }
+
+        if (this.config?.name === "Amulet of Fire" && this.player._fireAura) {
+            this.player._fireAura.destroy();
+            this.player._fireAura = null;
+        }
+
         this.petals.forEach(petal => petal?.destroy());
         this.player.health.set(this.player.health.maxHealth - this.config.tiers[this.rarity].extraHealth);
         this.player.health.damageReduction -= this.config.tiers[this.rarity].damageReduction;
@@ -360,6 +445,10 @@ export class PetalSlot {
                         newPet.range = 100;
                         newPet.nullCollision = true;
                         newPet.ignoreWalls = conf.ignoreWalls
+
+                        if (conf.pacify) {
+                            newPet.pacify = { chance: conf.pacify.chance };
+                        }
 
                         if (tier.poison) {
                             newPet.poison.toApply.damage = tier.poison.damage;
@@ -951,8 +1040,30 @@ export class Entity {
                 return;
             }
 
+            // Resin pacify migrated from WhiteHole.js: a pacifying projectile
+            // has a small chance per collision to calm a mob for 5 minutes.
+            const tryPacify = (mob, source) => {
+                if (mob?.type !== ENTITY_TYPES.MOB || mob.health?.isDead || !source?.pacify) return;
+                const now = Date.now();
+                if (mob.pacifiedUntil && mob.pacifiedUntil > now) return;
+                if (Math.random() < source.pacify.chance) {
+                    mob.pacifiedUntil = now + 5 * 60 * 1000;
+                    mob.aggressive = false;
+                    mob.neutral = false;
+                    mob.target = null;
+                    mob.targetTick = 999999999;
+                    mob.moveTarget = null;
+                    mob.velocity.x *= 0.25;
+                    mob.velocity.y *= 0.25;
+                }
+            };
+            tryPacify(this, other);
+            tryPacify(other, this);
+
             if (this.parent.team !== other.parent.team && !this.spawnInvincibility && !other.spawnInvincibility) {
-                if (!this.nullCollision && !other.nullCollision) {
+                // Fire auras damage through nullCollision, as in WhiteHole.js.
+                const isFireAura = ent => ent.type === ENTITY_TYPES.PETAL && ent.config?.name === "fire.aura";
+                if ((!this.nullCollision && !other.nullCollision) || isFireAura(this) || isFireAura(other)) {
                     let otherDamageDone = 0,
                         thisDamageDone = 0;
 
@@ -1088,6 +1199,139 @@ export class Entity {
 
                     if (this.config?.name === "Starfish" && this.type === ENTITY_TYPES.MOB && other.config?.name === "Dandelion") {
                         this.dandelionCooldown = 1 + (0.5 * other.rarity)
+                    }
+
+                    // Blood Light self damage migrated from WhiteHole.js.
+                    {
+                        let bloodLightSource = null;
+                        if (this?.bloodLight) bloodLightSource = this;
+                        else if (other?.bloodLight) bloodLightSource = other;
+                        const bloodOwner = bloodLightSource?.parent?.health
+                            ? bloodLightSource.parent
+                            : bloodLightSource?.parent?.parent?.health
+                                ? bloodLightSource.parent.parent
+                                : null;
+                        if (bloodOwner) {
+                            const petalTierRatio = Number.isFinite(bloodLightSource?.bloodLight?.ratio)
+                                ? bloodLightSource.bloodLight.ratio
+                                : 0;
+                            const damage = Number.isFinite(bloodLightSource?.damage) ? bloodLightSource.damage : 0;
+                            const selfDamage = damage * petalTierRatio;
+                            if (Number.isFinite(selfDamage) && selfDamage > 0) {
+                                const reduction = getDiamondReduction(bloodOwner);
+                                bloodOwner.health.damage(selfDamage * (1 - reduction));
+                            }
+                        }
+                    }
+
+                    // Pomegranate self damage migrated from WhiteHole.js.
+                    {
+                        const projectileIndex = petalIDOf("projectile.pomegranate");
+                        const isPomegranateProjectile = obj => obj && obj.index === projectileIndex && obj.type === ENTITY_TYPES.PETAL && obj.launched === true;
+                        let pomegranateSource = null;
+                        if (this?.pomegranate || isPomegranateProjectile(this)) pomegranateSource = this;
+                        else if (other?.pomegranate || isPomegranateProjectile(other)) pomegranateSource = other;
+                        const owner = pomegranateSource?.parent?.health
+                            ? pomegranateSource.parent
+                            : pomegranateSource?.parent?.parent?.health
+                                ? pomegranateSource.parent.parent
+                                : null;
+                        if (owner) {
+                            let ratio = 0;
+                            if (Number.isFinite(pomegranateSource?.pomegranate?.ratio)) {
+                                ratio = pomegranateSource.pomegranate.ratio;
+                            } else if (isPomegranateProjectile(pomegranateSource)) {
+                                const table = globalThis.POMEGRANATE_TABLE || [];
+                                const tier = pomegranateSource.rarity ?? 0;
+                                ratio = 0.01 * (table[tier] ?? table[table.length - 1] ?? 1);
+                            }
+                            const damage = Number.isFinite(pomegranateSource?.damage) ? pomegranateSource.damage : 0;
+                            const selfDamage = damage * ratio;
+                            if (selfDamage > 0) {
+                                const reduction = getDiamondReduction(owner);
+                                owner.health.damage(selfDamage * (1 - reduction));
+                            }
+                        }
+                    }
+
+                    // Emerald cloning migrated from WhiteHole.js: an Emerald petal
+                    // duplicates the mob it touches, within per-tier rarity bounds.
+                    {
+                        let emeraldSource = null;
+                        if (this.emerald) emeraldSource = this;
+                        else if (other.emerald) emeraldSource = other;
+                        if (emeraldSource) {
+                            const emerald = emeraldSource.emerald;
+                            const now = Date.now();
+                            const source = emeraldSource === this ? other : this;
+                            const valid = source && source.type === ENTITY_TYPES.MOB && !source.isEmeraldClone && !source.isEmeraldCloned && !this.isEmeraldClone && !other.isEmeraldClone && !this.isEmeraldCloned && !other.isEmeraldCloned && source.config;
+                            if (valid) {
+                                const cooldownReady = (now - emerald.lastProc) >= emerald.cooldown;
+                                const underLimit = emerald.activeClones < emerald.maxClones;
+                                if (cooldownReady && underLimit) {
+                                    let allowed = true;
+                                    let finalRarity = source.rarity;
+                                    const tier = emeraldSource.rarity;
+                                    const tierData = emeraldSource.emeraldTiers?.[tier];
+                                    if (tierData) {
+                                        if (tierData.min !== null && source.rarity < tierData.min) allowed = false;
+                                        if (tierData.max !== null && source.rarity > tierData.max) finalRarity = tierData.max;
+                                    }
+                                    if (allowed) {
+                                        source.isEmeraldCloned = true;
+                                        const clone = spawnEmeraldClone(source, finalRarity);
+                                        if (clone) {
+                                            emerald.activeClones++;
+                                            emerald.lastProc = now;
+                                            const oldDeathEvent = clone.deathEvent;
+                                            clone.deathEvent = () => {
+                                                emerald.activeClones--;
+                                                if (oldDeathEvent) {
+                                                    try { oldDeathEvent(); } catch (e) { console.error("Emerald clone destroy error:", e); }
+                                                }
+                                            };
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Uranium freeze migrated from WhiteHole.js.
+                    {
+                        const uraniumIndex = petalConfigs.findIndex(item => item?.name === "Uranium");
+                        const hasUranium = entity => {
+                            const client = entity?.player?.client ?? entity?.parent?.client ?? entity?.client ?? null;
+                            if (!client || uraniumIndex < 0) return false;
+                            return client.slots?.some(slot => slot?.id === uraniumIndex);
+                        };
+                        let uraniumSource = null;
+                        if (hasUranium(this)) uraniumSource = this;
+                        else if (hasUranium(other)) uraniumSource = other;
+                        if (uraniumSource?.uranium || uraniumSource?.uraniumTiers) {
+                            const target = uraniumSource === this ? other : this;
+                            if (target.type === ENTITY_TYPES.MOB && uraniumSource.config) {
+                                const now = Date.now();
+                                let duration = 0;
+                                let cooldown = 2500;
+                                let allowed = false;
+                                const tier = uraniumSource.rarity;
+                                const tierData = uraniumSource.uraniumTiers?.[tier];
+                                if (tierData) {
+                                    duration = tierData.duration ?? 0;
+                                    cooldown = tierData.cooldown ?? 2500;
+                                    allowed = duration > 0;
+                                    if (tierData.min != null && target.rarity < tierData.min) allowed = false;
+                                    if (tierData.max != null && target.rarity > tierData.max) allowed = false;
+                                }
+                                const lastProc = uraniumSource.uranium?.lastProc ?? 0;
+                                if (allowed && now - lastProc >= cooldown) {
+                                    uraniumSource.uranium ??= {};
+                                    uraniumSource.uranium.lastProc = now;
+                                    target.freezeUntil = Math.max(target.freezeUntil, now + duration);
+                                }
+                            }
+                        }
                     }
 
                     if (this.damageReflection?.reflection > 0 && !other.parent.spawnInvincibility) {
@@ -1416,6 +1660,36 @@ export class Petal extends Entity {
                 multiDamage: this.damage * config.dice.multiplier
             };
         }
+        if (tier.bloodLight) {
+            this.bloodLight = { ratio: tier.bloodLight.ratio };
+        }
+        if (tier.pomegranate) {
+            this.pomegranate = { ratio: tier.pomegranate.ratio };
+        }
+        if (config.emerald) {
+            this.emerald = {
+                cooldown: config.emerald.cooldown,
+                maxClones: config.emerald.maxClones,
+                lastProc: 0,
+                activeClones: 0
+            };
+        }
+        if (config.emeraldTiers) {
+            this.emeraldTiers = config.emeraldTiers;
+        }
+        if (config.uranium) {
+            this.uranium = {
+                duration: config.uranium.duration,
+                cooldown: config.uranium.cooldown,
+                lastProc: 0
+            };
+        }
+        if (config.uraniumTiers) {
+            this.uraniumTiers = config.uraniumTiers;
+        }
+        if (config.pacify) {
+            this.pacify = { chance: config.pacify.chance };
+        }
         this.size *= (config.tiers?.[rarity]?.sizeRatio ?? config.sizeRatio) * (RARITY_SIZE_MULTIPLIERS[rarity] ?? 1);
         this.index = config.id;
         this.spinSpeed = config.launchable ? 0 : .1;
@@ -1670,11 +1944,14 @@ export class Player extends Entity {
         this.moveStrength = 0;
         this.attack = false;
         this.defend = false;
+        this._wasAttacking = false;
 
         this.petalRotation = 0;
         // Per-tick petal spin speed. Faster petals raise it through extraRadians
         // and Shiny Wing converts it into bonus damage, as in WhiteHole.js.
         this.rotationSpeed = 0.125;
+        this.hasShade = false;
+        this.shadeUsed = false;
         this.size = 17;
         this.extraPickupRange = 0;
         this.armor = 0;
@@ -1761,6 +2038,25 @@ export class Player extends Entity {
                     break;
                 }
             }
+
+            // Shade effect migrated from WhiteHole.js: hold on to life briefly
+            // after dying, once per life, then die for real.
+            if (this.health.isDead && this.hasShade && !this.shadeUsed) {
+                let shadeDuration = 5;
+                for (const slot of this.petalSlots) {
+                    if (slot.config.name === "Shade") {
+                        shadeDuration = globalThis.SHADE_TIMEOUT_TABLE[slot.rarity] ?? 5;
+                        break;
+                    }
+                }
+                this.shadeUsed = true;
+                this.health.health = 1;
+                this.health.invulnerable = true;
+                setTimeout(() => {
+                    this.health.invulnerable = false;
+                    this.health.health = 0;
+                }, shadeDuration * 1000);
+            }
         }
 
         if (this.health.shield > 0) {
@@ -1829,6 +2125,39 @@ export class Player extends Entity {
         const maxRotationStep = 0.60;
         this.rotationSpeed = Math.abs(Math.max(-maxRotationStep, Math.min(this.petalRotation - (this.lastPetalRotation ?? this.petalRotation), maxRotationStep)) || 0.125 * spin);
         this.lastPetalRotation = this.petalRotation;
+
+        // Stick pull burst: pressing attack consumes one live Stick and yanks
+        // nearby mobs toward the player. Reloads on the normal petal cycle.
+        if (this.attack && !this._wasAttacking) {
+            for (const slot of this.petalSlots) {
+                if (slot.config?.name !== "Stick") continue;
+                const burst = slot.config.tiers[slot.rarity]?.pullBurst;
+                if (!burst) continue;
+                const petal = slot.petals.find(p => p && !p.health.isDead);
+                if (!petal) continue;
+                const mobs = state.spatialHash.retrieve({
+                    _AABB: {
+                        x1: this.x - burst.radius,
+                        y1: this.y - burst.radius,
+                        x2: this.x + burst.radius,
+                        y2: this.y + burst.radius
+                    }
+                });
+                for (const mob of mobs.values()) {
+                    if (mob.type !== ENTITY_TYPES.MOB || mob.health.isDead) continue;
+                    if (mob.parent.id === this.id || mob.parent.team === this.team) continue;
+                    const dx = this.x - mob.x;
+                    const dy = this.y - mob.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist > burst.radius || dist === 0) continue;
+                    mob.velocity.x += dx / dist * burst.strength * mob.pushability;
+                    mob.velocity.y += dy / dist * burst.strength * mob.pushability;
+                }
+                petal.health.health = 0;
+                break;
+            }
+        }
+        this._wasAttacking = this.attack;
     }
 
     destroy() {
@@ -2140,6 +2469,7 @@ export class Mob extends Entity {
         this.team = -69;
         this.aggressive = false;
         this.neutral = false;
+        this.freezeUntil = 0;
 
         /** @type {Mob|null} */
         this.head = null;
@@ -2529,6 +2859,18 @@ export class Mob extends Entity {
             return;
         }
 
+        // Frozen mobs skip their update, and pacified mobs regain their config
+        // aggression once the timer lapses. Migrated from WhiteHole.js.
+        const now = Date.now();
+        if (this.freezeUntil > now) {
+            return;
+        }
+        if (this.pacifiedUntil && now >= this.pacifiedUntil) {
+            this.pacifiedUntil = 0;
+            this.aggressive = this.config?.aggressive ?? false;
+            this.neutral = this.config?.neutral ?? false;
+        }
+
         if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.health.ratio <= .8 ? 120_000 : 30_000)) < performance.now()) {
             this.damagedBy = []
             this.destroy();
@@ -2907,14 +3249,15 @@ export class Mob extends Entity {
 
         const topDamagers = this.getTopDamagers(Infinity, ENTITY_TYPES.PLAYER);
 
-        // strict looting: at least 5% of max health damage is required to earn drops, xp and the kill message.
+        // strict looting: at least 7.5% of max health damage is required to earn drops, xp and the kill message.
         // Every damager that clears the threshold loots: there is no damage ranking on top of it, so being
         // out-damaged by someone else must never cost you the drop. Ranking used to be applied before the
-        // threshold, which silently dropped anyone ranked 4th or lower even at 5% or more damage.
-        const damageThreshold = this.health.maxHealth * 0.05;
+        // threshold, which silently dropped anyone ranked 4th or lower even at 7.5% or more damage.
+        const damageThreshold = this.health.maxHealth * 0.075;
         const qualifyingDamagers = topDamagers.filter(damager => damager.damage >= damageThreshold);
 
         let killText = '';
+        const dropAnnouncementGroups = new Map();
         qualifyingDamagers.forEach(damager => {
             if (damager.clientID > 0) {
                 const client = state.clients.get(damager.clientID);
@@ -2961,6 +3304,38 @@ export class Mob extends Entity {
                         output[i].y += Math.sin(i / output.length * Math.PI * 2) * 30;
                     }
 
+                    // Drop announcements migrated from WhiteHole.js: high-value
+                    // drops are grouped by item and broadcast lobby-wide.
+                    for (const drop of output) {
+                        const itemName = petalConfigs[drop.index]?.name ?? `Item ${drop.index}`;
+                        const rarityData = tiers[drop.rarity];
+                        if (!rarityData) continue;
+                        const forceAnnounce = itemName === "ӇЄҲƛƓƠƝ";
+                        if (!forceAnnounce) {
+                            let shouldAnnounce = false;
+                            for (const req of DROP_ANNOUNCE_REQ) {
+                                if (drop.rarity === req.rarity && drop.amount >= req.minAmount) {
+                                    shouldAnnounce = true;
+                                    break;
+                                }
+                            }
+                            if (!shouldAnnounce) continue;
+                        }
+                        const key = `${drop.rarity}:${drop.index}:${drop.amount}`;
+                        let group = dropAnnouncementGroups.get(key);
+                        if (!group) {
+                            group = {
+                                rarity: drop.rarity,
+                                itemName,
+                                amount: drop.amount,
+                                rarityData,
+                                players: new Map()
+                            };
+                            dropAnnouncementGroups.set(key, group);
+                        }
+                        group.players.set(client.id, client);
+                    }
+
                     // Blood Leaf kill counting migrated from WhiteHole.js: each
                     // equipped leaf only counts mobs at or above its required rarity.
                     const leafIndex = petalConfigs.findIndex(p => p?.name === "Blood Leaf");
@@ -2993,6 +3368,25 @@ export class Mob extends Entity {
 
             }
         });
+
+        for (const group of dropAnnouncementGroups.values()) {
+            const players = [...group.players.values()];
+            let playerNames = "";
+            for (let i = 0; i < players.length; i++) {
+                const username = players[i].username;
+                if (i === 0) {
+                    playerNames += username;
+                } else if (i === players.length - 1) {
+                    playerNames += ` and ${username}`;
+                } else {
+                    playerNames += `, ${username}`;
+                }
+            }
+            const msg = `x${group.amount} ${group.rarityData.name} ${group.itemName} dropped by ${playerNames}`;
+            state.clients.forEach(client => {
+                client.systemMessage(msg, group.rarityData.color);
+            });
+        }
 
         if (
             this.config.isSystem === false &&
@@ -3038,12 +3432,11 @@ export class Drop {
         /** @type {import("./Client.js").default} */
         this.client = client;
 
-        this.size = 30;
-
         this.index = i;
         this.rarity = r;
         this.amount = amount;
-        this.duration = 20 * Math.pow(1.1, r);
+        this.size = 30 + Math.log10(this.amount) * 4;
+        this.duration = 60 * Math.pow(1.1, r);
 
         this.creation = performance.now();
 

@@ -491,6 +491,21 @@ export class PetalConfig {
     }
 
     /**
+     * Pull burst: attacking consumes one live petal and yanks nearby mobs
+     * toward the player. Radius in world units, strength as velocity impulse.
+     */
+    setPullBurst(radius, strength) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].pullBurst = {
+                radius: radius instanceof Array ? (radius[i] ?? radius[radius.length - 1]) : radius,
+                strength: strength instanceof Array ? (strength[i] ?? strength[strength.length - 1]) : strength
+            };
+        }
+
+        return this;
+    }
+
+    /**
      * Auto lock on fire: among the enemies within angle radians of the firing direction, lock the nearest the player.
      * When unset, keeps the default nearest-to-self lock.
      * @param {number} angle half angle in radians. Math.PI * .15 is about 27 degrees to either side

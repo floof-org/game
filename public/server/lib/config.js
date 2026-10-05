@@ -126,7 +126,8 @@ export const petalConfigs = [
         .setSize(1.25)
         .setHuddles(1)
         .setMulti(2, false)
-        .setDescription("A bundle of sticks... I wonder what'll happen if you spin them around in the desert..."),
+        .setPullBurst(300, 12)
+        .setDescription("Attack to use up a stick and yank nearby mobs toward you."),
     new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 0.001, 0.0005)
         .setPoison(0.0001, 5)
         .setDescription("[object null object]"),
@@ -1617,7 +1618,6 @@ mobConfigs[mobIDOf("Queen Fire Ant")].antShiny = fireAntShinyRule;
 mobConfigs[mobIDOf("Queen Fire Ant")].maxPoops = 6;
 
 petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1.5, 3);
-petalConfigs[petalIDOf("Stick")].setSpawnable(mobIDOf("Sandstorm"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1.5, 3);
 petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1.5, 3);
 petalConfigs[petalIDOf("Branch")].setSpawnable(mobIDOf("Wilt") + 1, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 5, 1.5, 3);
 petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 3, 1.5, 3);
@@ -2014,6 +2014,11 @@ globalThis.SHINY_WING_TABLE = {
     15: { perSpeed: 0.8, cap: 2.0 },
     16: { perSpeed: 1.2, cap: 2.41 },
     17: { perSpeed: 1.4, cap: 2.61 },
+};
+globalThis.SHADE_TIMEOUT_TABLE = {
+    0: 0.5, 1: 1, 2: 1.2, 3: 1.4, 4: 1.6, 5: 2, 6: 2.3, 7: 2.6,
+    8: 3, 9: 3.4, 10: 3.8, 11: 4, 12: 4.9, 13: 5.2, 14: 6, 15: 6.5,
+    16: 7, 17: 7.5,
 };
 globalThis.DIAMOND_TABLE = {
     7: 0.05,
