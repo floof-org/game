@@ -348,8 +348,8 @@ export const petalConfigs = [
         .setSize(1.8)
         .setHuddles(1)
         .setDescription("This isn't from this world..."),
-    new PetalConfig("Dice", 22.5, 5, 17.5).setDiceAbility(0.05, 20).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
-        .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 5% chance of dealing 20x damage. Criticals will only apply if the base dice damage is higher than the mob armor."),
+    new PetalConfig("Dice", 22.5, 5, 17.5).setDiceAbility(0.05, 10).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
+        .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 5% chance of dealing 10x damage."),
     new PetalConfig("Fire Sand", 10.125, 5, 48).setIcon(0.575, [4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], "Sand", 0).setSize(.85).setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("closePath").addAction("paint", "#e86d48", .445, .2)
         ).setDescription("Some fine grains of sand on fire. They deal 3x damage than normal sand."),
@@ -1053,21 +1053,21 @@ export const mobConfigs = [
         .setPushability(0)
         .addDrop(petalIDOf("Dirt"))
         .addDrop(petalIDOf("Ant Egg"), .5),
-    new MobConfig("Baby Fire Ant", 10, 10, 20, 2)
+    new MobConfig("Baby Fire Ant", 10, 10, 17, 2)
         .setSizeStep(2)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Worker Fire Ant", 15, 10, 20, 3.25)
+    new MobConfig("Worker Fire Ant", 15, 10, 17, 3.25)
         .setSizeStep(2)
         .setNeutral(1)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Soldier Fire Ant", 25, 10, 20, 3.5)
+    new MobConfig("Soldier Fire Ant", 25, 10, 17, 3.5)
         .setSizeStep(2)
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)
         .addDrop(petalIDOf("Glass"), .5),
-    new MobConfig("Queen Fire Ant", 100, 10, 35, 3.5)
+    new MobConfig("Queen Fire Ant", 100, 10, 40.25, 3.5)
         .setSizeStep(2)
         .setAggressive(1)
         .setPushability(0.8)
@@ -1112,10 +1112,10 @@ export const mobConfigs = [
     new MobConfig("Ant Egg", 20, 1, 15, 0)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Ant Egg", 20, 1, 15, 0),
-    new MobConfig("Fire Ant Egg", 20, 2, 10, 0)
+    new MobConfig("Fire Ant Egg", 20, 2, 8.5, 0)
         .setSizeStep(2)
         .addDrop(petalIDOf("Ant Egg")),
-    new MobConfig("Queen Fire Ant Egg", 20, 2, 10, 0)
+    new MobConfig("Queen Fire Ant Egg", 20, 2, 8.5, 0)
         .setSizeStep(2),
     new MobConfig("Termite Egg", 30, 1, 15, 0)
         .addDrop(petalIDOf("Ant Egg")),
@@ -1399,7 +1399,7 @@ export const mobConfigs = [
         .addAction("closePath")
         )
         ,
-    new MobConfig("Shiny Soldier Ant", 12, 22, 20, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5).setProjectile({
+    new MobConfig("Shiny Soldier Ant", 12, 22, 17, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5).setProjectile({
         petalIndex: petalIDOf("Missile"),
         cooldown: 45,
         health: 0.000000000002,

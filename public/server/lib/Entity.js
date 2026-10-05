@@ -959,6 +959,17 @@ export class Entity {
                     thisDamageDone += this.damage;
                     otherDamageDone += other.damage;
 
+                    // Dice crits migrated from WhiteHole.js, without the armor gate:
+                    // a crit always rolls, regardless of the target's armor.
+                    const rollDiceCrit = entity => {
+                        if (!entity.dice) return null;
+                        return Math.random() <= entity.dice.chance ? entity.dice.multiDamage : entity.dice.damage;
+                    };
+                    const thisCrit = rollDiceCrit(this);
+                    if (thisCrit !== null) thisDamageDone = thisCrit;
+                    const otherCrit = rollDiceCrit(other);
+                    if (otherCrit !== null) otherDamageDone = otherCrit;
+
                     if (this.type === ENTITY_TYPES.PETAL && this.parent?.type === ENTITY_TYPES.PLAYER) {
                         let velocity = this.velocity.magnitude;
                         if (velocity > 4.5) {
@@ -1398,6 +1409,13 @@ export class Petal extends Entity {
         this.health.set(tier.health);
         this.damage = tier.damage;
         this.config = config;
+        if (config.dice) {
+            this.dice = {
+                chance: config.dice.chance,
+                damage: this.damage,
+                multiDamage: this.damage * config.dice.multiplier
+            };
+        }
         this.size *= (config.tiers?.[rarity]?.sizeRatio ?? config.sizeRatio) * (RARITY_SIZE_MULTIPLIERS[rarity] ?? 1);
         this.index = config.id;
         this.spinSpeed = config.launchable ? 0 : .1;
@@ -1423,7 +1441,7 @@ export class Petal extends Entity {
             this.lightning.chargesLeft = tier.lightning.charges;
         }
 
-        if (config.canPlaceDown) {
+        if (config.canPlaceDown || config.stayDown) {
             this.placeDown = true;
         }
 
