@@ -941,7 +941,7 @@ export const DROP_TABLES = {
        "petal": "Primrose",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Primrose",
@@ -970,7 +970,7 @@ export const DROP_TABLES = {
        "petal": "Yin Yang",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Yin Yang",
@@ -999,7 +999,7 @@ export const DROP_TABLES = {
        "petal": "Rose",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Rose",
@@ -2709,25 +2709,25 @@ export const DROP_TABLES = {
        "petal": "Primrose",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Primrose",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Primrose",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Primrose",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -2744,25 +2744,25 @@ export const DROP_TABLES = {
        "petal": "Yin Yang",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Yin Yang",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Yin Yang",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Yin Yang",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -2779,25 +2779,25 @@ export const DROP_TABLES = {
        "petal": "Rose",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Rose",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Rose",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Rose",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -2820,25 +2820,25 @@ export const DROP_TABLES = {
        "petal": "Yggdrasil",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Yggdrasil",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Yggdrasil",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Yggdrasil",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -2851,13 +2851,13 @@ export const DROP_TABLES = {
        "petal": "Primrose",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Primrose",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Primrose",
@@ -2875,7 +2875,7 @@ export const DROP_TABLES = {
        "petal": "Primrose",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -2886,13 +2886,13 @@ export const DROP_TABLES = {
        "petal": "Yin Yang",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Yin Yang",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Yin Yang",
@@ -2910,7 +2910,7 @@ export const DROP_TABLES = {
        "petal": "Yin Yang",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -2921,13 +2921,13 @@ export const DROP_TABLES = {
        "petal": "Rose",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Rose",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Rose",
@@ -2945,7 +2945,7 @@ export const DROP_TABLES = {
        "petal": "Rose",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -2956,19 +2956,19 @@ export const DROP_TABLES = {
        "petal": "Yggdrasil",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Yggdrasil",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Yggdrasil",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Yggdrasil",
@@ -2986,7 +2986,7 @@ export const DROP_TABLES = {
        "petal": "Yggdrasil",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -3777,7 +3777,7 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Bone",
@@ -3806,7 +3806,7 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Beetle Egg",
@@ -5617,25 +5617,25 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Bone",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Bone",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Bone",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -5652,25 +5652,25 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Beetle Egg",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Beetle Egg",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Beetle Egg",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -5693,25 +5693,25 @@ export const DROP_TABLES = {
        "petal": "Dice",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Dice",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Dice",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Dice",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -5734,25 +5734,25 @@ export const DROP_TABLES = {
        "petal": "Horn",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Horn",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Horn",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Horn",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -5765,13 +5765,13 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Bone",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Bone",
@@ -5789,7 +5789,7 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -5800,13 +5800,13 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Beetle Egg",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Beetle Egg",
@@ -5824,7 +5824,7 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -5835,19 +5835,19 @@ export const DROP_TABLES = {
        "petal": "Dice",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Dice",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Dice",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Dice",
@@ -5865,7 +5865,7 @@ export const DROP_TABLES = {
        "petal": "Dice",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -5876,19 +5876,19 @@ export const DROP_TABLES = {
        "petal": "Horn",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Horn",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Horn",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Horn",
@@ -5906,7 +5906,7 @@ export const DROP_TABLES = {
        "petal": "Horn",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -5919,13 +5919,13 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 22.99,
        "rarity": 14,
-       "amount": 5400
+       "amount": 4100
       },
       {
        "petal": "Bone",
        "chance": 62.64,
        "rarity": 14,
-       "amount": 11700
+       "amount": 8800
       },
       {
        "petal": "Bone",
@@ -5937,19 +5937,19 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 2.316,
        "rarity": 14,
-       "amount": 39000
+       "amount": 29300
       },
       {
        "petal": "Bone",
        "chance": 0.061,
        "rarity": 12,
-       "amount": 18000000000
+       "amount": 13500000000
       },
       {
        "petal": "Bone",
        "chance": 0.011,
        "rarity": 14,
-       "amount": 640000
+       "amount": 480000
       }
      ]
     },
@@ -5960,13 +5960,13 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 32.746,
        "rarity": 14,
-       "amount": 5400
+       "amount": 4100
       },
       {
        "petal": "Beetle Egg",
        "chance": 56.21,
        "rarity": 14,
-       "amount": 11700
+       "amount": 8800
       },
       {
        "petal": "Beetle Egg",
@@ -5978,19 +5978,19 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 2.011,
        "rarity": 14,
-       "amount": 39000
+       "amount": 29300
       },
       {
        "petal": "Beetle Egg",
        "chance": 0.023,
        "rarity": 12,
-       "amount": 18000000000
+       "amount": 13500000000
       },
       {
        "petal": "Beetle Egg",
        "chance": 0.008,
        "rarity": 14,
-       "amount": 640000
+       "amount": 480000
       }
      ]
     },
@@ -6001,19 +6001,19 @@ export const DROP_TABLES = {
        "petal": "Dice",
        "chance": 3.647,
        "rarity": 14,
-       "amount": 2100
+       "amount": 1600
       },
       {
        "petal": "Dice",
        "chance": 78.772,
        "rarity": 14,
-       "amount": 5400
+       "amount": 4100
       },
       {
        "petal": "Dice",
        "chance": 11.253,
        "rarity": 14,
-       "amount": 11700
+       "amount": 8800
       },
       {
        "petal": "Dice",
@@ -6025,19 +6025,19 @@ export const DROP_TABLES = {
        "petal": "Dice",
        "chance": 1.707,
        "rarity": 14,
-       "amount": 39000
+       "amount": 29300
       },
       {
        "petal": "Dice",
        "chance": 0.014,
        "rarity": 12,
-       "amount": 18000000000
+       "amount": 13500000000
       },
       {
        "petal": "Dice",
        "chance": 0.003,
        "rarity": 14,
-       "amount": 640000
+       "amount": 480000
       }
      ]
     },
@@ -6048,19 +6048,19 @@ export const DROP_TABLES = {
        "petal": "Horn",
        "chance": 3.647,
        "rarity": 14,
-       "amount": 2100
+       "amount": 1600
       },
       {
        "petal": "Horn",
        "chance": 78.772,
        "rarity": 14,
-       "amount": 5400
+       "amount": 4100
       },
       {
        "petal": "Horn",
        "chance": 11.253,
        "rarity": 14,
-       "amount": 11700
+       "amount": 8800
       },
       {
        "petal": "Horn",
@@ -6072,19 +6072,19 @@ export const DROP_TABLES = {
        "petal": "Horn",
        "chance": 1.707,
        "rarity": 14,
-       "amount": 39000
+       "amount": 29300
       },
       {
        "petal": "Horn",
        "chance": 0.014,
        "rarity": 12,
-       "amount": 18000000000
+       "amount": 13500000000
       },
       {
        "petal": "Horn",
        "chance": 0.003,
        "rarity": 14,
-       "amount": 640000
+       "amount": 480000
       }
      ]
     }
@@ -6659,7 +6659,7 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Faster",
@@ -6688,7 +6688,7 @@ export const DROP_TABLES = {
        "petal": "Shade",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Shade",
@@ -7517,25 +7517,25 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Faster",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Faster",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Faster",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -7552,25 +7552,25 @@ export const DROP_TABLES = {
        "petal": "Shade",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Shade",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Shade",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Shade",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -7583,13 +7583,13 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Faster",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Faster",
@@ -7607,7 +7607,7 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -7618,13 +7618,13 @@ export const DROP_TABLES = {
        "petal": "Shade",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Shade",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Shade",
@@ -7642,7 +7642,7 @@ export const DROP_TABLES = {
        "petal": "Shade",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -8217,7 +8217,7 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Faster",
@@ -8246,7 +8246,7 @@ export const DROP_TABLES = {
        "petal": "Dune",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Dune",
@@ -9075,25 +9075,25 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Faster",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Faster",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Faster",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -9110,25 +9110,25 @@ export const DROP_TABLES = {
        "petal": "Dune",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Dune",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Dune",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Dune",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -9141,13 +9141,13 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Faster",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Faster",
@@ -9165,7 +9165,7 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -9176,13 +9176,13 @@ export const DROP_TABLES = {
        "petal": "Dune",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Dune",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Dune",
@@ -9200,7 +9200,7 @@ export const DROP_TABLES = {
        "petal": "Dune",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -10032,7 +10032,7 @@ export const DROP_TABLES = {
        "petal": "Rock",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Rock",
@@ -10061,7 +10061,7 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Wing",
@@ -11776,25 +11776,25 @@ export const DROP_TABLES = {
        "petal": "Rock",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Rock",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Rock",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Rock",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -11811,25 +11811,25 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Wing",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Wing",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Wing",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -11852,25 +11852,25 @@ export const DROP_TABLES = {
        "petal": "Heavy",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Heavy",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Heavy",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Heavy",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -11893,7 +11893,7 @@ export const DROP_TABLES = {
        "petal": "Diamond",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 15000
+       "amount": 11300
       },
       {
        "petal": "Diamond",
@@ -11905,13 +11905,13 @@ export const DROP_TABLES = {
        "petal": "Diamond",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 25000000
+       "amount": 18750000
       },
       {
        "petal": "Diamond",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 215000
+       "amount": 161300
       }
      ]
     }
@@ -11924,13 +11924,13 @@ export const DROP_TABLES = {
        "petal": "Rock",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Rock",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Rock",
@@ -11948,7 +11948,7 @@ export const DROP_TABLES = {
        "petal": "Rock",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -11959,13 +11959,13 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Wing",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Wing",
@@ -11983,7 +11983,7 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -11994,19 +11994,19 @@ export const DROP_TABLES = {
        "petal": "Heavy",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Heavy",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Heavy",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Heavy",
@@ -12024,7 +12024,7 @@ export const DROP_TABLES = {
        "petal": "Heavy",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -12035,19 +12035,19 @@ export const DROP_TABLES = {
        "petal": "Diamond",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 125
+       "amount": 100
       },
       {
        "petal": "Diamond",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 360
+       "amount": 300
       },
       {
        "petal": "Diamond",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Diamond",
@@ -12065,7 +12065,7 @@ export const DROP_TABLES = {
        "petal": "Diamond",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 1800000
+       "amount": 1350000
       }
      ]
     }
@@ -13001,7 +13001,7 @@ export const DROP_TABLES = {
        "petal": "Iris",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Iris",
@@ -13024,7 +13024,7 @@ export const DROP_TABLES = {
        "petal": "Pincer",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Pincer",
@@ -13053,7 +13053,7 @@ export const DROP_TABLES = {
        "petal": "Missile",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Missile",
@@ -14763,25 +14763,25 @@ export const DROP_TABLES = {
        "petal": "Iris",
        "chance": 10.64,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Iris",
        "chance": 4.37,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Iris",
        "chance": 1.21,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Iris",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -14798,25 +14798,25 @@ export const DROP_TABLES = {
        "petal": "Pincer",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Pincer",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Pincer",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Pincer",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -14833,25 +14833,25 @@ export const DROP_TABLES = {
        "petal": "Missile",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Missile",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Missile",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Missile",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -14874,25 +14874,25 @@ export const DROP_TABLES = {
        "petal": "Scorpion Egg",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Scorpion Egg",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Scorpion Egg",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Scorpion Egg",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -14905,13 +14905,13 @@ export const DROP_TABLES = {
        "petal": "Iris",
        "chance": 87.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Iris",
        "chance": 8.68,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Iris",
@@ -14929,7 +14929,7 @@ export const DROP_TABLES = {
        "petal": "Iris",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -14940,13 +14940,13 @@ export const DROP_TABLES = {
        "petal": "Pincer",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Pincer",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Pincer",
@@ -14964,7 +14964,7 @@ export const DROP_TABLES = {
        "petal": "Pincer",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -14975,13 +14975,13 @@ export const DROP_TABLES = {
        "petal": "Missile",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Missile",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Missile",
@@ -14999,7 +14999,7 @@ export const DROP_TABLES = {
        "petal": "Missile",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -15010,19 +15010,19 @@ export const DROP_TABLES = {
        "petal": "Scorpion Egg",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Scorpion Egg",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Scorpion Egg",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Scorpion Egg",
@@ -15040,7 +15040,7 @@ export const DROP_TABLES = {
        "petal": "Scorpion Egg",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -16125,7 +16125,7 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Yucca",
@@ -16154,7 +16154,7 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Wing",
@@ -17965,25 +17965,25 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Yucca",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Yucca",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Yucca",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -18000,25 +18000,25 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Wing",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Wing",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Wing",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -18041,25 +18041,25 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Bone",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Bone",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Bone",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -18082,7 +18082,7 @@ export const DROP_TABLES = {
        "petal": "Shiny Wing",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 6000
+       "amount": 4500
       },
       {
        "petal": "Shiny Wing",
@@ -18094,13 +18094,13 @@ export const DROP_TABLES = {
        "petal": "Shiny Wing",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 5500000
+       "amount": 4125000
       },
       {
        "petal": "Shiny Wing",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 70000
+       "amount": 52500
       }
      ]
     }
@@ -18113,13 +18113,13 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Yucca",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Yucca",
@@ -18137,7 +18137,7 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -18148,13 +18148,13 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Wing",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Wing",
@@ -18172,7 +18172,7 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -18183,19 +18183,19 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Bone",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Bone",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Bone",
@@ -18213,7 +18213,7 @@ export const DROP_TABLES = {
        "petal": "Bone",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -18236,7 +18236,7 @@ export const DROP_TABLES = {
        "petal": "Shiny Wing",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 300
+       "amount": 200
       },
       {
        "petal": "Shiny Wing",
@@ -18254,7 +18254,7 @@ export const DROP_TABLES = {
        "petal": "Shiny Wing",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 850000
+       "amount": 637500
       }
      ]
     }
@@ -18937,7 +18937,7 @@ export const DROP_TABLES = {
        "petal": "Cactus",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Cactus",
@@ -18966,7 +18966,7 @@ export const DROP_TABLES = {
        "petal": "Stinger",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Stinger",
@@ -20286,25 +20286,25 @@ export const DROP_TABLES = {
        "petal": "Cactus",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Cactus",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Cactus",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Cactus",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -20321,25 +20321,25 @@ export const DROP_TABLES = {
        "petal": "Stinger",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Stinger",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Stinger",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Stinger",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -20362,25 +20362,25 @@ export const DROP_TABLES = {
        "petal": "Rare Cactus",
        "chance": 3.74,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Rare Cactus",
        "chance": 1.55,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Rare Cactus",
        "chance": 0.21,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Rare Cactus",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -20393,13 +20393,13 @@ export const DROP_TABLES = {
        "petal": "Cactus",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Cactus",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Cactus",
@@ -20417,7 +20417,7 @@ export const DROP_TABLES = {
        "petal": "Cactus",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -20428,13 +20428,13 @@ export const DROP_TABLES = {
        "petal": "Stinger",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Stinger",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Stinger",
@@ -20452,7 +20452,7 @@ export const DROP_TABLES = {
        "petal": "Stinger",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -20463,19 +20463,19 @@ export const DROP_TABLES = {
        "petal": "Rare Cactus",
        "chance": 91.95,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Rare Cactus",
        "chance": 3.99,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Rare Cactus",
        "chance": 2.55,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Rare Cactus",
@@ -20493,7 +20493,7 @@ export const DROP_TABLES = {
        "petal": "Rare Cactus",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -20929,7 +20929,7 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Sand",
@@ -22248,25 +22248,25 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Sand",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Sand",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Sand",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -22289,25 +22289,25 @@ export const DROP_TABLES = {
        "petal": "Cinderbrick",
        "chance": 3.74,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Cinderbrick",
        "chance": 1.55,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Cinderbrick",
        "chance": 0.21,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Cinderbrick",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -22330,7 +22330,7 @@ export const DROP_TABLES = {
        "petal": "Ruby",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 15000
+       "amount": 11300
       },
       {
        "petal": "Ruby",
@@ -22342,13 +22342,13 @@ export const DROP_TABLES = {
        "petal": "Ruby",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 25000000
+       "amount": 18750000
       },
       {
        "petal": "Ruby",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 215000
+       "amount": 161300
       }
      ]
     }
@@ -22361,13 +22361,13 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Sand",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Sand",
@@ -22385,7 +22385,7 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -22396,19 +22396,19 @@ export const DROP_TABLES = {
        "petal": "Cinderbrick",
        "chance": 91.95,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Cinderbrick",
        "chance": 3.99,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Cinderbrick",
        "chance": 2.55,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Cinderbrick",
@@ -22426,7 +22426,7 @@ export const DROP_TABLES = {
        "petal": "Cinderbrick",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -22437,19 +22437,19 @@ export const DROP_TABLES = {
        "petal": "Ruby",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 125
+       "amount": 100
       },
       {
        "petal": "Ruby",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 360
+       "amount": 300
       },
       {
        "petal": "Ruby",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Ruby",
@@ -22467,7 +22467,7 @@ export const DROP_TABLES = {
        "petal": "Ruby",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 1800000
+       "amount": 1350000
       }
      ]
     }
@@ -23258,7 +23258,7 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Sand",
@@ -23287,7 +23287,7 @@ export const DROP_TABLES = {
        "petal": "Glass",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Glass",
@@ -25426,25 +25426,25 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Sand",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Sand",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Sand",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -25461,25 +25461,25 @@ export const DROP_TABLES = {
        "petal": "Glass",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Glass",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Glass",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Glass",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -25502,25 +25502,25 @@ export const DROP_TABLES = {
        "petal": "Stick",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Stick",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Stick",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Stick",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -25543,25 +25543,25 @@ export const DROP_TABLES = {
        "petal": "Fiberglass",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Fiberglass",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Fiberglass",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Fiberglass",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -25584,25 +25584,25 @@ export const DROP_TABLES = {
        "petal": "Dune",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Dune",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Dune",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Dune",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -25615,13 +25615,13 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Sand",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Sand",
@@ -25639,7 +25639,7 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -25650,13 +25650,13 @@ export const DROP_TABLES = {
        "petal": "Glass",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Glass",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Glass",
@@ -25674,7 +25674,7 @@ export const DROP_TABLES = {
        "petal": "Glass",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -25685,19 +25685,19 @@ export const DROP_TABLES = {
        "petal": "Stick",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Stick",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Stick",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Stick",
@@ -25715,7 +25715,7 @@ export const DROP_TABLES = {
        "petal": "Stick",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -25726,19 +25726,19 @@ export const DROP_TABLES = {
        "petal": "Fiberglass",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Fiberglass",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Fiberglass",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Fiberglass",
@@ -25756,7 +25756,7 @@ export const DROP_TABLES = {
        "petal": "Fiberglass",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -25767,19 +25767,19 @@ export const DROP_TABLES = {
        "petal": "Dune",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Dune",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Dune",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Dune",
@@ -25797,7 +25797,7 @@ export const DROP_TABLES = {
        "petal": "Dune",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -26480,7 +26480,7 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Fire Sand",
@@ -26509,7 +26509,7 @@ export const DROP_TABLES = {
        "petal": "Fiberglass",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Fiberglass",
@@ -27992,25 +27992,25 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Fire Sand",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Fire Sand",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Fire Sand",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -28027,25 +28027,25 @@ export const DROP_TABLES = {
        "petal": "Fiberglass",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Fiberglass",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Fiberglass",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Fiberglass",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -28068,25 +28068,25 @@ export const DROP_TABLES = {
        "petal": "Stick",
        "chance": 3.74,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Stick",
        "chance": 1.55,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Stick",
        "chance": 0.21,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Stick",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -28097,19 +28097,19 @@ export const DROP_TABLES = {
        "petal": "Amulet of Fire",
        "chance": 89.15,
        "rarity": 12,
-       "amount": 1000
+       "amount": 800
       },
       {
        "petal": "Amulet of Fire",
        "chance": 5.34,
        "rarity": 12,
-       "amount": 2000
+       "amount": 1500
       },
       {
        "petal": "Amulet of Fire",
        "chance": 3.74,
        "rarity": 12,
-       "amount": 4000
+       "amount": 3000
       },
       {
        "petal": "Amulet of Fire",
@@ -28127,7 +28127,7 @@ export const DROP_TABLES = {
        "petal": "Amulet of Fire",
        "chance": 0.01,
        "rarity": 12,
-       "amount": 8000
+       "amount": 6000
       }
      ]
     }
@@ -28140,13 +28140,13 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Fire Sand",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Fire Sand",
@@ -28164,7 +28164,7 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -28175,13 +28175,13 @@ export const DROP_TABLES = {
        "petal": "Fiberglass",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Fiberglass",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Fiberglass",
@@ -28199,7 +28199,7 @@ export const DROP_TABLES = {
        "petal": "Fiberglass",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -28210,19 +28210,19 @@ export const DROP_TABLES = {
        "petal": "Stick",
        "chance": 91.95,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Stick",
        "chance": 3.99,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Stick",
        "chance": 2.55,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Stick",
@@ -28240,7 +28240,7 @@ export const DROP_TABLES = {
        "petal": "Stick",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -28251,7 +28251,7 @@ export const DROP_TABLES = {
        "petal": "Amulet of Fire",
        "chance": 91.95,
        "rarity": 12,
-       "amount": 10000
+       "amount": 7500
       },
       {
        "petal": "Amulet of Fire",
@@ -28263,13 +28263,13 @@ export const DROP_TABLES = {
        "petal": "Amulet of Fire",
        "chance": 2.55,
        "rarity": 13,
-       "amount": 125
+       "amount": 100
       },
       {
        "petal": "Amulet of Fire",
        "chance": 1.32,
        "rarity": 13,
-       "amount": 400
+       "amount": 300
       },
       {
        "petal": "Amulet of Fire",
@@ -29072,7 +29072,7 @@ export const DROP_TABLES = {
        "petal": "Light",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Light",
@@ -29101,7 +29101,7 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Yucca",
@@ -30912,25 +30912,25 @@ export const DROP_TABLES = {
        "petal": "Light",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Light",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Light",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Light",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -30947,25 +30947,25 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Yucca",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Yucca",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Yucca",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -30988,25 +30988,25 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 5.37,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Fire Sand",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Fire Sand",
        "chance": 0.13,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Fire Sand",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -31029,25 +31029,25 @@ export const DROP_TABLES = {
        "petal": "Clover",
        "chance": 5.37,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Clover",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Clover",
        "chance": 0.13,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Clover",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -31060,13 +31060,13 @@ export const DROP_TABLES = {
        "petal": "Light",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Light",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Light",
@@ -31084,7 +31084,7 @@ export const DROP_TABLES = {
        "petal": "Light",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -31095,13 +31095,13 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Yucca",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Yucca",
@@ -31119,7 +31119,7 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -31130,19 +31130,19 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 81.54,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Fire Sand",
        "chance": 11.34,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Fire Sand",
        "chance": 5.02,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Fire Sand",
@@ -31160,7 +31160,7 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -31171,19 +31171,19 @@ export const DROP_TABLES = {
        "petal": "Clover",
        "chance": 81.54,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Clover",
        "chance": 11.34,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Clover",
        "chance": 5.02,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Clover",
@@ -31201,7 +31201,7 @@ export const DROP_TABLES = {
        "petal": "Clover",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -31977,7 +31977,7 @@ export const DROP_TABLES = {
        "petal": "Powder",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Powder",
@@ -32006,7 +32006,7 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Faster",
@@ -33326,25 +33326,25 @@ export const DROP_TABLES = {
        "petal": "Powder",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Powder",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Powder",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Powder",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -33361,25 +33361,25 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Faster",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Faster",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Faster",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -33402,25 +33402,25 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Sand",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Sand",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Sand",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -33433,13 +33433,13 @@ export const DROP_TABLES = {
        "petal": "Powder",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Powder",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Powder",
@@ -33457,7 +33457,7 @@ export const DROP_TABLES = {
        "petal": "Powder",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -33468,13 +33468,13 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Faster",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Faster",
@@ -33492,7 +33492,7 @@ export const DROP_TABLES = {
        "petal": "Faster",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -33503,19 +33503,19 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Sand",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Sand",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Sand",
@@ -33533,7 +33533,7 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -34480,7 +34480,7 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Wing",
@@ -34503,7 +34503,7 @@ export const DROP_TABLES = {
        "petal": "Dust",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Dust",
@@ -34532,7 +34532,7 @@ export const DROP_TABLES = {
        "petal": "Lightbulb",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Lightbulb",
@@ -36576,25 +36576,25 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Wing",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Wing",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Wing",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -36611,25 +36611,25 @@ export const DROP_TABLES = {
        "petal": "Dust",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Dust",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Dust",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Dust",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -36646,25 +36646,25 @@ export const DROP_TABLES = {
        "petal": "Lightbulb",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Lightbulb",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Lightbulb",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Lightbulb",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -36687,25 +36687,25 @@ export const DROP_TABLES = {
        "petal": "Antennae",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Antennae",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Antennae",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Antennae",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -36728,25 +36728,25 @@ export const DROP_TABLES = {
        "petal": "Lens",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Lens",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Lens",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Lens",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -36759,13 +36759,13 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Wing",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Wing",
@@ -36783,7 +36783,7 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -36794,13 +36794,13 @@ export const DROP_TABLES = {
        "petal": "Dust",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Dust",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Dust",
@@ -36818,7 +36818,7 @@ export const DROP_TABLES = {
        "petal": "Dust",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -36829,13 +36829,13 @@ export const DROP_TABLES = {
        "petal": "Lightbulb",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Lightbulb",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Lightbulb",
@@ -36853,7 +36853,7 @@ export const DROP_TABLES = {
        "petal": "Lightbulb",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -36864,19 +36864,19 @@ export const DROP_TABLES = {
        "petal": "Antennae",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Antennae",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Antennae",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Antennae",
@@ -36894,7 +36894,7 @@ export const DROP_TABLES = {
        "petal": "Antennae",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -36905,19 +36905,19 @@ export const DROP_TABLES = {
        "petal": "Lens",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Lens",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Lens",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Lens",
@@ -36935,7 +36935,7 @@ export const DROP_TABLES = {
        "petal": "Lens",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -37774,7 +37774,7 @@ export const DROP_TABLES = {
        "petal": "Blood Light",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Blood Light",
@@ -37803,7 +37803,7 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Yucca",
@@ -37832,7 +37832,7 @@ export const DROP_TABLES = {
        "petal": "Blood Leaf",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Blood Leaf",
@@ -39123,25 +39123,25 @@ export const DROP_TABLES = {
        "petal": "Blood Light",
        "chance": 5.37,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Blood Light",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Blood Light",
        "chance": 0.13,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Blood Light",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -39158,25 +39158,25 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Yucca",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Yucca",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Yucca",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -39199,25 +39199,25 @@ export const DROP_TABLES = {
        "petal": "Blood Leaf",
        "chance": 5.37,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Blood Leaf",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Blood Leaf",
        "chance": 0.13,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Blood Leaf",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -39230,19 +39230,19 @@ export const DROP_TABLES = {
        "petal": "Blood Light",
        "chance": 81.54,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Blood Light",
        "chance": 11.34,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Blood Light",
        "chance": 5.02,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Blood Light",
@@ -39260,7 +39260,7 @@ export const DROP_TABLES = {
        "petal": "Blood Light",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -39271,13 +39271,13 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Yucca",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Yucca",
@@ -39295,7 +39295,7 @@ export const DROP_TABLES = {
        "petal": "Yucca",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -39306,19 +39306,19 @@ export const DROP_TABLES = {
        "petal": "Blood Leaf",
        "chance": 81.54,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Blood Leaf",
        "chance": 11.34,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Blood Leaf",
        "chance": 5.02,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Blood Leaf",
@@ -39336,7 +39336,7 @@ export const DROP_TABLES = {
        "petal": "Blood Leaf",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -40019,7 +40019,7 @@ export const DROP_TABLES = {
        "petal": "Jelly",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Jelly",
@@ -40048,7 +40048,7 @@ export const DROP_TABLES = {
        "petal": "Lightning",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Lightning",
@@ -41368,25 +41368,25 @@ export const DROP_TABLES = {
        "petal": "Jelly",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Jelly",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Jelly",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Jelly",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -41403,25 +41403,25 @@ export const DROP_TABLES = {
        "petal": "Lightning",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Lightning",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Lightning",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Lightning",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -41444,25 +41444,25 @@ export const DROP_TABLES = {
        "petal": "Jellyfish Egg",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Jellyfish Egg",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Jellyfish Egg",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Jellyfish Egg",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -41475,13 +41475,13 @@ export const DROP_TABLES = {
        "petal": "Jelly",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Jelly",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Jelly",
@@ -41499,7 +41499,7 @@ export const DROP_TABLES = {
        "petal": "Jelly",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -41510,13 +41510,13 @@ export const DROP_TABLES = {
        "petal": "Lightning",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Lightning",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Lightning",
@@ -41534,7 +41534,7 @@ export const DROP_TABLES = {
        "petal": "Lightning",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -41545,19 +41545,19 @@ export const DROP_TABLES = {
        "petal": "Jellyfish Egg",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Jellyfish Egg",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Jellyfish Egg",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Jellyfish Egg",
@@ -41575,7 +41575,7 @@ export const DROP_TABLES = {
        "petal": "Jellyfish Egg",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -42942,7 +42942,7 @@ export const DROP_TABLES = {
        "petal": "Dirt",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Dirt",
@@ -42971,7 +42971,7 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Ant Egg",
@@ -43000,7 +43000,7 @@ export const DROP_TABLES = {
        "petal": "Magnet",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Magnet",
@@ -43029,7 +43029,7 @@ export const DROP_TABLES = {
        "petal": "Shovel",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Shovel",
@@ -43058,7 +43058,7 @@ export const DROP_TABLES = {
        "petal": "Compass",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Compass",
@@ -45219,25 +45219,25 @@ export const DROP_TABLES = {
        "petal": "Dirt",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Dirt",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Dirt",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Dirt",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -45254,25 +45254,25 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Ant Egg",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Ant Egg",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Ant Egg",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -45295,25 +45295,25 @@ export const DROP_TABLES = {
        "petal": "Magnet",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Magnet",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Magnet",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Magnet",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -45336,25 +45336,25 @@ export const DROP_TABLES = {
        "petal": "Shovel",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Shovel",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Shovel",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Shovel",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -45377,25 +45377,25 @@ export const DROP_TABLES = {
        "petal": "Compass",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Compass",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Compass",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Compass",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -45408,13 +45408,13 @@ export const DROP_TABLES = {
        "petal": "Dirt",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Dirt",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Dirt",
@@ -45432,7 +45432,7 @@ export const DROP_TABLES = {
        "petal": "Dirt",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -45443,13 +45443,13 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Ant Egg",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Ant Egg",
@@ -45467,7 +45467,7 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -45478,19 +45478,19 @@ export const DROP_TABLES = {
        "petal": "Magnet",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Magnet",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Magnet",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Magnet",
@@ -45508,7 +45508,7 @@ export const DROP_TABLES = {
        "petal": "Magnet",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -45519,19 +45519,19 @@ export const DROP_TABLES = {
        "petal": "Shovel",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Shovel",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Shovel",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Shovel",
@@ -45549,7 +45549,7 @@ export const DROP_TABLES = {
        "petal": "Shovel",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -45560,19 +45560,19 @@ export const DROP_TABLES = {
        "petal": "Compass",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Compass",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Compass",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Compass",
@@ -45590,7 +45590,7 @@ export const DROP_TABLES = {
        "petal": "Compass",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -45907,7 +45907,7 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Ant Egg",
@@ -46346,25 +46346,25 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Ant Egg",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Ant Egg",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Ant Egg",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -46377,13 +46377,13 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Ant Egg",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Ant Egg",
@@ -46401,7 +46401,7 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -46735,7 +46735,7 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Beetle Egg",
@@ -47569,25 +47569,25 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Beetle Egg",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Beetle Egg",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Beetle Egg",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -47610,7 +47610,7 @@ export const DROP_TABLES = {
        "petal": "Emerald",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 15000
+       "amount": 11300
       },
       {
        "petal": "Emerald",
@@ -47622,13 +47622,13 @@ export const DROP_TABLES = {
        "petal": "Emerald",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 25000000
+       "amount": 18750000
       },
       {
        "petal": "Emerald",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 215000
+       "amount": 161300
       }
      ]
     }
@@ -47641,13 +47641,13 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Beetle Egg",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Beetle Egg",
@@ -47665,7 +47665,7 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -47676,19 +47676,19 @@ export const DROP_TABLES = {
        "petal": "Emerald",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 125
+       "amount": 100
       },
       {
        "petal": "Emerald",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 360
+       "amount": 300
       },
       {
        "petal": "Emerald",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Emerald",
@@ -47706,7 +47706,7 @@ export const DROP_TABLES = {
        "petal": "Emerald",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 1800000
+       "amount": 1350000
       }
      ]
     }
@@ -48406,7 +48406,7 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Beetle Egg",
@@ -48435,7 +48435,7 @@ export const DROP_TABLES = {
        "petal": "Magnet",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Magnet",
@@ -50150,25 +50150,25 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Beetle Egg",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Beetle Egg",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Beetle Egg",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -50185,25 +50185,25 @@ export const DROP_TABLES = {
        "petal": "Magnet",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Magnet",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Magnet",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Magnet",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -50226,25 +50226,25 @@ export const DROP_TABLES = {
        "petal": "Rare Cactus",
        "chance": 3.74,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Rare Cactus",
        "chance": 1.55,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Rare Cactus",
        "chance": 0.21,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Rare Cactus",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -50267,7 +50267,7 @@ export const DROP_TABLES = {
        "petal": "Uranium",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 15000
+       "amount": 11300
       },
       {
        "petal": "Uranium",
@@ -50279,13 +50279,13 @@ export const DROP_TABLES = {
        "petal": "Uranium",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 25000000
+       "amount": 18750000
       },
       {
        "petal": "Uranium",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 215000
+       "amount": 161300
       }
      ]
     }
@@ -50298,13 +50298,13 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Beetle Egg",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Beetle Egg",
@@ -50322,7 +50322,7 @@ export const DROP_TABLES = {
        "petal": "Beetle Egg",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -50333,13 +50333,13 @@ export const DROP_TABLES = {
        "petal": "Magnet",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Magnet",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Magnet",
@@ -50357,7 +50357,7 @@ export const DROP_TABLES = {
        "petal": "Magnet",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -50368,19 +50368,19 @@ export const DROP_TABLES = {
        "petal": "Rare Cactus",
        "chance": 91.95,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Rare Cactus",
        "chance": 3.99,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Rare Cactus",
        "chance": 2.55,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Rare Cactus",
@@ -50398,7 +50398,7 @@ export const DROP_TABLES = {
        "petal": "Rare Cactus",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -50409,19 +50409,19 @@ export const DROP_TABLES = {
        "petal": "Uranium",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 125
+       "amount": 100
       },
       {
        "petal": "Uranium",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 360
+       "amount": 300
       },
       {
        "petal": "Uranium",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Uranium",
@@ -50439,7 +50439,7 @@ export const DROP_TABLES = {
        "petal": "Uranium",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 1800000
+       "amount": 1350000
       }
      ]
     }
@@ -51215,7 +51215,7 @@ export const DROP_TABLES = {
        "petal": "Powder",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Powder",
@@ -51244,7 +51244,7 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Sand",
@@ -52564,25 +52564,25 @@ export const DROP_TABLES = {
        "petal": "Powder",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Powder",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Powder",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Powder",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -52599,25 +52599,25 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Sand",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Sand",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Sand",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -52640,25 +52640,25 @@ export const DROP_TABLES = {
        "petal": "Pomegranate",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Pomegranate",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Pomegranate",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Pomegranate",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -52671,13 +52671,13 @@ export const DROP_TABLES = {
        "petal": "Powder",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Powder",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Powder",
@@ -52695,7 +52695,7 @@ export const DROP_TABLES = {
        "petal": "Powder",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -52706,13 +52706,13 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Sand",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Sand",
@@ -52730,7 +52730,7 @@ export const DROP_TABLES = {
        "petal": "Sand",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -52741,19 +52741,19 @@ export const DROP_TABLES = {
        "petal": "Pomegranate",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Pomegranate",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Pomegranate",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Pomegranate",
@@ -52771,7 +52771,7 @@ export const DROP_TABLES = {
        "petal": "Pomegranate",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -53088,7 +53088,7 @@ export const DROP_TABLES = {
        "petal": "ӇЄҲƛƓƠƝ",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "ӇЄҲƛƓƠƝ",
@@ -53527,25 +53527,25 @@ export const DROP_TABLES = {
        "petal": "ӇЄҲƛƓƠƝ",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "ӇЄҲƛƓƠƝ",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "ӇЄҲƛƓƠƝ",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "ӇЄҲƛƓƠƝ",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -53558,13 +53558,13 @@ export const DROP_TABLES = {
        "petal": "ӇЄҲƛƓƠƝ",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "ӇЄҲƛƓƠƝ",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "ӇЄҲƛƓƠƝ",
@@ -53582,7 +53582,7 @@ export const DROP_TABLES = {
        "petal": "ӇЄҲƛƓƠƝ",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -54373,7 +54373,7 @@ export const DROP_TABLES = {
        "petal": "Lightning",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Lightning",
@@ -54402,7 +54402,7 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Fire Sand",
@@ -56213,25 +56213,25 @@ export const DROP_TABLES = {
        "petal": "Lightning",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Lightning",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Lightning",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Lightning",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -56248,25 +56248,25 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Fire Sand",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Fire Sand",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Fire Sand",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -56289,25 +56289,25 @@ export const DROP_TABLES = {
        "petal": "Cinderbrick",
        "chance": 3.74,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Cinderbrick",
        "chance": 1.55,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Cinderbrick",
        "chance": 0.21,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Cinderbrick",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -56330,25 +56330,25 @@ export const DROP_TABLES = {
        "petal": "Shiny Wing",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Shiny Wing",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Shiny Wing",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Shiny Wing",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -56361,13 +56361,13 @@ export const DROP_TABLES = {
        "petal": "Lightning",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Lightning",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Lightning",
@@ -56385,7 +56385,7 @@ export const DROP_TABLES = {
        "petal": "Lightning",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -56396,13 +56396,13 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Fire Sand",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Fire Sand",
@@ -56420,7 +56420,7 @@ export const DROP_TABLES = {
        "petal": "Fire Sand",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -56431,19 +56431,19 @@ export const DROP_TABLES = {
        "petal": "Cinderbrick",
        "chance": 91.95,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Cinderbrick",
        "chance": 3.99,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Cinderbrick",
        "chance": 2.55,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Cinderbrick",
@@ -56461,7 +56461,7 @@ export const DROP_TABLES = {
        "petal": "Cinderbrick",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -56472,19 +56472,19 @@ export const DROP_TABLES = {
        "petal": "Shiny Wing",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Shiny Wing",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Shiny Wing",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Shiny Wing",
@@ -56502,7 +56502,7 @@ export const DROP_TABLES = {
        "petal": "Shiny Wing",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -57185,7 +57185,7 @@ export const DROP_TABLES = {
        "petal": "Thorn",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Thorn",
@@ -57214,7 +57214,7 @@ export const DROP_TABLES = {
        "petal": "Dahlia",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Dahlia",
@@ -58825,25 +58825,25 @@ export const DROP_TABLES = {
        "petal": "Thorn",
        "chance": 3.74,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Thorn",
        "chance": 1.55,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Thorn",
        "chance": 0.21,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Thorn",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -58860,25 +58860,25 @@ export const DROP_TABLES = {
        "petal": "Dahlia",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Dahlia",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Dahlia",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Dahlia",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -58901,25 +58901,25 @@ export const DROP_TABLES = {
        "petal": "Third Eye",
        "chance": 7.92,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Third Eye",
        "chance": 2.89,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Third Eye",
        "chance": 0.36,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Third Eye",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -58960,7 +58960,7 @@ export const DROP_TABLES = {
        "petal": "Resin",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       }
      ]
     }
@@ -58973,19 +58973,19 @@ export const DROP_TABLES = {
        "petal": "Thorn",
        "chance": 91.95,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Thorn",
        "chance": 3.99,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Thorn",
        "chance": 2.55,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Thorn",
@@ -59003,7 +59003,7 @@ export const DROP_TABLES = {
        "petal": "Thorn",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -59014,13 +59014,13 @@ export const DROP_TABLES = {
        "petal": "Dahlia",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Dahlia",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Dahlia",
@@ -59038,7 +59038,7 @@ export const DROP_TABLES = {
        "petal": "Dahlia",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -59049,19 +59049,19 @@ export const DROP_TABLES = {
        "petal": "Third Eye",
        "chance": 73.64,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Third Eye",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Third Eye",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Third Eye",
@@ -59079,7 +59079,7 @@ export const DROP_TABLES = {
        "petal": "Third Eye",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -59090,25 +59090,25 @@ export const DROP_TABLES = {
        "petal": "Resin",
        "chance": 73.64,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Resin",
        "chance": 16.21,
        "rarity": 14,
-       "amount": 300
+       "amount": 200
       },
       {
        "petal": "Resin",
        "chance": 6.2,
        "rarity": 14,
-       "amount": 600
+       "amount": 500
       },
       {
        "petal": "Resin",
        "chance": 3.66,
        "rarity": 14,
-       "amount": 900
+       "amount": 700
       },
       {
        "petal": "Resin",
@@ -59120,7 +59120,7 @@ export const DROP_TABLES = {
        "petal": "Resin",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 2000000
+       "amount": 1500000
       }
      ]
     }
@@ -59437,7 +59437,7 @@ export const DROP_TABLES = {
        "petal": "Lilypad",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Lilypad",
@@ -60039,25 +60039,25 @@ export const DROP_TABLES = {
        "petal": "Lilypad",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Lilypad",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Lilypad",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Lilypad",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -60068,19 +60068,19 @@ export const DROP_TABLES = {
        "petal": "Amulet of Grace",
        "chance": 89.15,
        "rarity": 12,
-       "amount": 1000
+       "amount": 800
       },
       {
        "petal": "Amulet of Grace",
        "chance": 5.34,
        "rarity": 12,
-       "amount": 2000
+       "amount": 1500
       },
       {
        "petal": "Amulet of Grace",
        "chance": 3.74,
        "rarity": 12,
-       "amount": 4000
+       "amount": 3000
       },
       {
        "petal": "Amulet of Grace",
@@ -60098,7 +60098,7 @@ export const DROP_TABLES = {
        "petal": "Amulet of Grace",
        "chance": 0.01,
        "rarity": 12,
-       "amount": 8000
+       "amount": 6000
       }
      ]
     }
@@ -60111,13 +60111,13 @@ export const DROP_TABLES = {
        "petal": "Lilypad",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Lilypad",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Lilypad",
@@ -60135,7 +60135,7 @@ export const DROP_TABLES = {
        "petal": "Lilypad",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -60146,7 +60146,7 @@ export const DROP_TABLES = {
        "petal": "Amulet of Grace",
        "chance": 91.95,
        "rarity": 12,
-       "amount": 10000
+       "amount": 7500
       },
       {
        "petal": "Amulet of Grace",
@@ -60158,13 +60158,13 @@ export const DROP_TABLES = {
        "petal": "Amulet of Grace",
        "chance": 2.55,
        "rarity": 13,
-       "amount": 125
+       "amount": 100
       },
       {
        "petal": "Amulet of Grace",
        "chance": 1.32,
        "rarity": 13,
-       "amount": 400
+       "amount": 300
       },
       {
        "petal": "Amulet of Grace",
@@ -61015,7 +61015,7 @@ export const DROP_TABLES = {
        "petal": "Lilypad",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Lilypad",
@@ -61044,7 +61044,7 @@ export const DROP_TABLES = {
        "petal": "Bubble",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Bubble",
@@ -61073,7 +61073,7 @@ export const DROP_TABLES = {
        "petal": "Rubber",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Rubber",
@@ -62292,25 +62292,25 @@ export const DROP_TABLES = {
        "petal": "Lilypad",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Lilypad",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Lilypad",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Lilypad",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -62327,25 +62327,25 @@ export const DROP_TABLES = {
        "petal": "Bubble",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Bubble",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Bubble",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Bubble",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -62362,25 +62362,25 @@ export const DROP_TABLES = {
        "petal": "Rubber",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Rubber",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Rubber",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Rubber",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -62393,13 +62393,13 @@ export const DROP_TABLES = {
        "petal": "Lilypad",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Lilypad",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Lilypad",
@@ -62417,7 +62417,7 @@ export const DROP_TABLES = {
        "petal": "Lilypad",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -62428,13 +62428,13 @@ export const DROP_TABLES = {
        "petal": "Bubble",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Bubble",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Bubble",
@@ -62452,7 +62452,7 @@ export const DROP_TABLES = {
        "petal": "Bubble",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -62463,13 +62463,13 @@ export const DROP_TABLES = {
        "petal": "Rubber",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Rubber",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Rubber",
@@ -62487,7 +62487,7 @@ export const DROP_TABLES = {
        "petal": "Rubber",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -62804,7 +62804,7 @@ export const DROP_TABLES = {
        "petal": "Salt",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Salt",
@@ -63243,25 +63243,25 @@ export const DROP_TABLES = {
        "petal": "Salt",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Salt",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Salt",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Salt",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -63274,13 +63274,13 @@ export const DROP_TABLES = {
        "petal": "Salt",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Salt",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Salt",
@@ -63298,7 +63298,7 @@ export const DROP_TABLES = {
        "petal": "Salt",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
@@ -64137,7 +64137,7 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 63.7,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Wing",
@@ -64166,7 +64166,7 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Ant Egg",
@@ -64195,7 +64195,7 @@ export const DROP_TABLES = {
        "petal": "Fire Missile",
        "chance": 45.8,
        "rarity": 7,
-       "amount": 1200
+       "amount": 900
       },
       {
        "petal": "Fire Missile",
@@ -65468,25 +65468,25 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 14.07,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Wing",
        "chance": 5.12,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Wing",
        "chance": 1.67,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Wing",
        "chance": 0.09,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -65503,25 +65503,25 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 8.65,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Ant Egg",
        "chance": 1.94,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Ant Egg",
        "chance": 0.85,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Ant Egg",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     },
@@ -65544,25 +65544,25 @@ export const DROP_TABLES = {
        "petal": "Fire Missile",
        "chance": 3.74,
        "rarity": 13,
-       "amount": 50000
+       "amount": 37500
       },
       {
        "petal": "Fire Missile",
        "chance": 1.55,
        "rarity": 14,
-       "amount": 256
+       "amount": 200
       },
       {
        "petal": "Fire Missile",
        "chance": 0.21,
        "rarity": 12,
-       "amount": 75000000
+       "amount": 56250000
       },
       {
        "petal": "Fire Missile",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 650000
+       "amount": 487500
       }
      ]
     }
@@ -65575,13 +65575,13 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 81.95,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Wing",
        "chance": 12.34,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Wing",
@@ -65599,7 +65599,7 @@ export const DROP_TABLES = {
        "petal": "Wing",
        "chance": 0.08,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -65610,13 +65610,13 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 89.52,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Ant Egg",
        "chance": 8.64,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Ant Egg",
@@ -65634,7 +65634,7 @@ export const DROP_TABLES = {
        "petal": "Ant Egg",
        "chance": 0.03,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     },
@@ -65645,19 +65645,19 @@ export const DROP_TABLES = {
        "petal": "Fire Missile",
        "chance": 91.95,
        "rarity": 14,
-       "amount": 500
+       "amount": 400
       },
       {
        "petal": "Fire Missile",
        "chance": 3.99,
        "rarity": 14,
-       "amount": 1100
+       "amount": 800
       },
       {
        "petal": "Fire Missile",
        "chance": 2.55,
        "rarity": 14,
-       "amount": 3500
+       "amount": 2600
       },
       {
        "petal": "Fire Missile",
@@ -65675,7 +65675,7 @@ export const DROP_TABLES = {
        "petal": "Fire Missile",
        "chance": 0.01,
        "rarity": 13,
-       "amount": 5500000
+       "amount": 4125000
       }
      ]
     }
