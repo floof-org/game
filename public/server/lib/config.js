@@ -18,7 +18,7 @@ export const petalConfigs = [
         .setSize(1.25)
         .setDensity(6.5)
         .setDescription("A more chunky petal that hits harder but takes longer to recharge."),
-    new PetalConfig("Stinger", 101.25, 1, 46)
+    new PetalConfig("Stinger", 51.25, 1, 46)
         .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setDescription("A fragile petal that deals lots of damage."),
     new PetalConfig("Rice", 0, .5, 5)
@@ -36,7 +36,7 @@ export const petalConfigs = [
         .setSize(1.2)
         .setConstantHeal(5.5)
         .setDescription("A petal that heals you over time by the power of photosynthesis."),
-    new PetalConfig("Wing", 22.5 * 1.25, 17, 17)
+    new PetalConfig("Wing", 28.125, 17, [17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20, 21, 22])
         .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setWingMovement(true)
         .setDescription("It comes and it goes."),
@@ -65,7 +65,7 @@ export const petalConfigs = [
     new PetalConfig("Orange", 22.5 * .75, 12.5, 7.5)
         .setMulti(3, true)
         .setDescription("A bunch of oranges. They're pretty juicy."),
-    new PetalConfig("Missile", 22.5, 4, 18.5)
+    new PetalConfig("Missile", 7.5, 4, 18.5)
         .setLaunchable(.7, 45)
         .setAutoLock(Math.PI * .15)
         .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
@@ -89,7 +89,7 @@ export const petalConfigs = [
         .setSize(1.1)
         .setEnemySpeedMultiplier(.45, 5)
         .setDescription("It's sticky and will slow your enemies down."),
-    new PetalConfig("Iris", 22.5 * 1, 10, 20)
+    new PetalConfig("Iris", 22.5, 10, [29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 49])
         .setSize([0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setPoison(12.5, 5)
         .setDescription("Packs an unexpected punch in its secret weapon: poison."),
@@ -105,7 +105,7 @@ export const petalConfigs = [
         .setMulti(0, false)
         .setWearable(WEARABLES.THIRD_EYE)
         .setDescription("Through the eye of the beholder comes extra range."),
-    new PetalConfig("Pincer", 22.5, 7.5, 14)
+    new PetalConfig("Pincer", 8.5, 7.5, 14)
         .setSize(1.2)
         .setPoison(2, 5)
         .setEnemySpeedMultiplier(.6, 5)
@@ -122,12 +122,12 @@ export const petalConfigs = [
     new PetalConfig("Peas", 22.5 * 1.5, 20, 17.5)
         .setSize(1.15)
         .setDescription("A pod of peas. They'll explode if you're not careful."),
-    new PetalConfig("Stick", 22.5, 25, 0.5)
+    new PetalConfig("Stick", 22.5, 25, 1)
         .setSize(1.25)
         .setHuddles(1)
         .setPullBurst(750, [12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99])
         .setDescription("Attack to use up a stick and yank nearby mobs toward you."),
-    new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 0.001, 0.0005)
+    new PetalConfig("Scorpion Missile.projectile", 2250, 0.00001, 0.0000005)
         .setPoison(0.0001, 5)
         .setDescription("[object null object]"),
     new PetalConfig("Dahlia", 22.5 * .75, 5, 5)
@@ -169,7 +169,7 @@ export const petalConfigs = [
         .setWingMovement(1)
         .setLightning([5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10], 32 * 16, 128)
         .setDescription("A petal that channels the power of all that came before."),
-    new PetalConfig("Lightning", 22.5 * 1, 1e-15, [5])
+    new PetalConfig("Lightning", 22.5, 1e-15, [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 17])
         .setLightning([3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9], 256, 7)
         .setDescription("Shockingly shocking!"),
     new PetalConfig("Powder", 22.5 * .75, 3, 5)
@@ -348,8 +348,8 @@ export const petalConfigs = [
         .setSize(1.8)
         .setHuddles(1)
         .setDescription("This isn't from this world..."),
-    new PetalConfig("Dice", 22.5, 5, 17.5).setDiceAbility(0.05, 10).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
-        .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 5% chance of dealing 10x damage."),
+    new PetalConfig("Dice", 20.5, 5, [17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 23, 23, 25]).setDiceAbility(0.05, 35).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
+        .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 5% chance of dealing 35x damage."),
     new PetalConfig("Fire Sand", 10.125, 5, 48).setIcon(0.575, [4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], "Sand", 0).setSize(.85).setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("closePath").addAction("paint", "#e86d48", .445, .2)
         ).setDescription("Some fine grains of sand on fire. They deal 3x damage than normal sand."),
@@ -707,7 +707,7 @@ export const petalConfigs = [
         .endTierCloverAbility()
         .setDrawing(new Drawing().addAction("rotate", 15).addAction("beginPath").addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("paint", "#3AB54A", .225, .2).addAction("closePath")
         ).setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 0.1%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 0.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 6%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 8%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 10%"]),
-    new PetalConfig("Rock.projectile", 2250, 0.001, 0.0005)
+    new PetalConfig("Rock.projectile", 2250, 0.0000001, 0.00000005)
         .setDrawing(new Drawing()
         .addAction("beginPath")
         .addAction("polygon", 5, 1, 3.2)
@@ -718,7 +718,7 @@ export const petalConfigs = [
     new PetalConfig("Pomegranate", 10.125, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setIcon(.85, 1, "Pomegranate", -45).setSize(1.25).setPomegranate(0.005)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", .75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, .75, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", -.75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, -.75, .75).addAction("paint", "#e52669", .25, .2)
         ).setDescription("A deadly 4 in 1 deal. Check /petalinfo [rarity] pomegranate"),
-    new PetalConfig("projectile.pomegranate", 2250, 6, 44).setPomegranate(0.005)
+    new PetalConfig("projectile.pomegranate", 2250, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setPomegranate(0.005)
         .setDrawing(new Drawing()
         .addAction("beginPath")
         .addAction("circle", 0, 0, 0.80)
@@ -756,10 +756,10 @@ export const petalConfigs = [
     new PetalConfig("Resin.projectile", 2250, 1e5, 15).setSize(35).setEnemySpeedMultiplier(.334, .05).setIgnoreWalls(1).setPacifyAbility(0.0001)
         .setDrawing(new Drawing().addAction("opacity", .45).addAction("beginPath").addAction("dipPolygon", 5, 1, -1.3, 0).addAction("fill", "#fcebff").addAction("opacity", 1).addAction("stroke", "#fcebff", .2, 0).addAction("opacity", .6).addAction("beginPath").addAction("dipPolygon", 5, .45, -1.6, Math.PI).addAction("fill", "#fcebff")
         ).setDescription("[object null object]"),
-    new PetalConfig("Thorn", 25, 80, 60).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
+    new PetalConfig("Thorn", 25, 80, [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 114]).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("Spiky."),
-    new PetalConfig("Thorn.projectile", 25, 6, 0.005).setSize(1.35)
+    new PetalConfig("Thorn.projectile", 25, 0.0000000005, 0.0000000005).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("[object null object]"),
     new PetalConfig("Lilypad", 225, 6, 44)
@@ -1053,21 +1053,21 @@ export const mobConfigs = [
         .setPushability(0)
         .addDrop(petalIDOf("Dirt"))
         .addDrop(petalIDOf("Ant Egg"), .5),
-    new MobConfig("Baby Fire Ant", 10, 10, 17, 2)
+    new MobConfig("Baby Fire Ant", 10, 10, 15, 2)
         .setSizeStep(2)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Worker Fire Ant", 15, 10, 17, 3.25)
+    new MobConfig("Worker Fire Ant", 15, 10, 15, 3.25)
         .setSizeStep(2)
         .setNeutral(1)
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Yucca"), .5),
-    new MobConfig("Soldier Fire Ant", 25, 10, 17, 3.5)
+    new MobConfig("Soldier Fire Ant", 25, 10, 15, 3.5)
         .setSizeStep(2)
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)
         .addDrop(petalIDOf("Glass"), .5),
-    new MobConfig("Queen Fire Ant", 100, 10, 40.25, 3.5)
+    new MobConfig("Queen Fire Ant", 100, 10, 25, 3.5)
         .setSizeStep(2)
         .setAggressive(1)
         .setPushability(0.8)
@@ -1112,10 +1112,10 @@ export const mobConfigs = [
     new MobConfig("Ant Egg", 20, 1, 15, 0)
         .addDrop(petalIDOf("Ant Egg")),
     new MobConfig("Queen Ant Egg", 20, 1, 15, 0),
-    new MobConfig("Fire Ant Egg", 20, 2, 8.5, 0)
+    new MobConfig("Fire Ant Egg", 20, 2, 15, 0)
         .setSizeStep(2)
         .addDrop(petalIDOf("Ant Egg")),
-    new MobConfig("Queen Fire Ant Egg", 20, 2, 8.5, 0)
+    new MobConfig("Queen Fire Ant Egg", 20, 2, 15, 0)
         .setSizeStep(2),
     new MobConfig("Termite Egg", 30, 1, 15, 0)
         .addDrop(petalIDOf("Ant Egg")),
@@ -1399,7 +1399,7 @@ export const mobConfigs = [
         .addAction("closePath")
         )
         ,
-    new MobConfig("Shiny Soldier Ant", 12, 22, 17, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5).setProjectile({
+    new MobConfig("Shiny Soldier Ant", 12, 22, 15, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5).setProjectile({
         petalIndex: petalIDOf("Missile"),
         cooldown: 45,
         health: 0.000000000002,
@@ -1439,7 +1439,7 @@ export const mobConfigs = [
         .addAction("closePath")
         )
         ,
-    new MobConfig("Desert Shrub", 40, 10, 12, 0).setThornSpawn(0.6, "Thorn.projectile", 14)
+    new MobConfig("Desert Shrub", 40, 10, 15, 0).setThornSpawn(0.6, "Thorn.projectile", 14)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, -3, 0).addAction("stroke", "#91775a", .2, 0).addAction("dipPolygon", 5, .7, -3, .4).addAction("stroke", "#91775a", .2, 0).addAction("dipPolygon", 4, .5, -1.5, .3).addAction("stroke", "#91775a", .2, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("stroke", "#91775a", .1, 0).addAction("closePath").addAction("rotate", 360 / 7).addAction("beginPath").addAction("dipPolygon", 3, .45, -1, 0).addAction("paint", "#3AB54A", .2, .3).addAction("dipPolygon", 5, .35, -1.5, 0).addAction("paint", "#FC93C5", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .15).addAction("fill", "#fcebff")
         )
         ,
@@ -1616,19 +1616,19 @@ mobConfigs[mobIDOf("Queen Fire Ant")].antShiny = fireAntShinyRule;
 // stops. maxPoops is a server-only cap consulted by the poop loop in Entity.js.
 mobConfigs[mobIDOf("Queen Fire Ant")].maxPoops = 6;
 
-petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1.5, 3);
-petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1.5, 3);
-petalConfigs[petalIDOf("Branch")].setSpawnable(mobIDOf("Wilt") + 1, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 5, 1.5, 3);
-petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 3, 1.5, 3);
-petalConfigs[petalIDOf("Hornet Egg")].setSpawnable(mobIDOf("Hornet"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 5, 1.5, 3);
-petalConfigs[petalIDOf("Square Egg")].setSpawnable(mobIDOf("Square"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 2, 1.5, 3);
-petalConfigs[petalIDOf("Triangle Egg")].setSpawnable(mobIDOf("Triangle"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 2, 1.5, 3);
-petalConfigs[petalIDOf("Pentagon Egg")].setSpawnable(mobIDOf("Pentagon"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 2, 1.5, 3);
-petalConfigs[petalIDOf("Jelly")].setSpawnable(mobIDOf("Jelly (Summon)"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1.5, 3);
-petalConfigs[petalIDOf("Lilypad")].setSpawnable(mobIDOf("Lilypad (Summon)"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1.5, 3);
-petalConfigs[petalIDOf("ӇЄҲƛƓƠƝ")].setSpawnable(mobIDOf("ӇЄҲƛƓƠƝ"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1.5, 3);
-petalConfigs[petalIDOf("Scorpion Egg")].setSpawnable(mobIDOf("Scorpion"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 8, 1.5, 3);
-petalConfigs[petalIDOf("Jellyfish Egg")].setSpawnable(mobIDOf("Jellyfish"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 8, 1.5, 3);
+petalConfigs[petalIDOf("Beetle Egg")].setSpawnable(mobIDOf("Beetle"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1, 6);
+petalConfigs[petalIDOf("Ant Egg")].setSpawnable(mobIDOf("Soldier Ant"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1, 6);
+petalConfigs[petalIDOf("Branch")].setSpawnable(mobIDOf("Wilt") + 1, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 5, 1, 6);
+petalConfigs[petalIDOf("Leech Egg")].setSpawnable(mobIDOf("Leech"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 3, 1, 6);
+petalConfigs[petalIDOf("Hornet Egg")].setSpawnable(mobIDOf("Hornet"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 5, 1, 6);
+petalConfigs[petalIDOf("Square Egg")].setSpawnable(mobIDOf("Square"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 2, 1, 6);
+petalConfigs[petalIDOf("Triangle Egg")].setSpawnable(mobIDOf("Triangle"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 2, 1, 6);
+petalConfigs[petalIDOf("Pentagon Egg")].setSpawnable(mobIDOf("Pentagon"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29, 29], 2, 1, 6);
+petalConfigs[petalIDOf("Jelly")].setSpawnable(mobIDOf("Jelly (Summon)"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1, 6);
+petalConfigs[petalIDOf("Lilypad")].setSpawnable(mobIDOf("Lilypad (Summon)"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1, 6);
+petalConfigs[petalIDOf("ӇЄҲƛƓƠƝ")].setSpawnable(mobIDOf("ӇЄҲƛƓƠƝ"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 4, 1, 6);
+petalConfigs[petalIDOf("Scorpion Egg")].setSpawnable(mobIDOf("Scorpion"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 8, 1, 6);
+petalConfigs[petalIDOf("Jellyfish Egg")].setSpawnable(mobIDOf("Jellyfish"), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 29], 8, 1, 6);
 
 mobConfigs[mobIDOf("Angelic Ladybug")].setPoopable({
     index: mobIDOf("Evil Ladybug"),

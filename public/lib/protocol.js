@@ -118,13 +118,52 @@ export const RARITY_SIZE_MULTIPLIERS = [
     2.16, 2.3, 2.5, 2.61, 2.7, 2.9, 3.1, 3.3, 3.5
 ];
 
+globalThis.PETAL_TIER_TABLE = {
+    0: { health: 1, damage: 1 },
+    1: { health: 2, damage: 2 },
+    2: { health: 4, damage: 4 },
+    3: { health: 8, damage: 8 },
+    4: { health: 16, damage: 16 },
+    5: { health: 32, damage: 32 },
+    6: { health: 160, damage: 160 },
+    7: { health: 480, damage: 480 },
+    8: { health: 2880, damage: 2880 },
+    9: { health: 17280, damage: 17280 },
+    10: { health: 103680, damage: 103680 },
+    11: { health: 1244160, damage: 1244160 },
+    12: { health: 14929920, damage: 14929920 },
+    13: { health: 89579520, damage: 89579520 },
+    14: { health: 268738560, damage: 268738560 },
+    15: { health: 1612431360, damage: 1612431360 },
+    16: { health: 16124313600, damage: 16124313600 },
+    17: { health: 16124313600, damage: 16124313600 },
+    18: { health: 161243136000, damage: 161243136000 },
+    19: { health: 161243136000, damage: 161243136000 },
+    20: { health: 161243136000, damage: 161243136000 },
+    21: { health: 1612431360000, damage: 1612431360000 },
+    22: { health: 4837294080000, damage: 4837294080000 },
+    23: { health: 14511882240000, damage: 14511882240000 },
+    24: { health: 43535646720000, damage: 43535646720000 },
+    25: { health: 130606940160000, damage: 130606940160000 },
+    26: { health: 391820820480000, damage: 391820820480000 },
+    27: { health: 1175462461440000, damage: 1175462461440000 },
+    28: { health: 3526387384320000, damage: 3526387384320000 },
+    29: { health: 10579162152960000, damage: 10579162152960000 },
+};
+
 export function petalTierMultiplier(tier) {
-    return Math.pow(PetalTier.HEALTH_SCALE, tier);
+    const tierData = globalThis.PETAL_TIER_TABLE?.[tier];
+    if (tierData && tierData.damage !== undefined) {
+        return tierData.damage;
+    }
+
+    // fallback so nothing breaks past the table
+    return Math.pow(PetalTier.DAMAGE_SCALE, tier);
 }
 
 export class PetalTier {
-    static HEALTH_SCALE = 3;
-    static DAMAGE_SCALE = 3;
+    static HEALTH_SCALE = 2;
+    static DAMAGE_SCALE = 2;
 
     constructor(tier, health, damage) {
         // arrays are only the per-rarity baseline values, they still get the rarity multiplier
