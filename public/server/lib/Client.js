@@ -1,6 +1,6 @@
 import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
-import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE } from "../../lib/protocol.js";
+import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, petalTierMultiplier } from "../../lib/protocol.js";
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
 import { colors, xpForLevel } from "../../lib/util.js";
 import accounts from "./Accounts.js";
@@ -2674,18 +2674,16 @@ if (commandCheck("/pity")) {
                                 if (petal === "bloodleaf" || petal === "blood") {
 
                                     const table = globalThis.BLOOD_LEAF_TABLE;
-                                    const tierTable = globalThis.PETAL_TIER_TABLE;
                                     const list = globalThis._itemList;
 
-                                    if (!table || !tierTable || !list) {
+                                    if (!table || !list) {
                                         this.systemMessage("Missing data tables.", "#ff5e5e");
                                         return;
                                     }
 
                                     const data = table[tier];
-                                    const tierData = tierTable[tier];
 
-                                    if (!data || !tierData) {
+                                    if (!data) {
                                         this.systemMessage(`No data for Blood Leaf tier ${tier}`, "#ff5e5e");
                                         return;
                                     }
@@ -2704,7 +2702,7 @@ if (commandCheck("/pity")) {
                                     const currentKills = killsData[tier] ?? 0;
 
                                     const baseDamage = baseItem.damage ?? 1;
-                                    const scaledBaseDamage = baseDamage * tierData.damage;
+                                    const scaledBaseDamage = baseDamage * petalTierMultiplier(tier);
 
                                     const maxMultiplier = 1 + data.cap;
                                     const perKillMultiplier = 1 + data.perKill;
@@ -2751,22 +2749,15 @@ if (commandCheck("/pity")) {
 
                                 if (petal === "bloodlight" || petal === "blight") {
 
-                                    const tierTable = globalThis.PETAL_TIER_TABLE;
                                     const bloodLightTable = globalThis.BLOOD_LIGHT_TABLE;
                                     const list = globalThis._itemList;
 
-                                    if (!tierTable || !bloodLightTable || !list) {
+                                    if (!bloodLightTable || !list) {
                                         this.systemMessage("Missing data tables.", "#ff5e5e");
                                         return;
                                     }
 
-                                    const tierData = tierTable[tier];
                                     const ratioMultiplier = bloodLightTable[tier] ?? bloodLightTable[bloodLightTable.length - 1];
-
-                                    if (!tierData) {
-                                        this.systemMessage(`No data for BloodLight tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
 
                                     const baseItem = list.find(i => i?.name === "Blood Light");
                                     if (!baseItem) {
@@ -2778,7 +2769,7 @@ if (commandCheck("/pity")) {
                                         ? (baseItem.damage[tier] ?? baseItem.damage[baseItem.damage.length - 1])
                                         : (baseItem.damage ?? 1);
 
-                                    const scaledDamage = baseDamage * tierData.damage;
+                                    const scaledDamage = baseDamage * petalTierMultiplier(tier);
 
                                     const baseRatio = Array.isArray(baseItem.bloodLightRatio)
                                         ? (baseItem.bloodLightRatio[tier] ?? baseItem.bloodLightRatio[baseItem.bloodLightRatio.length - 1])
@@ -2797,22 +2788,15 @@ if (commandCheck("/pity")) {
 
                                 if (petal === "pomegranate" || petal === "pome") {
 
-                                    const tierTable = globalThis.PETAL_TIER_TABLE;
                                     const pomegranateTable = globalThis.POMEGRANATE_TABLE;
                                     const list = globalThis._itemList;
 
-                                    if (!tierTable || !pomegranateTable || !list) {
+                                    if (!pomegranateTable || !list) {
                                         this.systemMessage("Missing data tables.", "#ff5e5e");
                                         return;
                                     }
 
-                                    const tierData = tierTable[tier];
                                     const ratioMultiplier = pomegranateTable[tier] ?? pomegranateTable[pomegranateTable.length - 1];
-
-                                    if (!tierData) {
-                                        this.systemMessage(`No data for Pomegranate tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
 
                                     const baseItem = list.find(i => i?.name === "Pomegranate");
                                     if (!baseItem) {
@@ -2824,7 +2808,7 @@ if (commandCheck("/pity")) {
                                         ? (baseItem.damage[tier] ?? baseItem.damage[baseItem.damage.length - 1])
                                         : (baseItem.damage ?? 1);
 
-                                    const scaledDamage = baseDamage * tierData.damage;
+                                    const scaledDamage = baseDamage * petalTierMultiplier(tier);
 
                                     const baseRatio = Array.isArray(baseItem.PomegranateRatio)
                                         ? (baseItem.PomegranateRatio[tier] ?? baseItem.PomegranateRatio[baseItem.PomegranateRatio.length - 1])
@@ -2844,18 +2828,16 @@ if (commandCheck("/pity")) {
                                 if (petal === "shinywing" || petal === "shiny") {
 
                                     const table = globalThis.SHINY_WING_TABLE;
-                                    const tierTable = globalThis.PETAL_TIER_TABLE;
                                     const list = globalThis._itemList;
 
-                                    if (!table || !tierTable || !list) {
+                                    if (!table || !list) {
                                         this.systemMessage("Missing data tables.", "#ff5e5e");
                                         return;
                                     }
 
                                     const data = table[tier];
-                                    const tierData = tierTable[tier];
 
-                                    if (!data || !tierData) {
+                                    if (!data) {
                                         this.systemMessage(`No data for Shiny Wing tier ${tier}`, "#ff5e5e");
                                         return;
                                     }
@@ -2867,7 +2849,7 @@ if (commandCheck("/pity")) {
                                     }
 
                                     const baseDamage = baseItem.damage ?? 1;
-                                    const scaledBaseDamage = baseDamage * tierData.damage;
+                                    const scaledBaseDamage = baseDamage * petalTierMultiplier(tier);
 
                                     const BASE_SPEED = 0.125;
                                     const currentSpeed = this.body?.rotationSpeed ?? 0.125;
@@ -2934,9 +2916,8 @@ if (commandCheck("/pity")) {
                                 }
 
                                 const list = globalThis._itemList;
-                                const tierTable = globalThis.PETAL_TIER_TABLE;
 
-                                if (!list || !tierTable) {
+                                if (!list) {
                                     this.systemMessage("Missing data tables.", "#ff5e5e");
                                     return;
                                 }
@@ -2946,13 +2927,6 @@ if (commandCheck("/pity")) {
 
                                 if (!item) {
                                     this.systemMessage("Petal not found.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const tierData = tierTable[tier];
-
-                                if (!tierData) {
-                                    this.systemMessage(`No data for tier ${tier}`, "#ff5e5e");
                                     return;
                                 }
 
@@ -3280,14 +3254,7 @@ if (commandCheck("/pity")) {
                                         return;
                                     }
 
-                                    const scale = globalThis.PETAL_TIER_TABLE?.[tier]?.damage;
-
-                                    if (scale == null) {
-                                        this.systemMessage(`No petal scaling data for tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const scaledDamage = baseDamage * scale;
+                                    const scaledDamage = baseDamage * petalTierMultiplier(tier);
 
                                     const sizes = globalThis.PETAL_RARITY_SIZES;
                                     const sizeScale = sizes[tier] ?? sizes[sizes.length - 1];
