@@ -2125,9 +2125,10 @@ export class Player extends Entity {
         this.rotationSpeed = Math.abs(Math.max(-maxRotationStep, Math.min(this.petalRotation - (this.lastPetalRotation ?? this.petalRotation), maxRotationStep)) || 0.125 * spin);
         this.lastPetalRotation = this.petalRotation;
 
-        // Stick pull burst: while attacking, each reloaded Stick is consumed
-        // to yank nearby mobs toward the player. Reloads on the normal cycle.
-        if (this.attack) {
+        // Stick pull burst: each reloaded Stick is consumed on its own to yank
+        // nearby mobs toward the player, no attack input needed. Radius grows
+        // 25% per rarity. Reloads on the normal petal cycle.
+        {
             for (const slot of this.petalSlots) {
                 if (slot.config?.name !== "Stick") continue;
                 const burst = slot.config.tiers[slot.rarity]?.pullBurst;

@@ -122,10 +122,10 @@ export const petalConfigs = [
     new PetalConfig("Peas", 22.5 * 1.5, 20, 17.5)
         .setSize(1.15)
         .setDescription("A pod of peas. They'll explode if you're not careful."),
-    new PetalConfig("Stick", 22.5 * 1.5, 25, 1)
+    new PetalConfig("Stick", 2.25, 25, 0.5)
         .setSize(1.25)
         .setHuddles(1)
-        .setPullBurst(300, 36)
+        .setPullBurst([300, 375, 468.8, 585.9, 732.4, 915.5, 1144.4, 1430.5, 1788.1, 2235.2, 2794, 3492.5, 4365.6, 5457, 6821.2, 8526.5, 10658.1, 13322.7, 16653.3, 20816.7, 26020.9, 32526.1, 40657.6, 50822, 63527.5, 79409.3, 99261.7, 124077.1, 155096.4, 193870.5], 36)
         .setDescription("Attack to use up a stick and yank nearby mobs toward you."),
     new PetalConfig("Scorpion Missile.projectile", 22.5 * 100, 0.001, 0.0005)
         .setPoison(0.0001, 5)
