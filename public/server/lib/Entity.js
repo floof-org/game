@@ -1944,7 +1944,6 @@ export class Player extends Entity {
         this.moveStrength = 0;
         this.attack = false;
         this.defend = false;
-        this._wasAttacking = false;
 
         this.petalRotation = 0;
         // Per-tick petal spin speed. Faster petals raise it through extraRadians
@@ -2126,9 +2125,9 @@ export class Player extends Entity {
         this.rotationSpeed = Math.abs(Math.max(-maxRotationStep, Math.min(this.petalRotation - (this.lastPetalRotation ?? this.petalRotation), maxRotationStep)) || 0.125 * spin);
         this.lastPetalRotation = this.petalRotation;
 
-        // Stick pull burst: pressing attack consumes one live Stick and yanks
-        // nearby mobs toward the player. Reloads on the normal petal cycle.
-        if (this.attack && !this._wasAttacking) {
+        // Stick pull burst: while attacking, each reloaded Stick is consumed
+        // to yank nearby mobs toward the player. Reloads on the normal cycle.
+        if (this.attack) {
             for (const slot of this.petalSlots) {
                 if (slot.config?.name !== "Stick") continue;
                 const burst = slot.config.tiers[slot.rarity]?.pullBurst;
@@ -2157,7 +2156,6 @@ export class Player extends Entity {
                 break;
             }
         }
-        this._wasAttacking = this.attack;
     }
 
     destroy() {
