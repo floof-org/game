@@ -1572,6 +1572,7 @@ export default class Client {
                 if (craftResult) {
                     accounts.saveClient(this);
                     announceCraft(this, craftResult);
+                    this.syncInventoryExact();
                 }
                 break;
         }
@@ -1923,6 +1924,7 @@ export default class Client {
                     if (!target.inventory[rarity.name]) target.inventory[rarity.name] = {};
                     target.inventory[rarity.name][petalIndex] = (target.inventory[rarity.name][petalIndex] || 0) + amount;
                     accounts.saveClient(target);
+                    target.syncInventoryExact();
 
                     const label = amount === 1 ? "" : ` x${amount}`;
 
@@ -4506,9 +4508,50 @@ if (commandCheck("/pity")) {
         this.terminate();
     }
 
+    // Sends the full inventory with exact Float64 counts, so stacks above the
+    // legacy Uint16 limit of 65535 arrive intact. Matches the
+    // UNUSED_INVENTORY_UPDATE layout both frontends already parse.
+    syncInventoryExact() {
+        const entries = [];
+
+        tiers.forEach((tier, tierIndex) => {
+            const petals = this.inventory[tier.name];
+            if (!petals) return;
+
+            for (const id of Object.keys(petals)) {
+                const amount = petals[id];
+                if (!(amount > 0)) continue;
+                entries.push([tierIndex, parseInt(id), amount]);
+            }
+        });
+
+        const writer = new Writer(true);
+        writer.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+        writer.setUint16(this.id);
+        writer.setUint8(CLIENT_BOUND.UNUSED_INVENTORY_UPDATE);
+        writer.setUint16(entries.length);
+
+        for (const [tierIndex, petalId, amount] of entries) {
+            writer.setUint8(tierIndex);
+            writer.setUint16(petalId);
+            writer.setFloat64(amount);
+        }
+
+        state.router.postMessage(writer.build());
+    }
+
     worldUpdate() {
         if (!this.verified) {
             return;
+        }
+
+        // Exact inventory sync (Float64 amounts, no 65535 cap). Both production
+        // and current frontends already read packet 110; the legacy Uint16
+        // fields below stay untouched for compatibility.
+        const now = performance.now();
+        if (now - (this.__lastInvSync ?? 0) >= 1000) {
+            this.__lastInvSync = now;
+            this.syncInventoryExact();
         }
 
         if (this.body !== null) {
@@ -4593,7 +4636,9 @@ if (commandCheck("/pity")) {
             writer.setUint16(petalIds.length);
             petalIds.forEach(id => {
                 writer.setUint16(parseInt(id));
-                writer.setUint16(petals[id]);
+                // Clamped: the exact count arrives through packet 110 below.
+                // Without the clamp an over-large count wraps modulo 65536.
+                writer.setUint16(Math.min(65535, petals[id]));
             });
         });
 
