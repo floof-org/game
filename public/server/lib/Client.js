@@ -39,7 +39,7 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/info", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/give", "/addall", "/remove", "/craft", "/pity", "/online",
+    "/give", "/addall", "/remove", "/craft", "/pity", "/online", "/saveall",
     "/mute", "/kick", "/ban", "/unban", "/unmute"
 ]);
 
@@ -1687,6 +1687,7 @@ export default class Client {
                 "/give [player] [petal] [rarity] <amount> - Gives a player a petal. Petal names may omit spaces (e.g. firemissile). Amount defaults to 1.",
                 "/remove [rarity] <petal> <amount> - Removes petals of the given rarity from your own inventory. Omit the petal to remove every petal of that rarity. Amount defaults to 1.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
+                "/saveall - Saves every online player's account right now.",
                 "/kick [player] - Kicks a player from the game.",
                 "/mute [player] [seconds] - Mutes a player. 0 is permanent, max 30 days.",
                 "/unmute [player] - Removes a player's mute.",
@@ -1878,6 +1879,21 @@ export default class Client {
                 this.systemMessage(`Unbanned ${target.playerName}.`, "#55ff55");
             })();
 
+            return;
+        }
+
+        // /saveall
+        if (commandCheck("/saveall")) {
+            if (!requireOwner()) return;
+
+            let count = 0;
+            for (const client of state.clients.values()) {
+                if (!client?.verified) continue;
+                accounts.saveClient(client);
+                count++;
+            }
+
+            this.systemMessage(`Saved ${count} account${count === 1 ? "" : "s"}.`, "#55ff55");
             return;
         }
 
