@@ -35,6 +35,32 @@ const tripsFilter = message => patterns.some(p => p.test(message));
 
 const RARITY_ORDER = tiers.map(tier => tier.name);
 
+// Converts legacy object-form craft pity data into per-petal arrays.
+// Dropped during the WhiteHole migration while two call sites remained,
+// which crashed the server for affected players. Ported back verbatim.
+function craftAttemptsToArray(data) {
+    if (!data) return {};
+    const result = {};
+    for (const rarity in data) {
+        const bucket = data[rarity];
+        const arr = new Array(128);
+        if (typeof bucket === "number") {
+            if (bucket > 0) arr[10] = bucket;
+        }
+        else if (bucket && typeof bucket === "object") {
+            for (const id in bucket) {
+                const i = Number(id);
+                const val = Number(bucket[id]) || 0;
+                if (Number.isFinite(i) && i >= 0 && i < 128 && val > 0) {
+                    arr[i] = val;
+                }
+            }
+        }
+        result[rarity] = arr;
+    }
+    return result;
+}
+
 const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/info", "/rarities", "/drops",
@@ -3872,6 +3898,11 @@ if (commandCheck("/pity")) {
                                             tiers[nextRarityIndex].color
                                         );
                                     }
+
+                                } catch (err) {
+
+                                    console.error("Craft command failed:", err);
+                                    this.systemMessage("Craft failed due to an internal error.", "#DE1F1F");
 
                                 } finally {
 
