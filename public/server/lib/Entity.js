@@ -15,6 +15,75 @@ function rollShiny(rule, index) {
     return rule.index;
 }
 
+// Mobs that a Ruby summon must never copy, migrated from WhiteHole.js.
+const BLOCKED_RUBY_SUMMONS = new Set([
+    "Queen Ant Egg",
+    "Termite Overmind Egg",
+    "Queen Fire Ant Egg",
+    "Queen Ant",
+    "Queen Fire Ant",
+    "Termite Overmind",
+    "Fire Ant Hole",
+    "Termite Mound",
+    "Fire Ant Egg",
+    "Ant Egg",
+    "Termite Egg",
+    "Desert Centipede",
+    "Evil Desert Centipede",
+    "Ant Hole",
+    "Beetle Hole",
+    "Beetle Pod",
+    "Puddle",
+    "Desert Shrub"
+]);
+
+// Maps a killer's Ruby tier and the dead mob's rarity to the summon rarity,
+// or null when no summon applies. Migrated from WhiteHole.js.
+function getRubySummonRarity(rubyTier, mobRarity, config) {
+    const data = config?.rubySummonTiers?.[rubyTier];
+    if (!data) return null;
+    if (mobRarity < data.min) return null;
+    if (mobRarity >= data.max) return data.maxSummon;
+    if (data.map[mobRarity] !== undefined) return data.map[mobRarity];
+    return null;
+}
+
+// Spawns a friendly copy of the dead mob for the killer. At most 20 live Ruby
+// summons per client; each expires after its Ruby tier lifetime. Migrated from
+// WhiteHole.js.
+function spawnRubySummon(deadMob, client, rarity) {
+    if (!client || !client.body || client.body.health?.isDead) return;
+    if (BLOCKED_RUBY_SUMMONS.has(deadMob.config?.name)) return;
+
+    const rubyIndex = petalConfigs.findIndex(p => p?.name === "Ruby");
+    const rubySlot = client.slots?.find(slot => slot?.id === rubyIndex);
+    const lifetime = rubyIndex >= 0
+        ? petalConfigs[rubyIndex].rubySummonTiers?.[rubySlot?.rarity ?? 0]?.lifetime
+        : null;
+
+    const x = deadMob.x + (Math.random() - 0.5) * 25;
+    const y = deadMob.y + (Math.random() - 0.5) * 25;
+    const mob = new Mob({ x, y });
+    mob.countsTowardsMobCount = false;
+    mob.parent = client.body;
+    mob.owner = client;
+    mob.isSummon = true;
+    client.rubySummonCount = (client.rubySummonCount ?? 0) + 1;
+    mob.countedSummon = true;
+    mob.team = client.body.team;
+    mob.friendly = true;
+    mob.target = null;
+    mob.givesXP = false;
+    mob.define(deadMob.config, rarity);
+    mob.x = x;
+    mob.y = y;
+    if (mob.lastGoodPosition) {
+        mob.lastGoodPosition.x = x;
+        mob.lastGoodPosition.y = y;
+    }
+    if (lifetime) mob.summonExpireAt = performance.now() + lifetime;
+}
+
 export class HealthComponent {
     constructor(x) {
         this.health = x;
@@ -922,6 +991,54 @@ export class Entity {
                         otherDamageDone += other.damage * other.extraDamage.multiplier;
                     }
 
+                    // Gemstone combat bonuses migrated from WhiteHole.js: Diamond
+                    // reduces incoming damage while Blood Leaf and Shiny Wing add
+                    // bonus damage to their own petals.
+                    const ownerClientOf = entity => entity.player?.client ?? entity.parent?.client ?? entity.client ?? null;
+                    const hasPetalEquipped = (client, name) => {
+                        const index = petalConfigs.findIndex(p => p?.name === name);
+                        if (index < 0) return false;
+                        return client?.slots?.some(slot => slot?.id === index) ?? false;
+                    };
+                    const getDiamondReduction = entity => {
+                        const client = ownerClientOf(entity);
+                        if (!client || !hasPetalEquipped(client, "Diamond")) return 0;
+                        return globalThis.DIAMOND_TABLE?.[entity.rarity] ?? 0;
+                    };
+                    const getBloodLeafBonus = entity => {
+                        if (entity.config?.name !== "Blood Leaf") return 0;
+                        const client = ownerClientOf(entity);
+                        if (!client || !hasPetalEquipped(client, "Blood Leaf")) return 0;
+                        const data = globalThis.BLOOD_LEAF_TABLE?.[entity.rarity];
+                        if (!data) return 0;
+                        const kills = client.bloodLeafKills?.[entity.rarity] ?? 0;
+                        return Math.min(kills * data.perKill, data.cap);
+                    };
+                    const getShinyWingBonus = entity => {
+                        if (entity.config?.name !== "Shiny Wing") return 0;
+                        const client = ownerClientOf(entity);
+                        if (!client || !hasPetalEquipped(client, "Shiny Wing")) return 0;
+                        const data = globalThis.SHINY_WING_TABLE?.[entity.rarity];
+                        if (!data) return 0;
+                        const baseSpeed = 0.125;
+                        const speed = entity.parent?.rotationSpeed ?? entity.player?.rotationSpeed ?? baseSpeed;
+                        const normalized = Math.max(0, (speed - baseSpeed) / baseSpeed);
+                        return Math.min(normalized * data.perSpeed, data.cap);
+                    };
+
+                    otherDamageDone *= (1 - getDiamondReduction(this));
+                    thisDamageDone *= (1 - getDiamondReduction(other));
+
+                    const thisLeafBonus = getBloodLeafBonus(this);
+                    const otherLeafBonus = getBloodLeafBonus(other);
+                    if (thisLeafBonus > 0) thisDamageDone *= (1 + thisLeafBonus);
+                    if (otherLeafBonus > 0) otherDamageDone *= (1 + otherLeafBonus);
+
+                    const thisWingBonus = getShinyWingBonus(this);
+                    const otherWingBonus = getShinyWingBonus(other);
+                    if (thisWingBonus > 0) thisDamageDone *= (1 + thisWingBonus);
+                    if (otherWingBonus > 0) otherDamageDone *= (1 + otherWingBonus);
+
                     // track the damage actually dealt; damage fully blocked by armor / damageReduction must not count toward loot
                     let thisDealt = 0,
                         otherDealt = 0;
@@ -1692,6 +1809,9 @@ export class Player extends Entity {
         super.destroy();
 
         if (this.client !== null) {
+            // Blood Leaf kill stacks reset on death, migrated from WhiteHole.js.
+            this.client.bloodLeafKills = {};
+
             const allDamagers = this.getTopDamagers(Infinity);
 
             // strict looting: anyone who dealt under 5% of max health does not count as the killer, and
@@ -2377,6 +2497,11 @@ export class Mob extends Entity {
             return;
         }
 
+        if (this.summonExpireAt && performance.now() >= this.summonExpireAt) {
+            this.destroy();
+            return;
+        }
+
         if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.health.ratio <= .8 ? 120_000 : 30_000)) < performance.now()) {
             this.damagedBy = []
             this.destroy();
@@ -2734,6 +2859,11 @@ export class Mob extends Entity {
     }
 
     destroy() {
+        if (this.countedSummon && this.owner) {
+            this.owner.rubySummonCount = Math.max(0, (this.owner.rubySummonCount ?? 1) - 1);
+            this.countedSummon = false;
+        }
+
         if (this.deathEvent) {
             this.deathEvent();
         }
@@ -2802,6 +2932,35 @@ export class Mob extends Entity {
                     for (let i = 0; i < output.length; i++) {
                         output[i].x += Math.cos(i / output.length * Math.PI * 2) * 30;
                         output[i].y += Math.sin(i / output.length * Math.PI * 2) * 30;
+                    }
+
+                    // Blood Leaf kill counting migrated from WhiteHole.js: each
+                    // equipped leaf only counts mobs at or above its required rarity.
+                    const leafIndex = petalConfigs.findIndex(p => p?.name === "Blood Leaf");
+                    if (leafIndex >= 0) {
+                        const leaves = client.slots?.filter(slot => slot?.id === leafIndex) ?? [];
+                        for (const leaf of leaves) {
+                            const leafRarity = leaf.rarity ?? 0;
+                            const req = petalConfigs[leafIndex].minimumMobRarityForBloodLeafDamage?.[leafRarity] ?? 500;
+                            if (this.rarity < req) continue;
+                            if (!client.bloodLeafKills || typeof client.bloodLeafKills !== "object") {
+                                client.bloodLeafKills = {};
+                            }
+                            client.bloodLeafKills[leafRarity] = (client.bloodLeafKills[leafRarity] ?? 0) + 1;
+                        }
+                    }
+
+                    // Ruby on-kill summon migrated from WhiteHole.js.
+                    const rubyIndex = petalConfigs.findIndex(p => p?.name === "Ruby");
+                    const rubySlot = rubyIndex >= 0 ? client.slots?.find(slot => slot?.id === rubyIndex) : null;
+                    if (rubySlot) {
+                        const summonRarity = getRubySummonRarity(rubySlot.rarity, this.rarity, petalConfigs[rubyIndex]);
+                        if (summonRarity !== null && !client.body?.health?.isDead) {
+                            if (client.rubySummonCount == null) client.rubySummonCount = 0;
+                            if (client.rubySummonCount < 20) {
+                                spawnRubySummon(this, client, summonRarity);
+                            }
+                        }
                     }
                 }
 

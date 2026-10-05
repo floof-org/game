@@ -1,4 +1,4 @@
-import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig } from "../../lib/protocol.js";
+import { tiers as _tiers, Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig, SUMMON_STATS } from "../../lib/protocol.js";
 import { DROP_TABLES } from "./dropTables.js";
 export const tiers = structuredClone(_tiers);
 export { Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig };
@@ -201,7 +201,7 @@ export const petalConfigs = [
         .setDescription("What an oddity! It's said to reflect a portion of incoming conventional damage. Does not stack."),
     new PetalConfig("Jelly", 23, 9, 7)
         .setDensity(1.5)
-        .setDescription("Super not bouncy! Does not knocks all your enemies around. Very useless."),
+        .setDescription("Super bouncy! Knocks all your enemies around."),
     new PetalConfig("Yggdrasil", 4000, Infinity, 0)
         .setDeathDefying(.15, .5)
         .setHuddles(1)
@@ -533,7 +533,7 @@ export const petalConfigs = [
         .addAction("beginPath")
         .addAction("circle", 0, 0, 1).addAction("fill", "#C69B2E").addAction("stroke", "#F5bF39", .2, 0).addAction("beginPath").addAction("arc", 0, 0, .4, Math.PI / 4, Math.PI * 1.8).addAction("stroke", "#FFE783", .25, 0).addAction("beginPath").addAction("line", .05, .4, -.1, .6).addAction("line", -.05, -.4, .1, -.6).addAction("stroke", "#FFE783", .2, 0).addAction("closePath")
         ).setDescription("Coin."),
-    new PetalConfig("Blood Light", 10.155, 20, 52).setIcon(.6, [1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], "Light", 0).setBloodLight(0.01).setMulti([1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], 0)
+    new PetalConfig("Blood Light", 10.155, 20, 52).setIcon(.6, [1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], "Light", 0).setBloodLight(0.01).setMulti([1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], 0, true)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#a82f2f", .4, .2)
         ).setDescription(["Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 0.05", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 0.31", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.04", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 3.33", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 8.32", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 33.28", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 249.6", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.25k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 10.48k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 53.91k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 431.31k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 2.59m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 38.82m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 139.74m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.4b", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 8.38b"]),
     new PetalConfig("Fire Missile", 15.5, 6, 150.5).setIcon(1, 1, "Missile", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setPoison(41.5, 5).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 0)
@@ -542,7 +542,7 @@ export const petalConfigs = [
     new PetalConfig("Shovel", 30, 1, 1).setIcon(.8, 1, "Shovel", -45)
         .setDrawing(new Drawing().addAction("beginPath").addAction("line", -.65, 0, 1, 0).addAction("stroke", "#614c39", .225, 0).addAction("beginPath").addAction("moveTo", .6, .65).addAction("lineTo", .6, -.65).addAction("lineTo", 1.35, -.55).addAction("lineTo", 1.7, -.15).addAction("lineTo", 1.7, .15).addAction("lineTo", 1.35, .55).addAction("lineTo", .6, .65).addAction("closePath").addAction("paint", "#c7ccd1", .225, .2).addAction("beginPath").addAction("moveTo", .6, -.1).addAction("lineTo", 1.2, 0).addAction("lineTo", .6, .1).addAction("closePath").addAction("fill", "#9fa3a7").addAction("beginPath").addAction("moveTo", -1.2, .35).addAction("lineTo", -1, .35).addAction("quadraticCurveTo", -.35, 0, -1, -.35).addAction("lineTo", -1.2, -.35).addAction("closePath").addAction("stroke", "#4a3f35", .252, 0)
         ).setDescription("Disables colliding with mobs for 5s, cooldown of 70s after using. Note: Renders kind of broken and buggy but main logic actually works."),
-    new PetalConfig("Blood Leaf", 12.5, 18, 35.5).setSize(2)
+    new PetalConfig("Blood Leaf", 12.5, 18, 35.5).setSize(2).setIcon(1, 1, "Leaf", 0)
         .setTierMinimumMobRarityForBloodLeafDamage(0, 0)
         .setTierMinimumMobRarityForBloodLeafDamage(1, 0)
         .setTierMinimumMobRarityForBloodLeafDamage(2, 0)
@@ -563,7 +563,7 @@ export const petalConfigs = [
         .setTierMinimumMobRarityForBloodLeafDamage(17, 22)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", -.531, .801).addAction("lineTo", -.634, .534).addAction("lineTo", -.688, .286).addAction("lineTo", -.692, .057).addAction("lineTo", -.647, -.153).addAction("lineTo", -.552, -.343).addAction("lineTo", -.408, -.514).addAction("lineTo", -.214, -.665).addAction("lineTo", .030, -.798).addAction("lineTo", .323, -.911).addAction("lineTo", .666, -1.005).addAction("lineTo", .713, -.653).addAction("lineTo", .723, -.338).addAction("lineTo", .696, -.062).addAction("lineTo", .586, .280).addAction("lineTo", .393, .537).addAction("lineTo", .116, .707).addAction("lineTo", -.245, .792).addAction("lineTo", -.531, .801).addAction("paint", "#e03f3f", .2, .2).addAction("closePath").addAction("beginPath").addAction("moveTo", -.558, .842).addAction("lineTo", -.727, 1.096).addAction("stroke", "#e03f3f", .2, .2).addAction("closePath").addAction("beginPath").addAction("moveTo", -.272, .410).addAction("lineTo", -.221, .302).addAction("lineTo", -.167, .198).addAction("lineTo", -.110, .095).addAction("lineTo", -.051, -.005).addAction("lineTo", .012, -.102).addAction("lineTo", .077, -.197).addAction("lineTo", .145, -.289).addAction("lineTo", .215, -.379).addAction("lineTo", .289, -.466).addAction("lineTo", .365, -.551).addAction("stroke", "#e03f3f", .2, .2).addAction("closePath")
         ).setDescription("Each kill with this petal equipped gives extra damage bonus, resets when dying. Check /petalinfo [rarity] bloodleaf"),
-    new PetalConfig("Shiny Wing", 7.125, 22, 34).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setWingMovement(true).setSize(2.4)
+    new PetalConfig("Shiny Wing", 7.125, 22, 34).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], "Wing", 0).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], 1, true).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setWingMovement(true).setSize(2.4)
         .setDrawing(new Drawing().addAction("rotate", 45).addAction("beginPath").addAction("arc", 0, 0, 1, -0.63, 3.7699111843077517).addAction("quadraticCurveTo", 0, .6, .77, -.63).addAction("closePath").addAction("paint", "#fff991", .2, .2)).setDescription("It comes and it goes, bonus damage depending on how fast its going, check /petalinfo [rarity] shinywing"),
     new PetalConfig("Uranium", 225, 1, 9)
         .setSize(1.5)
@@ -715,7 +715,7 @@ export const petalConfigs = [
         .addAction("stroke", "#525252", 0.2, 0)
         .addAction("closePath")
         ).setDescription("[object null object]"),
-    new PetalConfig("Pomegranate", 10.125, 6, 44).setIcon(.85, 1, "Pomegranate", -45).setSize(1.25).setPomegranate(0.005)
+    new PetalConfig("Pomegranate", 10.125, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setIcon(.85, 1, "Pomegranate", -45).setSize(1.25).setPomegranate(0.005)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", .75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, .75, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", -.75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, -.75, .75).addAction("paint", "#e52669", .25, .2)
         ).setDescription("A deadly 4 in 1 deal. Check /petalinfo [rarity] pomegranate"),
     new PetalConfig("projectile.pomegranate", 2250, 6, 44).setPomegranate(0.005)
@@ -1935,3 +1935,91 @@ export const randomPossiblePetal = (rarity) => {
 
     return possible[Math.random() * possible.length | 0];
 }
+
+// Shared lookup tables for the info commands. Values are migrated from
+// WhiteHole.js so /petalinfo and /info report the same numbers there.
+globalThis._itemList = petalConfigs;
+globalThis._mobList = mobConfigs;
+globalThis.RARITY_ORDER = tiers.slice(0, 30).map(tier => tier.name);
+globalThis.SUMMON_STATS = SUMMON_STATS;
+globalThis.PETAL_TIER_TABLE = {
+    0: { health: 1, damage: 1 },
+    1: { health: 2, damage: 2 },
+    2: { health: 4, damage: 4 },
+    3: { health: 8, damage: 8 },
+    4: { health: 16, damage: 16 },
+    5: { health: 32, damage: 32 },
+    6: { health: 160, damage: 160 },
+    7: { health: 480, damage: 480 },
+    8: { health: 2880, damage: 2880 },
+    9: { health: 17280, damage: 17280 },
+    10: { health: 103680, damage: 103680 },
+    11: { health: 1244160, damage: 1244160 },
+    12: { health: 14929920, damage: 14929920 },
+    13: { health: 89579520, damage: 89579520 },
+    14: { health: 1074954240, damage: 1074954240 },
+    15: { health: 6449725440, damage: 6449725440 },
+    16: { health: 154793410560, damage: 154793410560 },
+    17: { health: 1857520926720, damage: 1857520926720 },
+    18: { health: 22290251120640, damage: 22290251120640 },
+    19: { health: 267483013447680, damage: 267483013447680 },
+    20: { health: 161243136000, damage: 161243136000 },
+    21: { health: 1612431360000, damage: 1612431360000 },
+};
+globalThis.BLOOD_LEAF_TABLE = {
+    0: { perKill: 0.00015, cap: 0.075 },
+    1: { perKill: 0.0003, cap: 0.105 },
+    2: { perKill: 0.00045, cap: 0.135 },
+    3: { perKill: 0.0006, cap: 0.165 },
+    4: { perKill: 0.0009, cap: 0.195 },
+    5: { perKill: 0.0012, cap: 0.21 },
+    6: { perKill: 0.0015, cap: 0.24 },
+    7: { perKill: 0.0045, cap: 0.27 },
+    8: { perKill: 0.006, cap: 0.36 },
+    9: { perKill: 0.0067, cap: 0.395 },
+    10: { perKill: 0.0072, cap: 0.432 },
+    11: { perKill: 0.0084, cap: 0.504 },
+    12: { perKill: 0.0096, cap: 0.576 },
+    13: { perKill: 0.0108, cap: 0.648 },
+    14: { perKill: 0.012, cap: 0.72 },
+    15: { perKill: 0.0132, cap: 0.792 },
+    16: { perKill: 0.0332, cap: 1.964 },
+    17: { perKill: 0.0372, cap: 2.392 },
+};
+globalThis.SHINY_WING_TABLE = {
+    0: { perSpeed: 0.01, cap: 0.23 },
+    1: { perSpeed: 0.02, cap: 0.24 },
+    2: { perSpeed: 0.03, cap: 0.25 },
+    3: { perSpeed: 0.04, cap: 0.26 },
+    4: { perSpeed: 0.05, cap: 0.27 },
+    5: { perSpeed: 0.06, cap: 0.28 },
+    6: { perSpeed: 0.07, cap: 0.29 },
+    7: { perSpeed: 0.08, cap: 0.33 },
+    8: { perSpeed: 0.09, cap: 0.35 },
+    9: { perSpeed: 0.1, cap: 0.37 },
+    10: { perSpeed: 0.9, cap: 1.29 },
+    11: { perSpeed: 0.3, cap: 0.81 },
+    12: { perSpeed: 0.4, cap: 0.93 },
+    13: { perSpeed: 0.5, cap: 1.25 },
+    14: { perSpeed: 0.6, cap: 1.67 },
+    15: { perSpeed: 0.8, cap: 2.0 },
+    16: { perSpeed: 1.2, cap: 2.41 },
+    17: { perSpeed: 1.4, cap: 2.61 },
+};
+globalThis.DIAMOND_TABLE = {
+    7: 0.05,
+    8: 0.08,
+    9: 0.12,
+    10: 0.15,
+    11: 0.18,
+    12: 0.21,
+    13: 0.24,
+    14: 0.27,
+    15: 0.30,
+    16: 0.33,
+    17: 0.36,
+};
+globalThis.PETAL_RARITY_SIZES = [
+    30, 50, 100, 130, 140, 150, 160, 170, 180, 190,
+    200, 230, 240, 250, 260, 270, 280, 300,
+];

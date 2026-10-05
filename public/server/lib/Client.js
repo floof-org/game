@@ -27,7 +27,7 @@ const RARITY_ORDER = tiers.map(tier => tier.name);
 
 const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
-    "/mobinfo", "/petalinfo", "/rarities", "/drops",
+    "/mobinfo", "/petalinfo", "/info", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
     "/give", "/addall", "/remove", "/craft", "/pity", "/online",
     "/mute", "/kick", "/ban", "/unban", "/unmute"
@@ -899,6 +899,10 @@ export default class Client {
         this.level = 1;
         this.xp = 1;
 
+        // Blood Leaf kill stacks per petal rarity and live Ruby summon count.
+        this.bloodLeafKills = {};
+        this.rubySummonCount = 0;
+
         this.lastChat = 0;
         this.frownyMessages = 0;
     }
@@ -1599,6 +1603,7 @@ export default class Client {
                 "Note: [text] indicates required, <text> indicates optional.",
                 "/mobinfo [rarity] [mob name] - Shows health, damage and armor of the specified mob and rarity.",
                 "/petalinfo [rarity] [petal name] - Preview the stats of the specified petal and rarity.",
+                "/info [rarity] [gemstone] - Shows gemstone details (ruby, emerald, diamond, uranium, amuletoffire).",
                 "/drops [rarity name] [mob name] - Shows the drop chances for the specified rarity and mob.",
                 "/rarities - Shows all rarities.",
                 "/craft [rarity] <petal> <amount> - Spends 5 of the same petal to roll for 1 petal of the next rarity. Amount defaults to everything you own of that petal.",
@@ -1628,6 +1633,7 @@ export default class Client {
                 "Note: [text] indicates required, <text> indicates optional.",
                 "/mobinfo [rarity] [mob name] - Shows health, damage and armor of the specified mob and rarity.",
                 "/petalinfo [rarity] [petal name] - Preview the stats of the specified petal and rarity.",
+                "/info [rarity] [gemstone] - Shows gemstone details (ruby, emerald, diamond, uranium, amuletoffire).",
                 "/drops [rarity name] [mob name] - Shows the drop chances for the specified rarity and mob.",
                 "/rarities - Shows all rarities."
             ].forEach(cmd => this.systemMessage(cmd, "#ffe65d"));
@@ -2656,7 +2662,7 @@ if (commandCheck("/pity")) {
                                     return;
                                 }
 
-                                const petal = args.slice(rarityTokenCount).join(" ").toLowerCase();
+                                const petal = args.slice(rarityTokenCount).join(" ").toLowerCase().replace(/\s+/g, "");
 
                                 if (!petal) {
                                     this.systemMessage("Invalid petal.", "#ff5e5e");
@@ -3018,6 +3024,291 @@ if (commandCheck("/pity")) {
 
                                 return;
 
+                            }
+
+                            // /info
+                            if (commandCheck("/info")) {
+                                const args = e.substring(5).trim().split(/\s+/).filter(Boolean);
+
+                                if (args.length < 1) {
+                                    this.systemMessage("Usage: /info [rarity] [gemstone (ruby,emerald,diamond,uranium,amuletoffire)]", "#ffe65d");
+                                    return;
+                                }
+
+                                const normalize = str => str.toLowerCase().replace(/\s+/g, "");
+
+                                const formatAmountNoX = n => {
+                                    if (n === 1) return "1";
+                                    const format = (value, suffix) => {
+                                        const rounded = Math.round(value * 10) / 10;
+                                        return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${suffix}`;
+                                    };
+                                    if (n >= 1e12) return format(n / 1e12, "t");
+                                    if (n >= 1e15) return format(n / 1e15, "qd");
+                                    if (n >= 1e18) return format(n / 1e18, "qt");
+                                    if (n >= 1e9) return format(n / 1e9, "b");
+                                    if (n >= 1e6) return format(n / 1e6, "m");
+                                    if (n >= 1e3) return format(n / 1e3, "k");
+                                    return `${n}`;
+                                };
+
+                                const rarityOrder = globalThis.RARITY_ORDER ?? RARITY_ORDER;
+                                const list = globalThis._itemList ?? petalConfigs;
+
+                                let rarityIndex = -1;
+                                let rarityTokenCount = 0;
+
+                                for (let i = args.length; i > 0; i--) {
+                                    const candidate = args.slice(0, i).join(" ");
+                                    const normCandidate = normalize(candidate);
+
+                                    const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
+
+                                    if (index !== -1) {
+                                        rarityIndex = index;
+                                        rarityTokenCount = i;
+                                        break;
+                                    }
+                                }
+
+                                if (rarityIndex === -1 && !isNaN(args[0])) {
+                                    const num = parseInt(args[0]);
+                                    if (rarityOrder[num] !== undefined) {
+                                        rarityIndex = num;
+                                        rarityTokenCount = 1;
+                                    }
+                                }
+
+                                if (rarityIndex === -1) {
+                                    this.systemMessage("Invalid rarity.", "#ff5e5e");
+                                    return;
+                                }
+
+                                const gemstone = args.slice(rarityTokenCount).join(" ").toLowerCase().replace(/\s+/g, "");
+
+                                if (!gemstone) {
+                                    this.systemMessage("Invalid gemstone.", "#ff5e5e");
+                                    return;
+                                }
+
+                                const tier = rarityIndex;
+
+                                // diamond
+                                if (gemstone === "diamond") {
+                                    if (tier < 7) {
+                                        this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const table = globalThis.DIAMOND_TABLE;
+
+                                    if (!table) {
+                                        this.systemMessage("Diamond table not found.", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const reduction = table[tier];
+
+                                    if (reduction === undefined) {
+                                        this.systemMessage(`No data for Diamond tier ${tier}`, "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const percent = (reduction * 100).toFixed(0);
+
+                                    this.systemMessage(
+                                        `Diamond Tier ${tier}: ${percent}% damage reduction`,
+                                        "#00e1ff"
+                                    );
+
+                                    return;
+                                }
+
+                                // emerald
+                                if (gemstone === "emerald") {
+                                    if (tier < 7) {
+                                        this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const EMERALD_INDEX = list?.findIndex(i => i?.name === "Emerald") ?? -1;
+
+                                    if (!list || EMERALD_INDEX < 0) {
+                                        this.systemMessage("Emerald item not found.", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const emerald = list[EMERALD_INDEX];
+
+                                    const base = emerald?.emerald;
+                                    const tierData = emerald?.emeraldTiers?.[tier];
+
+                                    if (!base || !tierData) {
+                                        this.systemMessage(`No data for Emerald tier ${tier}`, "#ff5e5e");
+                                        return;
+                                    }
+
+                                    this.systemMessage(`Emerald Tier ${tier}:`, "#3bedb5");
+                                    this.systemMessage(`- Cooldown: ${base.cooldown}ms`, "#FFFFFF");
+                                    this.systemMessage(`- Max clones: ${base.maxClones}`, "#FFFFFF");
+                                    this.systemMessage(`- Minimum mob rarity required: ${tierData.min}`, "#FFFFFF");
+                                    this.systemMessage(`- Maximum mob rarity (capped): ${tierData.max}`, "#FFFFFF");
+
+                                    return;
+                                }
+
+                                // ruby
+                                if (gemstone === "ruby") {
+                                    if (tier < 7) {
+                                        this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const RUBY_INDEX = list?.findIndex(i => i?.name === "Ruby") ?? -1;
+
+                                    if (!list || RUBY_INDEX < 0) {
+                                        this.systemMessage("Ruby item not found.", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const ruby = list[RUBY_INDEX];
+                                    const tierData = ruby?.rubySummonTiers?.[tier];
+
+                                    if (!tierData) {
+                                        this.systemMessage(`No data for Ruby tier ${tier}`, "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const lifetime = tierData.lifetime ?? 0;
+                                    const map = tierData.map ?? {};
+
+                                    this.systemMessage(`Ruby Tier ${tier}:`, "#ff4b5c");
+                                    this.systemMessage(
+                                        `- Summon Lifetime: ${+(lifetime / 1000).toFixed(3)}s`,
+                                        "#FFFFFF"
+                                    );
+
+                                    const entries = Object.entries(map)
+                                        .map(([k, v]) => [parseInt(k), v]);
+
+                                    if (tierData.max !== null && tierData.maxSummon !== null) {
+                                        const alreadyExists = entries.some(([k]) => k === tierData.max);
+
+                                        if (!alreadyExists) {
+                                            entries.push([tierData.max, tierData.maxSummon]);
+                                        }
+                                    }
+
+                                    entries.forEach(([mobRarity, summonRarity]) => {
+                                        const fromName = rarityOrder[mobRarity] ?? mobRarity;
+                                        const toName = rarityOrder[summonRarity] ?? summonRarity;
+
+                                        const fromColor = tiers[mobRarity]?.color || "#FFFFFF";
+                                        const toColor = tiers[summonRarity]?.color || "#FFFFFF";
+
+                                        this.systemMessage(`${fromName} Mob`, fromColor);
+                                        this.systemMessage(`   ↓ becomes ↓`, "#AAAAAA");
+                                        this.systemMessage(`${toName} Summon`, toColor);
+                                    });
+
+                                    return;
+                                }
+
+                                // uranium
+                                if (gemstone === "uranium") {
+                                    if (tier < 7) {
+                                        this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const URANIUM_INDEX = list?.findIndex(i => i?.name === "Uranium") ?? -1;
+
+                                    if (!list || URANIUM_INDEX < 0) {
+                                        this.systemMessage("Uranium item not found.", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const uranium = list[URANIUM_INDEX];
+                                    const tierData = uranium?.uraniumTiers?.[tier];
+
+                                    if (!tierData) {
+                                        this.systemMessage(`No data for Uranium tier ${tier}`, "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const duration = tierData.duration ?? 0;
+                                    const min = tierData.min ?? 0;
+                                    const max = tierData.max ?? 0;
+
+                                    const minName = rarityOrder[min] ?? min;
+                                    const maxName = rarityOrder[max] ?? max;
+
+                                    this.systemMessage(`Uranium Tier ${tier}:`, "#7dff7d");
+                                    this.systemMessage(`- Freeze Duration: ${duration}ms`, "#FFFFFF");
+                                    this.systemMessage(`- Minimum mob rarity required: ${minName}`, tiers[min]?.color || "#FFFFFF");
+                                    this.systemMessage(`- Maximum mob rarity (capped): ${maxName}`, tiers[max]?.color || "#FFFFFF");
+
+                                    return;
+                                }
+
+                                // amulet of fire
+                                if (gemstone === "amuletoffire" || gemstone === "fire.aura" || gemstone === "fireaura") {
+                                    if (tier < 11) {
+                                        this.systemMessage("Amulets must be Unique+ (11)", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    if (!list) {
+                                        this.systemMessage("Item list not found.", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const fireAura = list.find(i => i?.name === "fire.aura");
+
+                                    if (!fireAura) {
+                                        this.systemMessage("fire.aura not found.", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const baseDamage =
+                                        fireAura?.damage ??
+                                        fireAura?.dmg ??
+                                        fireAura?.auraDamage;
+
+                                    if (baseDamage == null) {
+                                        this.systemMessage("Base aura damage not found.", "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const scale = globalThis.PETAL_TIER_TABLE?.[tier]?.damage;
+
+                                    if (scale == null) {
+                                        this.systemMessage(`No petal scaling data for tier ${tier}`, "#ff5e5e");
+                                        return;
+                                    }
+
+                                    const scaledDamage = baseDamage * scale;
+
+                                    const sizes = globalThis.PETAL_RARITY_SIZES;
+                                    const sizeScale = sizes[tier] ?? sizes[sizes.length - 1];
+
+                                    const formattedDamage = formatAmountNoX(scaledDamage);
+                                    const formattedSize = formatAmountNoX(sizeScale);
+
+                                    this.systemMessage(`Amulet of Fire Tier ${tier}:`, "#ffaa00");
+                                    this.systemMessage(
+                                        `- Aura Damage: ${formattedDamage}`,
+                                        "#ff6a00"
+                                    );
+                                    this.systemMessage(
+                                        `- Aura Size: ${formattedSize}`,
+                                        "#7ad7ff"
+                                    );
+                                    return;
+                                }
+
+                                this.systemMessage(`Unknown gemstone: ${gemstone}`, "#ff5e5e");
+                                return;
                             }
 
                             // disable join announcements
