@@ -575,8 +575,8 @@ export class PetalSlot {
 
                         // The summon takes its rarity from the config table rather than from the summoning
                         // petal, which is what every setSpawnable call already describes. Mob.define clamps
-                        // it to the mob's own tier count. The health and damage multipliers below are
-                        // deliberate summon buffs, not part of the rarity's stats; both default per setSpawnable.
+                        // it to the mob's own tier count. Health is multiplied by 6 and damage is left
+                        // untouched, matching WhiteHole.js; both multipliers default per setSpawnable.
                         const spawnRarity = spawnable.rarity;
 
                         const fireAmuletIndex = petalIDOf("Amulet of Fire");
