@@ -1,4 +1,4 @@
-import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, tiers, WEARABLES } from "../../lib/protocol.js";
+import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
 import state from "./state.js";
@@ -436,7 +436,7 @@ export class PetalSlot {
 
                         newPet.config = conf;
                         newPet.rarity = this.rarity
-                        newPet.size = conf.sizeRatio * Math.pow(1.3, this.rarity);
+                        newPet.size = (RARITY_TABLE[this.rarity]?.size ?? 1) * (conf.tiers?.[this.rarity]?.sizeRatio ?? conf.sizeRatio);
                         newPet.health.set(tier.health);
                         newPet.damage = tier.damage;
                         newPet.speed = 0;

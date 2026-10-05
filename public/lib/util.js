@@ -163,6 +163,9 @@ export function formatLargeNumber(number, type = 0) {
         return r.toLocaleString();
     }
     const suffixes = [
+        ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
+        ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
+        ["Ud", 1e36], ["Dc", 1e33],
         ["Nv", 1e30], ["Oc", 1e27], ["Sp", 1e24], ["Sx", 1e21],
         ["Qt", 1e18], ["Qd", 1e15], ["t", 1e12], ["b", 1e9], ["m", 1e6], ["k", 1e3]
     ];

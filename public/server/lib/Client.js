@@ -149,6 +149,9 @@ function resolveModerationTarget(playerName) {
 function formatNumber(num) {
     const abs = Math.abs(num);
     const suffixes = [
+        ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
+        ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
+        ["Ud", 1e36], ["Dc", 1e33],
         ["Nv", 1e30], ["Oc", 1e27], ["Sp", 1e24], ["Sx", 1e21],
         ["Qt", 1e18], ["Qd", 1e15], ["t", 1e12], ["b", 1e9], ["m", 1e6], ["k", 1e3]
     ];
@@ -171,6 +174,16 @@ function formatAmount(n) {
         return ` x${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${suffix}`;
     };
 
+    if (n >= 1e60) return format(n / 1e60, "Nd");
+    if (n >= 1e57) return format(n / 1e57, "Od");
+    if (n >= 1e54) return format(n / 1e54, "Spd");
+    if (n >= 1e51) return format(n / 1e51, "Sxd");
+    if (n >= 1e48) return format(n / 1e48, "Qid");
+    if (n >= 1e45) return format(n / 1e45, "Qad");
+    if (n >= 1e42) return format(n / 1e42, "Td");
+    if (n >= 1e39) return format(n / 1e39, "Dd");
+    if (n >= 1e36) return format(n / 1e36, "Ud");
+    if (n >= 1e33) return format(n / 1e33, "Dc");
     if (n >= 1e30) return format(n / 1e30, "Nv");
     if (n >= 1e27) return format(n / 1e27, "Oc");
     if (n >= 1e24) return format(n / 1e24, "Sp");
@@ -2418,6 +2431,9 @@ if (commandCheck("/pity")) {
                                 const formatNumber = num => {
                                     const abs = Math.abs(num);
                                     const suffixes = [
+                                        ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
+                                        ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
+                                        ["Ud", 1e36], ["Dc", 1e33],
                                         ["Nv", 1e30],
                                         ["Oc", 1e27],
                                         ["Sp", 1e24],
@@ -2542,6 +2558,9 @@ if (commandCheck("/pity")) {
                                 const formatNumber = num => {
                                     const abs = Math.abs(num);
                                     const suffixes = [
+                                        ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
+                                        ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
+                                        ["Ud", 1e36], ["Dc", 1e33],
                                         ["Nv", 1e30],
                                         ["Oc", 1e27],
                                         ["Sp", 1e24],
@@ -2657,6 +2676,9 @@ if (commandCheck("/pity")) {
                                 const formatNumber = num => {
                                     const abs = Math.abs(num);
                                     const suffixes = [
+                                        ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
+                                        ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
+                                        ["Ud", 1e36], ["Dc", 1e33],
                                         ["Nv", 1e30],
                                         ["Oc", 1e27],
                                         ["Sp", 1e24],
