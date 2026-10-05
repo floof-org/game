@@ -136,7 +136,7 @@ globalThis.PETAL_TIER_TABLE = {
     14: { health: 268738560, damage: 268738560 },
     15: { health: 1612431360, damage: 1612431360 },
     16: { health: 16124313600, damage: 16124313600 },
-    17: { health: 16124313600, damage: 16124313600 },
+    17: { health: 193491763200, damage: 193491763200 },
     18: { health: 161243136000, damage: 161243136000 },
     19: { health: 161243136000, damage: 161243136000 },
     20: { health: 161243136000, damage: 161243136000 },
