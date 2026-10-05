@@ -3499,6 +3499,13 @@ if (commandCheck("/pity")) {
 
                                     const rarityOrder = Object.keys(craftChances);
 
+                                    const formatChance = n => {
+                                        if (n >= 1) return n.toFixed(2).replace(/\.?0+$/, "");
+                                        if (n >= 0.01) return n.toFixed(3).replace(/\.?0+$/, "");
+                                        if (n >= 0.001) return n.toFixed(4).replace(/\.?0+$/, "");
+                                        return n.toFixed(6).replace(/\.?0+$/, "");
+                                    };
+
                                     this.craftAttempts ??= {};
 
                                     for (const r of rarityOrder) {
