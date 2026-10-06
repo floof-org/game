@@ -259,6 +259,10 @@ export class PetalSlot {
             this.player.aggroLevel += this.rarity;
         }
 
+        if (this.config.petalAttractsAggro) {
+            this.player.aggroLevel += this.rarity;
+        }
+
         if (this.player.client) {
             this.player.client.camera.lightingBoost += this.config.extraLighting;
         }
@@ -359,6 +363,10 @@ export class PetalSlot {
         }
 
         if (this.config.attractsAggro) {
+            this.player.aggroLevel -= this.rarity;
+        }
+
+        if (this.config.petalAttractsAggro) {
             this.player.aggroLevel -= this.rarity;
         }
 
