@@ -5,6 +5,7 @@ import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetal
 import { colors, xpForLevel } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY } from "./CraftManager.js";
+import { SQUADS, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -66,6 +67,8 @@ const VALID_COMMANDS = new Set([
     "/mobinfo", "/petalinfo", "/info", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
     "/give", "/addall", "/remove", "/craft", "/pity", "/online", "/saveall",
+    "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
+    "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
     "/mute", "/kick", "/ban", "/unban", "/unmute"
 ]);
 
@@ -984,6 +987,16 @@ export default class Client {
                 if (count > 0) this.craftAttempts[rarity][id] = count;
             }
         }
+        // Restore the lowercase per-petal pity arrays used by chat crafting.
+        // They were saved but skipped above (keys differ in case), so pity
+        // silently reset on every rejoin.
+        for (const rarity in attempts) {
+            if (rarity in this.craftAttempts) continue;
+            const converted = craftAttemptsToArray({ [rarity]: attempts[rarity] })[rarity];
+            if (Array.isArray(converted) && converted.some(v => v > 0)) {
+                this.craftAttempts[rarity] = converted;
+            }
+        }
 
         this.addXP(0);
 
@@ -1684,6 +1697,7 @@ export default class Client {
                 "/online - Shows all currently online players.",
                 "/die - Kills you.",
                 "/infocommands - Shows all related commands that give info of something.",
+                "/squadcommands - Shows all squad commands.",
                 "/admincommands - Shows all admin commands."
             ].forEach(cmd => this.systemMessage(cmd, "#ffe65d"));
             return;
@@ -1713,6 +1727,22 @@ export default class Client {
             return;
         }
 
+        // squad help
+        if (commandCheck("/squadcommands")) {
+            [
+                "Note: [text] indicates required, <text> indicates optional.",
+                "/createsquad [name] - Creates a squad. Squad loot is shared by damage.",
+                "/joinsquad [name] - Joins a squad. Your level must be within 32 of the owner's.",
+                "/leavesquad - Leaves your squad. The owner disbands it instead.",
+                "/kicksquad [memberID] - Kicks a member. Owner only.",
+                "/bansquad [memberID] - Bans a member. Owner only.",
+                "/transfersquad [memberID] - Transfers ownership. Owner only.",
+                "/unbansquad [userID] - Unbans a user. Owner only.",
+                "/memberlist - Lists squad members."
+            ].forEach(cmd => this.systemMessage(cmd, "#55ccff"));
+            return;
+        }
+
         // admin help
         if (commandCheck("/admincommands")) {
             [
@@ -1736,6 +1766,382 @@ export default class Client {
                 "the Discord username does not remove them.",
                 "Player is given by their Discord username."
             ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
+            return;
+        }
+
+        // /createsquad
+        if (commandCheck("/createsquad")) {
+            if (!this.userId) {
+                this.systemMessage("Guests cannot use this command.", "#ff5555");
+                return;
+            }
+
+            const name = e.substring(13).trim();
+
+            if (!name) {
+                this.systemMessage("Usage: /createsquad [name]", "#ffaa00");
+                return;
+            }
+
+            if (inSquad(this)) {
+                this.systemMessage("You are already in a squad.", "#ff5555");
+                return;
+            }
+
+            if (SQUADS.has(name)) {
+                this.systemMessage("Squad already exists.", "#ff5555");
+                return;
+            }
+
+            const uid = getUserId(this);
+            const lvl = getPlayerLevel(this);
+
+            SQUADS.set(name, {
+                name,
+                ownerId: uid,
+                ownerName: this.username,
+                levelRequirement: lvl,
+                members: new Set([uid]),
+                startVotes: new Set()
+            });
+
+            this.systemMessage(`Squad "${name}" created.`, "#55ff55");
+            return;
+        }
+
+        // /joinsquad
+        if (commandCheck("/joinsquad")) {
+            if (!this.userId) {
+                this.systemMessage("Guests cannot use this command.", "#ff5555");
+                return;
+            }
+
+            const name = e.substring(11).trim();
+
+            if (!name) {
+                this.systemMessage("Usage: /joinsquad [name]", "#ffaa00");
+                return;
+            }
+
+            const squad = SQUADS.get(name);
+
+            if (!squad) {
+                this.systemMessage("Squad not found.", "#ff5555");
+                return;
+            }
+
+            if (inSquad(this) === squad) {
+                this.systemMessage("You are already in this squad.", "#ff5555");
+                return;
+            }
+
+            if (inSquad(this)) {
+                this.systemMessage("You are already in another squad.", "#ff5555");
+                return;
+            }
+
+            validateSquadMembers(squad);
+
+            if (squad.blacklistedMembers?.has(getUserId(this))) {
+                this.systemMessage("You are banned from this squad.", "#ff5555");
+                return;
+            }
+
+            if (squad.members.size >= 8) {
+                this.systemMessage("Squad is full. (8/8)", "#ff5555");
+                return;
+            }
+
+            const ownerLevel = squad.levelRequirement;
+            const min = ownerLevel - 32;
+            const max = ownerLevel + 32;
+
+            const myLevel = getPlayerLevel(this);
+
+            if (myLevel < min || myLevel > max) {
+                this.systemMessage(`Not enough Level. Required ${ownerLevel} ${min}-${max}.`, "#ff5555");
+                return;
+            }
+
+            squad.startVotes?.clear();
+            squad.members.add(getUserId(this));
+
+            squadBroadcast(squad, `${this.username} joined the squad.`, "#55ff55");
+            return;
+        }
+
+        // /leavesquad
+        if (commandCheck("/leavesquad")) {
+            if (!inSquad(this)) {
+                this.systemMessage("You are not in a squad.", "#ff5555");
+                return;
+            }
+
+            inSquad(this).startVotes?.clear();
+            handleSquadLeave(this, "Owner left.");
+            return;
+        }
+
+        // /kicksquad
+        if (commandCheck("/kicksquad")) {
+            if (!this.userId) {
+                this.systemMessage("Guests cannot use this command.", "#ff5555");
+                return;
+            }
+
+            const arg = e.substring(10).trim();
+
+            if (!arg) {
+                this.systemMessage("Usage: /kicksquad [memberID]", "#ffaa00");
+                return;
+            }
+
+            const squad = inSquad(this);
+
+            if (!squad) {
+                this.systemMessage("You are not in a squad.", "#ff5555");
+                return;
+            }
+
+            if (getUserId(this) !== squad.ownerId) {
+                this.systemMessage("Only the squad owner can use this command.", "#ff5555");
+                return;
+            }
+
+            const target = state.clients.get(parseInt(arg));
+
+            if (!target) {
+                this.systemMessage("Player not found.", "#ff5555");
+                return;
+            }
+
+            const targetUserId = getUserId(target);
+
+            if (!targetUserId || !squad.members.has(targetUserId)) {
+                this.systemMessage("That player is not in your squad.", "#ff5555");
+                return;
+            }
+
+            if (targetUserId === squad.ownerId) {
+                this.systemMessage("You cannot kick yourself. If u want to leave /leavesquad", "#ff5555");
+                return;
+            }
+
+            squad.startVotes?.clear();
+            squad.members.delete(targetUserId);
+
+            target.systemMessage("You were kicked from the squad.", "#ff5555");
+            squadBroadcast(squad, `${target.username} left squad.`, "#ffaa00");
+            return;
+        }
+
+        // /bansquad
+        if (commandCheck("/bansquad")) {
+            if (!this.userId) {
+                this.systemMessage("Guests cannot use this command.", "#ff5555");
+                return;
+            }
+
+            const arg = e.substring(9).trim();
+
+            if (!arg) {
+                this.systemMessage("Usage: /bansquad [memberID]", "#ffaa00");
+                return;
+            }
+
+            const squad = inSquad(this);
+
+            if (!squad) {
+                this.systemMessage("You are not in a squad.", "#ff5555");
+                return;
+            }
+
+            if (getUserId(this) !== squad.ownerId) {
+                this.systemMessage("Only the squad owner can use this command.", "#ff5555");
+                return;
+            }
+
+            const target = state.clients.get(parseInt(arg));
+
+            if (!target) {
+                this.systemMessage("Player not found.", "#ff5555");
+                return;
+            }
+
+            const targetUserId = getUserId(target);
+
+            if (!targetUserId || !squad.members.has(targetUserId)) {
+                this.systemMessage("That player is not in your squad.", "#ff5555");
+                return;
+            }
+
+            if (targetUserId === squad.ownerId) {
+                this.systemMessage("You cannot ban yourself.", "#ff5555");
+                return;
+            }
+
+            squad.startVotes?.clear();
+            squad.blacklistedMembers ??= new Set();
+
+            squad.blacklistedMembers.add(targetUserId);
+            squad.members.delete(targetUserId);
+
+            target.systemMessage("You were banned from the squad.", "#ff5555");
+            squadBroadcast(squad, `${target.username} was banned from the squad.`, "#ff5555");
+            return;
+        }
+
+        // /unbansquad
+        if (commandCheck("/unbansquad")) {
+            if (!this.userId) {
+                this.systemMessage("Guests cannot use this command.", "#ff5555");
+                return;
+            }
+
+            const arg = e.substring(11).trim();
+
+            if (!arg) {
+                this.systemMessage("Usage: /unbansquad [userID]", "#ffaa00");
+                return;
+            }
+
+            const squad = inSquad(this);
+
+            if (!squad) {
+                this.systemMessage("You are not in a squad.", "#ff5555");
+                return;
+            }
+
+            if (getUserId(this) !== squad.ownerId) {
+                this.systemMessage("Only the squad owner can use this command.", "#ff5555");
+                return;
+            }
+
+            const target = state.clients.get(parseInt(arg));
+
+            if (!target) {
+                this.systemMessage("Player not found.", "#ff5555");
+                return;
+            }
+
+            const targetUserId = getUserId(target);
+
+            if (!squad.blacklistedMembers?.has(targetUserId)) {
+                this.systemMessage("That user is not banned.", "#ff5555");
+                return;
+            }
+
+            squad.blacklistedMembers.delete(targetUserId);
+
+            this.systemMessage(`${target.username} has been unbanned from the squad.`, "#55ff55");
+            return;
+        }
+
+        // /memberlist
+        if (commandCheck("/memberlist")) {
+            if (!this.userId) {
+                this.systemMessage("Guests cannot use this command.", "#ff5e5e");
+                return;
+            }
+
+            const squad = inSquad(this);
+
+            if (!squad) {
+                this.systemMessage("You are not in a squad.", "#ff5555");
+                return;
+            }
+
+            const members = [];
+
+            for (const userId of squad.members) {
+                const online = clientByUserId(userId);
+
+                if (online) {
+                    members.push({
+                        userId,
+                        id: online.id,
+                        username: online.username,
+                        level: online.level,
+                        online: true
+                    });
+                } else {
+                    members.push({
+                        userId,
+                        id: "-",
+                        username: "Offline Member",
+                        level: "-",
+                        online: false
+                    });
+                }
+            }
+
+            this.systemMessage(`Squad Members (${members.length}/8) - ${squad.name}:`, "#5ef7ff");
+
+            for (const member of members) {
+                const isOwner = member.userId === squad.ownerId;
+
+                this.systemMessage(
+                    `• ${member.username}${isOwner ? " [Owner]" : ""} (ID: ${member.id}) | Level: ${member.level}`,
+                    isOwner ? "#ffdd45" : "#ffffff"
+                );
+            }
+
+            return;
+        }
+
+        // /transfersquad
+        if (commandCheck("/transfersquad")) {
+            if (!this.userId) {
+                this.systemMessage("Guests cannot use this command.", "#ff5555");
+                return;
+            }
+
+            const arg = e.substring(14).trim();
+
+            if (!arg) {
+                this.systemMessage("Usage: /transfersquad [memberID]", "#ffaa00");
+                return;
+            }
+
+            const squad = inSquad(this);
+
+            if (!squad) {
+                this.systemMessage("You are not in a squad.", "#ff5555");
+                return;
+            }
+
+            validateSquadMembers(squad);
+
+            if (getUserId(this) !== squad.ownerId) {
+                this.systemMessage("Only the squad owner can use this command.", "#ff5555");
+                return;
+            }
+
+            const target = state.clients.get(parseInt(arg));
+
+            if (!target) {
+                this.systemMessage("Player not found.", "#ff5555");
+                return;
+            }
+
+            const targetUserId = getUserId(target);
+
+            if (!targetUserId || !squad.members.has(targetUserId)) {
+                this.systemMessage("That player is not in your squad.", "#ff5555");
+                return;
+            }
+
+            if (targetUserId === squad.ownerId) {
+                this.systemMessage("That player is already the owner.", "#ff5555");
+                return;
+            }
+
+            squad.startVotes?.clear();
+            squad.ownerId = targetUserId;
+            squad.ownerName = target.username;
+
+            target.systemMessage("You are now the squad owner.", "#55ff55");
+            squadBroadcast(squad, `${target.username} is now the squad owner.`, "#55ff55");
             return;
         }
 
@@ -4589,6 +4995,8 @@ if (commandCheck("/pity")) {
         if (this.verified) {
             console.log(`Client ${this.id} (${this.username}) disconnected.`);
 
+            handleSquadLeave(this);
+
             const onlineCount = state.clients.size - 1;
 
             state.clients.forEach(client => {
@@ -4612,6 +5020,7 @@ if (commandCheck("/pity")) {
     }
 
     kick(reason = "Unknown Reason") {
+        handleSquadLeave(this);
         this.talk(CLIENT_BOUND.KICK, reason);
         this.body?.destroy();
         this.terminate();
