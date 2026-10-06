@@ -1034,6 +1034,46 @@ export class Entity {
                 return;
             }
 
+            // Shovel phase migrated from WhiteHole.js: while equipped and
+            // ready, any collision phases that side for 5s (70s cooldown),
+            // skipping all damage for its players and petals.
+            const shovelIndex = petalConfigs.findIndex(item => item?.name === "Shovel");
+            const shovelOwnerOf = entity => entity?.player?.client ?? entity?.parent?.client ?? entity?.client ?? null;
+            const hasShovel = entity => {
+                const client = shovelOwnerOf(entity);
+                if (!client || shovelIndex < 0) return false;
+                return client.slots?.some(slot => slot?.id === shovelIndex);
+            };
+            const normalizeShovel = ent => {
+                if (ent.shovelTimerUntil == null || ent.shovelTimerUntil === 0) ent.shovelTimerUntil = -1;
+                if (ent.shovelCooldownUntil == null || ent.shovelCooldownUntil === 0) ent.shovelCooldownUntil = -1;
+            };
+            normalizeShovel(this);
+            normalizeShovel(other);
+            {
+                const now = Date.now();
+                if (this.shovelCooldownUntil > 0 && now >= this.shovelCooldownUntil) {
+                    this.shovelTimerUntil = -1;
+                    this.shovelCooldownUntil = -1;
+                }
+                if (other.shovelCooldownUntil > 0 && now >= other.shovelCooldownUntil) {
+                    other.shovelTimerUntil = -1;
+                    other.shovelCooldownUntil = -1;
+                }
+                const startShovel = ent => {
+                    ent.shovelTimerUntil = now + 5000;
+                    ent.shovelCooldownUntil = now + 70000;
+                };
+                const isPlayerOrPetal = ent => ent.type === ENTITY_TYPES.PLAYER || ent.type === ENTITY_TYPES.PETAL;
+                const isActive = ent => hasShovel(ent) && ent.shovelTimerUntil > now;
+                const isReady = ent => hasShovel(ent) && ent.shovelTimerUntil < 0 && ent.shovelCooldownUntil < 0;
+                if (isReady(this)) startShovel(this);
+                else if (isReady(other)) startShovel(other);
+                if ((isActive(this) && isPlayerOrPetal(this)) || (isActive(other) && isPlayerOrPetal(other))) {
+                    return;
+                }
+            }
+
             if (this.type === ENTITY_TYPES.MOB && other.type === ENTITY_TYPES.MOB && this.team === other.team && this.segmentID > -1 && other.segmentID > -1) {
                 if (this.segmentID === other.segmentID) {
                     return;
