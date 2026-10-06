@@ -491,6 +491,17 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.47,
+       "rarity": 5,
+       "amount": 1
+      }
+     ]
     }
    ],
    "7": [
@@ -579,6 +590,23 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 13.9,
+       "rarity": 5,
+       "amount": 2
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.16,
+       "rarity": 6,
+       "amount": 1
+      }
+     ]
     }
    ],
    "8": [
@@ -662,6 +690,23 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 8.16,
+       "rarity": 6,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 29.9,
+       "rarity": 5,
+       "amount": 5
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 8.16,
        "rarity": 6,
        "amount": 1
@@ -761,6 +806,29 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 87.9,
+       "rarity": 5,
+       "amount": 5
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 11.9,
+       "rarity": 6,
+       "amount": 2
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.07,
+       "rarity": 7,
+       "amount": 1
+      }
+     ]
     }
    ],
    "10": [
@@ -826,6 +894,23 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 9.74,
+       "rarity": 6,
+       "amount": 5
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 90.2,
+       "rarity": 6,
+       "amount": 1
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 9.74,
        "rarity": 6,
        "amount": 5
@@ -920,6 +1005,29 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 0.07,
+       "rarity": 8,
+       "amount": 1
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 87.9,
+       "rarity": 6,
+       "amount": 25
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 11.9,
+       "rarity": 7,
+       "amount": 1
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 0.07,
        "rarity": 8,
        "amount": 1
@@ -1037,6 +1145,35 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 36.4,
+       "rarity": 6,
+       "amount": 50
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 55.5,
+       "rarity": 7,
+       "amount": 5
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 7.89,
+       "rarity": 7,
+       "amount": 1
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.05,
+       "rarity": 8,
+       "amount": 1
+      }
+     ]
     }
    ],
    "13": [
@@ -1132,6 +1269,35 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 0.15,
+       "rarity": 8,
+       "amount": 24
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 6.56,
+       "rarity": 6,
+       "amount": 50
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 73.4,
+       "rarity": 7,
+       "amount": 100
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 19.8,
+       "rarity": 8,
+       "amount": 12
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 0.15,
        "rarity": 8,
        "amount": 24
@@ -1261,6 +1427,41 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 6.506,
+       "rarity": 6,
+       "amount": 1000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 73.46,
+       "rarity": 7,
+       "amount": 500
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 19.8,
+       "rarity": 8,
+       "amount": 24
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.233,
+       "rarity": 9,
+       "amount": 1
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.001,
+       "rarity": 10,
+       "amount": 1
+      }
+     ]
     }
    ],
    "15": [
@@ -1385,6 +1586,41 @@ export const DROP_TABLES = {
        "amount": 2
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 13.19,
+       "rarity": 7,
+       "amount": 2000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 73.46,
+       "rarity": 8,
+       "amount": 86
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 12.3,
+       "rarity": 9,
+       "amount": 2
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 1,
+       "rarity": 10,
+       "amount": 1
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.05,
+       "rarity": 10,
+       "amount": 2
+      }
+     ]
     }
    ],
    "16": [
@@ -1504,6 +1740,41 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 0.8,
+       "rarity": 10,
+       "amount": 20
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 13.19,
+       "rarity": 8,
+       "amount": 20000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 72.71,
+       "rarity": 9,
+       "amount": 600
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 12.3,
+       "rarity": 9,
+       "amount": 1200
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 1,
+       "rarity": 10,
+       "amount": 10
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 0.8,
        "rarity": 10,
        "amount": 20
@@ -1657,6 +1928,47 @@ export const DROP_TABLES = {
        "amount": 31000
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 13.18,
+       "rarity": 8,
+       "amount": 500000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 72.71,
+       "rarity": 9,
+       "amount": 5000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 12.29,
+       "rarity": 9,
+       "amount": 10000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 1.01,
+       "rarity": 10,
+       "amount": 75
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.8,
+       "rarity": 11,
+       "amount": 1
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.01,
+       "rarity": 9,
+       "amount": 31000
+      }
+     ]
     }
    ],
    "18": [
@@ -1800,6 +2112,47 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 0.01,
+       "rarity": 10,
+       "amount": 12000
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 9.05,
+       "rarity": 9,
+       "amount": 105000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 72.86,
+       "rarity": 10,
+       "amount": 300
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 14.39,
+       "rarity": 11,
+       "amount": 3
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 3.01,
+       "rarity": 10,
+       "amount": 2600
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.68,
+       "rarity": 11,
+       "amount": 24
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 0.01,
        "rarity": 10,
        "amount": 12000
@@ -1977,6 +2330,53 @@ export const DROP_TABLES = {
        "amount": 300
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 57.04,
+       "rarity": 10,
+       "amount": 300
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 24.52,
+       "rarity": 10,
+       "amount": 4500
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 11.79,
+       "rarity": 10,
+       "amount": 10000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 4.014,
+       "rarity": 11,
+       "amount": 48
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 1.882,
+       "rarity": 11,
+       "amount": 100
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.753,
+       "rarity": 11,
+       "amount": 200
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.001,
+       "rarity": 11,
+       "amount": 300
+      }
+     ]
     }
    ],
    "20": [
@@ -2149,6 +2549,53 @@ export const DROP_TABLES = {
        "amount": 9100
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 61.04,
+       "rarity": 11,
+       "amount": 124
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 22.52,
+       "rarity": 11,
+       "amount": 456
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 9.46,
+       "rarity": 10,
+       "amount": 250000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 4.751,
+       "rarity": 12,
+       "amount": 3
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 1.365,
+       "rarity": 12,
+       "amount": 6
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.863,
+       "rarity": 11,
+       "amount": 4000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.001,
+       "rarity": 11,
+       "amount": 9100
+      }
+     ]
     }
    ],
    "21": [
@@ -2273,6 +2720,41 @@ export const DROP_TABLES = {
        "amount": 135
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 6.506,
+       "rarity": 11,
+       "amount": 4000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 73.46,
+       "rarity": 11,
+       "amount": 9100
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 19.8,
+       "rarity": 12,
+       "amount": 51
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.233,
+       "rarity": 11,
+       "amount": 32000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.001,
+       "rarity": 12,
+       "amount": 135
+      }
+     ]
     }
    ],
    "22": [
@@ -2392,6 +2874,41 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 0.001,
+       "rarity": 13,
+       "amount": 12
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 69.652,
+       "rarity": 12,
+       "amount": 1080
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 21.56,
+       "rarity": 13,
+       "amount": 5
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 6.834,
+       "rarity": 12,
+       "amount": 320
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 1.953,
+       "rarity": 13,
+       "amount": 8
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 0.001,
        "rarity": 13,
        "amount": 12
@@ -2545,6 +3062,47 @@ export const DROP_TABLES = {
        "amount": 600
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 64.02,
+       "rarity": 13,
+       "amount": 3
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 21.65,
+       "rarity": 13,
+       "amount": 25
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 9.39,
+       "rarity": 12,
+       "amount": 20000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 3.95,
+       "rarity": 13,
+       "amount": 100
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.98,
+       "rarity": 12,
+       "amount": 94000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.01,
+       "rarity": 13,
+       "amount": 600
+      }
+     ]
     }
    ],
    "24": [
@@ -2688,6 +3246,47 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 0.01,
+       "rarity": 13,
+       "amount": 13000
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 59.92,
+       "rarity": 13,
+       "amount": 200
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 24.97,
+       "rarity": 13,
+       "amount": 500
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 11.23,
+       "rarity": 12,
+       "amount": 450000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 3.45,
+       "rarity": 14,
+       "amount": 3
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.42,
+       "rarity": 11,
+       "amount": 1000000000
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 0.01,
        "rarity": 13,
        "amount": 13000
@@ -2841,6 +3440,47 @@ export const DROP_TABLES = {
        "amount": 487500
       }
      ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 71.05,
+       "rarity": 14,
+       "amount": 20
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 17.77,
+       "rarity": 14,
+       "amount": 50
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 7.92,
+       "rarity": 13,
+       "amount": 37500
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 2.89,
+       "rarity": 14,
+       "amount": 200
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.36,
+       "rarity": 12,
+       "amount": 56250000
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.01,
+       "rarity": 13,
+       "amount": 487500
+      }
+     ]
     }
    ],
    "26": [
@@ -2984,6 +3624,47 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Yggdrasil",
+       "chance": 0.01,
+       "rarity": 13,
+       "amount": 4125000
+      }
+     ]
+    },
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Golden Leaf",
+       "chance": 73.64,
+       "rarity": 14,
+       "amount": 400
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 16.21,
+       "rarity": 14,
+       "amount": 800
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 6.2,
+       "rarity": 14,
+       "amount": 2600
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 3.66,
+       "rarity": 15,
+       "amount": 12
+      },
+      {
+       "petal": "Golden Leaf",
+       "chance": 0.28,
+       "rarity": 15,
+       "amount": 24
+      },
+      {
+       "petal": "Golden Leaf",
        "chance": 0.01,
        "rarity": 13,
        "amount": 4125000
