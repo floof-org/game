@@ -4629,8 +4629,9 @@ if (commandCheck("/pity")) {
 
             for (const id of Object.keys(petals)) {
                 const amount = petals[id];
-                if (!(amount > 0)) continue;
-                entries.push([tierIndex, parseInt(id), amount]);
+                // Zero counts are sent as 0 so the client deletes the entry.
+                // Skipping them would leave a stale ghost behind.
+                entries.push([tierIndex, parseInt(id), amount > 0 ? amount : 0]);
             }
         });
 
@@ -4741,7 +4742,10 @@ if (commandCheck("/pity")) {
         writer.setFloat32(this.levelProgress);
         tiers.forEach(tier => {
             const petals = this.inventory[tier.name];
-            const petalIds = Object.keys(petals);
+            // Zero counts are not sent here; the exact sync below delivers
+            // them as 0 so the client deletes the entry instead. The count
+            // must match the entries actually written.
+            const petalIds = Object.keys(petals).filter(id => petals[id] > 0);
             writer.setUint16(petalIds.length);
             petalIds.forEach(id => {
                 writer.setUint16(parseInt(id));
