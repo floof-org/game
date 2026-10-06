@@ -1,6 +1,7 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
+import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
@@ -3306,125 +3307,176 @@ export class Mob extends Entity {
 
         const topDamagers = this.getTopDamagers(Infinity, ENTITY_TYPES.PLAYER);
 
-        // strict looting: at least 7.5% of max health damage is required to earn drops, xp and the kill message.
-        // Every damager that clears the threshold loots: there is no damage ranking on top of it, so being
-        // out-damaged by someone else must never cost you the drop. Ranking used to be applied before the
-        // threshold, which silently dropped anyone ranked 4th or lower even at 7.5% or more damage.
-        const damageThreshold = this.health.maxHealth * 0.075;
-        const qualifyingDamagers = topDamagers.filter(damager => damager.damage >= damageThreshold);
+        // Squad loot shares migrated from WhiteHole.js: damage pools per
+        // squad. Solo players qualify at 7.5% of max health; a squad qualifies
+        // when its total reaches 5% per member, with each member clearing 5%.
+        const damageByClient = new Map();
+        for (const damager of topDamagers) {
+            if (damager.damage <= 0) continue;
+            const client = state.clients.get(damager.clientID);
+            if (!client) continue;
+            const entry = damageByClient.get(client.id) ?? { client, damage: 0 };
+            entry.damage += damager.damage;
+            damageByClient.set(client.id, entry);
+        }
+
+        const groups = new Map();
+        for (const data of damageByClient.values()) {
+            const key = getSquadKey(data.client);
+            let group = groups.get(key);
+            if (!group) {
+                group = { key, squad: inSquad(data.client), members: new Map(), totalDamage: 0 };
+                groups.set(key, group);
+            }
+            group.members.set(data.client.id, { client: data.client, damage: data.damage });
+            group.totalDamage += data.damage;
+        }
+
+        const eligibleGroups = [];
+        for (const group of groups.values()) {
+            if (!group.squad) {
+                const onlyMember = [...group.members.values()][0];
+                if (onlyMember && onlyMember.damage >= this.health.maxHealth * 0.075) {
+                    eligibleGroups.push({ squad: null, members: [onlyMember.client], totalDamage: group.totalDamage });
+                }
+                continue;
+            }
+            const squadSize = group.squad.members.size;
+            const totalRequired = this.health.maxHealth * (0.05 * squadSize);
+            let finalMembers = [];
+            if (group.totalDamage >= totalRequired) {
+                // House rule on top of WhiteHole.js: once the squad total
+                // qualifies, every online member shares, even at 0 damage.
+                for (const memberId of group.squad.members) {
+                    const memberClient = clientByUserId(memberId);
+                    if (memberClient) finalMembers.push(memberClient);
+                }
+            }
+            if (finalMembers.length > 0) {
+                eligibleGroups.push({ squad: group.squad, members: finalMembers, totalDamage: group.totalDamage });
+            }
+        }
 
         let killText = '';
         const dropAnnouncementGroups = new Map();
-        qualifyingDamagers.forEach(damager => {
-            if (damager.clientID > 0) {
-                const client = state.clients.get(damager.clientID);
+        const collectDropAnnouncement = (memberClient, index, rarity, amount) => {
+            const itemName = petalConfigs[index]?.name ?? `Item ${index}`;
+            const rarityData = tiers[rarity];
+            if (!rarityData) return;
+            // Announce drops of Fictional and higher mobs, keeping the
+            // WhiteHole message format.
+            const forceAnnounce = itemName === "ӇЄҲƛƓƠƝ";
+            if (this.rarity < 15 && !forceAnnounce) return;
+            const key = `${rarity}:${index}:${amount}`;
+            let group = dropAnnouncementGroups.get(key);
+            if (!group) {
+                group = { rarity, itemName, amount, rarityData, players: new Map() };
+                dropAnnouncementGroups.set(key, group);
+            }
+            group.players.set(memberClient.id, memberClient);
+        };
 
-                if (client) {
-                    client.addXP((Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1));
+        // Blood Leaf kill counting and Ruby summons run for every damager
+        // with no threshold, as in WhiteHole.js.
+        for (const data of damageByClient.values()) {
+            const client = data.client;
 
-                    const output = [];
-                    const table = DROP_LOOKUP[this.config?.name];
+            // Blood Leaf kill counting migrated from WhiteHole.js: each
+            // equipped leaf only counts mobs at or above its required rarity.
+            const leafIndex = petalConfigs.findIndex(p => p?.name === "Blood Leaf");
+            if (leafIndex >= 0) {
+                const leaves = client.slots?.filter(slot => slot?.id === leafIndex) ?? [];
+                for (const leaf of leaves) {
+                    const leafRarity = leaf.rarity ?? 0;
+                    const req = petalConfigs[leafIndex].minimumMobRarityForBloodLeafDamage?.[leafRarity] ?? 500;
+                    if (this.rarity < req) continue;
+                    if (!client.bloodLeafKills || typeof client.bloodLeafKills !== "object") {
+                        client.bloodLeafKills = {};
+                    }
+                    client.bloodLeafKills[leafRarity] = (client.bloodLeafKills[leafRarity] ?? 0) + 1;
+                }
+            }
 
-                    if (table) {
-                        const rows = table[this.rarity];
+            // Ruby on-kill summon migrated from WhiteHole.js.
+            const rubyIndex = petalConfigs.findIndex(p => p?.name === "Ruby");
+            const rubySlot = rubyIndex >= 0 ? client.slots?.find(slot => slot?.id === rubyIndex) : null;
+            if (rubySlot) {
+                const summonRarity = getRubySummonRarity(rubySlot.rarity, this.rarity, petalConfigs[rubyIndex]);
+                if (summonRarity !== null && !client.body?.health?.isDead) {
+                    if (client.rubySummonCount == null) client.rubySummonCount = 0;
+                    if (client.rubySummonCount < 20) {
+                        spawnRubySummon(this, client, summonRarity);
+                    }
+                }
+            }
+        }
 
-                        if (rows && rows.length) {
+        // Rolls happen once per eligible group; every member gets full copies.
+        {
+            const table = DROP_LOOKUP[this.config?.name];
+            const rows = table?.[this.rarity];
+            const fallbackDrops = mobConfigs[this.index]?.drops ?? [];
+
+            if (rows && rows.length && eligibleGroups.length) {
+                    for (const group of eligibleGroups) {
+                        const results = [];
+                        let rollCount = 1;
+                        if (globalThis.LUCKY_DROPS_EVENT) rollCount = 2;
+                        for (let roll = 0; roll < rollCount; roll++) {
                             for (const row of rows) {
-                                if (Math.random() > row.chance) {
-                                    continue;
-                                }
-
+                                if (Math.random() > row.chance) continue;
                                 const entry = pickWeighted(row.entries);
-
-                                if (entry) {
-                                    output.push(new Drop(this, client, entry.index, entry.rarity, entry.amount));
-                                }
+                                if (entry) results.push({ ...entry });
                             }
                         }
-                    } else {
-                        for (const drop of mobConfigs[this.index].drops) {
-                            if (Math.random() > drop.chance) {
-                                continue;
+                        const count = results.length;
+                        for (const memberClient of group.members) {
+                            for (let i = 0; i < count; i++) {
+                                const entry = results[i];
+                                const radius = (10 + Math.min(count, 6) * 3) * 1.75;
+                                const angle = (Math.PI * 2 * i) / count;
+                                new Drop({
+                                    x: this.x + Math.cos(angle) * radius,
+                                    y: this.y + Math.sin(angle) * radius
+                                }, memberClient, entry.index, entry.rarity, entry.amount);
+                                collectDropAnnouncement(memberClient, entry.index, entry.rarity, entry.amount);
                             }
-
-                            const rarity = getDropRarity(this.rarity, client.highestRarity + 5);
-                            if (rarity < drop.minRarity) {
-                                continue;
-                            }
-
-                            output.push(new Drop(this, client, drop.index, rarity));
                         }
                     }
-
-                    for (let i = 0; i < output.length; i++) {
-                        output[i].x += Math.cos(i / output.length * Math.PI * 2) * 30;
-                        output[i].y += Math.sin(i / output.length * Math.PI * 2) * 30;
-                    }
-
-                    // Drop announcements migrated from WhiteHole.js: high-value
-                    // drops are grouped by item and broadcast lobby-wide.
-                    for (const drop of output) {
-                        const itemName = petalConfigs[drop.index]?.name ?? `Item ${drop.index}`;
-                        const rarityData = tiers[drop.rarity];
-                        if (!rarityData) continue;
-                        const forceAnnounce = itemName === "ӇЄҲƛƓƠƝ";
-                        if (!forceAnnounce) {
-                            let shouldAnnounce = false;
-                            for (const req of DROP_ANNOUNCE_REQ) {
-                                if (drop.rarity === req.rarity && drop.amount >= req.minAmount) {
-                                    shouldAnnounce = true;
-                                    break;
-                                }
-                            }
-                            if (!shouldAnnounce) continue;
+            } else if (fallbackDrops.length && eligibleGroups.length) {
+                // old drop system: rarity rolls per member, drops shared otherwise.
+                // Also covers table mobs whose tier is missing from the table.
+                for (const group of eligibleGroups) {
+                    for (const memberClient of group.members) {
+                        const rewards = [];
+                        for (const drop of fallbackDrops) {
+                            if (Math.random() > drop.chance) continue;
+                            const rarity = getDropRarity(this.rarity, memberClient.highestRarity + 5);
+                            if (rarity < drop.minRarity) continue;
+                            rewards.push({ index: drop.index, rarity });
                         }
-                        const key = `${drop.rarity}:${drop.index}:${drop.amount}`;
-                        let group = dropAnnouncementGroups.get(key);
-                        if (!group) {
-                            group = {
-                                rarity: drop.rarity,
-                                itemName,
-                                amount: drop.amount,
-                                rarityData,
-                                players: new Map()
-                            };
-                            dropAnnouncementGroups.set(key, group);
-                        }
-                        group.players.set(client.id, client);
-                    }
-
-                    // Blood Leaf kill counting migrated from WhiteHole.js: each
-                    // equipped leaf only counts mobs at or above its required rarity.
-                    const leafIndex = petalConfigs.findIndex(p => p?.name === "Blood Leaf");
-                    if (leafIndex >= 0) {
-                        const leaves = client.slots?.filter(slot => slot?.id === leafIndex) ?? [];
-                        for (const leaf of leaves) {
-                            const leafRarity = leaf.rarity ?? 0;
-                            const req = petalConfigs[leafIndex].minimumMobRarityForBloodLeafDamage?.[leafRarity] ?? 500;
-                            if (this.rarity < req) continue;
-                            if (!client.bloodLeafKills || typeof client.bloodLeafKills !== "object") {
-                                client.bloodLeafKills = {};
-                            }
-                            client.bloodLeafKills[leafRarity] = (client.bloodLeafKills[leafRarity] ?? 0) + 1;
-                        }
-                    }
-
-                    // Ruby on-kill summon migrated from WhiteHole.js.
-                    const rubyIndex = petalConfigs.findIndex(p => p?.name === "Ruby");
-                    const rubySlot = rubyIndex >= 0 ? client.slots?.find(slot => slot?.id === rubyIndex) : null;
-                    if (rubySlot) {
-                        const summonRarity = getRubySummonRarity(rubySlot.rarity, this.rarity, petalConfigs[rubyIndex]);
-                        if (summonRarity !== null && !client.body?.health?.isDead) {
-                            if (client.rubySummonCount == null) client.rubySummonCount = 0;
-                            if (client.rubySummonCount < 20) {
-                                spawnRubySummon(this, client, summonRarity);
-                            }
+                        const total = rewards.length;
+                        for (let i = 0; i < total; i++) {
+                            const reward = rewards[i];
+                            const radius = (10 + Math.min(total, 6) * 3) * 1.75;
+                            const angle = (Math.PI * 2 * i) / total;
+                            new Drop({
+                                x: this.x + Math.cos(angle) * radius,
+                                y: this.y + Math.sin(angle) * radius
+                            }, memberClient, reward.index, reward.rarity, 1);
+                            collectDropAnnouncement(memberClient, reward.index, reward.rarity, 1);
                         }
                     }
                 }
-
             }
-        });
+        }
+
+        for (const group of eligibleGroups) {
+            const xp = (Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1);
+            for (const client of group.members) {
+                client.addXP(xp);
+            }
+        }
 
         for (const group of dropAnnouncementGroups.values()) {
             const players = [...group.players.values()];
@@ -3451,9 +3503,14 @@ export class Mob extends Entity {
             !["Queen Ant Egg", "Termite Overmind Egg", "Queen Fire Ant Egg"].includes(this.config.name) &&
             this.rarity >= state.announceRarity
         ) {
-            const killerNames = qualifyingDamagers
-                .filter(damager => state.clients.has(damager.clientID))
-                .map(damager => state.clients.get(damager.clientID).lootName());
+            const winnersMap = new Map();
+            for (const group of eligibleGroups) {
+                for (const client of group.members) {
+                    if (!client) continue;
+                    winnersMap.set(client.id, client);
+                }
+            }
+            const killerNames = [...winnersMap.values()].map(client => client.lootName());
 
             if (killerNames.length > 0) {
                 // Loot is granted to every qualifier, but the kill message only names the top few so a
