@@ -2923,10 +2923,15 @@ export class Mob extends Entity {
             this.neutral = this.config?.neutral ?? false;
         }
 
-        if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.health.ratio <= .8 ? 120_000 : 30_000)) < performance.now()) {
-            this.damagedBy = []
-            this.destroy();
-            return;
+        if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.health.ratio <= .8 ? 180_000 : 90_000)) < performance.now()) {
+            // A mob that players are actively fighting holds on instead of
+            // despawning with everyone's credit, as in WhiteHole.js.
+            const hasEligiblePlayer = this.health.ratio <= 0.6 && Object.keys(this.damagedBy).length > 0;
+            if (!hasEligiblePlayer) {
+                this.damagedBy = [];
+                this.destroy();
+                return;
+            }
         }
 
         if (this.healing > 0 && this.health.ratio > 0 && !this.dandelionCooldown) {
