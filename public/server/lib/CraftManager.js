@@ -115,7 +115,7 @@ const MAX_PETALS_PER_REQUEST = 1000000;
 
 // The rarity whose crafts get announced lobby wide. Crafting rarity N produces
 // rarity N + 1, so this announces Omega petals.
-export const CRAFT_ANNOUNCE_RARITY = 9;
+export const CRAFT_ANNOUNCE_RARITY = 10;
 
 function rarityKey(name) {
     return name.toLowerCase().replace(/\s+/g, "");
