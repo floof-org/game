@@ -1209,6 +1209,11 @@ export class Entity {
                     if (thisWingBonus > 0) thisDamageDone *= (1 + thisWingBonus);
                     if (otherWingBonus > 0) otherDamageDone *= (1 + otherWingBonus);
 
+                    // Fire auras cannot be damaged, as in WhiteHole.js. Their
+                    // own outgoing damage is unaffected.
+                    if (isFireAura(this)) otherDamageDone = 0;
+                    if (isFireAura(other)) thisDamageDone = 0;
+
                     // track the damage actually dealt; damage fully blocked by armor / damageReduction must not count toward loot
                     let thisDealt = 0,
                         otherDealt = 0;
