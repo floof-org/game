@@ -3328,17 +3328,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 0.47,
-       "rarity": 5,
-       "amount": 1
-      }
-     ]
     }
    ],
    "7": [
@@ -3404,23 +3393,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 13.9,
-       "rarity": 5,
-       "amount": 2
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.16,
-       "rarity": 6,
-       "amount": 1
-      }
-     ]
     }
    ],
    "8": [
@@ -3481,23 +3453,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 8.16,
-       "rarity": 6,
-       "amount": 1
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 29.9,
-       "rarity": 5,
-       "amount": 5
-      },
-      {
-       "petal": "Horn",
        "chance": 8.16,
        "rarity": 6,
        "amount": 1
@@ -3574,29 +3529,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 87.9,
-       "rarity": 5,
-       "amount": 5
-      },
-      {
-       "petal": "Horn",
-       "chance": 11.9,
-       "rarity": 6,
-       "amount": 2
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.07,
-       "rarity": 7,
-       "amount": 1
-      }
-     ]
     }
    ],
    "10": [
@@ -3645,23 +3577,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 9.74,
-       "rarity": 6,
-       "amount": 5
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 90.2,
-       "rarity": 6,
-       "amount": 1
-      },
-      {
-       "petal": "Horn",
        "chance": 9.74,
        "rarity": 6,
        "amount": 5
@@ -3733,29 +3648,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 0.07,
-       "rarity": 8,
-       "amount": 1
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 87.9,
-       "rarity": 6,
-       "amount": 25
-      },
-      {
-       "petal": "Horn",
-       "chance": 11.9,
-       "rarity": 7,
-       "amount": 1
-      },
-      {
-       "petal": "Horn",
        "chance": 0.07,
        "rarity": 8,
        "amount": 1
@@ -3844,35 +3736,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 36.4,
-       "rarity": 6,
-       "amount": 50
-      },
-      {
-       "petal": "Horn",
-       "chance": 55.5,
-       "rarity": 7,
-       "amount": 5
-      },
-      {
-       "petal": "Horn",
-       "chance": 7.89,
-       "rarity": 7,
-       "amount": 1
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.05,
-       "rarity": 8,
-       "amount": 1
-      }
-     ]
     }
    ],
    "13": [
@@ -3945,35 +3808,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 0.15,
-       "rarity": 8,
-       "amount": 24
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 6.56,
-       "rarity": 6,
-       "amount": 50
-      },
-      {
-       "petal": "Horn",
-       "chance": 73.4,
-       "rarity": 7,
-       "amount": 100
-      },
-      {
-       "petal": "Horn",
-       "chance": 19.8,
-       "rarity": 8,
-       "amount": 12
-      },
-      {
-       "petal": "Horn",
        "chance": 0.15,
        "rarity": 8,
        "amount": 24
@@ -4074,41 +3908,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 6.506,
-       "rarity": 6,
-       "amount": 1000
-      },
-      {
-       "petal": "Horn",
-       "chance": 73.46,
-       "rarity": 7,
-       "amount": 500
-      },
-      {
-       "petal": "Horn",
-       "chance": 19.8,
-       "rarity": 8,
-       "amount": 24
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.233,
-       "rarity": 9,
-       "amount": 1
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.001,
-       "rarity": 10,
-       "amount": 1
-      }
-     ]
     }
    ],
    "15": [
@@ -4204,41 +4003,6 @@ export const DROP_TABLES = {
        "amount": 2
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 13.19,
-       "rarity": 7,
-       "amount": 2000
-      },
-      {
-       "petal": "Horn",
-       "chance": 73.46,
-       "rarity": 8,
-       "amount": 86
-      },
-      {
-       "petal": "Horn",
-       "chance": 12.3,
-       "rarity": 9,
-       "amount": 2
-      },
-      {
-       "petal": "Horn",
-       "chance": 1,
-       "rarity": 10,
-       "amount": 1
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.05,
-       "rarity": 10,
-       "amount": 2
-      }
-     ]
     }
    ],
    "16": [
@@ -4329,41 +4093,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 0.8,
-       "rarity": 10,
-       "amount": 20
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 13.19,
-       "rarity": 8,
-       "amount": 20000
-      },
-      {
-       "petal": "Horn",
-       "chance": 72.71,
-       "rarity": 9,
-       "amount": 600
-      },
-      {
-       "petal": "Horn",
-       "chance": 12.3,
-       "rarity": 9,
-       "amount": 1200
-      },
-      {
-       "petal": "Horn",
-       "chance": 1,
-       "rarity": 10,
-       "amount": 10
-      },
-      {
-       "petal": "Horn",
        "chance": 0.8,
        "rarity": 10,
        "amount": 20
@@ -4482,47 +4211,6 @@ export const DROP_TABLES = {
        "amount": 31000
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 13.18,
-       "rarity": 8,
-       "amount": 500000
-      },
-      {
-       "petal": "Horn",
-       "chance": 72.71,
-       "rarity": 9,
-       "amount": 5000
-      },
-      {
-       "petal": "Horn",
-       "chance": 12.29,
-       "rarity": 9,
-       "amount": 10000
-      },
-      {
-       "petal": "Horn",
-       "chance": 1.01,
-       "rarity": 10,
-       "amount": 75
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.8,
-       "rarity": 11,
-       "amount": 1
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.01,
-       "rarity": 9,
-       "amount": 31000
-      }
-     ]
     }
    ],
    "18": [
@@ -4631,47 +4319,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 0.01,
-       "rarity": 10,
-       "amount": 12000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 9.05,
-       "rarity": 9,
-       "amount": 105000
-      },
-      {
-       "petal": "Horn",
-       "chance": 72.86,
-       "rarity": 10,
-       "amount": 300
-      },
-      {
-       "petal": "Horn",
-       "chance": 14.39,
-       "rarity": 11,
-       "amount": 3
-      },
-      {
-       "petal": "Horn",
-       "chance": 3.01,
-       "rarity": 10,
-       "amount": 2600
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.68,
-       "rarity": 11,
-       "amount": 24
-      },
-      {
-       "petal": "Horn",
        "chance": 0.01,
        "rarity": 10,
        "amount": 12000
@@ -4808,53 +4455,6 @@ export const DROP_TABLES = {
        "amount": 300
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 57.04,
-       "rarity": 10,
-       "amount": 300
-      },
-      {
-       "petal": "Horn",
-       "chance": 24.52,
-       "rarity": 10,
-       "amount": 4500
-      },
-      {
-       "petal": "Horn",
-       "chance": 11.79,
-       "rarity": 10,
-       "amount": 10000
-      },
-      {
-       "petal": "Horn",
-       "chance": 4.014,
-       "rarity": 11,
-       "amount": 48
-      },
-      {
-       "petal": "Horn",
-       "chance": 1.882,
-       "rarity": 11,
-       "amount": 100
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.753,
-       "rarity": 11,
-       "amount": 200
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.001,
-       "rarity": 11,
-       "amount": 300
-      }
-     ]
     }
    ],
    "20": [
@@ -4986,53 +4586,6 @@ export const DROP_TABLES = {
        "amount": 9100
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 61.04,
-       "rarity": 11,
-       "amount": 124
-      },
-      {
-       "petal": "Horn",
-       "chance": 22.52,
-       "rarity": 11,
-       "amount": 456
-      },
-      {
-       "petal": "Horn",
-       "chance": 9.46,
-       "rarity": 10,
-       "amount": 250000
-      },
-      {
-       "petal": "Horn",
-       "chance": 4.751,
-       "rarity": 12,
-       "amount": 3
-      },
-      {
-       "petal": "Horn",
-       "chance": 1.365,
-       "rarity": 12,
-       "amount": 6
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.863,
-       "rarity": 11,
-       "amount": 4000
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.001,
-       "rarity": 11,
-       "amount": 9100
-      }
-     ]
     }
    ],
    "21": [
@@ -5128,41 +4681,6 @@ export const DROP_TABLES = {
        "amount": 135
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 6.506,
-       "rarity": 11,
-       "amount": 4000
-      },
-      {
-       "petal": "Horn",
-       "chance": 73.46,
-       "rarity": 11,
-       "amount": 9100
-      },
-      {
-       "petal": "Horn",
-       "chance": 19.8,
-       "rarity": 12,
-       "amount": 51
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.233,
-       "rarity": 11,
-       "amount": 32000
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.001,
-       "rarity": 12,
-       "amount": 135
-      }
-     ]
     }
    ],
    "22": [
@@ -5253,41 +4771,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 0.001,
-       "rarity": 13,
-       "amount": 12
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 69.652,
-       "rarity": 12,
-       "amount": 500
-      },
-      {
-       "petal": "Horn",
-       "chance": 21.56,
-       "rarity": 12,
-       "amount": 1080
-      },
-      {
-       "petal": "Horn",
-       "chance": 6.834,
-       "rarity": 13,
-       "amount": 5
-      },
-      {
-       "petal": "Horn",
-       "chance": 1.953,
-       "rarity": 13,
-       "amount": 8
-      },
-      {
-       "petal": "Horn",
        "chance": 0.001,
        "rarity": 13,
        "amount": 12
@@ -5406,47 +4889,6 @@ export const DROP_TABLES = {
        "amount": 600
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 64.02,
-       "rarity": 13,
-       "amount": 3
-      },
-      {
-       "petal": "Horn",
-       "chance": 21.65,
-       "rarity": 13,
-       "amount": 25
-      },
-      {
-       "petal": "Horn",
-       "chance": 9.39,
-       "rarity": 12,
-       "amount": 20000
-      },
-      {
-       "petal": "Horn",
-       "chance": 3.95,
-       "rarity": 13,
-       "amount": 100
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.98,
-       "rarity": 12,
-       "amount": 94000
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.01,
-       "rarity": 13,
-       "amount": 600
-      }
-     ]
     }
    ],
    "24": [
@@ -5555,47 +4997,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 0.01,
-       "rarity": 13,
-       "amount": 13000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 59.92,
-       "rarity": 13,
-       "amount": 200
-      },
-      {
-       "petal": "Horn",
-       "chance": 24.97,
-       "rarity": 13,
-       "amount": 500
-      },
-      {
-       "petal": "Horn",
-       "chance": 11.23,
-       "rarity": 12,
-       "amount": 450000
-      },
-      {
-       "petal": "Horn",
-       "chance": 3.45,
-       "rarity": 14,
-       "amount": 3
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.42,
-       "rarity": 11,
-       "amount": 1000000000
-      },
-      {
-       "petal": "Horn",
        "chance": 0.01,
        "rarity": 13,
        "amount": 13000
@@ -5714,47 +5115,6 @@ export const DROP_TABLES = {
        "amount": 487500
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 71.05,
-       "rarity": 14,
-       "amount": 20
-      },
-      {
-       "petal": "Horn",
-       "chance": 17.77,
-       "rarity": 14,
-       "amount": 50
-      },
-      {
-       "petal": "Horn",
-       "chance": 7.92,
-       "rarity": 13,
-       "amount": 37500
-      },
-      {
-       "petal": "Horn",
-       "chance": 2.89,
-       "rarity": 14,
-       "amount": 200
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.36,
-       "rarity": 12,
-       "amount": 56250000
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.01,
-       "rarity": 13,
-       "amount": 487500
-      }
-     ]
     }
    ],
    "26": [
@@ -5863,47 +5223,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 0.01,
-       "rarity": 13,
-       "amount": 4125000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 73.64,
-       "rarity": 14,
-       "amount": 400
-      },
-      {
-       "petal": "Horn",
-       "chance": 16.21,
-       "rarity": 14,
-       "amount": 800
-      },
-      {
-       "petal": "Horn",
-       "chance": 6.2,
-       "rarity": 14,
-       "amount": 2600
-      },
-      {
-       "petal": "Horn",
-       "chance": 3.66,
-       "rarity": 15,
-       "amount": 12
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.28,
-       "rarity": 15,
-       "amount": 24
-      },
-      {
-       "petal": "Horn",
        "chance": 0.01,
        "rarity": 13,
        "amount": 4125000
@@ -6035,53 +5354,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Dice",
-       "chance": 0.003,
-       "rarity": 14,
-       "amount": 480000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Horn",
-       "chance": 3.647,
-       "rarity": 14,
-       "amount": 1600
-      },
-      {
-       "petal": "Horn",
-       "chance": 78.772,
-       "rarity": 14,
-       "amount": 4100
-      },
-      {
-       "petal": "Horn",
-       "chance": 11.253,
-       "rarity": 14,
-       "amount": 8800
-      },
-      {
-       "petal": "Horn",
-       "chance": 4.604,
-       "rarity": 15,
-       "amount": 60
-      },
-      {
-       "petal": "Horn",
-       "chance": 1.707,
-       "rarity": 14,
-       "amount": 29300
-      },
-      {
-       "petal": "Horn",
-       "chance": 0.014,
-       "rarity": 12,
-       "amount": 13500000000
-      },
-      {
-       "petal": "Horn",
        "chance": 0.003,
        "rarity": 14,
        "amount": 480000
@@ -41628,17 +40900,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 12.8,
-       "rarity": 0,
-       "amount": 1
-      }
-     ]
     }
    ],
    "1": [
@@ -41704,23 +40965,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 6.79,
-       "rarity": 1,
-       "amount": 1
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 42.6,
-       "rarity": 0,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
        "chance": 6.79,
        "rarity": 1,
        "amount": 1
@@ -41815,29 +41059,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 4.01,
-       "rarity": 2,
-       "amount": 1
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 59.7,
-       "rarity": 0,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 35.5,
-       "rarity": 1,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
        "chance": 4.01,
        "rarity": 2,
        "amount": 1
@@ -41961,35 +41182,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 0.5,
-       "rarity": 0,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 64.4,
-       "rarity": 1,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 33.2,
-       "rarity": 2,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 1.74,
-       "rarity": 3,
-       "amount": 1
-      }
-     ]
     }
    ],
    "4": [
@@ -42108,35 +41300,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 6.51,
-       "rarity": 1,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 82.9,
-       "rarity": 2,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 9.61,
-       "rarity": 3,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.9,
-       "rarity": 4,
-       "amount": 1
-      }
-     ]
     }
    ],
    "5": [
@@ -42226,29 +41389,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 17.7,
-       "rarity": 4,
-       "amount": 1
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 9.22,
-       "rarity": 2,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 73,
-       "rarity": 3,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
        "chance": 17.7,
        "rarity": 4,
        "amount": 1
@@ -42348,29 +41488,6 @@ export const DROP_TABLES = {
        "amount": 2
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 14.1,
-       "rarity": 3,
-       "amount": 2
-      },
-      {
-       "petal": "Compass",
-       "chance": 82.3,
-       "rarity": 4,
-       "amount": 2
-      },
-      {
-       "petal": "Compass",
-       "chance": 3.52,
-       "rarity": 5,
-       "amount": 2
-      }
-     ]
     }
    ],
    "7": [
@@ -42460,29 +41577,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 1.25,
-       "rarity": 6,
-       "amount": 1
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 31.9,
-       "rarity": 4,
-       "amount": 3
-      },
-      {
-       "petal": "Compass",
-       "chance": 66.7,
-       "rarity": 5,
-       "amount": 3
-      },
-      {
-       "petal": "Compass",
        "chance": 1.25,
        "rarity": 6,
        "amount": 1
@@ -42582,29 +41676,6 @@ export const DROP_TABLES = {
        "amount": 2
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 12.36,
-       "rarity": 4,
-       "amount": 5
-      },
-      {
-       "petal": "Compass",
-       "chance": 80.66,
-       "rarity": 5,
-       "amount": 5
-      },
-      {
-       "petal": "Compass",
-       "chance": 6.98,
-       "rarity": 6,
-       "amount": 2
-      }
-     ]
     }
    ],
    "9": [
@@ -42699,29 +41770,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 38.2,
-       "rarity": 5,
-       "amount": 10
-      },
-      {
-       "petal": "Compass",
-       "chance": 61.2,
-       "rarity": 6,
-       "amount": 5
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.52,
-       "rarity": 7,
-       "amount": 1
-      }
-     ]
     }
    ],
    "10": [
@@ -42787,23 +41835,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 53.6,
-       "rarity": 6,
-       "amount": 40
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 46.3,
-       "rarity": 6,
-       "amount": 20
-      },
-      {
-       "petal": "Compass",
        "chance": 53.6,
        "rarity": 6,
        "amount": 40
@@ -42898,29 +41929,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 0.52,
-       "rarity": 8,
-       "amount": 1
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 38.2,
-       "rarity": 6,
-       "amount": 50
-      },
-      {
-       "petal": "Compass",
-       "chance": 61.2,
-       "rarity": 7,
-       "amount": 5
-      },
-      {
-       "petal": "Compass",
        "chance": 0.52,
        "rarity": 8,
        "amount": 1
@@ -43038,35 +42046,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 0.05,
-       "rarity": 6,
-       "amount": 50
-      },
-      {
-       "petal": "Compass",
-       "chance": 53.6,
-       "rarity": 7,
-       "amount": 100
-      },
-      {
-       "petal": "Compass",
-       "chance": 45.8,
-       "rarity": 7,
-       "amount": 900
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.41,
-       "rarity": 8,
-       "amount": 1
-      }
-     ]
     }
    ],
    "13": [
@@ -43156,29 +42135,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 1.12,
-       "rarity": 8,
-       "amount": 60
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 18.6,
-       "rarity": 7,
-       "amount": 500
-      },
-      {
-       "petal": "Compass",
-       "chance": 80.1,
-       "rarity": 8,
-       "amount": 24
-      },
-      {
-       "petal": "Compass",
        "chance": 1.12,
        "rarity": 8,
        "amount": 60
@@ -43302,35 +42258,6 @@ export const DROP_TABLES = {
        "amount": 1
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 6.6,
-       "rarity": 7,
-       "amount": 2000
-      },
-      {
-       "petal": "Compass",
-       "chance": 92.1,
-       "rarity": 8,
-       "amount": 86
-      },
-      {
-       "petal": "Compass",
-       "chance": 1.29,
-       "rarity": 9,
-       "amount": 2
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.01,
-       "rarity": 10,
-       "amount": 1
-      }
-     ]
     }
    ],
    "15": [
@@ -43444,35 +42371,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 0.07,
-       "rarity": 10,
-       "amount": 2
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 90.2,
-       "rarity": 8,
-       "amount": 278
-      },
-      {
-       "petal": "Compass",
-       "chance": 7.89,
-       "rarity": 9,
-       "amount": 10
-      },
-      {
-       "petal": "Compass",
-       "chance": 1.84,
-       "rarity": 10,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
        "chance": 0.07,
        "rarity": 10,
        "amount": 2
@@ -43603,41 +42501,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 0.8,
-       "rarity": 10,
-       "amount": 20
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 13.19,
-       "rarity": 8,
-       "amount": 20000
-      },
-      {
-       "petal": "Compass",
-       "chance": 72.71,
-       "rarity": 9,
-       "amount": 600
-      },
-      {
-       "petal": "Compass",
-       "chance": 12.3,
-       "rarity": 9,
-       "amount": 1200
-      },
-      {
-       "petal": "Compass",
-       "chance": 1,
-       "rarity": 10,
-       "amount": 10
-      },
-      {
-       "petal": "Compass",
        "chance": 0.8,
        "rarity": 10,
        "amount": 20
@@ -43797,47 +42660,6 @@ export const DROP_TABLES = {
        "amount": 31000
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 13.18,
-       "rarity": 8,
-       "amount": 500000
-      },
-      {
-       "petal": "Compass",
-       "chance": 72.71,
-       "rarity": 9,
-       "amount": 5000
-      },
-      {
-       "petal": "Compass",
-       "chance": 12.29,
-       "rarity": 9,
-       "amount": 10000
-      },
-      {
-       "petal": "Compass",
-       "chance": 1.01,
-       "rarity": 10,
-       "amount": 75
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.8,
-       "rarity": 11,
-       "amount": 1
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.01,
-       "rarity": 9,
-       "amount": 31000
-      }
-     ]
     }
    ],
    "18": [
@@ -43987,47 +42809,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 0.01,
-       "rarity": 10,
-       "amount": 12000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 9.05,
-       "rarity": 9,
-       "amount": 105000
-      },
-      {
-       "petal": "Compass",
-       "chance": 72.86,
-       "rarity": 10,
-       "amount": 300
-      },
-      {
-       "petal": "Compass",
-       "chance": 14.39,
-       "rarity": 11,
-       "amount": 3
-      },
-      {
-       "petal": "Compass",
-       "chance": 3.01,
-       "rarity": 10,
-       "amount": 2600
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.68,
-       "rarity": 11,
-       "amount": 24
-      },
-      {
-       "petal": "Compass",
        "chance": 0.01,
        "rarity": 10,
        "amount": 12000
@@ -44211,53 +42992,6 @@ export const DROP_TABLES = {
        "amount": 300
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 57.04,
-       "rarity": 10,
-       "amount": 300
-      },
-      {
-       "petal": "Compass",
-       "chance": 24.52,
-       "rarity": 10,
-       "amount": 4500
-      },
-      {
-       "petal": "Compass",
-       "chance": 11.79,
-       "rarity": 10,
-       "amount": 10000
-      },
-      {
-       "petal": "Compass",
-       "chance": 4.014,
-       "rarity": 11,
-       "amount": 48
-      },
-      {
-       "petal": "Compass",
-       "chance": 1.882,
-       "rarity": 11,
-       "amount": 100
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.753,
-       "rarity": 11,
-       "amount": 200
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.001,
-       "rarity": 11,
-       "amount": 300
-      }
-     ]
     }
    ],
    "20": [
@@ -44436,53 +43170,6 @@ export const DROP_TABLES = {
        "amount": 9100
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 61.04,
-       "rarity": 11,
-       "amount": 124
-      },
-      {
-       "petal": "Compass",
-       "chance": 22.52,
-       "rarity": 11,
-       "amount": 456
-      },
-      {
-       "petal": "Compass",
-       "chance": 9.46,
-       "rarity": 10,
-       "amount": 250000
-      },
-      {
-       "petal": "Compass",
-       "chance": 4.751,
-       "rarity": 12,
-       "amount": 3
-      },
-      {
-       "petal": "Compass",
-       "chance": 1.365,
-       "rarity": 12,
-       "amount": 6
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.863,
-       "rarity": 11,
-       "amount": 4000
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.001,
-       "rarity": 11,
-       "amount": 9100
-      }
-     ]
     }
    ],
    "21": [
@@ -44613,41 +43300,6 @@ export const DROP_TABLES = {
        "amount": 135
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 6.506,
-       "rarity": 11,
-       "amount": 4000
-      },
-      {
-       "petal": "Compass",
-       "chance": 73.46,
-       "rarity": 11,
-       "amount": 9100
-      },
-      {
-       "petal": "Compass",
-       "chance": 19.8,
-       "rarity": 12,
-       "amount": 51
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.233,
-       "rarity": 11,
-       "amount": 32000
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.001,
-       "rarity": 12,
-       "amount": 135
-      }
-     ]
     }
    ],
    "22": [
@@ -44773,41 +43425,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 0.001,
-       "rarity": 13,
-       "amount": 12
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 69.652,
-       "rarity": 12,
-       "amount": 500
-      },
-      {
-       "petal": "Compass",
-       "chance": 21.56,
-       "rarity": 12,
-       "amount": 1080
-      },
-      {
-       "petal": "Compass",
-       "chance": 6.834,
-       "rarity": 13,
-       "amount": 5
-      },
-      {
-       "petal": "Compass",
-       "chance": 1.953,
-       "rarity": 13,
-       "amount": 8
-      },
-      {
-       "petal": "Compass",
        "chance": 0.001,
        "rarity": 13,
        "amount": 12
@@ -44967,47 +43584,6 @@ export const DROP_TABLES = {
        "amount": 600
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 64.02,
-       "rarity": 13,
-       "amount": 3
-      },
-      {
-       "petal": "Compass",
-       "chance": 21.65,
-       "rarity": 13,
-       "amount": 25
-      },
-      {
-       "petal": "Compass",
-       "chance": 9.39,
-       "rarity": 12,
-       "amount": 20000
-      },
-      {
-       "petal": "Compass",
-       "chance": 3.95,
-       "rarity": 13,
-       "amount": 100
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.98,
-       "rarity": 12,
-       "amount": 94000
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.01,
-       "rarity": 13,
-       "amount": 600
-      }
-     ]
     }
    ],
    "24": [
@@ -45157,47 +43733,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 0.01,
-       "rarity": 13,
-       "amount": 13000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 59.92,
-       "rarity": 13,
-       "amount": 200
-      },
-      {
-       "petal": "Compass",
-       "chance": 24.97,
-       "rarity": 13,
-       "amount": 500
-      },
-      {
-       "petal": "Compass",
-       "chance": 11.23,
-       "rarity": 12,
-       "amount": 450000
-      },
-      {
-       "petal": "Compass",
-       "chance": 3.45,
-       "rarity": 14,
-       "amount": 3
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.42,
-       "rarity": 11,
-       "amount": 1000000000
-      },
-      {
-       "petal": "Compass",
        "chance": 0.01,
        "rarity": 13,
        "amount": 13000
@@ -45357,47 +43892,6 @@ export const DROP_TABLES = {
        "amount": 487500
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 71.05,
-       "rarity": 14,
-       "amount": 20
-      },
-      {
-       "petal": "Compass",
-       "chance": 17.77,
-       "rarity": 14,
-       "amount": 50
-      },
-      {
-       "petal": "Compass",
-       "chance": 7.92,
-       "rarity": 13,
-       "amount": 37500
-      },
-      {
-       "petal": "Compass",
-       "chance": 2.89,
-       "rarity": 14,
-       "amount": 200
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.36,
-       "rarity": 12,
-       "amount": 56250000
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.01,
-       "rarity": 13,
-       "amount": 487500
-      }
-     ]
     }
    ],
    "26": [
@@ -45547,47 +44041,6 @@ export const DROP_TABLES = {
       },
       {
        "petal": "Shovel",
-       "chance": 0.01,
-       "rarity": 13,
-       "amount": 4125000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Compass",
-       "chance": 73.64,
-       "rarity": 14,
-       "amount": 400
-      },
-      {
-       "petal": "Compass",
-       "chance": 16.21,
-       "rarity": 14,
-       "amount": 800
-      },
-      {
-       "petal": "Compass",
-       "chance": 6.2,
-       "rarity": 14,
-       "amount": 2600
-      },
-      {
-       "petal": "Compass",
-       "chance": 3.66,
-       "rarity": 15,
-       "amount": 12
-      },
-      {
-       "petal": "Compass",
-       "chance": 0.28,
-       "rarity": 15,
-       "amount": 24
-      },
-      {
-       "petal": "Compass",
        "chance": 0.01,
        "rarity": 13,
        "amount": 4125000
@@ -59724,29 +58177,6 @@ export const DROP_TABLES = {
        "amount": 9100
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Amulet of Grace",
-       "chance": 15.04,
-       "rarity": 11,
-       "amount": 1
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 2.86,
-       "rarity": 11,
-       "amount": 6
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.1,
-       "rarity": 11,
-       "amount": 12
-      }
-     ]
     }
    ],
    "21": [
@@ -59778,35 +58208,6 @@ export const DROP_TABLES = {
        "amount": 135
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Amulet of Grace",
-       "chance": 61.01,
-       "rarity": 11,
-       "amount": 6
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 23.64,
-       "rarity": 11,
-       "amount": 12
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 3.51,
-       "rarity": 11,
-       "amount": 30
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.09,
-       "rarity": 11,
-       "amount": 60
-      }
-     ]
     }
    ],
    "22": [
@@ -59836,41 +58237,6 @@ export const DROP_TABLES = {
        "chance": 0.01,
        "rarity": 13,
        "amount": 12
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Amulet of Grace",
-       "chance": 63.01,
-       "rarity": 11,
-       "amount": 60
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 28.07,
-       "rarity": 11,
-       "amount": 84
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 6.76,
-       "rarity": 11,
-       "amount": 156
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 2.15,
-       "rarity": 11,
-       "amount": 201
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.01,
-       "rarity": 12,
-       "amount": 1
       }
      ]
     }
@@ -59910,41 +58276,6 @@ export const DROP_TABLES = {
        "amount": 600
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Amulet of Grace",
-       "chance": 65.196,
-       "rarity": 12,
-       "amount": 1
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 23.831,
-       "rarity": 11,
-       "amount": 760
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 7.904,
-       "rarity": 12,
-       "amount": 5
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 3.064,
-       "rarity": 12,
-       "amount": 10
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.005,
-       "rarity": 12,
-       "amount": 50
-      }
-     ]
     }
    ],
    "24": [
@@ -59980,47 +58311,6 @@ export const DROP_TABLES = {
        "chance": 0.04,
        "rarity": 13,
        "amount": 13000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Amulet of Grace",
-       "chance": 92.92,
-       "rarity": 12,
-       "amount": 125
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 3.78,
-       "rarity": 12,
-       "amount": 300
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 2.11,
-       "rarity": 13,
-       "amount": 1
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 1.01,
-       "rarity": 13,
-       "amount": 3
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.17,
-       "rarity": 12,
-       "amount": 2000
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.01,
-       "rarity": 12,
-       "amount": 4000
       }
      ]
     }
@@ -60060,47 +58350,6 @@ export const DROP_TABLES = {
        "amount": 487500
       }
      ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Amulet of Grace",
-       "chance": 89.15,
-       "rarity": 12,
-       "amount": 800
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 5.34,
-       "rarity": 12,
-       "amount": 1500
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 3.74,
-       "rarity": 12,
-       "amount": 3000
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 1.55,
-       "rarity": 13,
-       "amount": 15
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.21,
-       "rarity": 13,
-       "amount": 20
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.01,
-       "rarity": 12,
-       "amount": 6000
-      }
-     ]
     }
    ],
    "26": [
@@ -60136,47 +58385,6 @@ export const DROP_TABLES = {
        "chance": 0.03,
        "rarity": 13,
        "amount": 4125000
-      }
-     ]
-    },
-    {
-     "weight": 1,
-     "drops": [
-      {
-       "petal": "Amulet of Grace",
-       "chance": 91.95,
-       "rarity": 12,
-       "amount": 7500
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 3.99,
-       "rarity": 13,
-       "amount": 60
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 2.55,
-       "rarity": 13,
-       "amount": 100
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 1.32,
-       "rarity": 13,
-       "amount": 300
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.18,
-       "rarity": 14,
-       "amount": 1
-      },
-      {
-       "petal": "Amulet of Grace",
-       "chance": 0.01,
-       "rarity": 14,
-       "amount": 3
       }
      ]
     }
