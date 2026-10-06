@@ -238,8 +238,8 @@ export const petalConfigs = [
     new PetalConfig("Bubble", 22.5 * .5, 1e-15, 1e-15)
         .setSize(1.3)
         .setBoost(
-            [5, 7, 11, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(e => e * 2 | 0),
-            [1, .9, .8, .7, .6, .5, .5, .4, .3, .2, .1, .1].map(e => e * 22.5 | 0)
+            [5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 20, 20, 25, 30, 30, 35].map(t => 2 * t | 0),
+            [1, .9, .8, .7, .6, .5, .5, .4, .3, .2, .1, .1].map(t => 22.5 * t | 0)
         )
         .setDescription("It will boost you when you pop it."),
     new PetalConfig("Air", 0, 0, 0)
