@@ -861,6 +861,11 @@ export const petalConfigs = [
         .setDrawing(new Drawing()
         .addAction("beginPath").addAction("rect", -1.2, -0.8, 2.4, 1.6).addAction("fill", "#ffffff").addAction("closePath").addAction("beginPath").addAction("moveTo", -1.1, 0.35).addAction("lineTo", 1.1, 0.35).addAction("stroke", "#202020", 0.3, 0).addAction("closePath").addAction("beginPath").addAction("rect", -1.2, -0.8, 2.4, 1.6).addAction("stroke", "#cfcfcf", 0.3, 0).addAction("closePath").addAction("beginPath").addAction("rect", -0.9, -0.45, 0.8, 0.5).addAction("fill", "#d4af37").addAction("closePath").addAction("beginPath").addAction("circle", 0.4, -0.2, 0.25).addAction("fill", "#ff9500").addAction("beginPath").addAction("circle", 0.7, -0.2, 0.25).addAction("closePath").addAction("fill", "#ff1500").addAction("closePath")
         ),
+    new PetalConfig("Golden Leaf", 22.5, 15, 15)
+        .setSize(1.4)
+        .setIcon(1, 1, "Leaf", 0)
+        .setDescription("Speeds up reload for other petals you have.")
+        .setDrawing(new Drawing().addAction("rotate", -45).addAction("beginPath").addAction("moveTo", -.6609, .4525).addAction("quadraticCurveTo", -.2989, .6336, .1536, .5431).addAction("quadraticCurveTo", .5157, .4525, .7872, .2715).addAction("quadraticCurveTo", 1.104, .0453, .8777, -.181).addAction("quadraticCurveTo", .6062, -.4525, .1536, -.5431).addAction("quadraticCurveTo", -.2989, -.6336, -.7062, -.4073).addAction("quadraticCurveTo", -1.2493, .0453, -.6609, .4525).addAction("closePath").addAction("paint", "#FFE763", .2, .2).addAction("beginPath").addAction("moveTo", .6, 0).addAction("quadraticCurveTo", 0, .1, -.6, 0).addAction("moveTo", -1, 0).addAction("quadraticCurveTo", -1.3, -.05, -1.35, -.1).addAction("stroke", "#FFE763", .2, .2)),
 ];
 
 // desert-maze balance: every sub-petal of a multi-petal flower deals 25% more
