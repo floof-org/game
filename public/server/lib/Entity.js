@@ -1688,6 +1688,8 @@ export class Petal extends Entity {
         this.launchedAt = null;
         this.attractsLightning = false;
         this.placeDown = false;
+        this.stayDown = false;
+        this.placedDown = false;
         this.rarity = 0;
         this.armor = 0;
 
@@ -1771,6 +1773,9 @@ export class Petal extends Entity {
 
         if (config.canPlaceDown || config.stayDown) {
             this.placeDown = true;
+        }
+        if (config.stayDown) {
+            this.stayDown = true;
         }
 
         if (tier.density) {
@@ -1917,7 +1922,9 @@ export class Petal extends Entity {
             this.facing = this.moveAngle;
         }
 
-        if (this.placeDown && this.parent.attack) {
+        if (this.stayDown && this.parent.attack) this.placedDown = true;
+        const shouldStayDetached = (this.placeDown && this.parent.attack) || this.placedDown;
+        if (shouldStayDetached) {
             return super.update();
         }
 
