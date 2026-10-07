@@ -231,7 +231,7 @@ export class PetalSlot {
         this.petals = new Array(this.amount).fill(null);
         this.cooldowns = new Array(this.amount).fill(0);
         this.boundMobs = new Array(this.amount).fill(null).map(() => []);
-
+        this.config.tiers[rarityID].reloadReduction && (this.player.reloadReduction /= (1 + (this.config.tiers[rarityID].reloadReduction / 100)));
         this.player.health.set(Math.max(1e-10, this.player.health.maxHealth + this.config.tiers[rarityID].extraHealth));
         this.player.health.damageReduction += this.config.tiers[rarityID].damageReduction;
         this.player.size += this.config.tiers[rarityID].extraSize;
@@ -326,6 +326,7 @@ export class PetalSlot {
         this.player.health.damageReduction -= this.config.tiers[this.rarity].damageReduction;
         this.player.size -= this.config.tiers[this.rarity].extraSize;
         this.player.speed /= this.config.tiers[this.rarity].speedMultiplier;
+        this.config.tiers[this.rarity].reloadReduction && (this.player.reloadReduction *= (1 + (this.config.tiers[this.rarity].reloadReduction / 100)));
         this.cooldowns = new Array(this.amount).fill(-100);
 
         this.boundMobs.forEach(mobs => {
@@ -718,7 +719,7 @@ export class PetalSlot {
                     }
                 }
 
-                this.cooldowns[j]++;
+                this.cooldowns[j] += this.player.reloadReduction;
                 if (this.cooldowns[j] >= this.config.cooldown) {
                     this.petals[j] = new Petal(this.player, this.index, j);
                     this.petals[j].define(this.config, this.rarity);
@@ -2000,7 +2001,7 @@ export class Player extends Entity {
         this.team = this.id;
 
         this.health.set(40);
-
+        this.reloadReduction = 1;
         this.moveAngle = 0;
         this.moveStrength = 0;
         this.attack = false;

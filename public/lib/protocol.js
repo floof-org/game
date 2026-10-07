@@ -574,7 +574,12 @@ export class PetalConfig {
 
         return this;
     }
-
+    setReloadReduction(t, e) {
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].reloadReduction = t + (e * i);
+        }
+        return this;
+    }
     setPoison(poisonDamage, duration) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].poison = {
