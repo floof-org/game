@@ -25,7 +25,7 @@ const state = {
     isLineMap: false,
     biome: 0,
 
-    announceRarity: 25,
+    announceRarity: 16,
 
     gamemode: GAMEMODES.FFA,
     useCraftingProtocol: false,
