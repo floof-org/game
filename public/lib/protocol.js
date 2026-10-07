@@ -530,6 +530,15 @@ export class PetalConfig {
     }
 
     /**
+     * Wall bounces: launched projectiles reflect off terrain instead of
+     * breaking, up to count times at the incident angle, then despawn.
+     */
+    setWallBounces(count) {
+        this.wallBounces = count;
+        return this;
+    }
+
+    /**
      * Pull burst: attacking consumes one live petal and yanks nearby mobs
      * toward the player. Radius in world units, strength as velocity impulse.
      */

@@ -651,7 +651,8 @@ export class PetalSlot {
                             newPet.speed = petal.speed * .8;
                             newPet.spinSpeed = petal.spinSpeed;
                             newPet.launched = true;
-                            newPet.range = 100;
+                            newPet.range = conf.wallBounces != null ? 292 : 100;
+                            newPet.wallBouncesLeft = conf.wallBounces ?? 0;
                             newPet.facing = newPet.moveAngle = Math.PI * 2 / this.config.splits.count * i + petal.facing + petal.moveAngle;
                             newPet.x = petal.x;
                             newPet.y = petal.y;
@@ -1981,7 +1982,39 @@ export class Petal extends Entity {
 
             terrains.forEach(terrain => {
                 if (terrain.polygon.circleIntersects(this.x, this.y, this.size)) {
-                    this.destroy();
+                    if ((this.wallBouncesLeft ?? 0) > 0) {
+                        this.wallBouncesLeft--;
+                        // Reflect off the closest wall edge at the incident angle.
+                        const poly = terrain.polygon;
+                        let best = null;
+                        let bestDist = Infinity;
+                        for (let i = 0; i < poly.numPoints; i += 2) {
+                            const pt = poly.getClosestPointOnEdge(poly.points[i], poly.points[i + 1], poly.points[(i + 2) % poly.numPoints], poly.points[(i + 3) % poly.numPoints], this.x, this.y);
+                            const dx = this.x - pt.x;
+                            const dy = this.y - pt.y;
+                            const dist = dx * dx + dy * dy;
+                            if (dist < bestDist) {
+                                bestDist = dist;
+                                best = pt;
+                            }
+                        }
+                        if (best) {
+                            let nx = this.x - best.x;
+                            let ny = this.y - best.y;
+                            const len = Math.hypot(nx, ny) || 1;
+                            nx /= len;
+                            ny /= len;
+                            const dot = this.velocity.x * nx + this.velocity.y * ny;
+                            this.velocity.x -= 2 * dot * nx;
+                            this.velocity.y -= 2 * dot * ny;
+                            this.x = best.x + nx * (this.size + 1);
+                            this.y = best.y + ny * (this.size + 1);
+                            this.moveAngle = Math.atan2(this.velocity.y, this.velocity.x);
+                            this.facing = this.moveAngle;
+                        }
+                    } else {
+                        this.destroy();
+                    }
                 }
             });
         }

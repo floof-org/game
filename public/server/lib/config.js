@@ -719,7 +719,7 @@ export const petalConfigs = [
     new PetalConfig("Pomegranate", 10.125, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setIcon(.85, 1, "Pomegranate", -45).setSize(1.25).setPomegranate(0.005)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", .75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, .75, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", -.75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, -.75, .75).addAction("paint", "#e52669", .25, .2)
         ).setDescription("A deadly 4 in 1 deal. Check /petalinfo [rarity] pomegranate"),
-    new PetalConfig("projectile.pomegranate", 2250, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setPomegranate(0.005)
+    new PetalConfig("projectile.pomegranate", 2250, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setPomegranate(0.005).setWallBounces(5)
         .setDrawing(new Drawing()
         .addAction("beginPath")
         .addAction("circle", 0, 0, 0.80)
