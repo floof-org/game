@@ -3027,12 +3027,11 @@ export class Mob extends Entity {
             return;
         }
 
-        // Frozen mobs skip their update, and pacified mobs regain their config
-        // aggression once the timer lapses. Migrated from WhiteHole.js.
+        // Frozen mobs hold still but everything else ticks, and pacified
+        // mobs regain their config aggression once the timer lapses.
+        // Migrated from WhiteHole.js.
         const now = Date.now();
-        if (this.freezeUntil > now) {
-            return;
-        }
+        const frozen = this.freezeUntil > now;
         if (this.pacifiedUntil && now >= this.pacifiedUntil) {
             this.pacifiedUntil = 0;
             this.aggressive = this.config?.aggressive ?? false;
@@ -3304,7 +3303,10 @@ export class Mob extends Entity {
         }
 
         if (this.projectile !== null) {
-            this.projectile.tick++;
+            if (frozen) {
+                this.projectile.tick = Math.min(this.projectile.cooldown, this.projectile.tick + 1);
+            } else {
+                this.projectile.tick++;
 
             if (this.projectile.aimbot && this.target?.velocity.magnitude > 0) {
                 const dist = Math.sqrt(quickDiff(this, this.target));
@@ -3366,6 +3368,13 @@ export class Mob extends Entity {
                     }
                 }
             }
+        }
+        }
+
+        // Frozen mobs hold still while everything else ticks.
+        if (frozen) {
+            this.velocity.x = 0;
+            this.velocity.y = 0;
         }
 
         this.bindToRoom();
