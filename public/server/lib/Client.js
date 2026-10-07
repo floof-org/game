@@ -3828,6 +3828,7 @@ if (commandCheck("/pity")) {
     }
 }
         if (commandCheck("/upg")) {
+            if (!this.body) return;
             const args = e.split(" ");
             if (!args[1]) return this.systemMessage("/upg ask | returns 3 perma skills too choose from if avalible."), 
             this.systemMessage("/upg pick 1-3 | picks an perma skill based on the set given by /upg ask"),
@@ -3889,6 +3890,7 @@ if (commandCheck("/pity")) {
                         this.permaSkills.dup += 0.2
                         break;
                 }
+                this.body.skills = this.permaSkills;
             }
         }
         if (commandCheck("/craft")) {
