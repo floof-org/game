@@ -658,7 +658,7 @@ export class PetalSlot {
                             newPet.health.set(petal.health.health);
                             newPet.damage = petal.damage;
                             newPet.poison = petal.poison
-                            newPet.speed = petal.speed * .8;
+                            newPet.speed = petal.speed * .8 * (newPet.index === POMEGRANATE_PROJECTILE_INDEX ? 1.5 : 1);
                             newPet.spinSpeed = petal.spinSpeed;
                             newPet.launched = true;
                             newPet.range = conf?.wallBounces != null ? 292 : 100;
