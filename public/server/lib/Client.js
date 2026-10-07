@@ -1192,6 +1192,7 @@ export default class Client {
                 }
 
                 this.body = new Player(state.getPlayerSpawn(this));
+                this.body.skills = this.permaSkills ?? {r: 1, d: 1, sr: 1, sp: 1, re: 0, dup: 0};
                 this.firstSpawn = false;
                 this.body.name = this.username;
                 this.body.nameColor = this.nameColor;
@@ -3835,7 +3836,7 @@ if (commandCheck("/pity")) {
             const upgradeTypes = [
     { message: "Decreases reload by -3% forever.", color: "#90EE90" },
     { message: "Increases damage by 4% forever", color: "#FF4C4C" }, 
-    { message: "Decreases secondary reload by -2% forever", color: "#90EE90" }, 
+    { message: "Decreases secondary reload by -4% forever", color: "#90EE90" }, 
     { message: "Increases speed by 3% forever", color: "#87CEFA" }, 
     { message: "Increases reach by +4 forever", color: "#2196F3" },
     { message: "Increases duplicator property by 0.2", color: "#FFA500" }
@@ -3859,20 +3860,33 @@ if (commandCheck("/pity")) {
             else if (args[1] = "pick") {
                 if (this.nextSet.length < 3) return this.systemMessage("No choices active");
                 if (!args[2] || Number(args[2]) > 3 || Number(args[2]) < 1) return this.systemMessage("Invalid number")
-                const upgType = upgradeTypes.indexOf(this.nextSet[Number(args[2])]);
+                const upgType = upgradeTypes.indexOf(this.nextSet[Number(args[2]) - 1]);
                 this.totalSkills++;
                 this.nextSet = [];
                 switch(upgType) {
                     case 0:
                         this.permaSkills.r *= 0.97
+                        this.systemMessage(`Upgraded reload to ${Math.round((1 / this.permaSkills.r) * 10000) / 100}%`)
                         break;
                     case 1:
                         this.permaSkills.d *= 1.04
+                        this.systemMessage(`Upgraded damage to ${Math.round((this.permaSkills.d) * 10000) / 100}%`)
                         break;
                     case 2:
-                        this.permaSkills.sr *= 0.98
+                        this.permaSkills.sr *= 0.96
+                        this.systemMessage(`Upgraded secondary reload to ${Math.round((1 / this.permaSkills.sr) * 10000) / 100}%`)
                         break;
                     case 3:
+                        this.permaSkills.sp *= 1.03
+                        this.systemMessage(`Upgraded speed to ${Math.round((this.permaSkills.sp) * 10000) / 100}%`)
+                        break;
+                    case 4:
+                        this.permaSkills.re += 4
+                        this.systemMessage(`Upgraded reach to ${this.permaSkills.re}`)
+                        break;
+                    case 5:
+                        this.systemMessage(`Upgraded duplicator to ${this.permaSkills.dup}`)
+                        this.permaSkills.dup += 0.2
                         break;
                 }
             }
