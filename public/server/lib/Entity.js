@@ -1955,6 +1955,11 @@ export class Petal extends Entity {
         }
 
         if (this.launched) {
+            // Bounced projectiles expire 2s after their last bounce.
+            if (this.lastBounceAt != null && performance.now() - this.lastBounceAt > 2000) {
+                this.destroy();
+                return;
+            }
             this.range--;
 
             if (this.range <= 0) {
@@ -1993,6 +1998,7 @@ export class Petal extends Entity {
                 if (terrain.polygon.circleIntersects(this.x, this.y, this.size)) {
                     if ((this.wallBouncesLeft ?? 0) > 0) {
                         this.wallBouncesLeft--;
+                        this.lastBounceAt = performance.now();
                         // Reflect off the closest wall edge at the incident angle.
                         const poly = terrain.polygon;
                         let best = null;
