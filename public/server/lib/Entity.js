@@ -1633,14 +1633,21 @@ export class Entity {
                 continue;
             }
 
-            if (type === ENTITY_TYPES.PLAYER && !topHurters.some(hurter => hurter.clientID === clientID)) {
-                topHurters.push({
-                    id: +id,
-                    type: type,
-                    damage: damage,
-                    name: name,
-                    clientID: clientID
-                });
+            if (type === ENTITY_TYPES.PLAYER) {
+                // Sum across bodies: dying mid-fight starts a new body id,
+                // but the player's credit must accumulate, as in WhiteHole.js.
+                const existing = topHurters.find(hurter => hurter.clientID === clientID);
+                if (existing) {
+                    existing.damage += damage;
+                } else {
+                    topHurters.push({
+                        id: +id,
+                        type: type,
+                        damage: damage,
+                        name: name,
+                        clientID: clientID
+                    });
+                }
             }
 
             if (type === ENTITY_TYPES.MOB) {
@@ -2951,6 +2958,8 @@ export class Mob extends Entity {
             this.hatchable.time--;
 
             if (this.hatchable.time <= 0) {
+                // Hatching pays out like a kill when damage qualifies.
+                this._hatching = true;
                 this.destroy();
 
                 // Queen-produced eggs carry their parent (the queen), whose config carries
@@ -3294,6 +3303,13 @@ export class Mob extends Entity {
     }
 
     destroy() {
+        // Only combat deaths and hatches pay out. Other timed removals
+        // (expiry, owner death) carry leftover credit into destroy() and must
+        // not loot. Read before super.destroy() zeroes health below.
+        const diedInCombat = this.health.health <= 0;
+        const paysOut = diedInCombat || this._hatching === true;
+        this._hatching = false;
+
         if (this.countedSummon && this.owner) {
             this.owner.rubySummonCount = Math.max(0, (this.owner.rubySummonCount ?? 1) - 1);
             this.countedSummon = false;
@@ -3317,7 +3333,7 @@ export class Mob extends Entity {
 
         // Squad loot shares migrated from WhiteHole.js: damage pools per
         // squad. Solo players qualify at 7.5% of max health; a squad qualifies
-        // when its total reaches 5% per member, with each member clearing 5%.
+        // when its total reaches 5% per member, then every online member shares.
         const damageByClient = new Map();
         for (const damager of topDamagers) {
             if (damager.damage <= 0) continue;
@@ -3365,6 +3381,16 @@ export class Mob extends Entity {
             }
         }
 
+        // Non-combat removals pay nothing no matter the leftover credit.
+        if (!paysOut) {
+            eligibleGroups.length = 0;
+        }
+
+        if (damageByClient.size > 0 && eligibleGroups.length === 0) {
+            const best = Math.max(...[...damageByClient.values()].map(d => d.damage));
+            console.log(`[Loot] ${this.config?.name} r${this.rarity} died with ${damageByClient.size} damager(s), best ${(best / this.health.maxHealth * 100).toFixed(2)}% of max HP, nobody qualified.`);
+        }
+
         let killText = '';
         const dropAnnouncementGroups = new Map();
         const collectDropAnnouncement = (memberClient, index, rarity, amount) => {
@@ -3385,8 +3411,8 @@ export class Mob extends Entity {
         };
 
         // Blood Leaf kill counting and Ruby summons run for every damager
-        // with no threshold, as in WhiteHole.js.
-        for (const data of damageByClient.values()) {
+        // with no threshold, as in WhiteHole.js. Combat deaths only.
+        for (const data of (paysOut ? damageByClient.values() : [])) {
             const client = data.client;
 
             // Blood Leaf kill counting migrated from WhiteHole.js: each
@@ -3532,7 +3558,7 @@ export class Mob extends Entity {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by "
                     + (rest.length > 0 ? rest.join(", ") + (rest.length > 1 ? ", and " : " and ") : "") + last
                     + (hidden > 0 ? " and " + hidden + " more" : "");
-            } else if (topDamagers.length === 0) {
+            } else if (topDamagers.length === 0 || !paysOut) {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " despawned";
             }
 
