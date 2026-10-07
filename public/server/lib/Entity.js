@@ -644,6 +644,7 @@ export class PetalSlot {
                             newPet.rarity = this.rarity
                             newPet.config = petal.config;
                             newPet.index = this.config.splits.index;
+                            const conf = petalConfigs[this.config.splits.index];
                             newPet.size = petal.size / this.config.splits.count * 3;
                             newPet.health.set(petal.health.health);
                             newPet.damage = petal.damage;
@@ -651,8 +652,8 @@ export class PetalSlot {
                             newPet.speed = petal.speed * .8;
                             newPet.spinSpeed = petal.spinSpeed;
                             newPet.launched = true;
-                            newPet.range = conf.wallBounces != null ? 292 : 100;
-                            newPet.wallBouncesLeft = conf.wallBounces ?? 0;
+                            newPet.range = conf?.wallBounces != null ? 292 : 100;
+                            newPet.wallBouncesLeft = conf?.wallBounces ?? 0;
                             newPet.facing = newPet.moveAngle = Math.PI * 2 / this.config.splits.count * i + petal.facing + petal.moveAngle;
                             newPet.x = petal.x;
                             newPet.y = petal.y;
