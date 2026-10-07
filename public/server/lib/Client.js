@@ -69,7 +69,7 @@ const VALID_COMMANDS = new Set([
     "/give", "/addall", "/remove", "/craft", "/pity", "/online", "/saveall",
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
-    "/mute", "/kick", "/ban", "/unban", "/unmute"
+    "/mute", "/kick", "/ban", "/unban", "/unmute", "/xp", "/upg"
 ]);
 
 function normalizeName(str) {
