@@ -1277,6 +1277,47 @@ export class Entity {
                         this.dandelionCooldown = 1 + (0.5 * other.rarity)
                     }
 
+                    // Thorn spawn migrated from WhiteHole.js: a hurt mob with
+                    // thorns fires a thorn projectile in a random direction.
+                    const trySpawnThorn = (mob, other) => {
+                        if (mob?.type !== ENTITY_TYPES.MOB || mob.health?.isDead || !mob.config?.thornSpawn) {
+                            return;
+                        }
+                        const now = Date.now();
+                        if (mob.freezeUntil > now) {
+                            return;
+                        }
+                        const thornData = mob.config.thornSpawn;
+                        const thornConfig = mob._thornConfig ?? petalConfigs.find(p => p?.name === thornData.mobName);
+                        if (!thornConfig) {
+                            return;
+                        }
+                        mob._thornConfig = thornConfig;
+                        if (Math.random() >= thornData.chance) {
+                            return;
+                        }
+                        try {
+                            const thorn = new Petal(mob, -1, -1);
+                            thorn.define(thornConfig, mob.rarity);
+                            const scale = mob.size / 40;
+                            thorn.size *= scale;
+                            thorn.launched = true;
+                            const angle = Math.random() * Math.PI * 2;
+                            const speed = thornData.speed ?? 12;
+                            thorn.velocity.x = Math.cos(angle) * speed;
+                            thorn.velocity.y = Math.sin(angle) * speed;
+                            thorn.moveAngle = angle;
+                            thorn.facing = angle;
+                            thorn.range = 45;
+                        } catch (err) {}
+                    };
+                    if (thisDealt > 0) {
+                        trySpawnThorn(this, other);
+                    }
+                    if (otherDealt > 0) {
+                        trySpawnThorn(other, this);
+                    }
+
                     // Blood Light self damage migrated from WhiteHole.js.
                     {
                         let bloodLightSource = null;
