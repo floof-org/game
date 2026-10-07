@@ -4289,7 +4289,8 @@ if (commandCheck("/pity")) {
 
                                     } else {
 
-                                        if (false) {
+                                        // Failed Eternal to Unique crafts are announced lobby-wide.
+                                        if (rarityIndex === 10) {
                                             state.clients.forEach(c=>c.systemMessage(
                                                 `${this.username} failed to craft ${tiers[nextRarityIndex].name} ${petalArg} after ${attempts} failed attempt${attempts !== 1 ? "s" : ""}.`,
                                                 "#ff5555"));
