@@ -91,6 +91,7 @@ const SHINY_WING_INDEX = petalConfigs.findIndex(p => p?.name === "Shiny Wing");
 const URANIUM_INDEX = petalConfigs.findIndex(p => p?.name === "Uranium");
 const SHOVEL_INDEX = petalConfigs.findIndex(p => p?.name === "Shovel");
 const RUBY_INDEX = petalConfigs.findIndex(p => p?.name === "Ruby");
+const CLOVER_INDEX = petalConfigs.findIndex(p => p?.name === "Clover");
 const POMEGRANATE_PROJECTILE_INDEX = petalIDOf("projectile.pomegranate");
 
 // Spawns a friendly copy of the dead mob for the killer. At most 20 live Ruby
@@ -1131,11 +1132,22 @@ export class Entity {
                     thisDamageDone += this.damage;
                     otherDamageDone += other.damage;
 
+                    const ownerClientOf = entity => entity.player?.client ?? entity.parent?.client ?? entity.client ?? null;
                     // Dice crits migrated from WhiteHole.js, without the armor gate:
                     // a crit always rolls, regardless of the target's armor.
+                    // Equipped Clovers add their dupe chance on top, stacking.
                     const rollDiceCrit = entity => {
                         if (!entity.dice) return null;
-                        return Math.random() <= entity.dice.chance ? entity.dice.multiDamage : entity.dice.damage;
+                        let chance = entity.dice.chance;
+                        const client = ownerClientOf(entity);
+                        if (client && CLOVER_INDEX >= 0) {
+                            for (const slot of client.slots ?? []) {
+                                if (slot?.id === CLOVER_INDEX) {
+                                    chance += petalConfigs[CLOVER_INDEX]?.cloverTiers?.[slot.rarity]?.chance ?? 0;
+                                }
+                            }
+                        }
+                        return Math.random() <= chance ? entity.dice.multiDamage : entity.dice.damage;
                     };
                     const thisCrit = rollDiceCrit(this);
                     if (thisCrit !== null) thisDamageDone = thisCrit;
@@ -1177,7 +1189,6 @@ export class Entity {
                     // Gemstone combat bonuses migrated from WhiteHole.js: Diamond
                     // reduces incoming damage while Blood Leaf and Shiny Wing add
                     // bonus damage to their own petals.
-                    const ownerClientOf = entity => entity.player?.client ?? entity.parent?.client ?? entity.client ?? null;
                     const hasPetalEquipped = (client, index) => {
                         if (index < 0) return false;
                         return client?.slots?.some(slot => slot?.id === index) ?? false;
