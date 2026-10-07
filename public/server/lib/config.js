@@ -10,7 +10,7 @@ export const petalConfigs = [
         .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 0)
         .setSize(.75)
         .setDescription("It's very light and recharges quickly, at the cost of damage."),
-    new PetalConfig("Faster", 22.5 * .6, 12, 30)
+    new PetalConfig("Faster", 22.5 * .6, 12, 21)
         .setMulti([1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 5, 5, 5, 5, 5, 5, 5, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setSize(.75)
         .setExtraRadians(.01)
