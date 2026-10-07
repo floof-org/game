@@ -83,6 +83,16 @@ function getRubySummonRarity(rubyTier, mobRarity, config) {
     return null;
 }
 
+// Petal indices cached once: petalConfigs is static after load, and these
+// lookups ran on every collision pair every tick.
+const DIAMOND_INDEX = petalConfigs.findIndex(p => p?.name === "Diamond");
+const BLOOD_LEAF_INDEX = petalConfigs.findIndex(p => p?.name === "Blood Leaf");
+const SHINY_WING_INDEX = petalConfigs.findIndex(p => p?.name === "Shiny Wing");
+const URANIUM_INDEX = petalConfigs.findIndex(p => p?.name === "Uranium");
+const SHOVEL_INDEX = petalConfigs.findIndex(p => p?.name === "Shovel");
+const RUBY_INDEX = petalConfigs.findIndex(p => p?.name === "Ruby");
+const POMEGRANATE_PROJECTILE_INDEX = petalIDOf("projectile.pomegranate");
+
 // Spawns a friendly copy of the dead mob for the killer. At most 20 live Ruby
 // summons per client; each expires after its Ruby tier lifetime. Migrated from
 // WhiteHole.js.
@@ -90,10 +100,9 @@ function spawnRubySummon(deadMob, client, rarity) {
     if (!client || !client.body || client.body.health?.isDead) return;
     if (BLOCKED_RUBY_SUMMONS.has(deadMob.config?.name)) return;
 
-    const rubyIndex = petalConfigs.findIndex(p => p?.name === "Ruby");
-    const rubySlot = client.slots?.find(slot => slot?.id === rubyIndex);
-    const lifetime = rubyIndex >= 0
-        ? petalConfigs[rubyIndex].rubySummonTiers?.[rubySlot?.rarity ?? 0]?.lifetime
+    const rubySlot = client.slots?.find(slot => slot?.id === RUBY_INDEX);
+    const lifetime = RUBY_INDEX >= 0
+        ? petalConfigs[RUBY_INDEX].rubySummonTiers?.[rubySlot?.rarity ?? 0]?.lifetime
         : null;
 
     const x = deadMob.x + (Math.random() - 0.5) * 25;
@@ -1041,7 +1050,7 @@ export class Entity {
             // Shovel phase migrated from WhiteHole.js: while equipped and
             // ready, any collision phases that side for 5s (70s cooldown),
             // skipping all damage for its players and petals.
-            const shovelIndex = petalConfigs.findIndex(item => item?.name === "Shovel");
+            const shovelIndex = SHOVEL_INDEX;
             const shovelOwnerOf = entity => entity?.player?.client ?? entity?.parent?.client ?? entity?.client ?? null;
             const hasShovel = entity => {
                 const client = shovelOwnerOf(entity);
@@ -1169,20 +1178,19 @@ export class Entity {
                     // reduces incoming damage while Blood Leaf and Shiny Wing add
                     // bonus damage to their own petals.
                     const ownerClientOf = entity => entity.player?.client ?? entity.parent?.client ?? entity.client ?? null;
-                    const hasPetalEquipped = (client, name) => {
-                        const index = petalConfigs.findIndex(p => p?.name === name);
+                    const hasPetalEquipped = (client, index) => {
                         if (index < 0) return false;
                         return client?.slots?.some(slot => slot?.id === index) ?? false;
                     };
                     const getDiamondReduction = entity => {
                         const client = ownerClientOf(entity);
-                        if (!client || !hasPetalEquipped(client, "Diamond")) return 0;
+                        if (!client || !hasPetalEquipped(client, DIAMOND_INDEX)) return 0;
                         return globalThis.DIAMOND_TABLE?.[entity.rarity] ?? 0;
                     };
                     const getBloodLeafBonus = entity => {
                         if (entity.config?.name !== "Blood Leaf") return 0;
                         const client = ownerClientOf(entity);
-                        if (!client || !hasPetalEquipped(client, "Blood Leaf")) return 0;
+                        if (!client || !hasPetalEquipped(client, BLOOD_LEAF_INDEX)) return 0;
                         const data = globalThis.BLOOD_LEAF_TABLE?.[entity.rarity];
                         if (!data) return 0;
                         const kills = client.bloodLeafKills?.[entity.rarity] ?? 0;
@@ -1191,7 +1199,7 @@ export class Entity {
                     const getShinyWingBonus = entity => {
                         if (entity.config?.name !== "Shiny Wing") return 0;
                         const client = ownerClientOf(entity);
-                        if (!client || !hasPetalEquipped(client, "Shiny Wing")) return 0;
+                        if (!client || !hasPetalEquipped(client, SHINY_WING_INDEX)) return 0;
                         const data = globalThis.SHINY_WING_TABLE?.[entity.rarity];
                         if (!data) return 0;
                         const baseSpeed = 0.125;
@@ -1283,7 +1291,7 @@ export class Entity {
 
                     // Pomegranate self damage migrated from WhiteHole.js.
                     {
-                        const projectileIndex = petalIDOf("projectile.pomegranate");
+                        const projectileIndex = POMEGRANATE_PROJECTILE_INDEX;
                         const isPomegranateProjectile = obj => obj && obj.index === projectileIndex && obj.type === ENTITY_TYPES.PETAL && obj.launched === true;
                         let pomegranateSource = null;
                         if (this?.pomegranate || isPomegranateProjectile(this)) pomegranateSource = this;
@@ -1356,7 +1364,7 @@ export class Entity {
 
                     // Uranium freeze migrated from WhiteHole.js.
                     {
-                        const uraniumIndex = petalConfigs.findIndex(item => item?.name === "Uranium");
+                        const uraniumIndex = URANIUM_INDEX;
                         const hasUranium = entity => {
                             const client = entity?.player?.client ?? entity?.parent?.client ?? entity?.client ?? null;
                             if (!client || uraniumIndex < 0) return false;
@@ -3451,7 +3459,7 @@ export class Mob extends Entity {
 
             // Blood Leaf kill counting migrated from WhiteHole.js: each
             // equipped leaf only counts mobs at or above its required rarity.
-            const leafIndex = petalConfigs.findIndex(p => p?.name === "Blood Leaf");
+            const leafIndex = BLOOD_LEAF_INDEX;
             if (leafIndex >= 0) {
                 const leaves = client.slots?.filter(slot => slot?.id === leafIndex) ?? [];
                 for (const leaf of leaves) {
@@ -3466,7 +3474,7 @@ export class Mob extends Entity {
             }
 
             // Ruby on-kill summon migrated from WhiteHole.js.
-            const rubyIndex = petalConfigs.findIndex(p => p?.name === "Ruby");
+            const rubyIndex = RUBY_INDEX;
             const rubySlot = rubyIndex >= 0 ? client.slots?.find(slot => slot?.id === rubyIndex) : null;
             if (rubySlot) {
                 const summonRarity = getRubySummonRarity(rubySlot.rarity, this.rarity, petalConfigs[rubyIndex]);
