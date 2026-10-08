@@ -3838,7 +3838,7 @@ if (commandCheck("/pity")) {
             if (!args[1]) return this.systemMessage("/upg ask | returns 3 perma skills too choose from if avalible."), 
             this.systemMessage("/upg pick 1-3 | picks an perma skill based on the set given by /upg ask"),
             this.systemMessage(`You have ${Math.floor(this.level / 10) - this.totalSkills} perma skills remaining.`),
-            this.systemMessage(`${((Math.floor(this.level / 10) + 1) * 10) - this.level} perma skill points.`)
+            this.systemMessage(`${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next point.`)
             const upgradeTypes = [
     { message: "Decreases reload by -3% forever.", color: "#90EE90" },
     { message: "Increases damage by 4% forever", color: "#FF4C4C" }, 
@@ -3847,8 +3847,8 @@ if (commandCheck("/pity")) {
     { message: "Increases reach by +4 forever", color: "#2196F3" },
     { message: "Increases duplicator property by 0.2", color: "#FFA500" }
 ];
-            if (Math.floor(this.level / 10) <= totalSkills) return this.systemMessage(`You have used up all perma skills, ${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next perma skill.`);
-            else this.systemMessage(`You have ${Math.floor(this.level / 10) - totalSkills} perma skills remaining.`);
+            if (Math.floor(this.level / 10) <= this.totalSkills) return this.systemMessage(`You have used up all perma skills, ${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next perma skill.`);
+            else this.systemMessage(`You have ${Math.floor(this.level / 10) - this.totalSkills} perma skills remaining.`);
             if (args[1] = "ask") {
                 if (this.nextSet.length > 0) return this.systemMessage("You already have 3 choices.");
                 for (let i = 0; i < 2; i++) {
