@@ -3506,10 +3506,10 @@ export class Mob extends Entity {
             const itemName = petalConfigs[index]?.name ?? `Item ${index}`;
             const rarityData = tiers[rarity];
             if (!rarityData) return;
-            // Announce drops of Transcestrial and higher mobs, keeping the
+            // Announce drops of Chaos and higher mobs, keeping the
             // WhiteHole message format.
             const forceAnnounce = itemName === "ӇЄҲƛƓƠƝ";
-            if (this.rarity < 16 && !forceAnnounce) return;
+            if (this.rarity < 17 && !forceAnnounce) return;
             const key = `${rarity}:${index}:${amount}`;
             let group = dropAnnouncementGroups.get(key);
             if (!group) {
