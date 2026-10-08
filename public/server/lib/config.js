@@ -760,7 +760,7 @@ export const petalConfigs = [
     new PetalConfig("Thorn", 25, 80, [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 114]).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("Spiky."),
-    new PetalConfig("Thorn.projectile", 25, 0.0000000005, 0.0000000005).setSize(1.35)
+    new PetalConfig("Thorn.projectile", 25, 0.0000000005, 74.275).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("[object null object]"),
     new PetalConfig("Lilypad", 225, 6, 44)
