@@ -757,7 +757,7 @@ export const petalConfigs = [
     new PetalConfig("Resin.projectile", 2250, 1e5, 15).setSize(35).setEnemySpeedMultiplier(.334, .05).setIgnoreWalls(1).setPacifyAbility(0.0001)
         .setDrawing(new Drawing().addAction("opacity", .45).addAction("beginPath").addAction("dipPolygon", 5, 1, -1.3, 0).addAction("fill", "#fcebff").addAction("opacity", 1).addAction("stroke", "#fcebff", .2, 0).addAction("opacity", .6).addAction("beginPath").addAction("dipPolygon", 5, .45, -1.6, Math.PI).addAction("fill", "#fcebff")
         ).setDescription("[object null object]"),
-    new PetalConfig("Thorn", 25, 88, [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 114]).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
+    new PetalConfig("Thorn", 25, 88, [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 74.275, 60, 60, 60, 114]).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("Spiky."),
     new PetalConfig("Thorn.projectile", 25, 0.00000000055, 74.275).setSize(1.35)
