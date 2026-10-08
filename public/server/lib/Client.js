@@ -2462,7 +2462,7 @@ export default class Client {
                 const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
 
                 if (args.length < 1) {
-                    this.systemMessage("Usage: /remove [rarity] <petal> <amount>", "#ffaa00");
+                    this.systemMessage("Usage: /remove [rarity] <petal> [player] <amount>", "#ffaa00");
                     return;
                 }
 
@@ -2490,31 +2490,52 @@ export default class Client {
 
                 const rarity = tiers[rarityIndex];
 
+                // Optional [player] before <amount>: a trailing number is the
+                // amount, anything before it names another online player.
+                // Without a player the command targets yourself.
+                const petalArg = rest[0];
+                let target = this;
+                let amountArg;
+                const nameTokens = rest.slice(1);
+
+                if (nameTokens.length > 0 && !isNaN(nameTokens[nameTokens.length - 1])) {
+                    amountArg = nameTokens.pop();
+                }
+
+                if (nameTokens.length > 0) {
+                    const wanted = nameTokens.join(" ");
+                    target = [...state.clients.values()].find(client => client?.verified && typeof client.username === "string" && client.username.toLowerCase() === wanted.toLowerCase()) ?? null;
+
+                    if (!target) {
+                        this.systemMessage(`Player "${wanted}" not found or offline.`, "#ff5555");
+                        return;
+                    }
+                }
+
+                const targetName = target === this ? "You" : target.username;
+
                 // no petal given: wipe the whole rarity
                 if (rest.length === 0) {
-                    const petals = this.inventory[rarity.name] || {};
+                    const petals = target.inventory[rarity.name] || {};
                     const removed = Object.values(petals).reduce((sum, count) => sum + count, 0);
 
                     if (removed <= 0) {
-                        this.systemMessage(`You do not have any ${rarity.name} petals.`, "#ff5555");
+                        this.systemMessage(`${targetName} do${target === this ? "" : "es"} not have any ${rarity.name} petals.`, "#ff5555");
                         return;
                     }
 
                     // Zero the counts instead of dropping the keys: the client merges the world
                     // update inventory per petal id and never forgets ids the server stops
                     // sending, so a removed entry would keep showing up in the inventory view.
-                    for (const id of Object.keys(this.inventory[rarity.name])) {
-                        this.inventory[rarity.name][id] = 0;
+                    for (const id of Object.keys(target.inventory[rarity.name])) {
+                        target.inventory[rarity.name][id] = 0;
                     }
 
-                    accounts.saveClient(this);
+                    accounts.saveClient(target);
 
-                    this.systemMessage(`Removed all ${removed} ${rarity.name} petals!`, "#55ff55");
+                    this.systemMessage(`Removed all ${removed} ${rarity.name} petals${target === this ? "!" : ` from ${target.username}!`}`, "#55ff55");
                     return;
                 }
-
-                const petalArg = rest[0];
-                const amountArg = rest[1];
 
                 // petal names may omit spaces: both "fire missile" and "firemissile" resolve
                 const normalize = s => s.toLowerCase().replace(/\s+/g, "");
@@ -2542,24 +2563,24 @@ export default class Client {
                     }
                 }
 
-                const owned = this.inventory[rarity.name]?.[petalIndex] || 0;
+                const owned = target.inventory[rarity.name]?.[petalIndex] || 0;
 
                 if (owned <= 0) {
-                    this.systemMessage(`You do not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
+                    this.systemMessage(`${targetName} do${target === this ? "" : "es"} not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
                     return;
                 }
 
                 const removed = Math.min(amount, owned);
-                this.inventory[rarity.name][petalIndex] -= removed;
+                target.inventory[rarity.name][petalIndex] -= removed;
 
-                if (this.inventory[rarity.name][petalIndex] <= 0) {
+                if (target.inventory[rarity.name][petalIndex] <= 0) {
                     // Keep a zero count rather than deleting the key, see the whole-rarity branch above.
-                    this.inventory[rarity.name][petalIndex] = 0;
+                    target.inventory[rarity.name][petalIndex] = 0;
                 }
 
-                accounts.saveClient(this);
+                accounts.saveClient(target);
 
-                this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}!`, "#55ff55");
+                this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}${target === this ? "!" : ` from ${target.username}!`}`, "#55ff55");
             })();
 
             return;
