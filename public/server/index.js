@@ -233,14 +233,21 @@ setInterval(() => {
 // World update loop
 setInterval(() => state.clients.forEach(c => c.worldUpdate()), 1000 / 25);
 
-// Autosave every connected player (mirrors White's 20 minute autosave)
-setInterval(() => {
-    console.log("[AUTOSAVE] running...");
-    state.clients.forEach(client => {
-        if (!client?.verified) return;
-        accounts.saveClient(client);
-    });
-}, 20 * 60 * 1000);
+// Autosave every connected player plus a timestamped backup, every 30 minutes
+setInterval(async () => {
+    try {
+        console.log("[AUTOSAVE] running...");
+        state.clients.forEach(client => {
+            if (!client?.verified) return;
+            accounts.saveClient(client);
+        });
+        const name = await accounts.backup();
+        console.log(`[AUTOSAVE] backup written to ${name}`);
+        state.clients.forEach(client => client.systemMessage("Auto saved + Backup", "#7CFC00"));
+    } catch (err) {
+        console.warn("[AUTOSAVE] failed:", err);
+    }
+}, 30 * 60 * 1000);
 
 // Router server through worker through socket
 state.router = new Router();
