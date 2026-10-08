@@ -69,7 +69,7 @@ const VALID_COMMANDS = new Set([
     "/give", "/addall", "/remove", "/craft", "/pity", "/online", "/saveall",
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
-    "/mute", "/kick", "/ban", "/unban", "/unmute", "/xp", "/upg"
+    "/mute", "/kick", "/ban", "/unban", "/unmute"
 ]);
 
 function normalizeName(str) {
@@ -1197,7 +1197,6 @@ export default class Client {
                 }
 
                 this.body = new Player(state.getPlayerSpawn(this));
-                this.body.skills = this.permaSkills ?? {r: 1, d: 1, sr: 1, sp: 1, re: 0, dup: 0};
                 this.firstSpawn = false;
                 this.body.name = this.username;
                 this.body.nameColor = this.nameColor;
@@ -3793,174 +3792,8 @@ if (commandCheck("/pity")) {
                             if (commandCheck("/disablejoin") || commandCheck("/disablejoinannouncements")) {
 
         }
-        if (commandCheck("/xp")) {
-            if (!requireOwner()) return;
-    const args = e.trim().split(/\s+/);
 
-    if (args.length < 3) {
-        return;
-    }
-
-    const username = args[1];
-    const amount = Number(args[2]);
-
-    if (!Number.isFinite(amount)) {
-        return;
-    }
-    let target = null;
-
-    for (const client of state.clients.values()) {
-        if (!client || !client.verified || typeof client.username !== "string") {
-            continue;
-        }
-
-        if (client.username.toLowerCase() === username.toLowerCase()) {
-            target = client;
-            break;
-        }
-    }
-
-    if (target) {
-        target.xp += amount;
-
-        if (!Number.isFinite(target.xp)) {
-            target.xp = 0;
-        }
-
-        if (target.xp < 0) {
-            target.xp = 0;
-        }
-    }
-}
-        if (commandCheck("/upg")) {
-    if (this.totalSkills === undefined) this.totalSkills = 0;
-    if (!this.permaSkills) {
-        this.permaSkills = {
-            r: 1,
-            d: 1,
-            sr: 1,
-            sp: 1,
-            re: 0,
-            dup: 0
-        };
-    }
-    if (!this.nextSet) this.nextSet = [];
-
-    if (!this.body) return;
-
-    const args = e.split(" ");
-
-    if (!args[1]) {
-        this.systemMessage("/upg ask | returns 3 perma skills to choose from if available.");
-        this.systemMessage("/upg pick 1-3 | picks a perma skill based on the set given by /upg ask");
-        this.systemMessage(`You have ${Math.floor(this.level / 10) - this.totalSkills} perma skills remaining.`);
-        this.systemMessage(`${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next point.`);
-        return;
-    }
-
-    const upgradeTypes = [
-        { message: "Decreases reload by -3% forever.", color: "#90EE90" },
-        { message: "Increases damage by 4% forever", color: "#FF4C4C" },
-        { message: "Decreases secondary reload by -4% forever", color: "#90EE90" },
-        { message: "Increases speed by 3% forever", color: "#87CEFA" },
-        { message: "Increases reach by +4 forever", color: "#2196F3" },
-        { message: "Increases duplicator property by 0.2", color: "#FFA500" }
-    ];
-
-    if (Math.floor(this.level / 10) <= this.totalSkills) {
-        return this.systemMessage(
-            `You have used up all perma skills, ${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next perma skill.`
-        );
-    }
-
-    if (args[1] === "ask") {
-        if (this.nextSet.length > 0) {
-            return this.systemMessage("You already have 3 choices.");
-        }
-
-        // Generate 3 unique upgrade IDs
-        while (this.nextSet.length < 3) {
-            const upgrade = Math.floor(Math.random() * upgradeTypes.length);
-
-            if (!this.nextSet.includes(upgrade)) {
-                this.nextSet.push(upgrade);
-            }
-        }
-
-        this.nextSet.forEach((upgType, i) => {
-            const upgrade = upgradeTypes[upgType];
-
-            this.systemMessage(
-                `${i + 1}: ${upgrade.message}`,
-                upgrade.color
-            );
-        });
-    }
-
-    else if (args[1] === "pick") {
-        if (this.nextSet.length !== 3) {
-            return this.systemMessage("No choices active");
-        }
-
-        const choice = Number(args[2]);
-
-        if (!Number.isInteger(choice) || choice < 1 || choice > 3) {
-            return this.systemMessage("Invalid number");
-        }
-
-        // nextSet now directly contains the upgrade ID
-        const upgType = this.nextSet[choice - 1];
-
-        this.totalSkills++;
-        this.nextSet = [];
-
-        switch (upgType) {
-            case 0:
-                this.permaSkills.r *= 0.97;
-                this.systemMessage(
-                    `Upgraded reload to ${Math.round((1 / this.permaSkills.r) * 10000) / 100}%`
-                );
-                break;
-
-            case 1:
-                this.permaSkills.d *= 1.04;
-                this.systemMessage(
-                    `Upgraded damage to ${Math.round(this.permaSkills.d * 10000) / 100}%`
-                );
-                break;
-
-            case 2:
-                this.permaSkills.sr *= 0.96;
-                this.systemMessage(
-                    `Upgraded secondary reload to ${Math.round((1 / this.permaSkills.sr) * 10000) / 100}%`
-                );
-                break;
-
-            case 3:
-                this.permaSkills.sp *= 1.03;
-                this.systemMessage(
-                    `Upgraded speed to ${Math.round(this.permaSkills.sp * 10000) / 100}%`
-                );
-                break;
-
-            case 4:
-                this.permaSkills.re += 4;
-                this.systemMessage(
-                    `Upgraded reach to ${this.permaSkills.re}`
-                );
-                break;
-
-            case 5:
-                this.permaSkills.dup += 0.2;
-                this.systemMessage(
-                    `Upgraded duplicator to ${this.permaSkills.dup}`
-                );
-                break;
-        }
-
-        this.body.skills = this.permaSkills;
-    }
-}
+        // /craft
         if (commandCheck("/craft")) {
 
                                 if (this.isCrafting) {

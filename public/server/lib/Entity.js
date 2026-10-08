@@ -236,7 +236,7 @@ export class PetalSlot {
     /** @param {PetalConfig} configType */
     define(configType, rarityID = 0) {
         this.config = configType;
-        this.amount = this.config.tiers[rarityID].count + Math.floor(this.player?.skills?.dup ?? 0);
+        this.amount = this.config.tiers[rarityID].count;
         this.clumps = this.config.tiers[rarityID].clumps && this.amount > 1;
         this.petals = new Array(this.amount).fill(null);
         this.cooldowns = new Array(this.amount).fill(0);
@@ -392,7 +392,7 @@ export class PetalSlot {
     }
 
     update(nSpots, i, orbitRatio) {
-        let orbit = this.player.size + 52.5 * (this.config.huddles ? .65 : orbitRatio) + (this.player?.skills?.re ?? 0);
+        let orbit = this.player.size + 52.5 * (this.config.huddles ? .65 : orbitRatio);
 
         if (this.config.wingMovement === true && this.player.attack) {
             orbit += (1 + Math.sin(performance.now() / 125 + this.index)) * (this.player.size * 4);
@@ -613,7 +613,7 @@ export class PetalSlot {
                 if (this.config.launchable && !petal.launched) {
                     petal.facing = (i + j) / nSpots * Math.PI * 2 + this.player.petalRotation;
 
-                    petal.range -= 3 / this.player?.skills?.sr;
+                    petal.range -= 3;
 
                     if ((this.player.defend && this.config.launchedSpeed == 0 || this.player.attack) && petal.range <= 0) {
                         petal.launched = true;
@@ -678,7 +678,7 @@ export class PetalSlot {
                 }
 
                 if (this.config.tiers[this.rarity].spawnable) {
-                    petal.range -= 1 / (this.player?.skills?.sr ?? 1);
+                    petal.range--;
 
                     if (petal.range <= 0) {
                         const spawnable = this.config.tiers[this.rarity].spawnable;
@@ -731,11 +731,10 @@ export class PetalSlot {
                     }
                 }
 
-                this.cooldowns[j] += this.player.reloadReduction / (this.player?.skills?.r ?? 1);
+                this.cooldowns[j] += this.player.reloadReduction;
                 if (this.cooldowns[j] >= this.config.cooldown) {
                     this.petals[j] = new Petal(this.player, this.index, j);
                     this.petals[j].define(this.config, this.rarity);
-                    this.petals[j].damage *= (this.player?.skills?.d ?? 1);
                     this.cooldowns[j] = 0;
                 }
             }
@@ -2107,7 +2106,7 @@ export class Player extends Entity {
         this.nameColor = "#FFFFFF";
         this.type = ENTITY_TYPES.PLAYER;
         this.team = this.id;
-        this.skills = {};
+
         this.health.set(40);
         this.reloadReduction = 1;
         this.moveAngle = 0;
@@ -2232,8 +2231,8 @@ export class Player extends Entity {
             this.health.deteriorateShield();
         }
 
-        this.velocity.x += Math.cos(this.moveAngle) * this.moveStrength * (this.skills?.sp ?? 1);
-        this.velocity.y += Math.sin(this.moveAngle) * this.moveStrength * (this.skills?.sp ?? 1);
+        this.velocity.x += Math.cos(this.moveAngle) * this.moveStrength;
+        this.velocity.y += Math.sin(this.moveAngle) * this.moveStrength;
 
         this.bindToRoom();
         this.facing = this.moveAngle;
