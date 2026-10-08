@@ -270,6 +270,27 @@ setInterval(async () => {
     }
 }, 30 * 60 * 1000);
 
+// Save everyone before the process goes down (pm2 restart sends SIGTERM).
+// Without this, up to 30 minutes of progress dies with the process.
+let shuttingDown = false;
+async function saveAllAndExit(signal) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    try {
+        console.log(`[SHUTDOWN] ${signal} received, saving all players...`);
+        state.clients.forEach(client => accounts.saveClient(client));
+        await accounts.flush();
+        console.log("[SHUTDOWN] saves flushed.");
+    } catch (err) {
+        console.warn("[SHUTDOWN] save failed:", err);
+    }
+    process.exit(0);
+}
+if (typeof process !== "undefined" && typeof process.on === "function") {
+    process.on("SIGTERM", () => saveAllAndExit("SIGTERM"));
+    process.on("SIGINT", () => saveAllAndExit("SIGINT"));
+}
+
 // Router server through worker through socket
 state.router = new Router();
 
