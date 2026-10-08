@@ -110,7 +110,7 @@ function getMobIndex() {
 // Max alive wild mobs per rarity. Rarities do not share this cap, so a flood
 // of low rarity mobs can never starve higher rarities of spawns. Segments
 // and friendly summons are not counted, only wild bodies.
-const RARITY_MOB_CAP = 15;
+const RARITY_MOB_CAP = 10;
 
 function wildMobCountOfRarity(rarity) {
     let count = 0;
