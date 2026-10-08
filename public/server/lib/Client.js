@@ -1863,7 +1863,8 @@ export default class Client {
 
             const myLevel = getPlayerLevel(this);
 
-            if (myLevel < min || myLevel > max) {
+            // Owners bypass the squad level restriction.
+            if (this.masterPermissions < 2 && (myLevel < min || myLevel > max)) {
                 this.systemMessage(`Not enough Level. Required ${ownerLevel} ${min}-${max}.`, "#ff5555");
                 return;
             }
