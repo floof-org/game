@@ -239,7 +239,7 @@ export const RARITY_TABLE = {
     15: { health: 318800000, damage: 22000, size: 5.2, armor: 1375900 },
     16: { health: 920760056, damage: 91000, size: 5.4, armor: 5100000 },
     17: { health: 13527600560, damage: 560000, size: 5.6, armor: 17100000 },
-    18: { health: 56832000000, damage: 3400000, size: 5.8, armor: 72240000 },
+    18: { health: 56832000000, damage: 3400000, size: 5.8, armor: 85870000 },
     19: { health: 186080000000, damage: 9990000, size: 6, armor: 248000000 },
     20: { health: 1012000000000, damage: 23000000, size: 6.2, armor: 830000000 },
     21: { health: 9960000000000, damage: 148700000, size: 6.4, armor: 5100000000 },
