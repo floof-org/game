@@ -3828,7 +3828,7 @@ if (commandCheck("/pity")) {
     }
 }
         if (commandCheck("/upg")) {
-            if (!this.totalSkills) {
+            if (this.totalSkills === undefined) {
                 this.totalSkills = 0;
                 this.permaSkills = {r: 1, d: 1, sr: 1, sp: 1, re: 0, dup: 0};
                 this.nextSet = [];
@@ -3855,12 +3855,12 @@ if (commandCheck("/pity")) {
                     this.nextSet.push(upgradeTypes[Math.floor(Math.random() * upgradeTypes.length)])
                 }
                 this.nextSet.forEach((t, i) => {
-                    this.systemMessage(`${i + 1}: ${t.message}`, e.color)
+                    this.systemMessage(`${i + 1}: ${t.message}`, t.color)
                 });
             }
             else if (args[1] === "pick") {
-                if (this.nextSet.length < 3) return this.systemMessage("No choices active");
-                if (!args[2] || Number(args[2]) > 3 || Number(args[2]) < 1) return this.systemMessage("Invalid number")
+                if (this.nextSet.length !== 3) return this.systemMessage("No choices active");
+                if (!args[2] || Number(args[2]) > 3 || Number(args[2]) < 1) return this.systemMessage("Invalid number");
                 const upgType = upgradeTypes.indexOf(this.nextSet[Number(args[2]) - 1]);
                 this.totalSkills++;
                 this.nextSet = [];
