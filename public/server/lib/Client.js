@@ -69,7 +69,7 @@ const VALID_COMMANDS = new Set([
     "/give", "/addall", "/remove", "/craft", "/pity", "/online", "/saveall",
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
-    "/mute", "/kick", "/ban", "/unban", "/unmute", "/xp", "/upg"
+    "/mute", "/kick", "/ban", "/unban", "/unmute", "/xp", "/upg", "/coords"
 ]);
 
 function normalizeName(str) {
@@ -3827,6 +3827,9 @@ if (commandCheck("/pity")) {
         }
     }
 }
+    if (commandCheck("/coords")) {
+        this.systemMessage(`Your position: ${this.body?.x}, ${this.body?.y}`)
+    }
         if (commandCheck("/upg")) {
     if (this.totalSkills === undefined) this.totalSkills = 0;
     if (!this.permaSkills) {
@@ -3854,12 +3857,12 @@ if (commandCheck("/pity")) {
     }
 
     const upgradeTypes = [
-        { message: "Decreases reload by -3% forever.", color: "#90EE90" },
-        { message: "Increases damage by 4% forever", color: "#FF4C4C" },
+        { message: "Decreases reload by -2% forever.", color: "#90EE90" },
+        { message: "Increases damage by 3% forever", color: "#FF4C4C" },
         { message: "Decreases secondary reload by -4% forever", color: "#90EE90" },
-        { message: "Increases speed by 3% forever", color: "#87CEFA" },
-        { message: "Increases reach by +4 forever", color: "#2196F3" },
-        { message: "Increases duplicator property by 0.2", color: "#FFA500" }
+        { message: "Increases speed by 2% forever", color: "#87CEFA" },
+        { message: "Increases reach by +3 forever", color: "#2196F3" },
+        { message: "Increases duplicator property by 0.2 (only affects petals with multiple copies)", color: "#FFA500" }
     ];
 
     if (Math.floor(this.level / 10) <= this.totalSkills) {
@@ -3911,14 +3914,14 @@ if (commandCheck("/pity")) {
 
         switch (upgType) {
             case 0:
-                this.permaSkills.r *= 0.97;
+                this.permaSkills.r *= 0.98;
                 this.systemMessage(
                     `Upgraded reload to ${Math.round((1 / this.permaSkills.r) * 10000) / 100}%`
                 );
                 break;
 
             case 1:
-                this.permaSkills.d *= 1.04;
+                this.permaSkills.d *= 1.03;
                 this.systemMessage(
                     `Upgraded damage to ${Math.round(this.permaSkills.d * 10000) / 100}%`
                 );
@@ -3932,14 +3935,14 @@ if (commandCheck("/pity")) {
                 break;
 
             case 3:
-                this.permaSkills.sp *= 1.03;
+                this.permaSkills.sp *= 1.02;
                 this.systemMessage(
                     `Upgraded speed to ${Math.round(this.permaSkills.sp * 10000) / 100}%`
                 );
                 break;
 
             case 4:
-                this.permaSkills.re += 4;
+                this.permaSkills.re += 3;
                 this.systemMessage(
                     `Upgraded reach to ${this.permaSkills.re}`
                 );

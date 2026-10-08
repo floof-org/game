@@ -236,7 +236,7 @@ export class PetalSlot {
     /** @param {PetalConfig} configType */
     define(configType, rarityID = 0) {
         this.config = configType;
-        this.amount = this.config.tiers[rarityID].count + Math.floor(this.player?.skills?.dup ?? 0);
+        this.amount = this.config.tiers[rarityID].count + ((this.config.tiers[rarityID].count > 1 ? 1 : 0) * Math.floor(this.player?.skills?.dup ?? 0));
         this.clumps = this.config.tiers[rarityID].clumps && this.amount > 1;
         this.petals = new Array(this.amount).fill(null);
         this.cooldowns = new Array(this.amount).fill(0);
