@@ -3828,71 +3828,134 @@ if (commandCheck("/pity")) {
     }
 }
         if (commandCheck("/upg")) {
-            if (this.totalSkills === undefined) {
-                this.totalSkills = 0;
-                this.permaSkills = {r: 1, d: 1, sr: 1, sp: 1, re: 0, dup: 0};
-                this.nextSet = [];
-            }
-            if (!this.body) return;
-            const args = e.split(" ");
-            if (!args[1]) return this.systemMessage("/upg ask | returns 3 perma skills too choose from if avalible."), 
-            this.systemMessage("/upg pick 1-3 | picks an perma skill based on the set given by /upg ask"),
-            this.systemMessage(`You have ${Math.floor(this.level / 10) - this.totalSkills} perma skills remaining.`),
-            this.systemMessage(`${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next point.`)
-            const upgradeTypes = [
-    { message: "Decreases reload by -3% forever.", color: "#90EE90" },
-    { message: "Increases damage by 4% forever", color: "#FF4C4C" }, 
-    { message: "Decreases secondary reload by -4% forever", color: "#90EE90" }, 
-    { message: "Increases speed by 3% forever", color: "#87CEFA" }, 
-    { message: "Increases reach by +4 forever", color: "#2196F3" },
-    { message: "Increases duplicator property by 0.2", color: "#FFA500" }
-];
-            if (Math.floor(this.level / 10) <= this.totalSkills) return this.systemMessage(`You have used up all perma skills, ${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next perma skill.`);
-            else this.systemMessage(`You have ${Math.floor(this.level / 10) - this.totalSkills} perma skills remaining.`);
-            if (args[1] === "ask") {
-                if (this.nextSet.length > 0) return this.systemMessage("You already have 3 choices.");
-                for (let i = 0; i < 3; i++) {
-                    this.nextSet.push(upgradeTypes[Math.floor(Math.random() * upgradeTypes.length)])
-                }
-                this.nextSet.forEach((t, i) => {
-                    this.systemMessage(`${i + 1}: ${t.message}`, t.color)
-                });
-            }
-            else if (args[1] === "pick") {
-                if (this.nextSet.length !== 3) return this.systemMessage("No choices active");
-                if (!args[2] || Number(args[2]) > 3 || Number(args[2]) < 1) return this.systemMessage("Invalid number");
-                const upgType = upgradeTypes.indexOf(this.nextSet[Number(args[2]) - 1]);
-                this.totalSkills++;
-                this.nextSet = [];
-                switch(upgType) {
-                    case 0:
-                        this.permaSkills.r *= 0.97
-                        this.systemMessage(`Upgraded reload to ${Math.round((1 / this.permaSkills.r) * 10000) / 100}%`)
-                        break;
-                    case 1:
-                        this.permaSkills.d *= 1.04
-                        this.systemMessage(`Upgraded damage to ${Math.round((this.permaSkills.d) * 10000) / 100}%`)
-                        break;
-                    case 2:
-                        this.permaSkills.sr *= 0.96
-                        this.systemMessage(`Upgraded secondary reload to ${Math.round((1 / this.permaSkills.sr) * 10000) / 100}%`)
-                        break;
-                    case 3:
-                        this.permaSkills.sp *= 1.03
-                        this.systemMessage(`Upgraded speed to ${Math.round((this.permaSkills.sp) * 10000) / 100}%`)
-                        break;
-                    case 4:
-                        this.permaSkills.re += 4
-                        this.systemMessage(`Upgraded reach to ${this.permaSkills.re}`)
-                        break;
-                    case 5:
-                        this.permaSkills.dup += 0.2
-                        this.systemMessage(`Upgraded duplicator to ${this.permaSkills.dup}`)
-                        break;
-                }
-                this.body.skills = this.permaSkills;
+    if (this.totalSkills === undefined) this.totalSkills = 0;
+    if (!this.permaSkills) {
+        this.permaSkills = {
+            r: 1,
+            d: 1,
+            sr: 1,
+            sp: 1,
+            re: 0,
+            dup: 0
+        };
+    }
+    if (!this.nextSet) this.nextSet = [];
+
+    if (!this.body) return;
+
+    const args = e.split(" ");
+
+    if (!args[1]) {
+        this.systemMessage("/upg ask | returns 3 perma skills to choose from if available.");
+        this.systemMessage("/upg pick 1-3 | picks a perma skill based on the set given by /upg ask");
+        this.systemMessage(`You have ${Math.floor(this.level / 10) - this.totalSkills} perma skills remaining.`);
+        this.systemMessage(`${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next point.`);
+        return;
+    }
+
+    const upgradeTypes = [
+        { message: "Decreases reload by -3% forever.", color: "#90EE90" },
+        { message: "Increases damage by 4% forever", color: "#FF4C4C" },
+        { message: "Decreases secondary reload by -4% forever", color: "#90EE90" },
+        { message: "Increases speed by 3% forever", color: "#87CEFA" },
+        { message: "Increases reach by +4 forever", color: "#2196F3" },
+        { message: "Increases duplicator property by 0.2", color: "#FFA500" }
+    ];
+
+    if (Math.floor(this.level / 10) <= this.totalSkills) {
+        return this.systemMessage(
+            `You have used up all perma skills, ${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next perma skill.`
+        );
+    }
+
+    if (args[1] === "ask") {
+        if (this.nextSet.length > 0) {
+            return this.systemMessage("You already have 3 choices.");
+        }
+
+        // Generate 3 unique upgrade IDs
+        while (this.nextSet.length < 3) {
+            const upgrade = Math.floor(Math.random() * upgradeTypes.length);
+
+            if (!this.nextSet.includes(upgrade)) {
+                this.nextSet.push(upgrade);
             }
         }
+
+        this.nextSet.forEach((upgType, i) => {
+            const upgrade = upgradeTypes[upgType];
+
+            this.systemMessage(
+                `${i + 1}: ${upgrade.message}`,
+                upgrade.color
+            );
+        });
+    }
+
+    else if (args[1] === "pick") {
+        if (this.nextSet.length !== 3) {
+            return this.systemMessage("No choices active");
+        }
+
+        const choice = Number(args[2]);
+
+        if (!Number.isInteger(choice) || choice < 1 || choice > 3) {
+            return this.systemMessage("Invalid number");
+        }
+
+        // nextSet now directly contains the upgrade ID
+        const upgType = this.nextSet[choice - 1];
+
+        this.totalSkills++;
+        this.nextSet = [];
+
+        switch (upgType) {
+            case 0:
+                this.permaSkills.r *= 0.97;
+                this.systemMessage(
+                    `Upgraded reload to ${Math.round((1 / this.permaSkills.r) * 10000) / 100}%`
+                );
+                break;
+
+            case 1:
+                this.permaSkills.d *= 1.04;
+                this.systemMessage(
+                    `Upgraded damage to ${Math.round(this.permaSkills.d * 10000) / 100}%`
+                );
+                break;
+
+            case 2:
+                this.permaSkills.sr *= 0.96;
+                this.systemMessage(
+                    `Upgraded secondary reload to ${Math.round((1 / this.permaSkills.sr) * 10000) / 100}%`
+                );
+                break;
+
+            case 3:
+                this.permaSkills.sp *= 1.03;
+                this.systemMessage(
+                    `Upgraded speed to ${Math.round(this.permaSkills.sp * 10000) / 100}%`
+                );
+                break;
+
+            case 4:
+                this.permaSkills.re += 4;
+                this.systemMessage(
+                    `Upgraded reach to ${this.permaSkills.re}`
+                );
+                break;
+
+            case 5:
+                this.permaSkills.dup += 0.2;
+                this.systemMessage(
+                    `Upgraded duplicator to ${this.permaSkills.dup}`
+                );
+                break;
+        }
+
+        this.body.skills = this.permaSkills;
+    }
+}
         if (commandCheck("/craft")) {
 
                                 if (this.isCrafting) {
