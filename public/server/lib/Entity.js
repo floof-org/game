@@ -270,10 +270,6 @@ export class PetalSlot {
             this.player.aggroLevel += this.rarity;
         }
 
-        if (this.config.petalAttractsAggro) {
-            this.player.aggroLevel += this.rarity;
-        }
-
         if (this.player.client) {
             this.player.client.camera.lightingBoost += this.config.extraLighting;
         }
@@ -375,10 +371,6 @@ export class PetalSlot {
         }
 
         if (this.config.attractsAggro) {
-            this.player.aggroLevel -= this.rarity;
-        }
-
-        if (this.config.petalAttractsAggro) {
             this.player.aggroLevel -= this.rarity;
         }
 
@@ -970,16 +962,18 @@ export class Entity {
             _AABB: { x1: this.x - range, y1: this.y - range, x2: this.x + range, y2: this.y + range }
         });
 
-        const valid = retrieved.values().filter(entity => !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || entity.type === ENTITY_TYPES.PETAL));
+        const valid = retrieved.values().filter(entity => !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || (entity.type === ENTITY_TYPES.PETAL && !(entity.aggroLevel > 0))));
         if (valid.length === 0) return null;
         if (random) return valid[Math.floor(Math.random() * valid.length)];
 
-        // Highest aggro, tie-break nearest.
+        // Highest aggro, tie-break nearest. Petals carry their own aggro
+        // (e.g. a placed-down Lens), everyone else uses their parent's.
+        const getAggro = e => (e.aggroLevel ?? 0) > 0 ? e.aggroLevel : (e.parent?.aggroLevel ?? 0);
         let best = null, bestD = 0;
         for (const e of valid) {
             const d = quickDiff(this, e);
-            const a = e.parent.aggroLevel;
-            if (best === null || a > best.parent.aggroLevel || (a === best.parent.aggroLevel && d < bestD))  best = e, bestD = d;
+            const a = getAggro(e);
+            if (best === null || a > getAggro(best) || (a === getAggro(best) && d < bestD))  best = e, bestD = d;
         }
 
         return best;
@@ -1848,6 +1842,12 @@ export class Petal extends Entity {
             this.stayDown = true;
         }
 
+        // Petals that attract aggro (e.g. Lens) carry it on themselves so a
+        // placed-down petal keeps pulling mobs, as in WhiteHole.js.
+        if (config.petalAttractsAggro) {
+            this.aggroLevel += this.rarity;
+        }
+
         if (tier.density) {
             this.density = tier.density;
         }
@@ -2092,6 +2092,10 @@ export class Petal extends Entity {
     destroy() {
         if (this.slotIndex > -1) {
             this.parent.petalSlots[this.slotIndex].petals[this.petalIndex] = null;
+        }
+
+        if (this.config?.petalAttractsAggro) {
+            this.aggroLevel -= this.rarity;
         }
 
         super.destroy();
