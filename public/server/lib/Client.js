@@ -2701,8 +2701,18 @@ if (commandCheck("/pity")) {
                                     return;
                                 }
 
-                                const rarityArg = args.shift().toLowerCase().replace(/\s+/g, "");
-                                const rarityIndex = rarityOrder.indexOf(rarityArg);
+                                // Rarity names can be multiple words (e.g. Absolute Fictional),
+                                // so match the longest leading token run.
+                                let rarityIndex = -1;
+                                for (let i = args.length; i > 0; i--) {
+                                    const candidate = args.slice(0, i).join(" ").toLowerCase().replace(/\s+/g, "");
+                                    const found = rarityOrder.indexOf(candidate);
+                                    if (found !== -1) {
+                                        rarityIndex = found;
+                                        args.splice(0, i);
+                                        break;
+                                    }
+                                }
 
                                 if (rarityIndex === -1 || rarityIndex === rarityOrder.length - 1) {
                                     this.systemMessage("Invalid or max rarity.", "#ff5555");
@@ -3975,25 +3985,30 @@ if (commandCheck("/pity")) {
                                         return;
                                     }
 
-                                    const rawRarityArg = args.shift();
-
+                                    // Rarity names can be multiple words (e.g. Absolute Fictional),
+                                    // so match the longest leading token run before falling back to a numeric index.
                                     let rarityIndex = -1;
+                                    let rarityTokenCount = 0;
+                                    for (let i = args.length; i > 0; i--) {
+                                        const candidate = args.slice(0, i).join(" ").toLowerCase().replace(/\s+/g, "");
+                                        const found = rarityOrder.indexOf(candidate);
+                                        if (found !== -1) {
+                                            rarityIndex = found;
+                                            rarityTokenCount = i;
+                                            break;
+                                        }
+                                    }
+                                    if (rarityIndex === -1 && args.length > 0 && !isNaN(args[0])) {
 
-                                    if (!isNaN(rawRarityArg)) {
-
-                                        const num = parseInt(rawRarityArg, 10);
+                                        const num = parseInt(args[0], 10);
 
                                         if (num >= 0 && num < rarityOrder.length) {
                                             rarityIndex = num;
+                                            rarityTokenCount = 1;
                                         }
 
                                     }
-                                    else {
-
-                                        const rarityArg = rawRarityArg.toLowerCase().replace(/\s+/g, "");
-                                        rarityIndex = rarityOrder.indexOf(rarityArg);
-
-                                    }
+                                    args.splice(0, rarityTokenCount);
                                     const rawAmount = !isNaN(args.at(-1)) ? parseInt(args.pop(), 10) : null;
                                     const petalArg = args.join(" ").toLowerCase();
 
