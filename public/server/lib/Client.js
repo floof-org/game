@@ -3849,16 +3849,16 @@ if (commandCheck("/pity")) {
 ];
             if (Math.floor(this.level / 10) <= this.totalSkills) return this.systemMessage(`You have used up all perma skills, ${((Math.floor(this.level / 10) + 1) * 10) - this.level} levels till next perma skill.`);
             else this.systemMessage(`You have ${Math.floor(this.level / 10) - this.totalSkills} perma skills remaining.`);
-            if (args[1] = "ask") {
+            if (args[1] === "ask") {
                 if (this.nextSet.length > 0) return this.systemMessage("You already have 3 choices.");
-                for (let i = 0; i < 2; i++) {
+                for (let i = 0; i < 3; i++) {
                     this.nextSet.push(upgradeTypes[Math.floor(Math.random() * upgradeTypes.length)])
                 }
-                this.nextSet.array.forEach(t => {
-                    this.systemMessage(`${nextSet.indexOf(t) + 1}: ${t.message}`, e.color)
+                this.nextSet.forEach((t, i) => {
+                    this.systemMessage(`${i + 1}: ${t.message}`, e.color)
                 });
             }
-            else if (args[1] = "pick") {
+            else if (args[1] === "pick") {
                 if (this.nextSet.length < 3) return this.systemMessage("No choices active");
                 if (!args[2] || Number(args[2]) > 3 || Number(args[2]) < 1) return this.systemMessage("Invalid number")
                 const upgType = upgradeTypes.indexOf(this.nextSet[Number(args[2]) - 1]);
@@ -3886,8 +3886,8 @@ if (commandCheck("/pity")) {
                         this.systemMessage(`Upgraded reach to ${this.permaSkills.re}`)
                         break;
                     case 5:
-                        this.systemMessage(`Upgraded duplicator to ${this.permaSkills.dup}`)
                         this.permaSkills.dup += 0.2
+                        this.systemMessage(`Upgraded duplicator to ${this.permaSkills.dup}`)
                         break;
                 }
                 this.body.skills = this.permaSkills;
