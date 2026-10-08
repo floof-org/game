@@ -350,7 +350,7 @@ export const petalConfigs = [
         .setHuddles(1)
         .setDescription("This isn't from this world..."),
     new PetalConfig("Dice", 20.5, 5, [17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5, 23, 23, 25]).setDiceAbility(0.10, 10).setSize(1.5).setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#FFFFFF", .2, .2).addAction("beginPath")
-        .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 10% chance of dealing 10x damage, plus each equipped Clover's dupe chance."),
+        .addAction("circle", 0, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", .4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, .4, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", -.4, 0, 0).addAction("paint", "#FFFFFF", .275, .2).addAction("beginPath").addAction("circle", 0, -.4, 0).addAction("paint", "#FFFFFF", .275, .2)).setDescription("Has a 10% chance of dealing 10x damage, crit chance can be effected by clovers dupe chance, stacks (For example a Dice with 3 Eternal Clover ; 10%+(1.75x3)% = 15.25% crit chance)"),
     new PetalConfig("Fire Sand", 22.5 * .4, 5, 50).setIcon(0.575, [4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], "Sand", 0).setSize(.85).setMulti([4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("closePath").addAction("paint", "#e86d48", .445, .2)
         ).setDescription("Some fine grains of sand on fire. They deal 2x damage than normal sand."),
@@ -757,10 +757,10 @@ export const petalConfigs = [
     new PetalConfig("Resin.projectile", 2250, 1e5, 15).setSize(35).setEnemySpeedMultiplier(.334, .05).setIgnoreWalls(1).setPacifyAbility(0.0001)
         .setDrawing(new Drawing().addAction("opacity", .45).addAction("beginPath").addAction("dipPolygon", 5, 1, -1.3, 0).addAction("fill", "#fcebff").addAction("opacity", 1).addAction("stroke", "#fcebff", .2, 0).addAction("opacity", .6).addAction("beginPath").addAction("dipPolygon", 5, .45, -1.6, Math.PI).addAction("fill", "#fcebff")
         ).setDescription("[object null object]"),
-    new PetalConfig("Thorn", 25, 80, [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 114]).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
+    new PetalConfig("Thorn", 25, 88, [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 74.275, 60, 60, 60, 114]).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("Spiky."),
-    new PetalConfig("Thorn.projectile", 25, 0.0000000005, 0.0000000005).setSize(1.35)
+    new PetalConfig("Thorn.projectile", 25, 0.00000000055, 74.275).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("[object null object]"),
     new PetalConfig("Lilypad", 225, 6, 44)

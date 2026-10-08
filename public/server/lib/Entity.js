@@ -270,10 +270,6 @@ export class PetalSlot {
             this.player.aggroLevel += this.rarity;
         }
 
-        if (this.config.petalAttractsAggro) {
-            this.player.aggroLevel += this.rarity;
-        }
-
         if (this.player.client) {
             this.player.client.camera.lightingBoost += this.config.extraLighting;
         }
@@ -378,10 +374,6 @@ export class PetalSlot {
             this.player.aggroLevel -= this.rarity;
         }
 
-        if (this.config.petalAttractsAggro) {
-            this.player.aggroLevel -= this.rarity;
-        }
-
         if (this.player.client) {
             this.player.client.camera.lightingBoost -= this.config.extraLighting;
         }
@@ -392,7 +384,7 @@ export class PetalSlot {
     }
 
     update(nSpots, i, orbitRatio) {
-        let orbit = this.player.size + 52.5 * (this.config.huddles ? .65 : orbitRatio) + (this.player?.skills?.re ?? 0);
+        let orbit = this.player.size + 52.5 * (this.config.huddles ? .65 : orbitRatio);
 
         if (this.config.wingMovement === true && this.player.attack) {
             orbit += (1 + Math.sin(performance.now() / 125 + this.index)) * (this.player.size * 4);
@@ -613,7 +605,7 @@ export class PetalSlot {
                 if (this.config.launchable && !petal.launched) {
                     petal.facing = (i + j) / nSpots * Math.PI * 2 + this.player.petalRotation;
 
-                    petal.range -= 3 / this.player?.skills?.sr;
+                    petal.range -= 3;
 
                     if ((this.player.defend && this.config.launchedSpeed == 0 || this.player.attack) && petal.range <= 0) {
                         petal.launched = true;
@@ -678,7 +670,7 @@ export class PetalSlot {
                 }
 
                 if (this.config.tiers[this.rarity].spawnable) {
-                    petal.range -= 1 / (this.player?.skills?.sr ?? 1);
+                    petal.range--;
 
                     if (petal.range <= 0) {
                         const spawnable = this.config.tiers[this.rarity].spawnable;
@@ -731,11 +723,10 @@ export class PetalSlot {
                     }
                 }
 
-                this.cooldowns[j] += this.player.reloadReduction / (this.player?.skills?.r ?? 1);
+                this.cooldowns[j] += this.player.reloadReduction;
                 if (this.cooldowns[j] >= this.config.cooldown) {
                     this.petals[j] = new Petal(this.player, this.index, j);
                     this.petals[j].define(this.config, this.rarity);
-                    this.petals[j].damage *= (this.player?.skills?.d ?? 1);
                     this.cooldowns[j] = 0;
                 }
             }
@@ -971,16 +962,18 @@ export class Entity {
             _AABB: { x1: this.x - range, y1: this.y - range, x2: this.x + range, y2: this.y + range }
         });
 
-        const valid = retrieved.values().filter(entity => !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || entity.type === ENTITY_TYPES.PETAL));
+        const valid = retrieved.values().filter(entity => !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || (entity.type === ENTITY_TYPES.PETAL && !(entity.aggroLevel > 0))));
         if (valid.length === 0) return null;
         if (random) return valid[Math.floor(Math.random() * valid.length)];
 
-        // Highest aggro, tie-break nearest.
+        // Highest aggro, tie-break nearest. Petals carry their own aggro
+        // (e.g. a placed-down Lens), everyone else uses their parent's.
+        const getAggro = e => (e.aggroLevel ?? 0) > 0 ? e.aggroLevel : (e.parent?.aggroLevel ?? 0);
         let best = null, bestD = 0;
         for (const e of valid) {
             const d = quickDiff(this, e);
-            const a = e.parent.aggroLevel;
-            if (best === null || a > best.parent.aggroLevel || (a === best.parent.aggroLevel && d < bestD))  best = e, bestD = d;
+            const a = getAggro(e);
+            if (best === null || a > getAggro(best) || (a === getAggro(best) && d < bestD))  best = e, bestD = d;
         }
 
         return best;
@@ -1849,6 +1842,12 @@ export class Petal extends Entity {
             this.stayDown = true;
         }
 
+        // Petals that attract aggro (e.g. Lens) carry it on themselves so a
+        // placed-down petal keeps pulling mobs, as in WhiteHole.js.
+        if (config.petalAttractsAggro) {
+            this.aggroLevel += this.rarity;
+        }
+
         if (tier.density) {
             this.density = tier.density;
         }
@@ -2095,6 +2094,10 @@ export class Petal extends Entity {
             this.parent.petalSlots[this.slotIndex].petals[this.petalIndex] = null;
         }
 
+        if (this.config?.petalAttractsAggro) {
+            this.aggroLevel -= this.rarity;
+        }
+
         super.destroy();
     }
 }
@@ -2107,7 +2110,7 @@ export class Player extends Entity {
         this.nameColor = "#FFFFFF";
         this.type = ENTITY_TYPES.PLAYER;
         this.team = this.id;
-        this.skills = {};
+
         this.health.set(40);
         this.reloadReduction = 1;
         this.moveAngle = 0;
@@ -2232,8 +2235,8 @@ export class Player extends Entity {
             this.health.deteriorateShield();
         }
 
-        this.velocity.x += Math.cos(this.moveAngle) * this.moveStrength * (this.skills?.sp ?? 1);
-        this.velocity.y += Math.sin(this.moveAngle) * this.moveStrength * (this.skills?.sp ?? 1);
+        this.velocity.x += Math.cos(this.moveAngle) * this.moveStrength;
+        this.velocity.y += Math.sin(this.moveAngle) * this.moveStrength;
 
         this.bindToRoom();
         this.facing = this.moveAngle;
@@ -3507,10 +3510,10 @@ export class Mob extends Entity {
             const itemName = petalConfigs[index]?.name ?? `Item ${index}`;
             const rarityData = tiers[rarity];
             if (!rarityData) return;
-            // Announce drops of Transcestrial and higher mobs, keeping the
+            // Announce drops of Chaos and higher mobs, keeping the
             // WhiteHole message format.
             const forceAnnounce = itemName === "ӇЄҲƛƓƠƝ";
-            if (this.rarity < 16 && !forceAnnounce) return;
+            if (this.rarity < 17 && !forceAnnounce) return;
             const key = `${rarity}:${index}:${amount}`;
             let group = dropAnnouncementGroups.get(key);
             if (!group) {

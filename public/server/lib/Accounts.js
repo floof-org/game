@@ -401,6 +401,20 @@ class Accounts {
     async flush() {
         await this.pending;
     }
+
+    /** timestamped copy of the accounts file, keeping only the newest 48 (24h at a 30min cadence) */
+    async backup() {
+        if (typeof Bun === "undefined") return null;
+        await this.flush();
+
+        const stamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, "-").replace("T", "-");
+        const name = `${ACCOUNTS_FILE}.auto-${stamp}`;
+        await Bun.$`cp ${ACCOUNTS_FILE} ${name}`.quiet();
+        const prune = `total=$(ls -1 ${ACCOUNTS_FILE}.auto-* 2>/dev/null | wc -l); if [ "$total" -gt 48 ]; then ls -1 ${ACCOUNTS_FILE}.auto-* | sort | head -n $((total - 48)) | xargs rm -f; fi`;
+        await Bun.$`sh -c ${prune}`.quiet().catch(() => {});
+
+        return name;
+    }
 }
 
 export default new Accounts();

@@ -7,3 +7,6 @@ bun.lock
 player_builds
 .continue
 accounts.json
+accounts.json.*
+.DS_Store
+AGENTS.md

@@ -930,6 +930,11 @@ export default class Client {
         this.handlingCraft = false;
         this.camera = new Camera();
 
+        /**
+         * A record of the inventory values last sent to the client.
+         */
+        this.lastSentInventory = {};
+
         /** @type {Player|null} */
         this.body = null;
 
@@ -1192,7 +1197,6 @@ export default class Client {
                 }
 
                 this.body = new Player(state.getPlayerSpawn(this));
-                this.body.skills = this.permaSkills ?? {r: 1, d: 1, sr: 1, sp: 1, re: 0, dup: 0};
                 this.firstSpawn = false;
                 this.body.name = this.username;
                 this.body.nameColor = this.nameColor;
@@ -1859,7 +1863,8 @@ export default class Client {
 
             const myLevel = getPlayerLevel(this);
 
-            if (myLevel < min || myLevel > max) {
+            // Owners bypass the squad level restriction.
+            if (this.masterPermissions < 2 && (myLevel < min || myLevel > max)) {
                 this.systemMessage(`Not enough Level. Required ${ownerLevel} ${min}-${max}.`, "#ff5555");
                 return;
             }
@@ -2457,7 +2462,7 @@ export default class Client {
                 const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
 
                 if (args.length < 1) {
-                    this.systemMessage("Usage: /remove [rarity] <petal> <amount>", "#ffaa00");
+                    this.systemMessage("Usage: /remove [rarity] <petal> [player] <amount>", "#ffaa00");
                     return;
                 }
 
@@ -2485,31 +2490,52 @@ export default class Client {
 
                 const rarity = tiers[rarityIndex];
 
+                // Optional [player] before <amount>: a trailing number is the
+                // amount, anything before it names another online player.
+                // Without a player the command targets yourself.
+                const petalArg = rest[0];
+                let target = this;
+                let amountArg;
+                const nameTokens = rest.slice(1);
+
+                if (nameTokens.length > 0 && !isNaN(nameTokens[nameTokens.length - 1])) {
+                    amountArg = nameTokens.pop();
+                }
+
+                if (nameTokens.length > 0) {
+                    const wanted = nameTokens.join(" ");
+                    target = [...state.clients.values()].find(client => client?.verified && typeof client.username === "string" && client.username.toLowerCase() === wanted.toLowerCase()) ?? null;
+
+                    if (!target) {
+                        this.systemMessage(`Player "${wanted}" not found or offline.`, "#ff5555");
+                        return;
+                    }
+                }
+
+                const targetName = target === this ? "You" : target.username;
+
                 // no petal given: wipe the whole rarity
                 if (rest.length === 0) {
-                    const petals = this.inventory[rarity.name] || {};
+                    const petals = target.inventory[rarity.name] || {};
                     const removed = Object.values(petals).reduce((sum, count) => sum + count, 0);
 
                     if (removed <= 0) {
-                        this.systemMessage(`You do not have any ${rarity.name} petals.`, "#ff5555");
+                        this.systemMessage(`${targetName} do${target === this ? "" : "es"} not have any ${rarity.name} petals.`, "#ff5555");
                         return;
                     }
 
                     // Zero the counts instead of dropping the keys: the client merges the world
                     // update inventory per petal id and never forgets ids the server stops
                     // sending, so a removed entry would keep showing up in the inventory view.
-                    for (const id of Object.keys(this.inventory[rarity.name])) {
-                        this.inventory[rarity.name][id] = 0;
+                    for (const id of Object.keys(target.inventory[rarity.name])) {
+                        target.inventory[rarity.name][id] = 0;
                     }
 
-                    accounts.saveClient(this);
+                    accounts.saveClient(target);
 
-                    this.systemMessage(`Removed all ${removed} ${rarity.name} petals!`, "#55ff55");
+                    this.systemMessage(`Removed all ${removed} ${rarity.name} petals${target === this ? "!" : ` from ${target.username}!`}`, "#55ff55");
                     return;
                 }
-
-                const petalArg = rest[0];
-                const amountArg = rest[1];
 
                 // petal names may omit spaces: both "fire missile" and "firemissile" resolve
                 const normalize = s => s.toLowerCase().replace(/\s+/g, "");
@@ -2537,24 +2563,24 @@ export default class Client {
                     }
                 }
 
-                const owned = this.inventory[rarity.name]?.[petalIndex] || 0;
+                const owned = target.inventory[rarity.name]?.[petalIndex] || 0;
 
                 if (owned <= 0) {
-                    this.systemMessage(`You do not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
+                    this.systemMessage(`${targetName} do${target === this ? "" : "es"} not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
                     return;
                 }
 
                 const removed = Math.min(amount, owned);
-                this.inventory[rarity.name][petalIndex] -= removed;
+                target.inventory[rarity.name][petalIndex] -= removed;
 
-                if (this.inventory[rarity.name][petalIndex] <= 0) {
+                if (target.inventory[rarity.name][petalIndex] <= 0) {
                     // Keep a zero count rather than deleting the key, see the whole-rarity branch above.
-                    this.inventory[rarity.name][petalIndex] = 0;
+                    target.inventory[rarity.name][petalIndex] = 0;
                 }
 
-                accounts.saveClient(this);
+                accounts.saveClient(target);
 
-                this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}!`, "#55ff55");
+                this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}${target === this ? "!" : ` from ${target.username}!`}`, "#55ff55");
             })();
 
             return;
@@ -2697,8 +2723,18 @@ if (commandCheck("/pity")) {
                                     return;
                                 }
 
-                                const rarityArg = args.shift().toLowerCase().replace(/\s+/g, "");
-                                const rarityIndex = rarityOrder.indexOf(rarityArg);
+                                // Rarity names can be multiple words (e.g. Absolute Fictional),
+                                // so match the longest leading token run.
+                                let rarityIndex = -1;
+                                for (let i = args.length; i > 0; i--) {
+                                    const candidate = args.slice(0, i).join(" ").toLowerCase().replace(/\s+/g, "");
+                                    const found = rarityOrder.indexOf(candidate);
+                                    if (found !== -1) {
+                                        rarityIndex = found;
+                                        args.splice(0, i);
+                                        break;
+                                    }
+                                }
 
                                 if (rarityIndex === -1 || rarityIndex === rarityOrder.length - 1) {
                                     this.systemMessage("Invalid or max rarity.", "#ff5555");
@@ -3788,45 +3824,6 @@ if (commandCheck("/pity")) {
                             if (commandCheck("/disablejoin") || commandCheck("/disablejoinannouncements")) {
 
         }
-        if (commandCheck("/xp")) {
-            if (!requireOwner()) return;
-    const args = e.trim().split(/\s+/);
-
-    if (args.length < 3) {
-        return;
-    }
-
-    const username = args[1];
-    const amount = Number(args[2]);
-
-    if (!Number.isFinite(amount)) {
-        return;
-    }
-    let target = null;
-
-    for (const client of state.clients.values()) {
-        if (!client || !client.verified || typeof client.username !== "string") {
-            continue;
-        }
-
-        if (client.username.toLowerCase() === username.toLowerCase()) {
-            target = client;
-            break;
-        }
-    }
-
-    if (target) {
-        target.xp += amount;
-
-        if (!Number.isFinite(target.xp)) {
-            target.xp = 0;
-        }
-
-        if (target.xp < 0) {
-            target.xp = 0;
-        }
-    }
-}
     if (commandCheck("/coords")) {
         this.systemMessage(`Your position: ${this.body?.x}, ${this.body?.y}`)
     }
@@ -4140,25 +4137,30 @@ if (commandCheck("/pity")) {
                                         return;
                                     }
 
-                                    const rawRarityArg = args.shift();
-
+                                    // Rarity names can be multiple words (e.g. Absolute Fictional),
+                                    // so match the longest leading token run before falling back to a numeric index.
                                     let rarityIndex = -1;
+                                    let rarityTokenCount = 0;
+                                    for (let i = args.length; i > 0; i--) {
+                                        const candidate = args.slice(0, i).join(" ").toLowerCase().replace(/\s+/g, "");
+                                        const found = rarityOrder.indexOf(candidate);
+                                        if (found !== -1) {
+                                            rarityIndex = found;
+                                            rarityTokenCount = i;
+                                            break;
+                                        }
+                                    }
+                                    if (rarityIndex === -1 && args.length > 0 && !isNaN(args[0])) {
 
-                                    if (!isNaN(rawRarityArg)) {
-
-                                        const num = parseInt(rawRarityArg, 10);
+                                        const num = parseInt(args[0], 10);
 
                                         if (num >= 0 && num < rarityOrder.length) {
                                             rarityIndex = num;
+                                            rarityTokenCount = 1;
                                         }
 
                                     }
-                                    else {
-
-                                        const rarityArg = rawRarityArg.toLowerCase().replace(/\s+/g, "");
-                                        rarityIndex = rarityOrder.indexOf(rarityArg);
-
-                                    }
+                                    args.splice(0, rarityTokenCount);
                                     const rawAmount = !isNaN(args.at(-1)) ? parseInt(args.pop(), 10) : null;
                                     const petalArg = args.join(" ").toLowerCase();
 
@@ -4451,7 +4453,7 @@ if (commandCheck("/pity")) {
                                     // announcements
                                     if (successes > 0) {
 
-                                        if (nextRarityIndex >= 10) {
+                                        if (nextRarityIndex >= 11) {
                                             state.clients.forEach(c=>c.systemMessage(
                                                 `${this.username} has crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}`,
                                                 tiers[nextRarityIndex].color));
@@ -4459,8 +4461,8 @@ if (commandCheck("/pity")) {
 
                                     } else {
 
-                                        // Failed Eternal to Unique crafts are announced lobby-wide.
-                                        if (rarityIndex === 10) {
+                                        // Failed Unique to Hyper and higher crafts are announced lobby-wide.
+                                        if (rarityIndex >= 11) {
                                             state.clients.forEach(c=>c.systemMessage(
                                                 `${this.username} failed to craft ${tiers[nextRarityIndex].name} ${petalArg} after ${attempts} failed attempt${attempts !== 1 ? "s" : ""}.`,
                                                 "#ff5555"));
@@ -5320,12 +5322,21 @@ if (commandCheck("/pity")) {
 
         writer.setUint16(this.level);
         writer.setFloat32(this.levelProgress);
+
         tiers.forEach(tier => {
+            this.lastSentInventory[tier.name] ??= {};
+
             const petals = this.inventory[tier.name];
-            // Zero counts are not sent here; the exact sync below delivers
-            // them as 0 so the client deletes the entry instead. The count
-            // must match the entries actually written.
-            const petalIds = Object.keys(petals).filter(id => petals[id] > 0);
+            const petalIds = [];
+
+            // Optimization: Only send updates for petal amounts that actually changed
+            for (let id in petals) {
+                if (petals[id] !== this.lastSentInventory[tier.name][id]) {
+                    petalIds.push(id);
+                    this.lastSentInventory[tier.name][id] = petals[id];
+                }
+            }
+
             writer.setUint16(petalIds.length);
             petalIds.forEach(id => {
                 writer.setUint16(parseInt(id));

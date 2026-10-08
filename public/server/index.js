@@ -107,6 +107,20 @@ function getMobIndex() {
     return 0;
 }
 
+// Max alive wild mobs per rarity. Rarities do not share this cap, so a flood
+// of low rarity mobs can never starve higher rarities of spawns. Segments
+// and friendly summons are not counted, only wild bodies.
+const RARITY_MOB_CAP = 5;
+
+function wildMobCountOfRarity(rarity) {
+    let count = 0;
+    for (const entity of state.entities.values()) {
+        if (entity.type !== ENTITY_TYPES.MOB || entity.rarity !== rarity || entity.friendly || entity.countsTowardsMobCount === false || entity.health?.isDead) continue;
+        if (++count >= RARITY_MOB_CAP) break;
+    }
+    return count;
+}
+
 // Game loop
 setInterval(() => {
     const startTime = performance.now();
@@ -172,7 +186,7 @@ setInterval(() => {
             break;
     }
 
-    if (!state.isWaves && state.livingMobCount < state.maxMobs && Math.random() > .9) {
+    if (!state.isWaves && Math.random() > .9) {
         if (state.gamemode === GAMEMODES.MMO) {
             // No mob spawning in MMO mode until we have proper PvE zones
         } else if (state.gamemode === GAMEMODES.MAZE) {
@@ -188,6 +202,7 @@ setInterval(() => {
                     }
                 }
             }
+            if (wildMobCountOfRarity(info.rarity) < RARITY_MOB_CAP) {
             const mob = new Mob(info.position);
             mob.define(cfg, info.rarity);
 
@@ -195,14 +210,20 @@ setInterval(() => {
                 if (!tiers[info.rarity]) console.error(`Rarity returns undefined: ${info.rarity}`);
                 else state.clients.forEach(c => c.systemMessage(applyArticle(tiers[info.rarity].name, true) + " " + cfg.name + " has spawned!", tiers[info.rarity].color));
             }
+            }
         } else if (state.isLineMap) {
             const cfg = mobConfigs[getMobIndex()];
             const info = state.lineMapMobSpawn(cfg);
+            if (wildMobCountOfRarity(info.rarity) < RARITY_MOB_CAP) {
             const mob = new Mob(info.position);
             mob.define(cfg, info.rarity);
+            }
         } else {
+            const rarity = Mob.TEMPORARY_RANDOM_RARITY();
+            if (wildMobCountOfRarity(rarity) < RARITY_MOB_CAP) {
             const mob = new Mob(state.random());
-            mob.define(mobConfigs[getMobIndex()], Mob.TEMPORARY_RANDOM_RARITY());
+            mob.define(mobConfigs[getMobIndex()], rarity);
+            }
         }
     }
 
@@ -233,14 +254,42 @@ setInterval(() => {
 // World update loop
 setInterval(() => state.clients.forEach(c => c.worldUpdate()), 1000 / 25);
 
-// Autosave every connected player (mirrors White's 20 minute autosave)
-setInterval(() => {
-    console.log("[AUTOSAVE] running...");
-    state.clients.forEach(client => {
-        if (!client?.verified) return;
-        accounts.saveClient(client);
-    });
-}, 20 * 60 * 1000);
+// Autosave every connected player plus a timestamped backup, every 30 minutes
+setInterval(async () => {
+    try {
+        console.log("[AUTOSAVE] running...");
+        state.clients.forEach(client => {
+            if (!client?.verified) return;
+            accounts.saveClient(client);
+        });
+        const name = await accounts.backup();
+        console.log(`[AUTOSAVE] backup written to ${name}`);
+        state.clients.forEach(client => client.systemMessage("Auto saved + Backup", "#7CFC00"));
+    } catch (err) {
+        console.warn("[AUTOSAVE] failed:", err);
+    }
+}, 30 * 60 * 1000);
+
+// Save everyone before the process goes down (pm2 restart sends SIGTERM).
+// Without this, up to 30 minutes of progress dies with the process.
+let shuttingDown = false;
+async function saveAllAndExit(signal) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    try {
+        console.log(`[SHUTDOWN] ${signal} received, saving all players...`);
+        state.clients.forEach(client => accounts.saveClient(client));
+        await accounts.flush();
+        console.log("[SHUTDOWN] saves flushed.");
+    } catch (err) {
+        console.warn("[SHUTDOWN] save failed:", err);
+    }
+    process.exit(0);
+}
+if (typeof process !== "undefined" && typeof process.on === "function") {
+    process.on("SIGTERM", () => saveAllAndExit("SIGTERM"));
+    process.on("SIGINT", () => saveAllAndExit("SIGINT"));
+}
 
 // Router server through worker through socket
 state.router = new Router();
