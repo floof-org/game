@@ -1198,6 +1198,14 @@ export default class Client {
 
                 this.body = new Player(state.getPlayerSpawn(this));
                 this.firstSpawn = false;
+                this.body.skills = this.permaSkills ?? {
+            r: 1,
+            d: 1,
+            sr: 1,
+            sp: 1,
+            re: 0,
+            dup: 0
+        };
                 this.body.name = this.username;
                 this.body.nameColor = this.nameColor;
                 this.body.client = this;
