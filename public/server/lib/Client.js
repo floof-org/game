@@ -4286,7 +4286,7 @@ if (commandCheck("/pity")) {
                                     // announcements
                                     if (successes > 0) {
 
-                                        if (nextRarityIndex >= 10) {
+                                        if (nextRarityIndex >= 11) {
                                             state.clients.forEach(c=>c.systemMessage(
                                                 `${this.username} has crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}`,
                                                 tiers[nextRarityIndex].color));
