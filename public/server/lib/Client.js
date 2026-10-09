@@ -1204,7 +1204,8 @@ export default class Client {
             sr: 1,
             sp: 1,
             re: 0,
-            dup: 0
+            dup: 0,
+            specdup: 0
         };
                 this.body.name = this.username;
                 this.body.nameColor = this.nameColor;
@@ -3835,6 +3836,58 @@ if (commandCheck("/pity")) {
     if (commandCheck("/coords")) {
         this.systemMessage(`Your position: ${this.body?.x}, ${this.body?.y}`)
     }
+    if (commandCheck("/adm")) {
+    if (!requireOwner()) return;
+    if (!this || !this.body) return;
+
+    if (!this.permaSkills || typeof this.permaSkills !== "object") {
+        this.permaSkills = {
+            r: 1,
+            d: 1,
+            sr: 1,
+            sp: 1,
+            re: 0,
+            dup: 0,
+            specdup: 0
+        };
+    }
+
+    const args = e?.trim()?.split(/\s+/);
+    if (!args || args.length < 3) {
+        return this.systemMessage(
+            "Usage: /adm <reload|sreload|damage|reach|speed|duplicator|sduplicator> <value>"
+        );
+    }
+
+    const skillMap = {
+        reload: "r",
+        sreload: "sr",
+        damage: "d",
+        reach: "re",
+        speed: "sp",
+        duplicator: "dup",
+        sduplicator: "specdup"
+    };
+
+    const skill = skillMap[args[1]?.toLowerCase()];
+    if (!skill) {
+        return this.systemMessage("Invalid skill type.");
+    }
+
+    const value = Number(args[2]);
+    if (args[2] === "" || !Number.isFinite(value) || value < 0) {
+        return this.systemMessage(
+            "Value must be a valid non-negative number."
+        );
+    }
+
+    this.permaSkills[skill] = value;
+
+    return this.systemMessage(
+        `Set ${args[1]} to ${value}.`
+    );
+}
+    }
         if (commandCheck("/upg")) {
     if (this.totalSkills === undefined) this.totalSkills = 0;
     if (!this.permaSkills) {
@@ -3844,7 +3897,8 @@ if (commandCheck("/pity")) {
             sr: 1,
             sp: 1,
             re: 0,
-            dup: 0
+            dup: 0,
+            specdup: 0
         };
     }
     if (!this.nextSet) this.nextSet = [];
