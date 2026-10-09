@@ -3887,7 +3887,6 @@ if (commandCheck("/pity")) {
         `Set ${args[1]} to ${value}.`
     );
 }
-    }
         if (commandCheck("/upg")) {
     if (this.totalSkills === undefined) this.totalSkills = 0;
     if (!this.permaSkills) {
