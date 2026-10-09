@@ -160,7 +160,7 @@ export class HealthComponent {
         // const dmg = Math.max(0, Math.min(this.health, x - x * Math.min(.75, this.damageReduction)));
         // this.health = this.health - dmg;
         if (damager) {
-            if (damager.type = ENTITY_TYPES.PETAL) {
+            if (damager.type? === ENTITY_TYPES.PETAL) {
                 x *= (damager.parent?.skills?.d ?? 1)
             }
         }
