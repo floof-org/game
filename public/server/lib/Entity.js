@@ -148,17 +148,22 @@ export class HealthComponent {
         this.shield = Math.min(this.shield, this.maxHealth);
     }
 
-    damage(x, damager) {
+    damage(y, damager) {
         if (this.invulnerable) {
             return 0;
         }
+        let x = y;
 
         if (this.armor && x < this.armor) {
             return 0;
         }
         // const dmg = Math.max(0, Math.min(this.health, x - x * Math.min(.75, this.damageReduction)));
         // this.health = this.health - dmg;
-
+        if (damager) {
+            if (damager.type = ENTITY_TYPES.PETAL) {
+                x *= (damager.parent?.skills?.d ?? 1)
+            }
+        }
         let damageDone = 0;
 
         if (this.shield > 0) {
@@ -384,7 +389,7 @@ export class PetalSlot {
 
     update(nSpots, i, orbitRatio) {
         let orbit = this.player.size + 52.5 * (this.config.huddles ? .65 : orbitRatio);
-
+        orbit += (this.player.attack ? (this.player?.skills?.re ?? 0) : 0);
         if (this.config.wingMovement === true && this.player.attack) {
             orbit += (1 + Math.sin(performance.now() / 125 + this.index)) * (this.player.size * 4);
         }
@@ -434,7 +439,7 @@ export class PetalSlot {
                 }
 
                 if (this.config.shootsOut > -1) {
-                    petal.range -= 3;
+                    petal.range -= 3 * (this.player?.skills?.sr ?? 1);
 
                     if (petal.range <= 0 && (this.player.attack || this.player.defend)) {
                         const newPet = new Petal(this.player, -1, -1);
@@ -669,7 +674,7 @@ export class PetalSlot {
                 }
 
                 if (this.config.tiers[this.rarity].spawnable) {
-                    petal.range--;
+                    petal.range-= (this.player?.skills?.sr ?? 1);
 
                     if (petal.range <= 0) {
                         const spawnable = this.config.tiers[this.rarity].spawnable;
@@ -722,7 +727,7 @@ export class PetalSlot {
                     }
                 }
 
-                this.cooldowns[j] += this.player.reloadReduction * this.player.skills.r;
+                this.cooldowns[j] += this.player.reloadReduction * (this.player?.skills?.r ?? 1);
                 if (this.cooldowns[j] >= this.config.cooldown) {
                     this.petals[j] = new Petal(this.player, this.index, j);
                     this.petals[j].define(this.config, this.rarity);
@@ -1004,8 +1009,8 @@ export class Entity {
             this.speedDebuff.timer--;
         }
 
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+        this.x += this.velocity.x * (this.skills?.sp ?? 1);
+        this.y += this.velocity.y * (this.skills?.sp ?? 1);
 
         if (this.speedDebuff.timer > 0) {
             this.velocity.divide(this.speedDebuff.multiplier);
@@ -1222,10 +1227,10 @@ export class Entity {
                         });
 
                         if (!done) {
-                            thisDealt = this.health.damage(otherDamageDone);
+                            thisDealt = this.health.damage(otherDamageDone, other);
                         }
                     } else {
-                        thisDealt = this.health.damage(otherDamageDone);
+                        thisDealt = this.health.damage(otherDamageDone, other);
                     }
 
                     if (other.absorbStacks.size > 0) {
@@ -1238,10 +1243,10 @@ export class Entity {
                         });
 
                         if (!done) {
-                            otherDealt = other.health.damage(thisDamageDone);
+                            otherDealt = other.health.damage(thisDamageDone, this);
                         }
                     } else {
-                        otherDealt = other.health.damage(thisDamageDone);
+                        otherDealt = other.health.damage(thisDamageDone, this);
                     }
 
                     if (this.config?.name === "Starfish" && this.type === ENTITY_TYPES.MOB && other.config?.name === "Dandelion") {
