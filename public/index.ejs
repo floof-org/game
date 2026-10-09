@@ -325,6 +325,231 @@
                 bottom: 5px;
             }
 
+            #menus2 #inventory {
+                box-sizing: border-box;
+                width: min(285px, calc(100vw - 75px));
+                height: min(460px, calc(100dvh - 10px));
+                max-height: calc(100dvh - 10px);
+                display: flex;
+                flex-direction: column;
+                padding: 5px 0 12px;
+                overflow: hidden;
+                color: #fff;
+                text-align: center;
+                background: #5a9fdb;
+                border: 5px solid #4981b1;
+                border-radius: 4px;
+            }
+
+            #menus2 #inventory *,
+            #menus2 #inventory *::before,
+            #menus2 #inventory *::after {
+                box-sizing: border-box;
+                transition: none;
+            }
+
+            #menus2 #inventory.active {
+                left: 60px;
+                bottom: 5px;
+            }
+
+            #inventory .inventory-title,
+            #inventory .inventory-subtitle,
+            #inventory .inventory-rarity-total,
+            #inventory .inventory-empty {
+                -webkit-text-stroke: 2px #1b2a3a;
+                paint-order: stroke fill;
+            }
+
+            #inventory .inventory-title {
+                min-height: 24px;
+                font-size: 18px;
+                line-height: 24px;
+                -webkit-text-stroke-width: 3px;
+            }
+
+            #inventory .inventory-subtitle {
+                -webkit-text-stroke-width: 3px;
+            }
+
+            #menus2 #inventory .inventory-close {
+                position: absolute;
+                top: 7px;
+                right: 6px;
+                width: 20px;
+                height: 20px;
+                min-width: 20px;
+                margin: 0;
+                padding: 0;
+                background: #bb5555;
+                border: 3px solid #974545;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            #inventory .inventory-close::before,
+            #inventory .inventory-close::after {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 10px;
+                height: 3px;
+                content: "";
+                background: #e9c3c3;
+                transform: translate(-50%, -50%) rotate(45deg);
+            }
+
+            #inventory .inventory-close::after {
+                transform: translate(-50%, -50%) rotate(-45deg);
+            }
+
+            #inventory .inventory-subtitle {
+                margin-top: 7px;
+                font-size: 11px;
+                line-height: 14px;
+            }
+
+            #inventory .inventory-controls {
+                display: flex;
+                align-items: center;
+                height: 24px;
+                margin: 9px 11px 0 14px;
+            }
+
+            #inventory .inventory-stack {
+                display: flex;
+                flex: none;
+                align-items: center;
+                gap: 7px;
+                margin: 0 9px 0 0;
+                font-size: 12px;
+                cursor: pointer;
+            }
+
+            #menus2 #inventory .inventory-stack input {
+                position: relative;
+                width: 20px;
+                height: 20px;
+                margin: 0;
+                appearance: none;
+                background: #666;
+                border: 3px solid #333;
+                border-radius: 2px;
+                cursor: pointer;
+            }
+
+            #menus2 #inventory .inventory-stack input:checked::after {
+                position: absolute;
+                inset: 2px;
+                content: "";
+                background: #fff;
+                opacity: 0.85;
+            }
+
+            #inventory .inventory-search {
+                flex: 1;
+                min-width: 0;
+                height: 24px;
+                padding: 0 4px;
+                color: #222;
+                background: #eee;
+                border: 2px solid #000;
+                border-radius: 0;
+                outline: none;
+                font-size: 12px;
+                user-select: text;
+            }
+
+            #inventory .inventory-list {
+                position: relative;
+                flex: 1 1 auto;
+                min-height: 0;
+                margin-top: 4px;
+                overflow-x: hidden;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                scrollbar-width: none;
+            }
+
+            #inventory .hidden {
+                display: none;
+            }
+
+            #inventory .inventory-rarities {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                place-items: center;
+                gap: 1px 6px;
+                padding: 4px 10px 0;
+                white-space: nowrap;
+                font-size: 10px;
+                line-height: 13px;
+            }
+
+            #inventory .inventory-petals {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 6px;
+                padding: 4px 8px 4px;
+            }
+
+            #inventory .petal2 {
+                flex: 0 0 44px;
+                width: 44px;
+                height: 44px;
+                cursor: grab;
+            }
+
+            #inventory .inventory-divider {
+                position: relative;
+                flex: 0 0 100%;
+                height: 12px;
+                margin-top: 6px;
+            }
+
+            #inventory .inventory-divider::before {
+                position: absolute;
+                top: 5px;
+                right: 15px;
+                left: 4px;
+                height: 3px;
+                content: "";
+                background: #4981b1;
+                border-radius: 2px;
+            }
+
+            #inventory .inventory-rarity-name {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                padding: 0 6px;
+                background: #5a9fdb;
+                font-size: 10px;
+                line-height: 12px;
+                transform: translateX(-50%);
+                white-space: nowrap;
+                -webkit-text-stroke: 2.5px #1b2a3a;
+                paint-order: stroke fill;
+            }
+
+            #inventory .inventory-empty {
+                padding: 14px 8px;
+                font-size: 12px;
+            }
+
+            #inventory .inventory-canvas {
+                position: absolute;
+                left: 0;
+                top: 0;
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            #inventory .inventory-list::-webkit-scrollbar {
+                display: none;
+            }
+
             #menus2 .menu h2 {
                 margin-top: 0;
                 font-size: 3vmin;

@@ -3,12 +3,13 @@ import * as net from "./lib/net.js";
 import { mouse, keyMap, releaseFloatingText } from "./lib/net.js";
 import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
-import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
+import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor, drawCutter, drawDisc } from "./lib/renders.js";
 import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
 import { updateAccountMenu } from './lib/auth.js';
 import SpatialHashGrid from "./server/lib/SpatialHashGrid.js";
 import "./lib/craftMenu.js";
+import { InventoryUI } from "./lib/inventory.js";
 
 const mobRenderSpatialHash = new SpatialHashGrid();
 
@@ -676,6 +677,29 @@ let cuteLittleAnimations = {
 
 const buttonsContainer = document.getElementById("menus2");
 const menu = buttonsContainer.children.item("inventory");
+const inventorySearch = document.getElementById("inventorySearch");
+const inventoryClose = document.getElementById("inventoryClose");
+const inventoryUI = new InventoryUI({
+    panel: menu,
+    list: document.getElementById("inventoryList"),
+    search: inventorySearch,
+    stack: document.getElementById("inventoryStack"),
+});
+
+window.addEventListener("pointerdown", (event) => {
+    if (event.target !== inventorySearch) inventorySearch.blur();
+});
+inventoryClose.addEventListener("click", () => {
+    menu.classList.remove("active");
+    inventorySearch.blur();
+    inventoryClose.blur();
+});
+window.addEventListener("keydown", (event) => {
+    if (event.code !== "KeyZ" || event.repeat || event.ctrlKey || event.metaKey || event.altKey || net.ChatMessage.showInput) return;
+    if (menu.classList.contains("active") && (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target.isContentEditable)) return;
+
+    menu.classList.toggle("active");
+});
 
 const inventoryTooltipLayer = document.createElement("div");
 inventoryTooltipLayer.style.position = "fixed";
@@ -708,121 +732,6 @@ function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   y = Math.max(0, Math.min(y, boundH - bh));
   return { x, y, bw, bh };
 }
-
-function drawInventory() {
-    net.state.petalElements = [];
-    menu.innerHTML = "";
-
-    if (!net.state.inventory) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
-    }
-
-    let inventoryEmpty = true;
-    Object.values(net.state.inventory).forEach((tier) => {
-        if (Object.values(tier).some((count) => count > 0)) {
-            inventoryEmpty = false;
-        }
-    });
-
-    if (inventoryEmpty) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
-    }
-
-    const petal = document.createElement("div");
-    petal.style.display = "flex";
-    petal.style.flexWrap = "wrap";
-    petal.style.padding = "0px";
-    petal.style.gap = "5px";
-    menu.appendChild(petal);
-
-    const petalSize = 56;
-
-    let sortedTiers = Object.entries(net.state.inventory).sort(([a], [b]) => {
-        const aIndex = net.state.tiers.findIndex((t) => t.name === a);
-        const bIndex = net.state.tiers.findIndex((t) => t.name === b);
-        return bIndex - aIndex;
-    });
-
-    sortedTiers.forEach(([tierName, petals]) => {
-        const rarityIndex = net.state.tiers.findIndex((t) => t.name === tierName);
-
-        Object.entries(petals)
-            .sort(([a], [b]) => {
-                const aName = net.state.petalConfigs[Number(a)].name;
-                const bName = net.state.petalConfigs[Number(b)].name;
-                return aName.localeCompare(bName);
-            })
-            .forEach(([petalIndex, count]) => {
-                if (count <= 0) return;
-
-                const petalCanvas = getPetalIcon(Number(petalIndex), rarityIndex, "oneshot");
-
-                const icon = document.createElement("canvas");
-
-                icon.addEventListener("pointerenter", (ev) => {
-                    const r = ev.currentTarget.getBoundingClientRect();
-                    net.state.inventoryPetalHover = [Number(petalIndex), rarityIndex, r.left + r.width / 2, r.top + r.height / 2];
-                });
-
-                icon.addEventListener("pointermove", (ev) => {
-                    const r = ev.currentTarget.getBoundingClientRect();
-                    net.state.inventoryPetalHover = [Number(petalIndex), rarityIndex, r.left + r.width / 2, r.top + r.height / 2];
-                });
-
-                icon.addEventListener("pointerleave", () => {
-                    net.state.inventoryPetalHover = null;
-                });
-
-                icon.width = petalSize;
-                icon.height = petalSize;
-
-                icon.style.width = petalSize + "px";
-                icon.style.height = petalSize + "px";
-                icon.style.flex = "0 0 auto";
-
-                const c = icon.getContext("2d");
-                c.drawImage(petalCanvas, 0, 0, petalSize, petalSize);
-
-                if (count > 1) {
-                    c.fillStyle = colors.white;
-                    c.strokeStyle = "#000000";
-                    c.lineWidth = 2;
-                    c.font = `bold ${petalSize * 0.25}px Ubuntu`;
-                    c.textAlign = "right";
-                    c.textBaseline = "top";
-
-                    const text = `x${formatAmount(count)}`;
-                    c.strokeText(text, petalSize - 4, 4);
-                    c.fillText(text, petalSize - 4, 4);
-                }
-
-                petal.appendChild(icon);
-
-                net.state.petalElements.push({
-                    icon,
-                    index: Number(petalIndex),
-                    rarity: rarityIndex,
-                    width: petalSize,
-                    height: petalSize,
-                });
-            });
-    });
-}
-
-window.addEventListener("keydown", (e) => {
-    if (e.key === " " || e.key === "Enter") {
-        if (e.target.closest("button")) {
-            e.preventDefault();
-            return false;
-        }
-    }
-    if (e.key === "z" && !net.ChatMessage.showInput) {
-        menu.classList.toggle("active");
-        drawInventory();
-    }
-});
 
 function hashAliveMobs(list) {
     const grouped = {};
@@ -2179,6 +2088,14 @@ function draw() {
             ctx.setTransform(oldTransform);
         }
 
+        if (entity.wearing & WEARABLES.CUTTER) {
+            const oldTransform = ctx.getTransform();
+            ctx.setTransform(size * 0.87, 0, 0, size * 0.87, drawX, drawY);
+            ctx.rotate(performance.now() / 300 + entity.id * 5);
+            drawCutter(ctx);
+            ctx.setTransform(oldTransform);
+        }
+
         setStyle(mixColors([colors.playerYellow, colors.team1, colors.team2][entity.team] ?? colors.crafting, colors.legendary, entity.hit * 0.5), 5 * scale);
 
         ctx.beginPath();
@@ -2190,6 +2107,13 @@ function draw() {
         ctx.setTransform(1, 0, 0, 1, drawX, drawY);
         drawFace(size * 0.4, entity.facing, entity.mood, entity.mouthDip, expression);
         ctx.setTransform(oldTransform);
+
+        if (entity.wearing & WEARABLES.DISC) {
+            const oldTransform = ctx.getTransform();
+            ctx.setTransform(size * 0.92, 0, 0, size * 0.92, drawX, drawY);
+            drawDisc(ctx);
+            ctx.setTransform(oldTransform);
+        }
 
         if (entity.wearing & WEARABLES.THIRD_EYE) {
             const oldTransform = ctx.getTransform();
@@ -2894,43 +2818,30 @@ function draw() {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    if (now - (net.state._lastInventoryCheck ?? 0) >= 250) {
-        net.state._lastInventoryCheck = now;
-    if (JSON.stringify(net.state.inventory2) !== JSON.stringify(net.state.inventory)) {
-        if (menu.classList.contains("active")) {
-            drawInventory();
-        }
-        net.state.inventory2 = JSON.parse(JSON.stringify(net.state.inventory));
-    }
-    }
+    inventoryUI.render(now);
 
     net.state._foundHover = false;
 
-    if (menu.classList.contains("active") && net.state.petalElements) {
-        const menuRect = menu.getBoundingClientRect();
-        const petalRects = net.state.petalElements.map(petalElement => petalElement.icon.getBoundingClientRect());
-        const mouseX = mouse.x / window.devicePixelRatio;
-        const mouseY = mouse.y / window.devicePixelRatio;
+    if (menu.classList.contains("active")) {
+        const dpr = window.devicePixelRatio || 1;
+        const hovered = inventoryUI.hitTest(mouse.x / dpr, mouse.y / dpr);
 
-        net.state.petalElements.forEach((petal, i) => {
-            const rect = petalRects[i]
-            const visible = rect.top >= menuRect.top && rect.bottom <= menuRect.bottom && rect.left >= menuRect.left && rect.right <= menuRect.right;
-            const hovered = visible && mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom;
+        if (hovered) {
+            const { petal, rarity, rect } = hovered;
+            net.state._foundHover = true;
+            net.state.inventoryPetalHover = [petal, rarity, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
 
-            if (hovered) {
-                net.state._foundHover = true;
-                net.state.inventoryPetalHover = [petal.index, petal.rarity, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
-
-                if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
-                    beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petal.index, petal.rarity);
-                    menu.classList.toggle("active");
-                    inventoryDragConfig.index = petal.index;
-                    inventoryDragConfig.rarity = petal.rarity;
-                    inventoryDragConfig.item.stableSize = rect.width;
-                    inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
-                }
+            if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left) {
+                const toUI = dpr / uScale;
+                const size = rect.width * toUI;
+                beginInventoryDragDrop((rect.left + rect.width / 2) * toUI, (rect.top + rect.height / 2) * toUI, size, petal, rarity);
+                menu.classList.toggle("active");
+                inventoryDragConfig.index = petal;
+                inventoryDragConfig.rarity = rarity;
+                inventoryDragConfig.item.stableSize = size;
+                inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
             }
-        });
+        }
     }
 
     if (!net.state._foundHover) {
