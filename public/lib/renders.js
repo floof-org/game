@@ -890,6 +890,22 @@ export function drawArmor(ctx = _ctx, hit = false) {
     ctx.closePath();
 }
 
+export function drawCutter(ctx = _ctx) {
+    ctx.save();
+    ctx.scale(1.15, 1.15);
+    ctx.fillStyle = "#000000";
+    ctx.fill(getDiggerGear(), "evenodd");
+    ctx.restore();
+}
+
+export function drawDisc(ctx = _ctx) {
+    ctx.beginPath();
+    ctx.arc(0, 0, 1.216, 0, TAU);
+    ctx.lineWidth = 0.27;
+    ctx.strokeStyle = "#000000";
+    ctx.stroke();
+}
+
 function drawJelly(ctx = _ctx, hit = false) {
     setStyle(ctx, mixColors(colors.jellyPink, "#FF0000", hit * 0.5), 0.25);
 
@@ -1967,6 +1983,18 @@ function petalRender(index, hit, ctx, id, size) {
         case 73: // Diep Pentagon
             drawPentagonMob(ctx, hit);
             break;
+        case 74: // cutter
+            drawCutter(ctx);
+            break;
+        case 75: // disc
+            drawDisc(ctx);
+            break;
+        case 76: // diamond
+            drawDiamond(ctx, hit);
+            break;
+        case 77:  // uranium
+            drawUranium(ctx, hit);
+            break;
         default:
             console.log("Unknown petal index: " + index);
             basicPetal(ctx, hit, "#FF0000", size);
@@ -2132,6 +2160,12 @@ export function drawUIPetal(index, rarity, ctx = _ctx) {
             ctx.save();
             ctx.scale(1.05, 1.05);
             drawCandyIcon(ctx, index, rarity);
+            ctx.restore();
+            break;
+        case 76: // diamond
+            ctx.save();
+            ctx.scale(1.08, 1.08);
+            drawDiamond(ctx, false);
             ctx.restore();
             break;
         default:
@@ -4991,6 +5025,234 @@ function drawDiepTank(ctx = _ctx, hit = false) {
     ctx.stroke();
 }
 
+let diggerGearPath = null;
+
+function getDiggerGear() {
+    if (diggerGearPath) {
+        return diggerGearPath;
+    }
+
+    const R = 1.4;
+    const teeth = 9;
+    const step = TAU / teeth;
+    const path = new Path2D();
+
+    path.moveTo(R, 0);
+
+    for (let i = 1; i <= teeth; i++) {
+        const control = step * (i - 0.5);
+
+        path.quadraticCurveTo(
+            Math.cos(control) * R * 0.75, Math.sin(control) * R * 0.75,
+            Math.cos(step * i) * R, Math.sin(step * i) * R
+        );
+    }
+
+    path.lineTo(R, 0);
+
+   
+    path.moveTo(1, 0);
+    path.arc(0, 0, 1, 0, TAU);
+
+    diggerGearPath = path;
+    return path;
+}
+
+function drawDiamond(ctx, hit) {
+    const outline = mixColors("#003033", "#FF0000", hit * 0.5);
+    const face = mixColors("#00F2FF", "#FF0000", hit * 0.5);
+    const highlight = mixColors("#33F5FF", "#FF0000", hit * 0.5);
+    const matrix = ctx.getTransform();
+    const sides = 6;
+    const step = TAU / sides;
+
+    ctx.save();
+    ctx.beginPath();
+
+    for (let i = 0; i < sides; i++) {
+        ctx.lineTo(Math.cos(step * i), Math.sin(step * i));
+    }
+
+    ctx.closePath();
+    ctx.lineWidth = 4 / 15;
+    ctx.strokeStyle = outline;
+    ctx.stroke();
+    ctx.fillStyle = face;
+    ctx.fill();
+
+    for (let i = 0; i < sides; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(1, 0);
+        ctx.lineTo(Math.cos(step), Math.sin(step));
+        ctx.closePath();
+        ctx.fillStyle = `rgba(0, 0, 0, ${0.2 + (i + 4) % sides / sides * 0.35})`;
+        ctx.fill();
+        ctx.rotate(step);
+    }
+
+    ctx.beginPath();
+
+    for (let i = 0; i < sides; i++) {
+        ctx.lineTo(0.65 * Math.cos(step * i), 0.65 * Math.sin(step * i));
+    }
+
+    ctx.shadowBlur = Math.hypot(matrix.a, matrix.b) * 35 / 16;
+    ctx.shadowColor = highlight;
+    ctx.fillStyle = highlight;
+    ctx.fill();
+    ctx.fill();
+    ctx.restore();
+}
+
+let uraniumPath = null;
+
+function drawUranium(ctx, hit) {
+    if (!uraniumPath) {
+        uraniumPath = new Path2D();
+
+        for (let i = 0; i < 8; i++) {
+            const angle = TAU * i / 8;
+            uraniumPath.lineTo(Math.cos(angle) - 0.1 * Math.sin(angle), Math.sin(angle));
+        }
+
+        uraniumPath.closePath();
+    }
+
+    ctx.save();
+    ctx.lineCap = ctx.lineJoin = "round";
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = mixColors("#509B24", "#FF0000", hit * 0.5);
+    ctx.stroke(uraniumPath);
+    ctx.fillStyle = mixColors("#63BF2E", "#FF0000", hit * 0.5);
+    ctx.fill(uraniumPath);
+    ctx.restore();
+}
+
+function drawDiggerEye(ctx, x, y, lookX, lookY, lidA, lidB) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    ctx.beginPath();
+    ctx.moveTo(-3, 3 * lidA - 6.5);
+    ctx.lineTo(3, 3 * lidB - 6.5);
+    ctx.lineTo(3, 6.5);
+    ctx.lineTo(-3, 6.5);
+    ctx.closePath();
+    ctx.clip();
+
+    ctx.beginPath();
+    ctx.rect(-2.8, -6.1, 5.6, 12.2);
+    ctx.fillStyle = "#333333";
+    ctx.fill();
+    ctx.clip();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(1.6 * lookX, 4 * lookY);
+    ctx.rect(-2.6, -2.6, 5.2, 5.2);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fill();
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.rect(-2.8, -6.1, 5.6, 12.2);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "#333333";
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+
+const DIGGER_ANGER_MS = 200;
+const diggerAnger = new Map();
+
+function getDiggerAnger(id, attacking, date) {
+    
+    if (date === 0) {
+        return attacking ? 1 : 0;
+    }
+
+    let state = diggerAnger.get(id);
+
+    if (state === undefined) {
+        state = { value: 0, last: date };
+        diggerAnger.set(id, state);
+
+       
+        if (diggerAnger.size > 200) {
+            for (const [key, other] of diggerAnger) {
+                if (date - other.last > 10000) {
+                    diggerAnger.delete(key);
+                }
+            }
+        }
+    }
+
+    const dt = Math.max(0, date - state.last);
+    state.last = date;
+    state.value = Math.min(1, Math.max(0, state.value + (attacking ? 1 : -1) * dt / DIGGER_ANGER_MS));
+
+    return state.value;
+}
+
+function drawDigger(ctx = _ctx, id = 0, attack = false, friend = false, hit = false, rot = 0, date = performance.now()) {
+    const cached = options.cacheMobAssets;
+    const bodyColor = mixColors(friend ? colors.playerYellow : "#999999", "#FF0000", hit * 0.5);
+    const gearColor = mixColors("#000000", "#FF0000", hit * 0.5);
+
+
+    const lidA = cached ? 0 : getDiggerAnger(id, attack, date);
+    const lidB = 0;
+
+    
+    const lookX = cached ? 1 : Math.cos(rot);
+    const lookY = cached ? 0 : Math.sin(rot);
+
+    ctx.save();
+    ctx.scale(1 / 25, 1 / 25);
+
+    if (!cached) {
+        ctx.rotate(-rot);
+    }
+
+    ctx.save();
+    ctx.scale(25, 25);
+    ctx.rotate((date / 300) % TAU);
+    ctx.fillStyle = gearColor;
+    ctx.fill(getDiggerGear(), "evenodd");
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, 25, 0, TAU);
+    ctx.fillStyle = bodyColor;
+    ctx.fill();
+    ctx.clip();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    drawDiggerEye(ctx, -6, -4, lookX, lookY, lidB, lidA);
+    drawDiggerEye(ctx, 6, -4, lookX, lookY, lidA, lidB);
+
+    ctx.save();
+    ctx.translate(0, 9);
+    ctx.beginPath();
+    ctx.bezierCurveTo(-5, 0, 0, 5 - 9 * lidA - 8 * lidB, 5, 0);
+    ctx.strokeStyle = "#333333";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.restore();
+}
+
 const mobCache = new Map();
 
 export function drawMob(id, index, rarity, hit = false, ctx = _ctx, attack = false, friend = false, rot = 0, extra = undefined, date = performance.now()) {
@@ -5378,6 +5640,9 @@ function mobRender(ctx, id, index, rarity, hit, attack, friend, rot, extra, date
             break;
         case 73:
             drawDiepTank(ctx, hit);
+            break;
+        case 74:
+            drawDigger(ctx, id, attack, friend, hit, rot, date);
             break;
     }
 }

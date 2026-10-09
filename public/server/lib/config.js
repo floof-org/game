@@ -341,7 +341,33 @@ export const petalConfigs = [
     new PetalConfig("Pentagon Egg", 22.5 * 4, 200, 4)
         .setSize(1.8)
         .setHuddles(1)
-        .setDescription("This isn't from this world...")
+        .setDescription("This isn't from this world..."),
+    new PetalConfig("Cutter", 0, 0, 0)
+        .setMulti(0, false)
+        .setWearable(WEARABLES.CUTTER)
+        .setFlowerBodyDamage(15)
+        .setDescription("Increases your body damage."),
+    new PetalConfig("Disc", 0, 0, 0)
+        .setMulti(0, false)
+        .setWearable(WEARABLES.DISC)
+        .setDamageReduction(rarity => (10 + 9 * rarity - Math.max(rarity - 1, 0)) / 100)
+        .setDescription("Reduces incoming damage."),
+    new PetalConfig("Diamond", 22.5 * 2, 1, 56)
+        .setSize(1.3)
+        .setFixedAngle()
+        .setArmor(5)
+        .setShatter({
+            count: 6,
+            size: .8,
+            speed: 9,
+            lifetime: 1
+        })
+        .setDescription("It shatters when broken."),
+    new PetalConfig("Uranium", 22.5 * 5, 25, 1)
+        .setSize(1.1)
+        .setFixedAngle()
+        .setRadiation(250, 125, 100, tiers.findIndex(tier => tier.name === "Super"))
+        .setDescription("A radioactive element that might cause very deadly infections.")
 ];
 
 export const petalIDOf = name => petalConfigs.findIndex(p => p.name === name);
@@ -831,7 +857,16 @@ export const mobConfigs = [
         })
         .addDrop(petalIDOf("Square Egg"), .1)
         .addDrop(petalIDOf("Triangle Egg"), .05)
-        .addDrop(petalIDOf("Pentagon Egg"), .01)
+        .addDrop(petalIDOf("Pentagon Egg"), .01),
+
+    new MobConfig("Digger", 48, 60, 50, 2.5)
+        .setAggressive(1)
+        .setDamageReduction(.25)
+        .addDrop(petalIDOf("Cutter"), .66)
+        .addDrop(petalIDOf("Disc"), .5)
+        .addDrop(petalIDOf("Uranium"), .1)
+        .addDrop(petalIDOf("Diamond"), .25)
+        .setSpawnable(false)
 ];
 
 // Flu: Wing, Faster, Third Eye
