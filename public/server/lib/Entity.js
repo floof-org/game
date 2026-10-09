@@ -3513,7 +3513,7 @@ export class Mob extends Entity {
             // Announce drops of Chaos and higher mobs, keeping the
             // WhiteHole message format.
             const forceAnnounce = itemName === "ӇЄҲƛƓƠƝ";
-            if (this.rarity < 17 && !forceAnnounce) return;
+            if (this.rarity < 18 && !forceAnnounce) return;
             const key = `${rarity}:${index}:${amount}`;
             let group = dropAnnouncementGroups.get(key);
             if (!group) {
@@ -3671,9 +3671,7 @@ export class Mob extends Entity {
                 killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by "
                     + (rest.length > 0 ? rest.join(", ") + (rest.length > 1 ? ", and " : " and ") : "") + last
                     + (hidden > 0 ? " and " + hidden + " more" : "");
-            } else if (topDamagers.length === 0 || !paysOut) {
-                killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " despawned";
-            }
+            } 
 
             if (killText) {
                 state.clients.forEach(c => c.systemMessage(killText, tiers[this.rarity].color));
