@@ -148,7 +148,7 @@ export class HealthComponent {
         this.shield = Math.min(this.shield, this.maxHealth);
     }
 
-    damage(x) {
+    damage(x, damager) {
         if (this.invulnerable) {
             return 0;
         }
@@ -156,7 +156,6 @@ export class HealthComponent {
         if (this.armor && x < this.armor) {
             return 0;
         }
-
         // const dmg = Math.max(0, Math.min(this.health, x - x * Math.min(.75, this.damageReduction)));
         // this.health = this.health - dmg;
 
@@ -723,7 +722,7 @@ export class PetalSlot {
                     }
                 }
 
-                this.cooldowns[j] += this.player.reloadReduction;
+                this.cooldowns[j] += this.player.reloadReduction * this.player.skills.r;
                 if (this.cooldowns[j] >= this.config.cooldown) {
                     this.petals[j] = new Petal(this.player, this.index, j);
                     this.petals[j].define(this.config, this.rarity);
@@ -1148,29 +1147,7 @@ export class Entity {
                     const otherCrit = rollDiceCrit(other);
                     if (otherCrit !== null) otherDamageDone = otherCrit;
 
-                    if (this.type === ENTITY_TYPES.PETAL && this.parent?.type === ENTITY_TYPES.PLAYER) {
-                        let velocity = this.velocity.magnitude;
-                        if (velocity > 4.5) {
-                            let critChance = 1 - Math.exp(-(velocity - 4.5) * .008);
-                            
-                            critChance = Math.min(critChance, .2351);
-                            if (Math.random() < critChance) {
-                                thisDamageDone *= 1.45;
-                            }
-                        }
-                    }
                     
-                    if (other.type === ENTITY_TYPES.PETAL && other.parent?.type === ENTITY_TYPES.PLAYER) {
-                        let velocity = other.velocity.magnitude;
-                        if (velocity > 4.5) {
-                            let critChance = 1 - Math.exp(-(velocity - 4.5) * .008);
-                            
-                            critChance = Math.min(critChance, .2351);
-                            if (Math.random() < critChance) {
-                                otherDamageDone *= 1.45;
-                            }
-                        }
-                    }
 
                     if (this.extraDamage) if (other.health.ratio > this.extraDamage.minHp && other.health.ratio < this.extraDamage.maxHp) {
                         thisDamageDone += this.damage * this.extraDamage.multiplier;
