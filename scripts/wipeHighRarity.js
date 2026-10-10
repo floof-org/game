@@ -1,60 +1,29 @@
-// One-off ops script: strip high rarity petals and pity from named accounts.
+// One-off ops script: strip a single petal out of two named accounts.
 //
 // Stop the server before running it, otherwise the in-memory save of a connected
 // player overwrites the file on exit. Restart after.
 //
 //   node scripts/wipeHighRarity.js accounts.json --dry
 //   node scripts/wipeHighRarity.js accounts.json
-//   node scripts/wipeHighRarity.js accounts.json --all-pity
 
 // package.json sets "type": "module", so this has to be ESM
 import fs from "node:fs";
 
 const FILE = process.argv[2] || "./accounts.json";
 
-// Only these two accounts are touched. Anyone else in the save file, and every
-// account that is not listed here, is left exactly as it is.
+const dryRun = process.argv.includes("--dry");
 
-/** username (lowercased) -> lowest rarity index that gets wiped, matches the tiers array in public/lib/protocol.js */
-const TARGETS = {
-    gravityfan: 10, // Eternal and up
-    l3veticus_: 11 // Unique and up
-};
+/** the petal to remove, index into the petalConfigs array in public/lib/protocol.js */
+const PETAL_NAME = "ӇЄҲƛƓƠƝ";
+const PETAL_INDEX = 94;
 
-const TIERS = [
-    "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Ultra", "Super", "Ancient",
-    "Omega", "Eternal", "Unique", "Hyper", "Galaxium", "Millom", "Fictional", "Transcestrial",
-    "Chaos", "Absiorcadinary", "Absolute Fictional", "Nullified", "Hyperfixation", "Atlantical",
-    "Alpha", "Finalist", "Epsilation", "Improbable", "Izolational", "Chronodynamic", "Multiversal"
-];
+/** usernames (lowercased) to clean, nobody else is touched */
+const TARGETS = ["itzshovel", "noahcas"];
 
-/** username (lowercased) -> level to set */
-const LEVELS = {
-    gravityfan: 625,
-    l3veticus_: 625
-};
-
-/** Client#addXP recomputes level from xp, and restoreFromData runs addXP(0) on login, so xp has to move with it */
-const xpForLevel = level => Math.pow(level, 2.35) + Math.exp(level / 25);
+/** how far down the equipped slot arrays to look */
+const MAX_SLOTS = 64;
 
 const MODERATION_KEY = "$moderation";
-
-/**
- * Rarity name -> index, case insensitive.
- * Chat crafting writes its pity under lowercase rarity keys (Client.js restores
- * those separately), so a plain TIERS.indexOf lookup misses them entirely.
- */
-const TIER_INDEX = new Map(TIERS.map((name, i) => [name.toLowerCase(), i]));
-const indexOfTier = name => TIER_INDEX.get(String(name).toLowerCase()) ?? -1;
-
-/** highest stack size kept for the rarities that are not wiped outright, per account */
-const CAPS = {
-    gravityfan: 200,
-    l3veticus_: 200
-};
-
-const wipeAllPity = process.argv.includes("--all-pity");
-const dryRun = process.argv.includes("--dry");
 
 const raw = fs.readFileSync(FILE, "utf8");
 const data = JSON.parse(raw);
@@ -71,76 +40,56 @@ for (const [id, save] of Object.entries(data)) {
     if (id === MODERATION_KEY) continue;
 
     const key = String(save?.username || "").toLowerCase();
-    const min = TARGETS[key];
-    if (min === undefined) continue;
+
+    if (!TARGETS.includes(key)) continue;
 
     matched.add(key);
 
     const d = save.data;
+
     if (!d) {
         console.log(`${save.username}: no save data, skipped`);
         continue;
     }
 
-    for (const list of ["slots", "secondarySlots"]) {
-        if (!Array.isArray(d[list])) continue;
-        for (let i = 0; i < d[list].length; i++) {
-            const slot = d[list][i];
-            if (slot && +slot.rarity >= min) d[list][i] = null;
-        }
-    }
-
-    const cap = CAPS[key] ?? 200;
     let removed = 0;
-    let capped = 0;
-    for (const tier of Object.keys(d.inventory || {})) {
-        if (indexOfTier(tier) >= min) {
-            for (const id of Object.keys(d.inventory[tier])) removed += +d.inventory[tier][id] || 0;
-            // zeroed rather than deleted: the client merges inventory per petal id and
-            // never forgets an id the server stops sending
-            d.inventory[tier] = {};
-            continue;
-        }
+    let unequipped = 0;
 
-        // rarities that survive still get a cap, so a stacked petal cannot sit at 100k
-        if (!Number.isFinite(cap)) continue;
+    d.inventory ??= {};
 
-        for (const id of Object.keys(d.inventory[tier])) {
-            const count = Math.floor(+d.inventory[tier][id] || 0);
-            if (count <= cap) continue;
-            capped += count - cap;
-            d.inventory[tier][id] = cap;
+    // rarity keys differ in case between the bag and the chat crafting tables,
+    // so match the petal index case insensitively across all of them
+    for (const rarity of Object.keys(d.inventory)) {
+        const petals = d.inventory[rarity];
+        if (!petals || typeof petals !== "object") continue;
+
+        for (const petalId of Object.keys(petals)) {
+            if (Number(petalId) !== PETAL_INDEX) continue;
+            removed += Math.floor(+petals[petalId] || 0);
+            // zeroed rather than deleted: the client merges inventory per petal id
+            // and never forgets an id the server stops sending
+            petals[petalId] = 0;
         }
     }
 
-    // pity keys can be properly cased or lowercase, and the value can be an
-    // object or a per-petal array, so match on the key and blank whatever form
-    for (const rarity of Object.keys(d.craftAttempts || {})) {
-        if (wipeAllPity || indexOfTier(rarity) >= min) d.craftAttempts[rarity] = {};
+    for (const list of [d.slots, d.secondarySlots]) {
+        if (!Array.isArray(list)) continue;
+
+        for (let i = 0; i < Math.min(list.length, MAX_SLOTS); i++) {
+            const slot = list[i];
+            if (!slot || Number(slot.id) !== PETAL_INDEX) continue;
+            list[i] = null;
+            unequipped++;
+        }
     }
-
-    const level = LEVELS[key];
-    let levelNote = "";
-
-    if (level !== undefined) {
-        levelNote = `, level ${d.level} -> ${level}`;
-        d.level = level;
-        // Level alone does not stick: restoreFromData runs addXP(0) on login, which
-        // recomputes the level from the xp total. So xp has to be pinned to exactly
-        // the target level, not merely raised to it. Keeping a higher xp leaves the
-        // old, higher level to be recomputed right back.
-        d.xp = xpForLevel(level - 1);
-    }
-
-    const capNote = Number.isFinite(cap) ? `${capped} clamped down to the ${cap} cap` : "no stack cap";
 
     console.log(
-        `${save.username}: rarity ${TIERS[min]} and up cleared, ${removed} petals removed, ` +
-        `${capNote}, pity ${TIERS[min]} and up cleared${levelNote}`
+        `${save.username}: removed ${removed} ${PETAL_NAME} from the bag` +
+        (unequipped > 0 ? `, unequipped ${unequipped}` : "")
     );
 }
 
-for (const name of Object.keys(TARGETS)) {
+for (const name of TARGETS) {
     if (matched.has(name)) continue;
     console.warn(`WARNING: ${name} was not found in ${FILE}. Check the recorded username in the save file.`);
 }
