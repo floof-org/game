@@ -1404,9 +1404,15 @@ export default class Client {
                         this.inventory[tiers[moveeRarity].name][moveeIndex]--;
                         break;
                     case 2: // Secondary slot into inventory
-                        moverPetalIndex = this.secondarySlots[moverIndex]?.id;
-                        inventoryRarity = tiers[this.secondarySlots[moverIndex]?.rarity]?.name
+                        // A drag can arrive for a slot that is empty, or for an index
+                        // past the end. Without this guard inventoryRarity is undefined
+                        // and the next line throws on this.inventory[undefined].
+                        if (moverIndex < 0 || moverIndex >= this.secondarySlots.length || this.secondarySlots[moverIndex] === null) return;
 
+                        moverPetalIndex = this.secondarySlots[moverIndex].id;
+                        inventoryRarity = tiers[this.secondarySlots[moverIndex].rarity]?.name;
+
+                        if (!this.inventory[inventoryRarity]) return;
                         if (!this.inventory[inventoryRarity][moverPetalIndex]) {
                             this.inventory[inventoryRarity][moverPetalIndex] = 0;
                         }
