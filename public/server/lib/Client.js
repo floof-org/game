@@ -2346,14 +2346,25 @@ export default class Client {
         if (commandCheck("/saveall")) {
             if (!requireOwner()) return;
 
-            let count = 0;
-            for (const client of state.clients.values()) {
-                if (!client?.verified) continue;
-                accounts.saveClient(client);
-                count++;
-            }
+            (async () => {
+                let count = 0;
+                for (const client of state.clients.values()) {
+                    if (!client?.verified) continue;
+                    accounts.saveClient(client);
+                    count++;
+                }
 
-            this.systemMessage(`Saved ${count} account${count === 1 ? "" : "s"}.`, "#55ff55");
+                // wait for the writes: reporting success before the file is on disk is how a
+                // broken save path looks like a working one
+                try {
+                    await accounts.flush();
+                    this.systemMessage(`Saved ${count} account${count === 1 ? "" : "s"}.`, "#55ff55");
+                } catch (err) {
+                    console.warn("[saveall] failed:", err);
+                    this.systemMessage(`Save failed: ${err?.message || err}`, "#ff5555");
+                }
+            })();
+
             return;
         }
 

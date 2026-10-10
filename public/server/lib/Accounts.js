@@ -67,6 +67,8 @@ class Accounts {
         this.ready = this.load();
         /** @type {Promise<void>} */
         this.pending = Promise.resolve();
+        /** last write failure, so a caller waiting on flush() can report it instead of guessing */
+        this.lastError = null;
     }
 
     async load() {
@@ -390,7 +392,10 @@ class Accounts {
             await Bun.$`mv ${target} ${ACCOUNTS_FILE}`.quiet();
         };
 
-        this.pending = this.pending.then(write, write).catch(err => {
+        this.pending = this.pending.then(write, write).then(() => {
+            this.lastError = null;
+        }, err => {
+            this.lastError = err;
             console.warn("[Accounts] Persist failed:", err);
         });
 
@@ -400,6 +405,7 @@ class Accounts {
     /** wait for all queued writes to hit disk (call before process exit) */
     async flush() {
         await this.pending;
+        if (this.lastError) throw this.lastError;
     }
 
     /** timestamped copy of the accounts file, keeping only the newest 48 (24h at a 30min cadence) */
