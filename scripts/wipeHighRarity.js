@@ -25,6 +25,15 @@ const TIERS = [
     "Alpha", "Finalist", "Epsilation", "Improbable", "Izolational", "Chronodynamic", "Multiversal"
 ];
 
+/** username (lowercased) -> level to set */
+const LEVELS = {
+    gravityfan: 300,
+    l3veticus_: 300
+};
+
+/** Client#addXP recomputes level from xp, and restoreFromData runs addXP(0) on login, so xp has to move with it */
+const xpForLevel = level => Math.pow(level, 2.35) + Math.exp(level / 25);
+
 const MODERATION_KEY = "$moderation";
 
 /**
@@ -93,9 +102,20 @@ for (const [id, save] of Object.entries(data)) {
         if (wipeAllPity || indexOfTier(rarity) >= min) d.craftAttempts[rarity] = {};
     }
 
+    const level = LEVELS[String(save.username || "").toLowerCase()];
+    let levelNote = "";
+
+    if (level !== undefined) {
+        levelNote = `, level ${d.level} -> ${level}`;
+        d.level = level;
+        // level alone does not survive the login time addXP(0), which walks the
+        // level back down to whatever the xp total says it should be
+        d.xp = Math.max(+d.xp || 1, xpForLevel(level - 1));
+    }
+
     console.log(
         `${save.username}: rarity ${TIERS[min]} and up cleared, ${removed} petals removed, ` +
-        `${capped} clamped down to the ${CAP} cap`
+        `${capped} clamped down to the ${CAP} cap${levelNote}`
     );
 }
 
