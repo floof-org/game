@@ -28,7 +28,7 @@ const TIERS = [
 
 /** username (lowercased) -> level to set */
 const LEVELS = {
-    gravityfan: 300,
+    gravityfan: 625,
     l3veticus_: 625
 };
 
