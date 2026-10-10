@@ -28,7 +28,7 @@ const TIERS = [
 /** username (lowercased) -> level to set */
 const LEVELS = {
     gravityfan: 300,
-    l3veticus_: 300
+    l3veticus_: 625
 };
 
 /** Client#addXP recomputes level from xp, and restoreFromData runs addXP(0) on login, so xp has to move with it */
