@@ -2,7 +2,7 @@ import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, petalTierMultiplier } from "../../lib/protocol.js";
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
-import { colors, xpForLevel } from "../../lib/util.js";
+import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY } from "./CraftManager.js";
 import { SQUADS, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
@@ -66,7 +66,7 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/info", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/give", "/addall", "/remove", "/craft", "/pity", "/online", "/saveall",
+    "/give", "/addall", "/remove", "/refund", "/craft", "/pity", "/online", "/saveall",
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
     "/mute", "/kick", "/ban", "/unban", "/unmute", "/xp", "/upg", "/coords", "/adm"
@@ -1768,7 +1768,8 @@ export default class Client {
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode.",
                 "/give [player] [petal] [rarity] <amount> - Gives a player a petal. Petal names may omit spaces (e.g. firemissile). Amount defaults to 1.",
-                "/remove [rarity] <petal> <amount> - Removes petals of the given rarity from your own inventory. Omit the petal to remove every petal of that rarity. Amount defaults to 1.",
+                "/remove [rarity] <petal> [player] <amount> - Removes petals of the given rarity from your own inventory, or from another online player when you name them. Omit the petal to remove every petal of that rarity. Amount defaults to 1.",
+                "/refund [player] [rarity] [mob] <count> - Rolls count drops from that mob's drop table at that rarity and grants them to the player. Chaos+ rolls are announced as refunded.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
                 "/saveall - Saves every online player's account right now.",
                 "/kick [player] - Kicks a player from the game.",
@@ -2469,6 +2470,165 @@ export default class Client {
                 const offlineLabel = amount === 1 ? "" : ` x${amount}`;
 
                 this.systemMessage(`Gave ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${offlineLabel} to ${match.save.username} offline.`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /refund
+        if (commandCheck("/refund")) {
+            (async () => {
+                if (!requireOwner()) return;
+
+                const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 4) {
+                    this.systemMessage("Usage: /refund [player] [rarity] [mob] <count>", "#ffaa00");
+                    return;
+                }
+
+                const [playerName, rarityArg, mobArg, countArg] = args;
+
+                let rarityIndex = null;
+
+                if (!isNaN(rarityArg)) {
+                    rarityIndex = parseInt(rarityArg);
+                } else {
+                    const lower = rarityArg.toLowerCase();
+
+                    for (let i = 0; i < tiers.length; i++) {
+                        if (tiers[i].name.toLowerCase() === lower) {
+                            rarityIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
+                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                    return;
+                }
+
+                const rarity = tiers[rarityIndex];
+
+                // mob names may omit spaces, same rule as petals
+                const normalize = s => s.toLowerCase().replace(/\s+/g, "");
+                const normalizedMob = normalize(mobArg);
+
+                let mobIndex = mobConfigs.findIndex(mob => mob?.name?.toLowerCase() === mobArg.toLowerCase());
+
+                if (mobIndex < 0) {
+                    mobIndex = mobConfigs.findIndex(mob => mob?.name && normalize(mob.name) === normalizedMob);
+                }
+
+                if (mobIndex < 0) {
+                    this.systemMessage(`Mob "${mobArg}" not found.`, "#ff5555");
+                    return;
+                }
+
+                const mob = mobConfigs[mobIndex];
+
+                // rolls use the table branch when the mob has one, so a refund matches
+                // what a real kill of that mob at that tier would have dropped
+                const rows = DROP_LOOKUP?.[mob.name]?.[rarityIndex];
+
+                if (!rows) {
+                    this.systemMessage(`${mob.name} has no drop table at ${rarity.name}.`, "#ff5555");
+                    return;
+                }
+
+                let count = parseInt(countArg);
+
+                if (isNaN(count) || count < 1) {
+                    this.systemMessage(`Invalid count: ${countArg}`, "#ff5555");
+                    return;
+                }
+
+                if (count > 10000) {
+                    this.systemMessage("Count is capped at 10000.", "#ffaa00");
+                    count = 10000;
+                }
+
+                // roll every drop first, then hand them over, so nothing is granted on a bad target
+                const rolled = [];
+
+                for (let i = 0; i < count; i++) {
+                    for (const row of rows) {
+                        if (Math.random() > row.chance) continue;
+                        const entry = pickWeighted(row.entries);
+                        if (entry) rolled.push(entry);
+                    }
+                }
+
+                if (rolled.length === 0) {
+                    this.systemMessage(`No drops rolled for ${rarity.name} ${mob.name}.`, "#ffaa00");
+                    return;
+                }
+
+                // online target first, then an offline save
+                let target = null;
+
+                for (const client of state.clients.values()) {
+                    if (!client?.verified) continue;
+                    if (client.username.toLowerCase() === playerName.toLowerCase()) {
+                        target = client;
+                        break;
+                    }
+                }
+
+                if (target) {
+                    for (const entry of rolled) {
+                        if (!target.inventory[rarity.name]) target.inventory[rarity.name] = {};
+                        target.inventory[rarity.name][entry.index] = (target.inventory[rarity.name][entry.index] || 0) + entry.amount;
+                    }
+
+                    accounts.saveClient(target);
+                    target.syncInventoryExact();
+
+                    target.systemMessage(`You were refunded ${rolled.length} ${rarity.name} ${mob.name} drop${rolled.length === 1 ? "" : "s"}!`, "#55ff55");
+                } else {
+                    const match = accounts.findByName(playerName);
+
+                    if (!match) {
+                        this.systemMessage(`Player "${playerName}" not found.`, "#ff5555");
+                        return;
+                    }
+
+                    match.save.data ??= {};
+                    match.save.data.inventory ??= {};
+
+                    for (const entry of rolled) {
+                        match.save.data.inventory[rarity.name] ??= {};
+                        match.save.data.inventory[rarity.name][entry.index] = (match.save.data.inventory[rarity.name][entry.index] || 0) + entry.amount;
+                    }
+
+                    accounts.persist().catch(err => console.warn("[Accounts] Save failed:", err));
+                }
+
+                // same Chaos+ threshold as mob drops, but the wording says refunded
+                const announced = new Map();
+
+                for (const entry of rolled) {
+                    const key = `${entry.rarity}:${entry.index}`;
+                    if (!announced.has(key)) announced.set(key, { rarity: entry.rarity, index: entry.index, amount: 0 });
+                    announced.get(key).amount += entry.amount;
+                }
+
+                for (const group of announced.values()) {
+                    if (group.rarity < state.announceRarity) continue;
+                    const rarityData = tiers[group.rarity];
+                    if (!rarityData) continue;
+                    const itemName = petalConfigs[group.index]?.name ?? `Item ${group.index}`;
+                    const msg = `x${group.amount} ${rarityData.name} ${itemName} refunded to ${target ? target.username : (accounts.findByName(playerName)?.save.username ?? playerName)}`;
+                    state.clients.forEach(client => client.systemMessage(msg, rarityData.color));
+                }
+
+                const summary = rolled.reduce((sum, entry) => sum + entry.amount, 0);
+
+                this.systemMessage(
+                    `Refunded ${rolled.length} drop${rolled.length === 1 ? "" : "s"} (${summary} petals) of ${rarity.name} ${mob.name} to ${playerName}.`,
+                    "#55ff55"
+                );
             })();
 
             return;
