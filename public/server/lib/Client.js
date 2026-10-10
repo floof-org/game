@@ -5,7 +5,7 @@ import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetal
 import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY } from "./CraftManager.js";
-import { SQUADS, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
+import { SQUADS, SQUAD_LEVEL_RANGE, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -1737,7 +1737,7 @@ export default class Client {
             [
                 "Note: [text] indicates required, <text> indicates optional.",
                 "/createsquad [name] - Creates a squad. Squad loot is shared by damage.",
-                "/joinsquad [name] - Joins a squad. Your level must be within 32 of the owner's.",
+                "/joinsquad [name] - Joins a squad. Your level must be within 15 of the owner's.",
                 "/leavesquad - Leaves your squad. The owner disbands it instead.",
                 "/kicksquad [memberID] - Kicks a member. Owner only.",
                 "/bansquad [memberID] - Bans a member. Owner only.",
@@ -1859,8 +1859,8 @@ export default class Client {
             }
 
             const ownerLevel = squad.levelRequirement;
-            const min = ownerLevel - 32;
-            const max = ownerLevel + 32;
+            const min = ownerLevel - SQUAD_LEVEL_RANGE;
+            const max = ownerLevel + SQUAD_LEVEL_RANGE;
 
             const myLevel = getPlayerLevel(this);
 

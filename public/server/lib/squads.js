@@ -2,6 +2,9 @@ import state from "./state.js";
 
 export const SQUADS = globalThis.SQUADS ||= new Map();
 
+/** how far from the owner's level a member may be and stay in the squad */
+export const SQUAD_LEVEL_RANGE = 15;
+
 export const getUserId = client => client?.userId;
 
 export const getPlayerLevel = client => client?.level ?? 0;
@@ -46,8 +49,8 @@ export function validateSquadMembers(squad) {
     const ownerLevel = getPlayerLevel(owner);
     squad.levelRequirement = ownerLevel;
 
-    const min = ownerLevel - 32;
-    const max = ownerLevel + 32;
+    const min = ownerLevel - SQUAD_LEVEL_RANGE;
+    const max = ownerLevel + SQUAD_LEVEL_RANGE;
 
     for (const memberId of [...squad.members]) {
         if (memberId === squad.ownerId) continue;
