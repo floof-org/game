@@ -2687,38 +2687,58 @@ export default class Client {
                     amountArg = nameTokens.pop();
                 }
 
+                let offlineMatch = null;
+
                 if (nameTokens.length > 0) {
                     const wanted = nameTokens.join(" ");
+
                     target = [...state.clients.values()].find(client => client?.verified && typeof client.username === "string" && client.username.toLowerCase() === wanted.toLowerCase()) ?? null;
 
-                    if (!target) {
+                    // fall back to the stored save so offline players can be cleaned up too
+                    if (!target) offlineMatch = accounts.findByName(wanted);
+
+                    if (!target && !offlineMatch) {
                         this.systemMessage(`Player "${wanted}" not found or offline.`, "#ff5555");
                         return;
                     }
                 }
 
-                const targetName = target === this ? "You" : target.username;
+                const targetName = target === this ? "You" : (target ? target.username : offlineMatch.save.username);
+
+                // everything below works on one inventory bag, online or from the save
+                const bag = target ? target.inventory : (offlineMatch.save.data ??= {}).inventory;
 
                 // no petal given: wipe the whole rarity
                 if (rest.length === 0) {
-                    const petals = target.inventory[rarity.name] || {};
+                    const petals = bag[rarity.name] || {};
                     const removed = Object.values(petals).reduce((sum, count) => sum + count, 0);
 
                     if (removed <= 0) {
-                        this.systemMessage(`${targetName} do${target === this ? "" : "es"} not have any ${rarity.name} petals.`, "#ff5555");
+                        this.systemMessage(`${target === this ? "You do" : `${targetName} does`} not have any ${rarity.name} petals.`, "#ff5555");
                         return;
                     }
 
                     // Zero the counts instead of dropping the keys: the client merges the world
                     // update inventory per petal id and never forgets ids the server stops
                     // sending, so a removed entry would keep showing up in the inventory view.
-                    for (const id of Object.keys(target.inventory[rarity.name])) {
-                        target.inventory[rarity.name][id] = 0;
+                    bag[rarity.name] ??= {};
+                    for (const id of Object.keys(bag[rarity.name])) {
+                        bag[rarity.name][id] = 0;
                     }
 
-                    accounts.saveClient(target);
+                    if (target) {
+                        accounts.saveClient(target);
+                        // the target client only learns about the change if we push it,
+                        // otherwise the edit lands on the server and stays invisible
+                        target.syncInventoryExact();
+                    } else {
+                        await accounts.persist();
+                    }
 
-                    this.systemMessage(`Removed all ${removed} ${rarity.name} petals${target === this ? "!" : ` from ${target.username}!`}`, "#55ff55");
+                    this.systemMessage(`Removed all ${removed} ${rarity.name} petals${target ? (target === this ? "!" : ` from ${target.username}!`) : ` from ${targetName} offline!`}`, "#55ff55");
+                    if (target && target !== this) {
+                        target.systemMessage(`${this.username} removed ${removed} of your ${rarity.name} petals.`, "#ff5555");
+                    }
                     return;
                 }
 
@@ -2748,24 +2768,27 @@ export default class Client {
                     }
                 }
 
-                const owned = target.inventory[rarity.name]?.[petalIndex] || 0;
+                const owned = bag[rarity.name]?.[petalIndex] || 0;
 
                 if (owned <= 0) {
-                    this.systemMessage(`${targetName} do${target === this ? "" : "es"} not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
+                    this.systemMessage(`${target === this ? "You do" : `${targetName} does`} not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
                     return;
                 }
 
                 const removed = Math.min(amount, owned);
-                target.inventory[rarity.name][petalIndex] -= removed;
+                bag[rarity.name][petalIndex] = Math.max(0, owned - removed);
 
-                if (target.inventory[rarity.name][petalIndex] <= 0) {
-                    // Keep a zero count rather than deleting the key, see the whole-rarity branch above.
-                    target.inventory[rarity.name][petalIndex] = 0;
+                if (target) {
+                    accounts.saveClient(target);
+                    target.syncInventoryExact();
+                } else {
+                    await accounts.persist();
                 }
 
-                accounts.saveClient(target);
-
-                this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}${target === this ? "!" : ` from ${target.username}!`}`, "#55ff55");
+                this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}${target ? (target === this ? "!" : ` from ${target.username}!`) : ` from ${targetName} offline!`}`, "#55ff55");
+                if (target && target !== this) {
+                    target.systemMessage(`${this.username} removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name} from your inventory.`, "#ff5555");
+                }
             })();
 
             return;
