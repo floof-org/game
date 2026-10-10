@@ -35,6 +35,9 @@ const MODERATION_KEY = "$moderation";
 const TIER_INDEX = new Map(TIERS.map((name, i) => [name.toLowerCase(), i]));
 const indexOfTier = name => TIER_INDEX.get(String(name).toLowerCase()) ?? -1;
 
+/** highest stack size kept for the rarities that are not wiped outright */
+const CAP = 200;
+
 const wipeAllPity = process.argv.includes("--all-pity");
 const dryRun = process.argv.includes("--dry");
 
@@ -65,12 +68,23 @@ for (const [id, save] of Object.entries(data)) {
     }
 
     let removed = 0;
+    let capped = 0;
     for (const tier of Object.keys(d.inventory || {})) {
-        if (indexOfTier(tier) < min) continue;
-        for (const id of Object.keys(d.inventory[tier])) removed += +d.inventory[tier][id] || 0;
-        // zeroed rather than deleted: the client merges inventory per petal id and
-        // never forgets an id the server stops sending
-        d.inventory[tier] = {};
+        if (indexOfTier(tier) >= min) {
+            for (const id of Object.keys(d.inventory[tier])) removed += +d.inventory[tier][id] || 0;
+            // zeroed rather than deleted: the client merges inventory per petal id and
+            // never forgets an id the server stops sending
+            d.inventory[tier] = {};
+            continue;
+        }
+
+        // rarities that survive still get a cap, so a stacked petal cannot sit at 100k
+        for (const id of Object.keys(d.inventory[tier])) {
+            const count = Math.floor(+d.inventory[tier][id] || 0);
+            if (count <= CAP) continue;
+            capped += count - CAP;
+            d.inventory[tier][id] = CAP;
+        }
     }
 
     // pity keys can be properly cased or lowercase, and the value can be an
@@ -79,7 +93,10 @@ for (const [id, save] of Object.entries(data)) {
         if (wipeAllPity || indexOfTier(rarity) >= min) d.craftAttempts[rarity] = {};
     }
 
-    console.log(`${save.username}: rarity ${TIERS[min]} and up cleared, ${removed} petals removed from inventory`);
+    console.log(
+        `${save.username}: rarity ${TIERS[min]} and up cleared, ${removed} petals removed, ` +
+        `${capped} clamped down to the ${CAP} cap`
+    );
 }
 
 if (dryRun) {
