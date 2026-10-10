@@ -1759,7 +1759,7 @@ export default class Client {
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode.",
                 "/give [player] [petal] [rarity] <amount> - Gives a player a petal. Petal names may omit spaces (e.g. firemissile). Amount defaults to 1.",
-                "/remove [rarity] <petal> [player] <amount> - Removes petals of the given rarity from your own inventory, or from another online player when you name them. Omit the petal to remove every petal of that rarity. Amount defaults to 1.",
+                "/remove [rarity] <petal> [player] <amount> - Removes petals of the given rarity from the bag and equipped slots, from your own inventory or another player's. Omit the petal to remove every petal of that rarity. Amount defaults to 1.",
                 "/refund [player] [rarity] [mob] <count> - Rolls count drops from that mob's drop table at that rarity and grants them to the player. Chaos+ rolls are announced as refunded.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
                 "/saveall - Saves every online player's account right now.",
@@ -2708,10 +2708,28 @@ export default class Client {
                 // everything below works on one inventory bag, online or from the save
                 const bag = target ? target.inventory : (offlineMatch.save.data ??= {}).inventory;
 
-                // no petal given: wipe the whole rarity
+                // no petal given: wipe the whole rarity, bag and equipped copies alike
                 if (rest.length === 0) {
+                    const slotBag = target ?? (offlineMatch.save.data ??= {});
+                    const slotLists = [
+                        { list: slotBag.slots, empty: { id: 0, rarity: 0 }, main: true },
+                        { list: slotBag.secondarySlots, empty: null, main: false }
+                    ];
+
                     const petals = bag[rarity.name] || {};
-                    const removed = Object.values(petals).reduce((sum, count) => sum + count, 0);
+                    let removed = Object.values(petals).reduce((sum, count) => sum + count, 0);
+
+                    for (const { list, empty, main } of slotLists) {
+                        if (!Array.isArray(list)) continue;
+
+                        for (let i = 0; i < list.length; i++) {
+                            const slot = list[i];
+                            if (!slot || +slot.rarity !== rarityIndex) continue;
+                            removed++;
+                            list[i] = empty;
+                            if (main && target?.body?.petalSlots[i]) target.body.setSlot(i, empty.id, empty.rarity);
+                        }
+                    }
 
                     if (removed <= 0) {
                         this.systemMessage(`${target === this ? "You do" : `${targetName} does`} not have any ${rarity.name} petals.`, "#ff5555");
@@ -2768,15 +2786,52 @@ export default class Client {
                     }
                 }
 
-                const owned = bag[rarity.name]?.[petalIndex] || 0;
+                // a petal can be sitting in the bag or equipped, so count both
+                const slotBag = target ?? (offlineMatch.save.data ??= {});
+                // an empty main slot is { id: 0, rarity: 0 }, not null: sanitizeSlots
+                // never produces null there and a fresh player starts with all of them set
+                const slotLists = [
+                    { list: slotBag.slots, empty: { id: 0, rarity: 0 }, main: true },
+                    { list: slotBag.secondarySlots, empty: null, main: false }
+                ];
+
+                const matches = list => Array.isArray(list)
+                    ? list.filter(slot => slot && +slot.id === petalIndex && +slot.rarity === rarityIndex).length
+                    : 0;
+
+                const owned = (bag[rarity.name]?.[petalIndex] || 0) + slotLists.reduce((sum, s) => sum + matches(s.list), 0);
 
                 if (owned <= 0) {
                     this.systemMessage(`${target === this ? "You do" : `${targetName} does`} not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
                     return;
                 }
 
-                const removed = Math.min(amount, owned);
-                bag[rarity.name][petalIndex] = Math.max(0, owned - removed);
+                let remaining = Math.min(amount, owned);
+                let removed = 0;
+
+                // bag first, then equipped copies
+                const fromBag = Math.min(remaining, bag[rarity.name]?.[petalIndex] || 0);
+
+                if (fromBag > 0) {
+                    bag[rarity.name][petalIndex] = Math.max(0, (bag[rarity.name]?.[petalIndex] || 0) - fromBag);
+                    remaining -= fromBag;
+                    removed += fromBag;
+                }
+
+                for (const { list, empty, main } of slotLists) {
+                    if (remaining <= 0 || !Array.isArray(list)) continue;
+
+                    for (let i = 0; i < list.length && remaining > 0; i++) {
+                        const slot = list[i];
+                        if (!slot || +slot.id !== petalIndex || +slot.rarity !== rarityIndex) continue;
+                        list[i] = empty;
+                        // setSlot destroys the old PetalSlot and defines the new one, so the
+                        // equipped petals stop without leaving a dangling slot behind
+                        if (main && target?.body?.petalSlots[i]) target.body.setSlot(i, empty.id, empty.rarity);
+                        remaining--;
+                        removed++;
+                    }
+                }
 
                 if (target) {
                     accounts.saveClient(target);
