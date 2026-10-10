@@ -1752,7 +1752,7 @@ export default class Client {
         if (commandCheck("/admincommands")) {
             [
                 "Note: [text] indicates required, <text> indicates optional.",
-                "/spawnmob [rarity] [mob] [x] [y] <amount> - Spawns the specified mob at the coordinates.",
+                "/spawnmob [rarity] [mob] [x] [y] <amount> - Spawns the specified mob at the coordinates. Use ~ ~ instead of x y to spawn at your own position.",
                 "/killmob [mobID] - Kills the mob with the specified ID.",
                 "/killall [rarity] <mobname> - Kills all mobs of the specified rarity and mob.",
                 "/resetmobs - Resets all mobs.",
@@ -4945,7 +4945,28 @@ if (commandCheck("/pity")) {
             let x;
             let y;
 
-            if (args.length >= 4 && !isNaN(args.at(-1)) && !isNaN(args.at(-2)) && !isNaN(args.at(-3))) {
+            // "~ ~" spawns at the feet of whoever typed the command, so the coords
+            // are pulled out before the numeric branches below look at them
+            const tildes = args.filter(arg => arg === "~").length;
+
+            if (tildes >= 2) {
+                // strip every tilde, not just trailing ones, then take the amount
+                // from the end. Popping from the end alone would read the amount off
+                // the mob name side of "/spawnmob 5 beetle ~ ~ 10".
+                for (let i = args.length - 1; i >= 0; i--) {
+                    if (args[i] === "~") args.splice(i, 1);
+                }
+
+                if (args.length && !isNaN(args.at(-1))) amount = Math.max(1, parseInt(args.pop(), 10));
+
+                if (!this.body) {
+                    this.systemMessage("You need to be alive to use ~ ~.", "#ff5555");
+                    return;
+                }
+
+                x = this.body.x;
+                y = this.body.y;
+            } else if (args.length >= 4 && !isNaN(args.at(-1)) && !isNaN(args.at(-2)) && !isNaN(args.at(-3))) {
                 amount = Math.max(1, parseInt(args.pop(), 10));
                 y = Number(args.pop());
                 x = Number(args.pop());
@@ -4953,7 +4974,7 @@ if (commandCheck("/pity")) {
                 y = Number(args.pop());
                 x = Number(args.pop());
             } else {
-                this.systemMessage("Coordinates required. Usage: /spawnmob [rarity] [mob] [x] [y] <amount>", "#ff5555");
+                this.systemMessage("Coordinates required. Usage: /spawnmob [rarity] [mob] [x] [y] <amount>, or ~ ~ for your position", "#ff5555");
                 return;
             }
 
