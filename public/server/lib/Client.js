@@ -5,7 +5,7 @@ import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetal
 import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY } from "./CraftManager.js";
-import { SQUADS, SQUAD_LEVEL_RANGE, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
+import { SQUADS, SQUAD_LEVEL_RANGE, SQUAD_MAX_MEMBERS, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
@@ -1853,8 +1853,9 @@ export default class Client {
                 return;
             }
 
-            if (squad.members.size >= 8) {
-                this.systemMessage("Squad is full. (8/8)", "#ff5555");
+            // owners may push the squad past the cap, the memberlist shows the real count
+            if (squad.members.size >= SQUAD_MAX_MEMBERS && this.masterPermissions < 2) {
+                this.systemMessage(`Squad is full. (${SQUAD_MAX_MEMBERS}/${SQUAD_MAX_MEMBERS})`, "#ff5555");
                 return;
             }
 
@@ -2082,7 +2083,7 @@ export default class Client {
                 }
             }
 
-            this.systemMessage(`Squad Members (${members.length}/8) - ${squad.name}:`, "#5ef7ff");
+            this.systemMessage(`Squad Members (${members.length}/${SQUAD_MAX_MEMBERS}) - ${squad.name}:`, "#5ef7ff");
 
             for (const member of members) {
                 const isOwner = member.userId === squad.ownerId;

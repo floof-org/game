@@ -5,6 +5,9 @@ export const SQUADS = globalThis.SQUADS ||= new Map();
 /** how far from the owner's level a member may be and stay in the squad */
 export const SQUAD_LEVEL_RANGE = 15;
 
+/** normal squad cap, owners are exempt and can exceed it */
+export const SQUAD_MAX_MEMBERS = 8;
+
 export const getUserId = client => client?.userId;
 
 export const getPlayerLevel = client => client?.level ?? 0;
