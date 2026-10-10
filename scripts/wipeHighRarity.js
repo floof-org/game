@@ -7,7 +7,8 @@
 //   node scripts/wipeHighRarity.js accounts.json
 //   node scripts/wipeHighRarity.js accounts.json --all-pity
 
-const fs = require("fs");
+// package.json sets "type": "module", so this has to be ESM
+import fs from "node:fs";
 
 const FILE = process.argv[2] || "./accounts.json";
 
