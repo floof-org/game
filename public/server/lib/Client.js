@@ -1765,7 +1765,7 @@ export default class Client {
                 "/mobcount - Shows the living and actual mob count.",
                 "/godmode - Toggles godmode.",
                 "/give [player] [petal] [rarity] <amount> - Gives a player a petal. Petal names may omit spaces (e.g. firemissile). Amount defaults to 1.",
-                "/remove [rarity] <petal> [player] <amount> - Removes petals of the given rarity from the bag and equipped slots, from your own inventory or another player's. Omit the petal to remove every petal of that rarity. Amount defaults to 1.",
+                "/remove [rarity] <petal> [player] <amount> - Removes petals of the given rarity from the bag and equipped slots, from your own inventory or another player's. Omit the petal to remove every petal of that rarity. Omit the amount to remove every copy.",
                 "/refund [player] [rarity] [mob] <count> - Rolls count drops from that mob's drop table at that rarity and grants them to the player. Chaos+ rolls are announced as refunded.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
                 "/saveall - Saves every online player's account right now.",
@@ -2654,7 +2654,7 @@ export default class Client {
                 const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
 
                 if (args.length < 1) {
-                    this.systemMessage("Usage: /remove [rarity] <petal> [player] <amount>", "#ffaa00");
+                    this.systemMessage("Usage: /remove [rarity] <petal> [player] <amount>. Omit the amount to remove all of them.", "#ffaa00");
                     return;
                 }
 
@@ -2782,7 +2782,8 @@ export default class Client {
                     return;
                 }
 
-                let amount = 1;
+                // omitting the amount removes every copy, bag and equipped alike
+                let amount = Infinity;
 
                 if (amountArg !== undefined) {
                     amount = parseInt(amountArg);
