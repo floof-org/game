@@ -2543,11 +2543,18 @@ export default class Client {
                 // roll every drop first, then hand them over, so nothing is granted on a bad target
                 const rolled = [];
 
+                // mirrors the table branch of Mob#onDeath: one pass over the rows per
+                // kill, and the lucky drops event doubles that pass
+                let rollCount = 1;
+                if (globalThis.LUCKY_DROPS_EVENT) rollCount = 2;
+
                 for (let i = 0; i < count; i++) {
-                    for (const row of rows) {
-                        if (Math.random() > row.chance) continue;
-                        const entry = pickWeighted(row.entries);
-                        if (entry) rolled.push(entry);
+                    for (let roll = 0; roll < rollCount; roll++) {
+                        for (const row of rows) {
+                            if (Math.random() > row.chance) continue;
+                            const entry = pickWeighted(row.entries);
+                            if (entry) rolled.push(entry);
+                        }
                     }
                 }
 
@@ -2567,11 +2574,17 @@ export default class Client {
                     }
                 }
 
+                // the table decides the petal rarity per entry, so credit each drop under its
+                // own rarity rather than the mob rarity that was passed in
+                const grant = (bag, entry) => {
+                    const name = tiers[entry.rarity]?.name;
+                    if (!name) return;
+                    if (!bag[name]) bag[name] = {};
+                    bag[name][entry.index] = (bag[name][entry.index] || 0) + entry.amount;
+                };
+
                 if (target) {
-                    for (const entry of rolled) {
-                        if (!target.inventory[rarity.name]) target.inventory[rarity.name] = {};
-                        target.inventory[rarity.name][entry.index] = (target.inventory[rarity.name][entry.index] || 0) + entry.amount;
-                    }
+                    for (const entry of rolled) grant(target.inventory, entry);
 
                     accounts.saveClient(target);
                     target.syncInventoryExact();
@@ -2588,25 +2601,26 @@ export default class Client {
                     match.save.data ??= {};
                     match.save.data.inventory ??= {};
 
-                    for (const entry of rolled) {
-                        match.save.data.inventory[rarity.name] ??= {};
-                        match.save.data.inventory[rarity.name][entry.index] = (match.save.data.inventory[rarity.name][entry.index] || 0) + entry.amount;
-                    }
+                    for (const entry of rolled) grant(match.save.data.inventory, entry);
 
                     accounts.persist().catch(err => console.warn("[Accounts] Save failed:", err));
                 }
 
-                // same Chaos+ threshold as mob drops, but the wording says refunded
+                // the drop announcement in Entity.js keys off the MOB rarity, not the rarity
+                // of the petal that came out, so r27 beetle drops get announced
+                // even when the petal itself is Common
                 const announced = new Map();
 
                 for (const entry of rolled) {
+                    // Entity.js force announces this one petal regardless of mob rarity
+                    const forceAnnounce = petalConfigs[entry.index]?.name === "ӇЄҲƛƓƠƝ";
+                    if (rarityIndex < 18 && !forceAnnounce) continue;
                     const key = `${entry.rarity}:${entry.index}`;
                     if (!announced.has(key)) announced.set(key, { rarity: entry.rarity, index: entry.index, amount: 0 });
                     announced.get(key).amount += entry.amount;
                 }
 
                 for (const group of announced.values()) {
-                    if (group.rarity < state.announceRarity) continue;
                     const rarityData = tiers[group.rarity];
                     if (!rarityData) continue;
                     const itemName = petalConfigs[group.index]?.name ?? `Item ${group.index}`;
