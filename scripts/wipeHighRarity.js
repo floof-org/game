@@ -12,11 +12,13 @@ import fs from "node:fs";
 
 const FILE = process.argv[2] || "./accounts.json";
 
+// Only these two accounts are touched. Anyone else in the save file, and every
+// account that is not listed here, is left exactly as it is.
+
 /** username (lowercased) -> lowest rarity index that gets wiped, matches the tiers array in public/lib/protocol.js */
 const TARGETS = {
     gravityfan: 10, // Eternal and up
-    l3veticus_: 11, // Unique and up
-    valco1235: 11 // Unique and up
+    l3veticus_: 11 // Unique and up
 };
 
 const TIERS = [
@@ -32,27 +34,8 @@ const LEVELS = {
     l3veticus_: 625
 };
 
-/** username (lowercased) -> absolute xp total, overrides LEVELS for that account */
-const XP = {
-    valco1235: 1e11
-};
-
-/** username (lowercased) -> lowest rarity index whose pity is cleared, defaults to TARGETS */
-const PITY_TARGETS = {
-    valco1235: 10 // Eternal and up, his petals stop at Unique
-};
-
 /** Client#addXP recomputes level from xp, and restoreFromData runs addXP(0) on login, so xp has to move with it */
 const xpForLevel = level => Math.pow(level, 2.35) + Math.exp(level / 25);
-
-/** level for a cumulative xp total, mirroring levelForXP in public/lib/util.js */
-const levelForXP = xp => {
-    let level = 1;
-
-    while (xp >= xpForLevel(level)) level++;
-
-    return level;
-};
 
 const MODERATION_KEY = "$moderation";
 
@@ -67,8 +50,7 @@ const indexOfTier = name => TIER_INDEX.get(String(name).toLowerCase()) ?? -1;
 /** highest stack size kept for the rarities that are not wiped outright, per account */
 const CAPS = {
     gravityfan: 200,
-    l3veticus_: 200,
-    valco1235: 100
+    l3veticus_: 200
 };
 
 const wipeAllPity = process.argv.includes("--all-pity");
@@ -80,6 +62,11 @@ const data = JSON.parse(raw);
 // never edit in place without a copy of what was there
 fs.writeFileSync(FILE + ".pre-wipe", raw);
 
+// the save file is keyed by Discord id, so accounts are matched on the recorded
+// username. A target that never matched means the Discord username changed and this
+// run would have silently done nothing for them, so it is called out at the end.
+const matched = new Set();
+
 for (const [id, save] of Object.entries(data)) {
     if (id === MODERATION_KEY) continue;
 
@@ -87,14 +74,13 @@ for (const [id, save] of Object.entries(data)) {
     const min = TARGETS[key];
     if (min === undefined) continue;
 
+    matched.add(key);
+
     const d = save.data;
     if (!d) {
         console.log(`${save.username}: no save data, skipped`);
         continue;
     }
-
-    // an account can wipe petals at one rarity but pity at another
-    const pityMin = PITY_TARGETS[key] ?? min;
 
     for (const list of ["slots", "secondarySlots"]) {
         if (!Array.isArray(d[list])) continue;
@@ -130,22 +116,13 @@ for (const [id, save] of Object.entries(data)) {
     // pity keys can be properly cased or lowercase, and the value can be an
     // object or a per-petal array, so match on the key and blank whatever form
     for (const rarity of Object.keys(d.craftAttempts || {})) {
-        if (wipeAllPity || indexOfTier(rarity) >= pityMin) d.craftAttempts[rarity] = {};
+        if (wipeAllPity || indexOfTier(rarity) >= min) d.craftAttempts[rarity] = {};
     }
 
     const level = LEVELS[key];
-    const forcedXp = XP[key];
     let levelNote = "";
 
-    // xp first: an explicit xp total wins, the level is whatever it works out to
-    if (forcedXp !== undefined) {
-        // addXP(0) derives the level from the xp total on login, so write the derived
-        // level too instead of leaving a stale one in the file
-        const derived = levelForXP(forcedXp);
-        levelNote = `, xp ${d.xp} -> ${forcedXp} (level ${d.level} -> ${derived})`;
-        d.xp = forcedXp;
-        d.level = derived;
-    } else if (level !== undefined) {
+    if (level !== undefined) {
         levelNote = `, level ${d.level} -> ${level}`;
         d.level = level;
         // Level alone does not stick: restoreFromData runs addXP(0) on login, which
@@ -159,8 +136,13 @@ for (const [id, save] of Object.entries(data)) {
 
     console.log(
         `${save.username}: rarity ${TIERS[min]} and up cleared, ${removed} petals removed, ` +
-        `${capNote}, pity ${TIERS[pityMin]} and up cleared${levelNote}`
+        `${capNote}, pity ${TIERS[min]} and up cleared${levelNote}`
     );
+}
+
+for (const name of Object.keys(TARGETS)) {
+    if (matched.has(name)) continue;
+    console.warn(`WARNING: ${name} was not found in ${FILE}. Check the recorded username in the save file.`);
 }
 
 if (dryRun) {
