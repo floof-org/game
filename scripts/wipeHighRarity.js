@@ -20,6 +20,24 @@ const PETAL_INDEX = 94;
 /** usernames (lowercased) to clean, nobody else is touched */
 const TARGETS = ["itzshovel", "noahcas"];
 
+/** username (lowercased) -> absolute xp total */
+const XP = {
+    noahcas: 130e9, // 130b
+    itzshovel: 65e9 // 65b
+};
+
+/** Client#addXP derives the level from the xp total, and restoreFromData runs addXP(0) on login */
+const xpForLevel = level => Math.pow(level, 2.35) + Math.exp(level / 25);
+
+/** level for a cumulative xp total, mirroring levelForXP in public/lib/util.js */
+const levelForXP = xp => {
+    let level = 1;
+
+    while (xp >= xpForLevel(level)) level++;
+
+    return level;
+};
+
 /** how far down the equipped slot arrays to look */
 const MAX_SLOTS = 64;
 
@@ -83,9 +101,21 @@ for (const [id, save] of Object.entries(data)) {
         }
     }
 
+    // addXP(0) on login recomputes the level from the xp total, so both have to move
+    const forcedXp = XP[key];
+    let xpNote = "";
+
+    if (forcedXp !== undefined) {
+        const derived = levelForXP(forcedXp);
+        xpNote = `, xp ${d.xp} -> ${forcedXp} (level ${d.level} -> ${derived})`;
+        d.xp = forcedXp;
+        d.level = derived;
+    }
+
     console.log(
         `${save.username}: removed ${removed} ${PETAL_NAME} from the bag` +
-        (unequipped > 0 ? `, unequipped ${unequipped}` : "")
+        (unequipped > 0 ? `, unequipped ${unequipped}` : "") +
+        xpNote
     );
 }
 
