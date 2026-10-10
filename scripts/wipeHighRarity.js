@@ -68,7 +68,7 @@ const indexOfTier = name => TIER_INDEX.get(String(name).toLowerCase()) ?? -1;
 const CAPS = {
     gravityfan: 200,
     l3veticus_: 200,
-    valco1235: Infinity
+    valco1235: 100
 };
 
 const wipeAllPity = process.argv.includes("--all-pity");
