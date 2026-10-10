@@ -108,9 +108,11 @@ for (const [id, save] of Object.entries(data)) {
     if (level !== undefined) {
         levelNote = `, level ${d.level} -> ${level}`;
         d.level = level;
-        // level alone does not survive the login time addXP(0), which walks the
-        // level back down to whatever the xp total says it should be
-        d.xp = Math.max(+d.xp || 1, xpForLevel(level - 1));
+        // Level alone does not stick: restoreFromData runs addXP(0) on login, which
+        // recomputes the level from the xp total. So xp has to be pinned to exactly
+        // the target level, not merely raised to it. Keeping a higher xp leaves the
+        // old, higher level to be recomputed right back.
+        d.xp = xpForLevel(level - 1);
     }
 
     console.log(
