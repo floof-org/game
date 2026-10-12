@@ -114,8 +114,11 @@ const MAX_FAILURE_LOSS = 4;
 const MAX_PETALS_PER_REQUEST = 1000000;
 
 // The rarity whose crafts get announced lobby wide. Crafting rarity N produces
-// rarity N + 1, so this announces Omega petals.
-export const CRAFT_ANNOUNCE_RARITY = 10;
+// rarity N + 1, so this announces Galaxium petals.
+export const CRAFT_ANNOUNCE_RARITY = 13;
+
+/** Failures are announced one rarity earlier than successes, so Hyper onwards */
+export const CRAFT_FAIL_ANNOUNCE_RARITY = 12;
 
 function rarityKey(name) {
     return name.toLowerCase().replace(/\s+/g, "");

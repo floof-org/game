@@ -3,7 +3,7 @@ import state from "./state.js";
 export const SQUADS = globalThis.SQUADS ||= new Map();
 
 /** how far from the owner's level a member may be and stay in the squad */
-export const SQUAD_LEVEL_RANGE = 15;
+export const SQUAD_LEVEL_RANGE = 20;
 
 /** normal squad cap, owners are exempt and can exceed it */
 export const SQUAD_MAX_MEMBERS = 8;

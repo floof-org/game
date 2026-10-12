@@ -4,7 +4,7 @@ import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAME
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
 import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
-import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY } from "./CraftManager.js";
+import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY, CRAFT_FAIL_ANNOUNCE_RARITY } from "./CraftManager.js";
 import { SQUADS, SQUAD_LEVEL_RANGE, SQUAD_MAX_MEMBERS, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
 
 const blockList = [];
@@ -96,6 +96,13 @@ function announceCraft(client, result) {
         }
 
         client.systemMessage(`Craft Failed... (-${result.spent} ${result.rarityName}) ${result.petalName}`, "#ff5555");
+
+        // failures are announced one rarity earlier than successes
+        const failNextIndex = result.nextRarityIndex;
+        if (failNextIndex >= CRAFT_FAIL_ANNOUNCE_RARITY && tiers[failNextIndex]) {
+            const text = `${client.lootName()} Failed To Craft A ${result.nextRarityName} ${result.petalName}!`;
+            state.clients.forEach(other => other.systemMessage(text, tiers[failNextIndex].color));
+        }
 }
 
 const MIN_SLOTS = 5;
@@ -1743,7 +1750,7 @@ export default class Client {
             [
                 "Note: [text] indicates required, <text> indicates optional.",
                 "/createsquad [name] - Creates a squad. Squad loot is shared by damage.",
-                "/joinsquad [name] - Joins a squad. Your level must be within 15 of the owner's.",
+                "/joinsquad [name] - Joins a squad. Your level must be within 20 of the owner's.",
                 "/leavesquad - Leaves your squad. The owner disbands it instead.",
                 "/kicksquad [memberID] - Kicks a member. Owner only.",
                 "/bansquad [memberID] - Bans a member. Owner only.",
