@@ -2,6 +2,12 @@ import { CLIENT_BOUND, ENTITY_TYPES, GAMEMODES, ROUTER_PACKET_TYPES, Writer, tie
 import { quickDiff } from "../../lib/util.js";
 import SpatialHashGrid from "./SpatialHashGrid.js";
 
+/**
+ * Lowest mob rarity that gets a kill message or a drop announcement.
+ * Exported so a lobby that overrides it cannot silently drift away from the default.
+ */
+export const DEFAULT_ANNOUNCE_RARITY = 20; // Nullified
+
 // Zone coords work on a [-1, 1] scale with [0, 0] being the center of the map
 export class Zone {
     constructor(x1, y1, x2, y2, color = "#FFFFFF") {
@@ -25,7 +31,7 @@ const state = {
     isLineMap: false,
     biome: 0,
 
-    announceRarity: 20,
+    announceRarity: DEFAULT_ANNOUNCE_RARITY,
 
     gamemode: GAMEMODES.FFA,
     useCraftingProtocol: false,

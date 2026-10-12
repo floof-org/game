@@ -2,7 +2,7 @@ import { BIOME_BACKGROUNDS, BIOME_TYPES, GAMEMODES, loadTerrains, Reader } from 
 import Client from "./Client.js";
 import { mobConfigs, mobIDOf } from "./config.js";
 import initTerrain from "./initTerrain.js";
-import state from "./state.js";
+import state, { DEFAULT_ANNOUNCE_RARITY } from "./state.js";
 
 globalThis.environmentName ??= "browser";
 
@@ -258,7 +258,9 @@ export default class Router {
                 state.gamemode = GAMEMODES.MAZE;
                 state.mobsExpire = true;
                 state.teamCount = 0;
-                state.announceRarity = 17;
+                // was hardcoded to Chaos (17) here, which silently overrode the default
+                // and kept announcing kills and drops below Nullified
+                state.announceRarity = DEFAULT_ANNOUNCE_RARITY;
 
                 // setTimeout(() => {
                 //     state.clients.forEach(c => c.systemMessage("Lobby will be closing in 5 minutes...", "#FF0000"));
