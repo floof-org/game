@@ -814,7 +814,9 @@ export default class Client {
     }
 
     get bodyDamageAdjustment() {
-        return 5 + 1 * Math.pow(this.level, 1.5);
+        const petalDamage = this.body ? this.body.petalSlots.reduce((total, slot) => total + (slot.config?.flowerBodyDamage ?? 0), 0) : 0;
+
+        return 5 + 1 * Math.pow(this.level, 1.5) + petalDamage;
     }
 
     get highestRarity() {
@@ -1167,7 +1169,7 @@ export default class Client {
                         const index = reader.getUint8();
                         const rarity = reader.getUint8();
 
-                        if (index < 0 || index >= petalConfigs.length) {
+                        if (index < 0 || index >= mobConfigs.length) {
                             return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
                                 promiseID: promiseID,
                                 ok: false,

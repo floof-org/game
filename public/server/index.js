@@ -33,6 +33,10 @@ function createWave(n) {
             const index = Math.random() * mobConfigs.length | 0;
             const name = mobConfigs[index].name.toLowerCase();
 
+            if (mobConfigs[index].spawnable === false) {
+                continue;
+            }
+
             if (mobConfigs[index].isSystem) {
                 continue;
             }
@@ -83,6 +87,10 @@ function getMobIndex() {
     while (k++ < 100) {
         const index = Math.random() * mobConfigs.length | 0;
         const name = mobConfigs[index].name.toLowerCase();
+
+        if (mobConfigs[index].spawnable === false) {
+            continue;
+        }
 
         if (mobConfigs[index].tiers[0].antHoleSpawns?.length > 0 && Math.random() > .9) {
             return index;

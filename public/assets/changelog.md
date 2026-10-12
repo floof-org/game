@@ -1,3 +1,13 @@
+# Update (10/17/2026)
+- New mob: Digger
+- New petal: Cutter
+- New petal: Disc
+- New petal: Uranium
+- New petal: Diamond
+
+# Update (10/12/2026)
+- Improved the inventory and added features to it.
+
 # Update (8/23/2026)
 - Fixed a bug in the spatial hash grid, making collision detection more efficient.
 - Added lookup index for map cells, which can now be queried in O(1) time.

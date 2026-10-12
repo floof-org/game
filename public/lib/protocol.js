@@ -87,6 +87,8 @@ export class PetalTier {
 
         this.armor = 0;
 
+        this.radiationPoison = 0;
+
         this.icon = null;
 
         this.description = "Not much is known about this mysterious petal.";
@@ -179,6 +181,13 @@ export class PetalConfig {
         this.huddles = false;
         this.ignoreWalls = false;
         this.extraLighting = 0;
+        this.flowerBodyDamage = 0;
+        this.radiationRange = 0;
+        this.radiationRangePerRarity = 0;
+        this.radiationRangeStartRarity = 0;
+        this.radiationPoisonDuration = 0;
+        this.shatter = null;
+        this.fixedAngle = false;
     }
 
     setName(name) {
@@ -276,9 +285,37 @@ export class PetalConfig {
 
     setDamageReduction(damageReduction) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].damageReduction = damageReduction * Math.pow(1.1, i);
+            this.tiers[i].damageReduction = damageReduction instanceof Function ? damageReduction(i) : damageReduction * Math.pow(1.1, i);
         }
 
+        return this;
+    }
+
+    setFlowerBodyDamage(flowerBodyDamage) {
+        this.flowerBodyDamage = flowerBodyDamage;
+        return this;
+    }
+
+    setRadiation(range, rangePerRarity, poisonDamage, rangeStartRarity = 0, poisonDuration = 2) {
+        this.radiationRange = range;
+        this.radiationRangePerRarity = rangePerRarity;
+        this.radiationRangeStartRarity = rangeStartRarity;
+        this.radiationPoisonDuration = poisonDuration * 22.5;
+
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].radiationPoison = poisonDamage * Math.pow(PetalTier.DAMAGE_SCALE, i) / 22.5;
+        }
+
+        return this;
+    }
+
+    setShatter(shatter) {
+        this.shatter = shatter;
+        return this;
+    }
+
+    setFixedAngle(fixedAngle = true) {
+        this.fixedAngle = Boolean(fixedAngle);
         return this;
     }
 
@@ -644,6 +681,11 @@ export class MobConfig {
         return this;
     }
 
+    setSpawnable(spawnable) {
+        this.spawnable = Boolean(spawnable);
+        return this;
+    }
+
     setMovesInBursts(movesInBursts) {
         this.movesInBursts = Boolean(movesInBursts);
         return this;
@@ -964,6 +1006,7 @@ export const WEARABLES = {
     AMULET: 0x08,
     AIR: 0x10,
     ARMOR: 0x20,
+    DISC: 0x40,
 };
 
 export const ROUTER_PACKET_TYPES = {
@@ -1535,6 +1578,8 @@ export function encodePetalConfig(config) {
         output.push(config.splits.count);
     }
 
+    output.push(config.flowerBodyDamage);
+
     return output.map(value => {
         if (Number.isFinite(value)) {
             return +value.toFixed(2);
@@ -1752,6 +1797,8 @@ export function decodePetalConfig(data, nTiers) {
     if (flags & 0x40000000) {
         output.splits = data.shift();
     }
+
+    output.flowerBodyDamage = data.shift();
 
     return output;
 }

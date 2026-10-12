@@ -1,6 +1,6 @@
 import { getPetalIcon, petalTooltip } from "./renders.js";
 import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net.js";
-import { formatAmount } from "../index.js";
+import { formatAmount } from "./inventory.js";
 import { SERVER_BOUND } from "./protocol.js";
 
 var craftRef = null;
