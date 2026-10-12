@@ -4,11 +4,14 @@ import { mouse, keyMap, releaseFloatingText } from "./lib/net.js";
 import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
-import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
+import { beginDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
 import { updateAccountMenu } from './lib/auth.js';
 import SpatialHashGrid from "./server/lib/SpatialHashGrid.js";
+import "./lib/inventory.js";
 import "./lib/craftMenu.js";
+
+export { formatAmount } from "./lib/inventory.js";
 
 const mobRenderSpatialHash = new SpatialHashGrid();
 
@@ -581,77 +584,6 @@ function processDrop() {
     return true;
 }
 
-export function formatAmount(v) {
-  if (!isFinite(v)) return "∞";
-  if (isNaN(v)) return "0";
-
-    const f = (num, div, suffix) => {
-        const val = num / div;
-        if (!isFinite(val)) return "∞";
-
-        const str = val.toFixed(1);
-        return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
-    };
-
-    if (v >= 1e18) return f(v, 1e18, "Qt");
-    if (v >= 1e15) return f(v, 1e15, "Qd");
-    if (v >= 1e12) return f(v, 1e12, "t");
-    if (v >= 1e9) return f(v, 1e9, "b");
-    if (v >= 1e6) return f(v, 1e6, "m");
-    if (v >= 1e3) return f(v, 1e3, "k");
-
-    return Math.floor(v).toString();
-}
-
-function processInventoryDrop() {
-    const drag = {
-        index: inventoryDragConfig.index,
-        rarity: inventoryDragConfig.rarity,
-    };
-
-    let drop = null;
-
-    const mX = mouse.x / uiScale();
-    const mY = mouse.y / uiScale();
-
-    for (let i = 0; i < net.state.slots.length; i++) {
-        const slot = net.state.slots[i];
-
-        if (slot.icon && slot.icon.x < mX && slot.icon.x + slot.icon.size > mX && slot.icon.y < mY && slot.icon.y + slot.icon.size > mY) {
-            drop = {
-                type: DRAG_TYPE_MAINDOCKER,
-                index: i,
-                rarity: slot.rarity,
-                petalIndex: slot.index,
-            };
-            break;
-        }
-    }
-
-    if (drop === null) {
-        for (let i = 0; i < net.state.secondarySlots.length; i++) {
-            const slot = net.state.secondarySlots[i];
-
-            if (slot.icon && slot.icon.x < mX && slot.icon.x + slot.icon.size > mX && slot.icon.y < mY && slot.icon.y + slot.icon.size > mY) {
-                drop = {
-                    type: DRAG_TYPE_SECONDARYDOCKER,
-                    index: i,
-                    rarity: slot.rarity ?? 255,
-                    petalIndex: slot.index === -1 ? 255 : slot.index,
-                };
-                break;
-            }
-        }
-    }
-    if (drop === null) {
-        return false;
-    }
-
-    net.state.socket.talk(SERVER_BOUND.INVENTORY_CHANGE_LOADOUT, { drag, drop });
-
-    return true;
-}
-
 const clientDebug = {
     fps: 0,
     mspt: 0,
@@ -674,31 +606,6 @@ let cuteLittleAnimations = {
     chatBGSize: 0,
 };
 
-const buttonsContainer = document.getElementById("menus2");
-const menu = buttonsContainer.children.item("inventory");
-
-const inventoryTooltipLayer = document.createElement("div");
-inventoryTooltipLayer.style.position = "fixed";
-inventoryTooltipLayer.style.left = "0";
-inventoryTooltipLayer.style.top = "0";
-inventoryTooltipLayer.style.width = "100vw";
-inventoryTooltipLayer.style.height = "100vh";
-inventoryTooltipLayer.style.pointerEvents = "none";
-inventoryTooltipLayer.style.zIndex = "999999";
-inventoryTooltipLayer.style.overflow = "visible";
-inventoryTooltipLayer.style.display = "none";
-
-document.body.appendChild(inventoryTooltipLayer);
-const inventoryTooltipBox = document.createElement("div");
-inventoryTooltipBox.style.position = "fixed";
-inventoryTooltipBox.style.willChange = "transform";
-const inventoryTooltipCanvas = document.createElement("canvas");
-const c2d = inventoryTooltipCanvas.getContext("2d");
-c2d.imageSmoothingEnabled = true;
-c2d.imageSmoothingQuality = "high";
-inventoryTooltipBox.appendChild(inventoryTooltipCanvas);
-let _tooltipDrawKey = null;
-
 function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   const bw = 350;
   const bh = (350 * img.height) / img.width;
@@ -709,118 +616,12 @@ function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   return { x, y, bw, bh };
 }
 
-function drawInventory() {
-    net.state.petalElements = [];
-    menu.innerHTML = "";
-
-    if (!net.state.inventory) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
-    }
-
-    let inventoryEmpty = true;
-    Object.values(net.state.inventory).forEach((tier) => {
-        if (Object.values(tier).some((count) => count > 0)) {
-            inventoryEmpty = false;
-        }
-    });
-
-    if (inventoryEmpty) {
-        menu.textContent = "Your inventory is empty :(";
-        return;
-    }
-
-    const petal = document.createElement("div");
-    petal.style.display = "flex";
-    petal.style.flexWrap = "wrap";
-    petal.style.padding = "0px";
-    petal.style.gap = "5px";
-    menu.appendChild(petal);
-
-    const petalSize = 56;
-
-    let sortedTiers = Object.entries(net.state.inventory).sort(([a], [b]) => {
-        const aIndex = net.state.tiers.findIndex((t) => t.name === a);
-        const bIndex = net.state.tiers.findIndex((t) => t.name === b);
-        return bIndex - aIndex;
-    });
-
-    sortedTiers.forEach(([tierName, petals]) => {
-        const rarityIndex = net.state.tiers.findIndex((t) => t.name === tierName);
-
-        Object.entries(petals)
-            .sort(([a], [b]) => {
-                const aName = net.state.petalConfigs[Number(a)].name;
-                const bName = net.state.petalConfigs[Number(b)].name;
-                return aName.localeCompare(bName);
-            })
-            .forEach(([petalIndex, count]) => {
-                if (count <= 0) return;
-
-                const petalCanvas = getPetalIcon(Number(petalIndex), rarityIndex, "oneshot");
-
-                const icon = document.createElement("canvas");
-
-                icon.addEventListener("pointerenter", (ev) => {
-                    const r = ev.currentTarget.getBoundingClientRect();
-                    net.state.inventoryPetalHover = [Number(petalIndex), rarityIndex, r.left + r.width / 2, r.top + r.height / 2];
-                });
-
-                icon.addEventListener("pointermove", (ev) => {
-                    const r = ev.currentTarget.getBoundingClientRect();
-                    net.state.inventoryPetalHover = [Number(petalIndex), rarityIndex, r.left + r.width / 2, r.top + r.height / 2];
-                });
-
-                icon.addEventListener("pointerleave", () => {
-                    net.state.inventoryPetalHover = null;
-                });
-
-                icon.width = petalSize;
-                icon.height = petalSize;
-
-                icon.style.width = petalSize + "px";
-                icon.style.height = petalSize + "px";
-                icon.style.flex = "0 0 auto";
-
-                const c = icon.getContext("2d");
-                c.drawImage(petalCanvas, 0, 0, petalSize, petalSize);
-
-                if (count > 1) {
-                    c.fillStyle = colors.white;
-                    c.strokeStyle = "#000000";
-                    c.lineWidth = 2;
-                    c.font = `bold ${petalSize * 0.25}px Ubuntu`;
-                    c.textAlign = "right";
-                    c.textBaseline = "top";
-
-                    const text = `x${formatAmount(count)}`;
-                    c.strokeText(text, petalSize - 4, 4);
-                    c.fillText(text, petalSize - 4, 4);
-                }
-
-                petal.appendChild(icon);
-
-                net.state.petalElements.push({
-                    icon,
-                    index: Number(petalIndex),
-                    rarity: rarityIndex,
-                    width: petalSize,
-                    height: petalSize,
-                });
-            });
-    });
-}
-
 window.addEventListener("keydown", (e) => {
     if (e.key === " " || e.key === "Enter") {
         if (e.target.closest("button")) {
             e.preventDefault();
             return false;
         }
-    }
-    if (e.key === "z" && !net.ChatMessage.showInput) {
-        menu.classList.toggle("active");
-        drawInventory();
     }
 });
 
@@ -2891,93 +2692,9 @@ function draw() {
 
     ctx.textAlign = "center";
 
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    if (now - (net.state._lastInventoryCheck ?? 0) >= 250) {
-        net.state._lastInventoryCheck = now;
-    if (JSON.stringify(net.state.inventory2) !== JSON.stringify(net.state.inventory)) {
-        if (menu.classList.contains("active")) {
-            drawInventory();
-        }
-        net.state.inventory2 = JSON.parse(JSON.stringify(net.state.inventory));
-    }
-    }
-
-    net.state._foundHover = false;
-
-    if (menu.classList.contains("active") && net.state.petalElements) {
-        const menuRect = menu.getBoundingClientRect();
-        const petalRects = net.state.petalElements.map(petalElement => petalElement.icon.getBoundingClientRect());
-        const mouseX = mouse.x / window.devicePixelRatio;
-        const mouseY = mouse.y / window.devicePixelRatio;
-
-        net.state.petalElements.forEach((petal, i) => {
-            const rect = petalRects[i]
-            const visible = rect.top >= menuRect.top && rect.bottom <= menuRect.bottom && rect.left >= menuRect.left && rect.right <= menuRect.right;
-            const hovered = visible && mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom;
-
-            if (hovered) {
-                net.state._foundHover = true;
-                net.state.inventoryPetalHover = [petal.index, petal.rarity, rect.left + rect.width / 2, rect.top + rect.height / 2 - 22];
-
-                if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left && rect.y > menuRect.top) {
-                    beginInventoryDragDrop((rect.x * 1.1) / uScale, (rect.y * 1.1) / uScale, rect.width, petal.index, petal.rarity);
-                    menu.classList.toggle("active");
-                    inventoryDragConfig.index = petal.index;
-                    inventoryDragConfig.rarity = petal.rarity;
-                    inventoryDragConfig.item.stableSize = rect.width;
-                    inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
-                }
-            }
-        });
-    }
-
-    if (!net.state._foundHover) {
-        net.state.inventoryPetalHover = null;
-    }
-
-    ctx.restore();
-
     {   // Hovers
         net.state.petalHoverAlpha ??= 0;
         net.state.lastPetalHover ??= null;
-
-        const inventoryHover = Array.isArray(net.state.inventoryPetalHover) ? net.state.inventoryPetalHover : null;
-
-        if (inventoryHover) {
-            const img = petalTooltip(...inventoryHover);
-
-      const { x, y, bw, bh } = petalTooltipBox(
-        img,
-        inventoryHover[2],
-        inventoryHover[3],
-        window.innerWidth,
-        window.innerHeight,
-      );
-
-      const box = document.createElement("div");
-      box.style.position = "fixed";
-      box.style.left = `${x}px`;
-      box.style.top = `${y}px`;
-
-      const cv = document.createElement("canvas");
-      cv.width = bw;
-      cv.height = bh;
-
-      const cx = cv.getContext("2d");
-      cx.imageSmoothingEnabled = true;
-      cx.imageSmoothingQuality = "high";
-      cx.drawImage(img, 0, 0, bw, bh);
-
-            box.appendChild(cv);
-
-            inventoryTooltipLayer.replaceChildren(box);
-            inventoryTooltipLayer.style.display = "block";
-        } else {
-            inventoryTooltipLayer.replaceChildren();
-            inventoryTooltipLayer.style.display = "none";
-        }
 
         if (Array.isArray(net.state.petalHover)) {
             net.state.lastPetalHover = [...net.state.petalHover];
@@ -2987,7 +2704,7 @@ function draw() {
         }
         net.state.petalHoverAlpha = Math.max(0, Math.min(1, net.state.petalHoverAlpha));
 
-        if (Array.isArray(net.state.lastPetalHover) && net.state.lastPetalHover.length === 4 && net.state.lastPetalHover.every((v) => v !== undefined && v !== null) && !Array.isArray(net.state.inventoryPetalHover)) {
+        if (Array.isArray(net.state.lastPetalHover) && net.state.lastPetalHover.length === 4 && net.state.lastPetalHover.every((v) => v !== undefined && v !== null)) {
             ctx.save();
             const img = petalTooltip(...net.state.lastPetalHover);
             ctx.imageSmoothingEnabled = true;
