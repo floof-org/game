@@ -9,6 +9,7 @@
 //   node scripts/restoreFromBackups.js itzshovel arrasfanboii
 //   node scripts/restoreFromBackups.js itzshovel arrasfanboii accounts.json.auto-2026-10-10-01-09-29
 //   node scripts/restoreFromBackups.js itzshovel arrasfanboii --dry
+//   node scripts/restoreFromBackups.js itzshovel arrasfanboii --xp 140b --remove armor,amulet
 
 // package.json sets "type": "module", so this has to be ESM
 import fs from "node:fs";
@@ -16,10 +17,68 @@ import fs from "node:fs";
 const FILE = "accounts.json";
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry");
+
+/** petals to zero out after the restore, by index into petalConfigs */
+const PETAL_NAMES = { amulet: 41, armor: 58 };
+
+/** value of a flag, or "" when the flag was not passed */
+const flagValue = flag => {
+    const at = args.indexOf(flag);
+    return at === -1 ? "" : String(args[at + 1] ?? "");
+};
+
+const removeArg = flagValue("--remove").toLowerCase();
+const REMOVE_PETALS = removeArg
+    .split(",")
+    .map(name => name.trim())
+    .filter(Boolean)
+    .map(name => {
+        const index = PETAL_NAMES[name.toLowerCase()];
+        if (!Number.isInteger(index)) {
+            console.error(`Unknown petal "${name}". Known: ${Object.keys(PETAL_NAMES).join(", ")}`);
+            process.exit(1);
+        }
+        return index;
+    });
+
+/** --xp accepts plain numbers and a b/m suffix, e.g. 140b */
+function parseXp(value) {
+    const match = /^([\d.]+)\s*([bmk]?)$/i.exec(String(value).trim());
+    if (!match) return null;
+
+    const scale = { "": 1, b: 1e9, m: 1e6, k: 1e3 }[match[2].toLowerCase()];
+
+    return Number(match[1]) * scale;
+}
+
+const FORCED_XP = args.includes("--xp") ? parseXp(flagValue("--xp")) : null;
+
+if (args.includes("--xp") && FORCED_XP === null) {
+    console.error(`Could not read --xp "${flagValue("--xp")}". Use a number, optionally suffixed b/m/k.`);
+    process.exit(1);
+}
+
+/** level for a cumulative xp total, mirroring levelForXP in public/lib/util.js */
+const levelForXP = xp => {
+    const xpForLevel = level => Math.pow(level, 2.35) + Math.exp(level / 25);
+    let level = 1;
+
+    while (xp >= xpForLevel(level)) level++;
+
+    return level;
+};
 const positional = args.filter(arg => !arg.startsWith("--"));
 
+/** drop the values that belong to a flag, so "140b" is not read as a username */
+const flagValues = new Set();
+
+for (const flag of ["--remove", "--xp"]) {
+    const at = args.indexOf(flag);
+    if (at !== -1 && args[at + 1]) flagValues.add(args[at + 1]);
+}
+
 const targets = positional
-    .filter(arg => !arg.endsWith(".json") && !arg.includes("accounts.json"))
+    .filter(arg => !arg.endsWith(".json") && !arg.includes("accounts.json") && !flagValues.has(arg))
     .map(name => name.toLowerCase());
 
 const backups = positional.filter(arg => arg.includes(".json") && arg !== FILE);
@@ -109,6 +168,50 @@ for (const file of backups) {
 for (const name of targets) {
     if (restored.has(name.toLowerCase())) continue;
     console.warn(`WARNING: ${name} was not found in any backup. Check the recorded username in ${FILE}.`);
+}
+
+// Applied after the restore, so the restored xp and inventory are adjusted
+for (const name of targets) {
+    const key = name.toLowerCase();
+    const entry = Object.entries(data).find(([id, save]) =>
+        !id.startsWith("$") && String(save?.username || "").toLowerCase() === key
+    );
+
+    if (!entry) continue;
+
+    const [id, save] = entry;
+    const d = save.data;
+    if (!d) continue;
+
+    if (FORCED_XP !== null) {
+        d.xp = FORCED_XP;
+        // addXP(0) derives the level from xp on login, so the stored level has to follow
+        d.level = levelForXP(FORCED_XP);
+    }
+
+    let cleared = 0;
+
+    if (REMOVE_PETALS.length > 0) {
+        d.inventory ??= {};
+
+        for (const tier of Object.keys(d.inventory)) {
+            const petals = d.inventory[tier];
+            if (!petals || typeof petals !== "object") continue;
+
+            for (const petalId of Object.keys(petals)) {
+                if (!REMOVE_PETALS.includes(Number(petalId))) continue;
+                cleared += Math.floor(+petals[petalId] || 0);
+                // zeroed rather than deleted: the client merges inventory per petal id
+                // and never forgets an id the server stops sending
+                petals[petalId] = 0;
+            }
+        }
+    }
+
+    if (FORCED_XP !== null || cleared > 0) {
+        const names = REMOVE_PETALS.map(i => Object.keys(PETAL_NAMES).find(n => PETAL_NAMES[n] === i)).join(" + ");
+        console.log(`  ${save.username}: xp ${d.xp} (level ${d.level})${cleared > 0 ? `, cleared ${cleared} ${names}` : ""}`);
+    }
 }
 
 if (dryRun) {
