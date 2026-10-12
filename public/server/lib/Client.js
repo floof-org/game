@@ -4116,9 +4116,6 @@ if (commandCheck("/pity")) {
                                 try {
 
                                     const args = e.substring(6).trim().split(/\s+/).filter(Boolean);
-
-                                    const craftAnnouncement = 16;
-                                    const failAnnouncement = 17;
                                     const MAX_PETALS_PER_COMMAND = 1000000000000000;
                                     const PETALS_PER_ATTEMPT = 5;
 
@@ -4599,10 +4596,11 @@ if (commandCheck("/pity")) {
 
                                     const up = tiers[nextRarityIndex];
 
-                                    // announcements
+                                    // announcements, same thresholds as announceCraft so chat and protocol
+                                    // crafting cannot drift apart
                                     if (successes > 0) {
 
-                                        if (nextRarityIndex >= 11) {
+                                        if (nextRarityIndex >= CRAFT_ANNOUNCE_RARITY) {
                                             state.clients.forEach(c=>c.systemMessage(
                                                 `${this.username} has crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}`,
                                                 tiers[nextRarityIndex].color));
@@ -4610,8 +4608,8 @@ if (commandCheck("/pity")) {
 
                                     } else {
 
-                                        // Failed Unique to Hyper and higher crafts are announced lobby-wide.
-                                        if (rarityIndex >= 11) {
+                                        // failures announce from Millom upwards
+                                        if (nextRarityIndex >= CRAFT_FAIL_ANNOUNCE_RARITY) {
                                             state.clients.forEach(c=>c.systemMessage(
                                                 `${this.username} failed to craft ${tiers[nextRarityIndex].name} ${petalArg} after ${attempts} failed attempt${attempts !== 1 ? "s" : ""}.`,
                                                 "#ff5555"));
