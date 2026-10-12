@@ -113,12 +113,15 @@ const MIN_FAILURE_LOSS = 1;
 const MAX_FAILURE_LOSS = 4;
 const MAX_PETALS_PER_REQUEST = 1000000;
 
-// The rarity whose crafts get announced lobby wide. Crafting rarity N produces
-// rarity N + 1, so this announces Galaxium petals.
+// Announced lobby wide once the craft produces this rarity or above.
+// Crafting rarity N produces rarity N + 1, so 13 announces Galaxium petals.
 export const CRAFT_ANNOUNCE_RARITY = 13;
 
-/** Failures are announced one rarity earlier than successes, so Hyper onwards */
-export const CRAFT_FAIL_ANNOUNCE_RARITY = 12;
+/**
+ * Failures announce one rarity higher than successes: a failed Galaxium craft,
+ * which would have produced Millom.
+ */
+export const CRAFT_FAIL_ANNOUNCE_RARITY = 14;
 
 function rarityKey(name) {
     return name.toLowerCase().replace(/\s+/g, "");
