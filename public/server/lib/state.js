@@ -226,9 +226,19 @@ const state = {
                 // spawn position: a spawn point inside the player's view can sit on an
                 // unscored cell or just across a zone boundary, which previously let
                 // higher-rarity mobs materialize in front of players camping a low area.
-                const baseRarity = cell?.score !== undefined
+                const playerRarity = cell?.score !== undefined
                     ? Math.round(cell.score * state.mapData.maxRarity)
                     : (state.mapSpawnClosestTo(body.x, body.y)?.rarity ?? 0);
+
+                // The position is rolled anywhere in the view, so it can land far outside
+                // the player's zone. Taking the lower of the two stops high rarity mobs
+                // from appearing in a low rarity area.
+                const spawnCell = state.mapDataAt(position.x, position.y);
+                const spawnRarity = spawnCell?.score !== undefined
+                    ? Math.round(spawnCell.score * state.mapData.maxRarity)
+                    : playerRarity;
+
+                const baseRarity = Math.min(playerRarity, spawnRarity);
 
                 const clamped = Math.max(0, Math.min(tiers.length - 1, Number.isFinite(baseRarity) ? baseRarity : 0));
                 const low = Math.max(0, clamped - 1);
