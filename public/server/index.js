@@ -291,6 +291,26 @@ if (typeof process !== "undefined" && typeof process.on === "function") {
     process.on("SIGINT", () => saveAllAndExit("SIGINT"));
 }
 
+// Reap ghost sessions. A client whose socket dies without a close event (half-open
+// TCP, dropped network, a sleeping laptop) never reaches the close handler above, so
+// it would sit in state.clients forever: still counted, still in alivePlayers, still
+// holding squad membership, and leaking an ipCounts slot. The browser pings every
+// second, so anything silent well past that is gone.
+const CONNECTION_TIMEOUT = 30000;
+const LIVENESS_SWEEP_INTERVAL = 5000;
+
+setInterval(() => {
+    const now = Date.now();
+
+    for (const client of state.clients.values()) {
+        const idle = now - (client.lastSeen ?? now);
+        if (idle < CONNECTION_TIMEOUT) continue;
+
+        console.log(`[Liveness] Client ${client.id} (${client.username}) silent for ${(idle / 1000).toFixed(1)}s, dropping ghost session.`);
+        client.kick("Connection timed out");
+    }
+}, LIVENESS_SWEEP_INTERVAL);
+
 // Router server through worker through socket
 state.router = new Router();
 
@@ -400,6 +420,9 @@ switch (globalThis.environmentName) {
                     if (client) {
                         bunSendMap.set(socket.data.socketID, socket);
                         let ct = (ipCounts.get(socket.data.ip) ?? 0) + 1;
+                        // close() decrements unconditionally, so remember whether this
+                        // socket actually contributed to the count before touching it
+                        socket.data.countedIp = true;
                         if (ct > 100) return client.kick("Too many connections from this IP");
                         ipCounts.set(socket.data.ip, ct);
                     } else {
@@ -419,6 +442,9 @@ switch (globalThis.environmentName) {
                     if (lobbySocket.readyState === WebSocket.OPEN && socket.data.searchParams.has("analytics")) {
                         lobbySocket.send(new Uint8Array([ROUTER_PACKET_TYPES.ANALYTICS_DATA, ...stringToU8(socket.data.searchParams.get("analytics")), ...stringToU8((performance.now() - socket.data.begin).toFixed(2))]));
                     }
+
+                    // only sockets that incremented the counter may decrement it again
+                    if (!socket.data.countedIp) return;
 
                     let ct = (ipCounts.get(socket.data.ip) ?? 0) - 1;
 

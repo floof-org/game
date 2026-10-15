@@ -937,6 +937,11 @@ export default class Client {
         this.handlingCraft = false;
         this.camera = new Camera();
 
+        // Last time anything arrived on this socket. The browser pings every second,
+        // so this is what separates a live client from a ghost one whose TCP
+        // connection died without ever producing a close event.
+        this.lastSeen = Date.now();
+
         /**
          * A record of the inventory values last sent to the client.
          */
@@ -1145,6 +1150,8 @@ export default class Client {
      * @param {Reader} reader
      */
     onMessage(reader) {
+        this.lastSeen = Date.now();
+
         switch (reader.getUint8()) {
             case SERVER_BOUND.PING:
                 this.talk(CLIENT_BOUND.PONG);
