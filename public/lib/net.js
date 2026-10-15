@@ -1200,7 +1200,11 @@ export class ClientSocket extends WebSocket {
     onClose(ev) {
         const { code, reason, wasClean, timeStamp } = ev;
         console.log("Disconnected from lobby:", JSON.stringify({ code, reason, wasClean, timeStamp }));
-        state.disconnected = true;    
+        // 4001 is the lobby refusing the connection at handshake (see Router#addClient).
+        // Those clients never receive a KICK packet, so the close reason is all the
+        // player has to go on and it must not be dropped here.
+        if (code === 4001 && reason) state.disconnectMessage = reason;
+        state.disconnected = true;
     }
 
     onMessage(event) {

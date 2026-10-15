@@ -203,24 +203,38 @@ export default class Router {
     static getText = (u8, o, l) => Router.decoder.decode(u8.slice(o, o + l));
     static setText = t => Router.encoder.encode(t);
 
+    /**
+     * Adds a client, or returns null when the connection has to be refused.
+     * On refusal lastRejectReason holds the reason, which the caller passes to
+     * socket.close: a client refused here is not in state.clients, so a KICK
+     * packet addressed to it never reaches the browser.
+     */
     addClient(numericID, userId, isAdmin) {
-        let kick = false;
+        let duplicate = null;
         if (!isAdmin) {
             for (const client of state.clients.values()) {
                 if (client.userId === userId) {
-                    kick = "DAR-7";
+                    duplicate = client;
                     break;
                 }
             }
+        }
+
+        // Same userId means the same person, so this is a reconnect rather than a
+        // second player. Refusing the new socket instead locked the account out for
+        // good whenever the old socket was still half-open, e.g. right after a lobby
+        // restart. Drop the old one and let the new connection in.
+        if (duplicate) {
+            console.log(`Client ${duplicate.id} (${duplicate.username}) superseded by a newer connection from the same account.`);
+            duplicate.kick("Reconnected from another session");
+            state.clients.delete(duplicate.id);
         }
 
         const client = new Client(numericID, userId, isAdmin);
 
         if (state.clients.size > 35) {
             client.kick("Lobby is full, create another one");
-            return null;
-        } else if (kick !== false) {
-            client.kick(kick);
+            this.lastRejectReason = "Lobby is full";
             return null;
         }
 

@@ -402,7 +402,14 @@ switch (globalThis.environmentName) {
                         let ct = (ipCounts.get(socket.data.ip) ?? 0) + 1;
                         if (ct > 100) return client.kick("Too many connections from this IP");
                         ipCounts.set(socket.data.ip, ct);
-                    } else socket.close(4001, "Rejected");
+                    } else {
+                        // Carry the real reason out to the browser. The kick packet itself is
+                        // routed through the lobby socket, so a client refused here never gets
+                        // one and the player only ever saw a bare "Connection lost".
+                        const reason = state.router.lastRejectReason ?? "Rejected";
+                        state.router.lastRejectReason = null;
+                        socket.close(4001, reason);
+                    }
                 },
 
                 close(socket) {
