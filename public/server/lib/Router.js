@@ -208,6 +208,9 @@ export default class Router {
      * On refusal lastRejectReason holds the reason, which the caller passes to
      * socket.close: a client refused here is not in state.clients, so a KICK
      * packet addressed to it never reaches the browser.
+     *
+     * The 35 player cap was removed: this lobby ran on a single host that already
+     * bounds concurrency, and a full lobby silently refused reconnects.
      */
     addClient(numericID, userId, isAdmin) {
         let duplicate = null;
@@ -231,12 +234,6 @@ export default class Router {
         }
 
         const client = new Client(numericID, userId, isAdmin);
-
-        if (state.clients.size > 35) {
-            client.kick("Lobby is full, create another one");
-            this.lastRejectReason = "Lobby is full";
-            return null;
-        }
 
         return client;
     }
