@@ -1860,6 +1860,11 @@ export class Petal extends Entity {
             this.extraDamage = config.extraDamage
         }
 
+        // Mob#define sets both, and the armor gate actually lives on the Health object:
+        // Health#damage reads this.armor, so setting only the entity field here left
+        // Bone's armor inert and the petal still broke to hits it should have blocked.
+        this.health.armor = tier.armor ?? 0;
+
         if (tier.armor !== 0) {
             this.armor = tier.armor;
         }
