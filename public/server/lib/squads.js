@@ -61,6 +61,11 @@ export function validateSquadMembers(squad) {
         const client = clientByUserId(memberId);
         if (!client) continue;
 
+        // Admins and owners are exempt: they can join any squad, so the level
+        // window would otherwise kick them straight back out on the next check.
+        // They leave with /leavesquad, like anyone else.
+        if (client.masterPermissions >= 1) continue;
+
         const lvl = getPlayerLevel(client);
 
         if (lvl < min || lvl > max) {
