@@ -3397,6 +3397,39 @@ export class Mob extends Entity {
     }
 
     destroy() {
+        // /killall removes a mob outright instead of letting it die in combat: nobody
+        // loots it, no matter how much damage anyone already dealt, and the kill
+        // message names no killers because there were none.
+        if (this.adminKilled) {
+            this.adminKilled = false;
+
+            if (this.countedSummon && this.owner) {
+                this.owner.rubySummonCount = Math.max(0, (this.owner.rubySummonCount ?? 1) - 1);
+                this.countedSummon = false;
+            }
+
+            if (this.deathEvent) {
+                this.deathEvent();
+            }
+
+            super.destroy();
+
+            if (!this.friendly && this.countsTowardsMobCount) {
+                state.livingMobCount--;
+            }
+
+            const rarityData = tiers[this.rarity];
+
+            if (rarityData) {
+                state.clients.forEach(c => c.systemMessage(
+                    applyArticle(rarityData.name, true) + " " + this.config.name + " has been killed",
+                    rarityData.color
+                ));
+            }
+
+            return;
+        }
+
         // Only combat deaths and hatches pay out. Other timed removals
         // (expiry, owner death) carry leftover credit into destroy() and must
         // not loot. Read before super.destroy() zeroes health below.

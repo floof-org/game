@@ -5202,7 +5202,10 @@ if (commandCheck("/pity")) {
                 if (mobName !== null && ent.config?.name?.toLowerCase() !== mobName && ent.name?.toLowerCase() !== mobName) continue;
 
                 if (ent.health && ent.parent?.type !== ENTITY_TYPES.PLAYER && ent.team === -69 && !ent.health.isDead) {
-                    ent.health.set(0);
+                    // destroy() rather than health.set(0): a combat death would pay loot
+                    // to everyone who already damaged it, which is not what /killall wants.
+                    ent.adminKilled = true;
+                    ent.destroy();
                     killed++;
                 }
             }
