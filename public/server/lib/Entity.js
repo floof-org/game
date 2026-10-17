@@ -211,6 +211,40 @@ export class PetalSlot {
         for (let j = 0; j < this.amount; j++) {
             const petal = this.petals[j];
             if (petal) {
+                if (this.config.radiationRange > 0 && !petal.health.isDead) {
+                    const range = this.config.radiationRange + this.config.radiationRangePerRarity *
+                        Math.max(0, this.rarity - this.config.radiationRangeStartRarity);
+                    const radiationPoison = this.config.tiers[this.rarity].radiationPoison;
+                    const rangeSqr = range * range;
+
+                    state.spatialHash.retrieve({
+                        _AABB: {
+                            x1: petal.x - range,
+                            y1: petal.y - range,
+                            x2: petal.x + range,
+                            y2: petal.y + range
+                        }
+                    }).forEach(entity => {
+                        if ((entity.type !== ENTITY_TYPES.PLAYER && entity.type !== ENTITY_TYPES.MOB) ||
+                            entity.team === this.player.team || entity.health.isDead) {
+                            return;
+                        }
+
+                        if (quickDiff(petal, entity) <= rangeSqr) {
+                            if (entity.poison.timer <= 0 || entity.poison.damage < radiationPoison) {
+                                entity.poison.damage = radiationPoison;
+                            }
+
+                            entity.poison.timer = Math.max(entity.poison.timer, this.config.radiationPoisonDuration);
+
+                            const owner = this.player;
+                            const target = entity.parent && entity.config?.name === "Leech" ? entity.parent : entity;
+                            target.damagedBy[owner.id] ??= [0, owner.type, owner.type === ENTITY_TYPES.PLAYER ? owner.name : owner.index, owner.type === ENTITY_TYPES.PLAYER && owner.client ? owner.client.id : null];
+                            target.damagedBy[owner.id][0] += radiationPoison;
+                        }
+                    });
+                }
+
                 if (this.config.tiers[this.rarity].constantHeal !== 0 && this.player.health.ratio <= this.config.healWhenUnder && this.player.health.ratio > 0 && (!this.config.healsInDefense || (!this.player.attack && this.player.defend))) {
                     this.player.health.health = Math.min(this.player.health.maxHealth, this.player.health.health + this.config.tiers[this.rarity].constantHeal);
                 }
@@ -1225,7 +1259,7 @@ export class Petal extends Entity {
         this.config = config;
         this.size *= config.sizeRatio;
         this.index = config.id;
-        this.spinSpeed = config.launchable ? 0 : .1;
+        this.spinSpeed = config.launchable || config.fixedAngle ? 0 : .1;
         this.armor = 0;
 
         if (config.enemySpeedDebuff) {
@@ -1398,6 +1432,27 @@ export class Petal extends Entity {
             this.parent.petalSlots[this.slotIndex].petals[this.petalIndex] = null;
         }
 
+        const shatter = this.config?.shatter;
+
+        if (shatter && this.health.isDead) {
+            for (let i = 0; i < shatter.count; i++) {
+                const missile = new Petal(this.parent, -1, -1);
+                missile.rarity = this.rarity;
+                missile.index = this.index;
+                missile.size = this.size * shatter.size;
+                missile.health.set(this.config.tiers[this.rarity].health);
+                missile.damage = this.damage;
+                missile.armor = this.armor;
+                missile.speed = shatter.speed;
+                missile.spinSpeed = 0;
+                missile.launched = true;
+                missile.range = 22.5 * shatter.lifetime;
+                missile.facing = missile.moveAngle = Math.PI * 2 / shatter.count * i;
+                missile.x = this.x;
+                missile.y = this.y;
+            }
+        }
+
         super.destroy();
     }
 }
@@ -1475,6 +1530,10 @@ export class Player extends Entity {
         if (this.petalSlots[slotIndex]) {
             this.petalSlots[slotIndex].destroy();
             this.petalSlots[slotIndex].define(petalConfigs[petalIndex], rarity);
+
+            if (this.client) {
+                this.damage = this.client.bodyDamageAdjustment;
+            }
         }
     }
 
@@ -1672,7 +1731,9 @@ class FakeClient {
     }
 
     get bodyDamageAdjustment() {
-        return 5 + 1 * Math.pow(this.level, 1.5);
+        const petalDamage = this.body ? this.body.petalSlots.reduce((total, slot) => total + (slot.config?.flowerBodyDamage ?? 0), 0) : 0;
+
+        return 5 + 1 * Math.pow(this.level, 1.5) + petalDamage;
     }
 
     get highestRarity() {
