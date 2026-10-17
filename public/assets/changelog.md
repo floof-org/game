@@ -1,3 +1,10 @@
+# Update (10/17/2026)
+- New mob: Digger
+- New petal: Cutter
+- New petal: Disc
+- New petal: Uranium
+- New petal: Diamond
+
 # Update (10/12/2026)
 - Improved the inventory and added features to it.
 

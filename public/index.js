@@ -3,7 +3,7 @@ import * as net from "./lib/net.js";
 import { mouse, keyMap, releaseFloatingText } from "./lib/net.js";
 import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
-import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
+import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor, drawCutter, drawDisc } from "./lib/renders.js";
 import { beginDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
 import { updateAccountMenu } from './lib/auth.js';
@@ -1977,6 +1977,21 @@ function draw() {
             ctx.rotate(performance.now() / 250 + entity.id * 5);
             drawArmor(ctx);
             // ctx.restore();
+            ctx.setTransform(oldTransform);
+        }
+
+        if (entity.wearing & WEARABLES.CUTTER) {
+            const oldTransform = ctx.getTransform();
+            ctx.setTransform(size * 0.87, 0, 0, size * 0.87, drawX, drawY);
+            ctx.rotate(performance.now() / 300 + entity.id * 5);
+            drawCutter(ctx);
+            ctx.setTransform(oldTransform);
+        }
+
+        if (entity.wearing & WEARABLES.DISC) {
+            const oldTransform = ctx.getTransform();
+            ctx.setTransform(size * 0.92, 0, 0, size * 0.92, drawX, drawY);
+            drawDisc(ctx);
             ctx.setTransform(oldTransform);
         }
 
