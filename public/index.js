@@ -1,16 +1,17 @@
 import { canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
 import * as net from "./lib/net.js";
-import { mouse, keyMap, pruneFloatingTextTrackers, releaseFloatingText } from "./lib/net.js";
-import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber, levelForXP, levelProgress } from "./lib/util.js";
+import { mouse, keyMap, releaseFloatingText } from "./lib/net.js";
+import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
-import { beginDragDrop, beginInventoryDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
+import { beginDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
 import { updateAccountMenu } from './lib/auth.js';
 import SpatialHashGrid from "./server/lib/SpatialHashGrid.js";
-import { INVENTORY_ITEM_SIZE, buildInventoryItems, isSameInventory, syncInventory } from "./lib/inventoryLayout.js";
-import { createInventorySurface } from "./lib/inventoryView.js";
+import "./lib/inventory.js";
 import "./lib/craftMenu.js";
+
+export { formatAmount } from "./lib/inventory.js";
 
 const mobRenderSpatialHash = new SpatialHashGrid();
 
@@ -391,6 +392,15 @@ window.addEventListener("keydown", (e) => {
     }
     if (net.state.socket?.readyState === WebSocket.OPEN) {
         switch (e.key.toLowerCase()) {
+            case ";":
+                net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.GODMODE);
+                break;
+            case "t":
+                net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.TELEPORT);
+                break;
+            case "z":
+                net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.CHANGE_TEAM);
+                break;
             case "r":
                 if (net.state.socket?.readyState === WebSocket.OPEN) {
                     for (let i = 0; i < net.state.slots.length; i++) {
@@ -574,77 +584,6 @@ function processDrop() {
     return true;
 }
 
-export function formatAmount(v) {
-  if (!isFinite(v)) return "∞";
-  if (isNaN(v)) return "0";
-
-    const f = (num, div, suffix) => {
-        const val = num / div;
-        if (!isFinite(val)) return "∞";
-
-        const str = val.toFixed(1);
-        return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
-    };
-
-    if (v >= 1e18) return f(v, 1e18, "Qt");
-    if (v >= 1e15) return f(v, 1e15, "Qd");
-    if (v >= 1e12) return f(v, 1e12, "t");
-    if (v >= 1e9) return f(v, 1e9, "b");
-    if (v >= 1e6) return f(v, 1e6, "m");
-    if (v >= 1e3) return f(v, 1e3, "k");
-
-    return Math.floor(v).toString();
-}
-
-function processInventoryDrop() {
-    const drag = {
-        index: inventoryDragConfig.index,
-        rarity: inventoryDragConfig.rarity,
-    };
-
-    let drop = null;
-
-    const mX = mouse.x / uiScale();
-    const mY = mouse.y / uiScale();
-
-    for (let i = 0; i < net.state.slots.length; i++) {
-        const slot = net.state.slots[i];
-
-        if (slot.icon && slot.icon.x < mX && slot.icon.x + slot.icon.size > mX && slot.icon.y < mY && slot.icon.y + slot.icon.size > mY) {
-            drop = {
-                type: DRAG_TYPE_MAINDOCKER,
-                index: i,
-                rarity: slot.rarity,
-                petalIndex: slot.index,
-            };
-            break;
-        }
-    }
-
-    if (drop === null) {
-        for (let i = 0; i < net.state.secondarySlots.length; i++) {
-            const slot = net.state.secondarySlots[i];
-
-            if (slot.icon && slot.icon.x < mX && slot.icon.x + slot.icon.size > mX && slot.icon.y < mY && slot.icon.y + slot.icon.size > mY) {
-                drop = {
-                    type: DRAG_TYPE_SECONDARYDOCKER,
-                    index: i,
-                    rarity: slot.rarity ?? 255,
-                    petalIndex: slot.index === -1 ? 255 : slot.index,
-                };
-                break;
-            }
-        }
-    }
-    if (drop === null) {
-        return false;
-    }
-
-    net.state.socket.talk(SERVER_BOUND.INVENTORY_CHANGE_LOADOUT, { drag, drop });
-
-    return true;
-}
-
 const clientDebug = {
     fps: 0,
     mspt: 0,
@@ -667,92 +606,6 @@ let cuteLittleAnimations = {
     chatBGSize: 0,
 };
 
-const buttonsContainer = document.getElementById("menus2");
-const menu = buttonsContainer.children.item("inventory");
-
-// The whole menu is one canvas that does its own scrolling. The old implementation built a
-// <canvas> per inventory entry, so a /addall put tens of thousands of nodes in the DOM and
-// measured each one every frame. Here the visible rows are painted into a single surface and the
-// entry under the cursor is resolved by arithmetic, so the game loop reads no layout at all.
-menu.style.padding = "0";
-menu.style.overflow = "hidden";
-
-const inventorySurface = createInventorySurface({
-    host: menu,
-    createCanvas: () => document.createElement("canvas"),
-    requestFrame: requestAnimationFrame,
-    measure: () => ({ contentWidth: menu.clientWidth, contentHeight: menu.clientHeight }),
-    rendererOptions: {
-        getPetalIcon,
-        formatAmount: formatLargeNumber,
-        white: colors.white,
-    },
-});
-
-// The surface owns the scroll offset, so the wheel is consumed here. It only reports that it
-// took the event when there is somewhere to scroll, which leaves page scrolling intact when
-// the whole inventory already fits.
-menu.addEventListener("wheel", (ev) => {
-    if (inventorySurface.handleWheel(ev)) ev.preventDefault();
-}, { passive: false });
-
-// The canvas keeps its position while scrolling, so its rect is only stale after the menu
-// opens, closes or the window resizes. Refreshing it here keeps the game loop free of layout
-// reads, which is what caused the menu to stutter.
-window.addEventListener("resize", () => {
-    inventorySurface.resize();
-    inventorySurface.refreshRect();
-    inventorySurface.paint();
-}, { passive: true });
-
-const inventoryTooltipLayer = document.createElement("div");
-inventoryTooltipLayer.style.position = "fixed";
-inventoryTooltipLayer.style.left = "0";
-inventoryTooltipLayer.style.top = "0";
-inventoryTooltipLayer.style.width = "100vw";
-inventoryTooltipLayer.style.height = "100vh";
-inventoryTooltipLayer.style.pointerEvents = "none";
-inventoryTooltipLayer.style.zIndex = "999999";
-inventoryTooltipLayer.style.overflow = "visible";
-inventoryTooltipLayer.style.display = "none";
-
-document.body.appendChild(inventoryTooltipLayer);
-const inventoryTooltipBox = document.createElement("div");
-inventoryTooltipBox.style.position = "fixed";
-inventoryTooltipBox.style.willChange = "transform";
-const inventoryTooltipCanvas = document.createElement("canvas");
-const c2d = inventoryTooltipCanvas.getContext("2d");
-c2d.imageSmoothingEnabled = true;
-c2d.imageSmoothingQuality = "high";
-inventoryTooltipBox.appendChild(inventoryTooltipCanvas);
-inventoryTooltipLayer.appendChild(inventoryTooltipBox);
-let _tooltipDrawKey = null;
-
-// This used to build a fresh 350x350 canvas every frame and discard the old one via
-// replaceChildren. That path stays active the whole time the cursor is over the inventory,
-// churning tens of MB of canvas memory per second until the tab dies. Now it is built once,
-// repainted only when the petal changes; moving it just updates style.
-function renderInventoryTooltip(img, anchorX, anchorY) {
-  const { x, y, bw, bh } = petalTooltipBox(img, anchorX, anchorY, window.innerWidth, window.innerHeight);
-
-  // Changing width/height clears the canvas, so a size change forces a repaint
-  if (inventoryTooltipCanvas.width !== bw || inventoryTooltipCanvas.height !== bh) {
-    inventoryTooltipCanvas.width = bw;
-    inventoryTooltipCanvas.height = bh;
-    _tooltipDrawKey = null;
-  }
-
-  inventoryTooltipBox.style.left = `${x}px`;
-  inventoryTooltipBox.style.top = `${y}px`;
-
-  if (_tooltipDrawKey !== img) {
-    c2d.drawImage(img, 0, 0, bw, bh);
-    _tooltipDrawKey = img;
-  }
-
-  inventoryTooltipLayer.style.display = "block";
-}
-
 function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   const bw = 350;
   const bh = (350 * img.height) / img.width;
@@ -763,29 +616,11 @@ function petalTooltipBox(img, anchorX, anchorY, boundW, boundH) {
   return { x, y, bw, bh };
 }
 
-function drawInventory() {
-    // No per-entry nodes are created, so this is a repaint plus a scroll range update.
-    const list = net.state.inventory
-        ? buildInventoryItems(net.state.inventory, net.state.tiers, net.state.petalConfigs)
-        : [];
-
-    inventorySurface.show(list);
-}
-
 window.addEventListener("keydown", (e) => {
     if (e.key === " " || e.key === "Enter") {
         if (e.target.closest("button")) {
             e.preventDefault();
             return false;
-        }
-    }
-    if (e.key === "z" && !net.ChatMessage.showInput) {
-        const opening = !menu.classList.contains("active");
-
-        menu.classList.toggle("active");
-
-        if (opening) {
-            drawInventory();
         }
     }
 });
@@ -1634,6 +1469,14 @@ window.addEventListener("keyup", e => {
         return;
 
     isJDown = false;
+
+    net.state.minimapImg = renderTerrainForMap(
+        net.state.terrain.width,
+        net.state.terrain.blocks,
+        net.state.tiers,
+        net.state.terrainScores,
+        false
+    );
 });
 
 function convert(g) {
@@ -2048,15 +1891,7 @@ function draw() {
             ctx.stroke();
         }
 
-        // Centipede body segments share the head's shape but are system mobs, whose UI is
-        // normally hidden, so only the head showed a bar. Both centipede families now draw
-        // the same bar on every segment. The hideUI flag is the server's isSystem bit, so
-        // this has to stay client-side: flipping the flag in the config would change the
-        // wire format and desync the production client.
-        const mobConfig = net.state.mobConfigs[entity.index];
-        const centipedeSegment = mobConfig.hideUI && mobConfig.name.endsWith("Centipede");
-
-        if (!options.hideEntityUI && (!mobConfig.hideUI || centipedeSegment)) {
+        if (!options.hideEntityUI && !net.state.mobConfigs[entity.index].hideUI) {
             const barSize = Math.max(size, 30 * scale);
             const barthicc = (5 + entity.size * 0.1) * scale;
 
@@ -2759,36 +2594,17 @@ function draw() {
             ctx.arc(selfX, selfY, radius, 0, Math.PI * 2);
             ctx.fill();
 
-            const globalPlayers = net.state.globalPlayers ?? net.state.dmazeAllies;
+            for (const player of net.state.players.values()) {
+                if (player.id === net.state.playerID) continue;
 
-            if (globalPlayers) {
-                for (const player of globalPlayers) {
-                    if (!player.id || player.id === net.state.playerID) continue;
+                const px = (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
+                const py = (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
 
-                    const px = (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
-                    const py = (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
-
-                    ctx.fillStyle = blueDot;
-                    ctx.beginPath();
-                    ctx.arc(px, py, radius * 0.85, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            } else {
-                for (const player of net.state.players.values()) {
-                    if (player.id === net.state.playerID) continue;
-
-                    const px = (player.x / net.state.room.width) * mapWidth + x + mapWidth / 2;
-                    const py = (player.y / net.state.room.height) * mapHeight + y + mapHeight / 2;
-
-                    ctx.fillStyle = blueDot;
-                    ctx.beginPath();
-                    ctx.arc(px, py, radius * 0.85, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+                ctx.fillStyle = blueDot;
+                ctx.beginPath();
+                ctx.arc(px, py, radius * 0.85, 0, Math.PI * 2);
+                ctx.fill();
             }
-
-            const trackedCount = net.state.globalPlayers ? net.state.globalPlayers.length : "null";
-            text(`tracked:${trackedCount} shown:${globalPlayers ? globalPlayers.length : 0}`, x, y - 8, 13, colors.playerYellow, ctx);
         }
 
         {
@@ -2831,16 +2647,6 @@ function draw() {
         }
     }
 
-    // The leaderboard replaces each player's raw xp with "level.progress", where the two
-    // digits after the dot are the percentage of the way to the next level (3.50 = level 3,
-    // halfway to 4).
-    const levelLabel = xp => {
-        const level = levelForXP(xp);
-        const pct = Math.max(0, Math.min(99, Math.round(levelProgress(xp, level) * 100)));
-
-        return `${level}.${String(pct).padStart(2, "0")}`;
-    };
-
     if (net.state.alivePlayers && net.state.alivePlayers.length > 0) {
         // Leaderboard
         const spacing = 30;
@@ -2863,7 +2669,7 @@ function draw() {
             drawBar(x, x + barMaxWidth, y, barSize, colors.lighterBlack);
             drawBar(x, x + barWidth, y, barSize * 0.75, color);
 
-            let w = x + text(`${player.username} - ${levelLabel(player.xp)}`, x, y, barSize * 0.45, colors.white);
+            let w = x + text(`${player.username} - ${formatLargeNumber(player.xp.toFixed(2))}`, x, y, barSize * 0.45, colors.white);
             w += text(` [${net.state.tiers[player.highestRarity].name.charAt(0)}]`, w, y, barSize * 0.45, net.state.tiers[player.highestRarity].color);
 
             x -= 45;
@@ -2886,71 +2692,9 @@ function draw() {
 
     ctx.textAlign = "center";
 
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    if (now - (net.state._lastInventoryCheck ?? 0) >= 250) {
-        net.state._lastInventoryCheck = now;
-
-        if (!isSameInventory(net.state.inventory2, net.state.inventory)) {
-            if (menu.classList.contains("active")) {
-                drawInventory();
-            }
-
-            net.state.inventory2 = syncInventory(net.state.inventory2, net.state.inventory);
-        }
-    }
-
-    net.state._foundHover = false;
-
-    // No layout is read here. The surface keeps a cached rect that is refreshed when the menu
-    // opens, closes or resizes, and the entry under the cursor is pure arithmetic on top of it.
-    if (menu.classList.contains("active") && inventorySurface.mounted) {
-        const mouseX = mouse.x / window.devicePixelRatio;
-        const mouseY = mouse.y / window.devicePixelRatio;
-
-        // The cursor is usually nowhere near the menu, so this bails before any hit testing.
-        const index = inventorySurface.indexAtScreen({ screenX: mouseX, screenY: mouseY });
-
-        if (index < 0) {
-            net.state.inventoryPetalHover = null;
-        } else {
-            const rect = inventorySurface.rect;
-            const item = inventorySurface.itemAt(index);
-            const anchor = inventorySurface.anchorFor(index);
-
-            net.state._foundHover = true;
-            net.state.inventoryPetalHover = [item.index, item.rarity, rect.left + anchor.x, rect.top + anchor.y];
-
-            if (!inventoryDragConfig.enabled && !dragConfig.enabled && !joystick.on && mouse.left) {
-                beginInventoryDragDrop(((rect.left + anchor.x) * 1.1) / uScale, ((rect.top + anchor.y + 22) * 1.1) / uScale, INVENTORY_ITEM_SIZE, item.index, item.rarity);
-                menu.classList.toggle("active");
-                inventorySurface.refreshRect();
-                inventoryDragConfig.index = item.index;
-                inventoryDragConfig.rarity = item.rarity;
-                inventoryDragConfig.item.stableSize = INVENTORY_ITEM_SIZE;
-                inventoryDragConfig.onDrop = () => { processInventoryDrop(); menu.classList.toggle("active") };
-            }
-        }
-    }
-
-    if (!net.state._foundHover) {
-        net.state.inventoryPetalHover = null;
-    }
-
-    ctx.restore();
-
     {   // Hovers
         net.state.petalHoverAlpha ??= 0;
         net.state.lastPetalHover ??= null;
-
-        const inventoryHover = Array.isArray(net.state.inventoryPetalHover) ? net.state.inventoryPetalHover : null;
-
-        if (inventoryHover) {
-            renderInventoryTooltip(petalTooltip(...inventoryHover), inventoryHover[2], inventoryHover[3]);
-        } else {
-            inventoryTooltipLayer.style.display = "none";
-        }
 
         if (Array.isArray(net.state.petalHover)) {
             net.state.lastPetalHover = [...net.state.petalHover];
@@ -2960,7 +2704,7 @@ function draw() {
         }
         net.state.petalHoverAlpha = Math.max(0, Math.min(1, net.state.petalHoverAlpha));
 
-        if (Array.isArray(net.state.lastPetalHover) && net.state.lastPetalHover.length === 4 && net.state.lastPetalHover.every((v) => v !== undefined && v !== null) && !Array.isArray(net.state.inventoryPetalHover)) {
+        if (Array.isArray(net.state.lastPetalHover) && net.state.lastPetalHover.length === 4 && net.state.lastPetalHover.every((v) => v !== undefined && v !== null)) {
             ctx.save();
             const img = petalTooltip(...net.state.lastPetalHover);
             ctx.imageSmoothingEnabled = true;

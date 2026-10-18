@@ -98,8 +98,6 @@ for (let i = 0; i < 1; i++) {
             buttonsContainer.children.item(j).classList.remove("active");
         }
 
-        net.state.inventory2 = undefined
-
         menu.classList.toggle("active");
     }
 }
