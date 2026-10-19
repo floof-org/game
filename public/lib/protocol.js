@@ -50,64 +50,377 @@ export const tiers = [{
     color: "#d966e8"
 }, {
     name: "Eternal",
-    color: "#e0d465"
+    color: "#e0d465",
+    gradient: {
+        soft: "#e0d465",
+        base: "#e6d857",
+        mid: "#dbd59a",
+        glow: "#dbd27f",
+
+        border: "#c9bf61",
+        back: "#b3b536",
+
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Unique",
-    color: "#FFFFFF"
+    color: "#FFFFFF",
+    gradient: {
+        soft: "#FFFFFF",
+        base: "#c9c9c9",
+        mid: "#d9d4d4",
+        glow: "#FFFFFF",
+
+        border: "#d9d4d4",
+        back: "#bfbdbd",
+
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Hyper",
-    color: "#46e0b7"
+    color: "#46e0b7",
+    gradient_3: {
+        rings: [
+            { color: "#52d1a9", glow: "#84e3c5" },
+            { color: "#84e3c5", glow: "#52d1a9" },
+            { color: "#52d1a9", glow: "#84e3c5" },
+            { color: "#84e3c5", glow: "#52d1a9" },
+            { color: "#52d1a9", glow: "#84e3c5" },
+            { color: "#84e3c5", glow: "#52d1a9" },
+        ],
+        delay: 1000,
+        cycleDelay: 0,
+        speed: 0.4,
+        reversed_animation: false,
+        border: "#47b396",
+        back: "#57b597",
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)",
+    }
 }, {
     name: "Galaxium",
-    color: "#f57f95"
+    color: "#f57f95",
+    gradient_3: {
+        rings: [
+            { color: "#f57f95", glow: "#f57f95" },
+            { color: "#c553c9", glow: "#c553c9" },
+            { color: "#f57f95", glow: "#f57f95" },
+            { color: "#c553c9", glow: "#c553c9" },
+            { color: "#f57f95", glow: "#f57f95" },
+            { color: "#c553c9", glow: "#c553c9" },
+        ],
+        delay: 1000,
+        cycleDelay: 0,
+        speed: 0.4,
+        reversed_animation: false,
+        border: "#ba6a79",
+        back: "#b35768",
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)",
+    }
 }, {
     name: "Millom",
-    color: "#3fcf32"
+    color: "#3fcf32",
+    gradient_2: {
+        lines: 6,
+        size: 0.05,
+        delay: 400,
+        cycleDelay: 0,
+        speed: 1.9,
+        reversed_animation: false,
+
+        linecolor: "#00ff40",
+        lineglow: "#37914f",
+
+        border: "#429c3a",
+        back: "#000000",
+
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Fictional",
-    color: "#962d2d"
+    color: "#962d2d",
+    gradient_2: {
+        lines: 6,
+        size: 0.05,
+        delay: 400,
+        cycleDelay: 0,
+        speed: 1.9,
+        reversed_animation: false,
+
+        linecolor: "#ec1313",
+        lineglow: "#ca2929",
+
+        border: "#732d2d",
+        back: "#000000",
+
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Transcestrial",
-    color: "#3690f7"
+    color: "#3690f7",
+    gradient_2: {
+        lines: 6,
+        size: 0.03,
+        delay: 275,
+        cycleDelay: 0,
+        speed: 1.9,
+        reversed_animation: false,
+
+        linecolor: "#0585fc",
+        lineglow: "#0585fc",
+
+        border: "#2f68a8",
+        back: "#000000",
+
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Chaos",
-    color: "#2e3540"
+    color: "#2e3540",
+    gradient: {
+        soft: "#363d40",
+        base: "#333333",
+        mid: "#5a615e",
+        glow: "#363d40",
+
+        border: "#2b2b2b",
+        back: "#000000",
+
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Absiorcadinary",
-    color: "#493ea8"
+    color: "#493ea8",
+    gradient: {
+        soft: "#5e2dff",
+        base: "#7200f0",
+        mid: "#5a00c8",
+        glow: "#6840c8",
+
+        border: "#32005f",
+        back: "#422e80",
+
+        particlecount: 3,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+
+    }
 }, {
     name: "Absolute Fictional",
-    color: "#361111"
+    color: "#361111",
+    gradient_2: {
+        lines: 15,
+        size: 0.025,
+        delay: 180,
+        cycleDelay: 0,
+        speed: 1.9,
+        reversed_animation: false,
+
+        linecolor: "#361111",
+        lineglow: "#361111",
+
+        border: "#361111",
+        back: "#000000",
+
+        particlecount: 6,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Nullified",
-    color: "#868491"
+    color: "#868491",
+    gradient: {
+        soft: "#bababa",
+        base: "#868491",
+        mid: "#9db3a8",
+        glow: "#aab5b0",
+
+        border: "#616161",
+        back: "#4f4f4f",
+
+        particlecount: 6,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Hyperfixation",
-    color: "#a08efa"
+    color: "#a08efa",
+    gradient: {
+        soft: "#d1c4f5",
+        base: "#a08efa",
+        mid: "#8bccca",
+        glow: "#968bcc",
+
+        border: "#beb3f5",
+        back: "#847bb3",
+
+        particlecount: 6,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Atlantical",
-    color: "#618691"
+    color: "#618691",
+    gradient: {
+        soft: "#6d7f85",
+        base: "#618691",
+        mid: "#8cd4d4",
+        glow: "#95aba3",
+
+        border: "#546c73",
+        back: "#465559",
+
+        particlecount: 6,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Alpha",
-    color: "#ba80a1"
+    color: "#ba80a1",
+    gradient: {
+        soft: "#bf6d9c",
+        base: "#ba80a1",
+        mid: "#d9a0c0",
+        glow: "#9e64b5",
+
+        border: "#9e758c",
+        back: "#755668",
+
+        particlecount: 6,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Finalist",
-    color: "#ffa196"
+    color: "#ffa196",
+    gradient: {
+        soft: "#d663a0",
+        base: "#ff8f8f",
+        mid: "#b56565",
+        glow: "#e65a5a",
+
+        border: "#d97979",
+        back: "#855252",
+
+        particlecount: 8,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Epsilation",
-    color: "#b5f5da"
+    color: "#b5f5da",
+    gradient: {
+        soft: "#6dd1a7",
+        base: "#b5f5da",
+        mid: "#8aedc3",
+        glow: "#25d98d",
+
+        border: "#7cccaa",
+        back: "#6aa38b",
+
+        particlecount: 8,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Improbable",
-    color: "#41825b"
+    color: "#41825b",
+    gradient: {
+        soft: "#68a6a0",
+        base: "#41825b",
+        mid: "#8ca395",
+        glow: "#3f9963",
+
+        border: "#437557",
+        back: "#325c43",
+
+        particlecount: 10,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Izolational",
-    color: "#ffc799"
+    color: "#ffc799",
+    gradient: {
+        soft: "#c96c40",
+        base: "#ffc799",
+        mid: "#db9523",
+        glow: "#e38130",
+
+        border: "#f7af74",
+        back: "#b0784a",
+
+        particlecount: 10,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Chronodynamic",
-    color: "#666642"
+    color: "#666642",
+    gradient: {
+        soft: "#c7c330",
+        base: "#6b6a40",
+        mid: "#9c9b7c",
+        glow: "#fcf708",
+
+        border: "#807e39",
+        back: "#403f2c",
+
+        particlecount: 10,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }, {
     name: "Multiversal",
-    color: "#ea00ff"
+    color: "#ea00ff",
+    gradient: {
+        soft: "#7208fc",
+        base: "#08fcf8",
+        mid: "#fcf708",
+        glow: "#fc081c",
+
+        border: "#08fc76",
+        back: "#fcbf08",
+
+        particlecount: 20,
+        particleglowcolor: "rgba(255,255,255,0.25)",
+        particledotcolor: "rgba(255,255,255,0.95)",
+        particleshadowcolor: "rgba(0,0,0,0.35)"
+    }
 }];
 
 export const RARITY_SIZE_MULTIPLIERS = [
@@ -320,7 +633,7 @@ export class GunConfig {
     constructor(length, width, offsetX, offsetY, angle, delay) {
         this.length = length;
         this.width = width;
-    
+
         this.offset = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
         this.direction = Math.atan2(offsetY, offsetX);
 
@@ -1251,7 +1564,7 @@ export class MobConfig {
     /** @param {{aimbot: boolean, petalIndex: number, cooldown: number, health: number, damage: number, speed: number, range: number, size: number, multiShot: {count:number,delay:number,spread:number}|null, runs: boolean, nullCollision: boolean}} projectile */
     setProjectile(projectile = {}) {
         for (let i = 0; i < this.tiers.length; i++) {
-        
+
             this.tiers[i].projectile = {
                 petalIndex: projectile.petalIndex ?? 0,
                 cooldown: projectile.cooldown ?? 10,
@@ -1677,18 +1990,18 @@ export class Drawing {
             const [actionName, ...args] = action.split(",").map(arg => {
                 if (arg === "") return undefined;
                 if (arg[0] === "#") return arg;
-    
+
                 if (typeof arg === "string" && (arg === "date" || arg.startsWith("date_"))) {
                     return arg;
                 }
-    
+
                 const num = parseFloat(arg);
                 return isNaN(num) ? arg : num;
             });
-    
+
             return [actionName, ...args];
         });
-    
+
         return drawing;
     }
 

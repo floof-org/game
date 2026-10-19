@@ -59072,6 +59072,817 @@ export const DROP_TABLES = {
    ]
   }
  },
+ "Bubble": {
+  "tiers": {
+   "0": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 12.8,
+       "rarity": 0,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "1": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 42.6,
+       "rarity": 0,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 6.79,
+       "rarity": 1,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "2": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 59.7,
+       "rarity": 0,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 35.5,
+       "rarity": 1,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 4.01,
+       "rarity": 2,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "3": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 0.5,
+       "rarity": 0,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 64.4,
+       "rarity": 1,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 33.2,
+       "rarity": 2,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.74,
+       "rarity": 3,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "4": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 6.51,
+       "rarity": 1,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 82.9,
+       "rarity": 2,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 9.61,
+       "rarity": 3,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.9,
+       "rarity": 4,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "5": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 9.22,
+       "rarity": 2,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 73,
+       "rarity": 3,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 17.7,
+       "rarity": 4,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "6": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 14.1,
+       "rarity": 3,
+       "amount": 2
+      },
+      {
+       "petal": "Bubble",
+       "chance": 82.3,
+       "rarity": 4,
+       "amount": 2
+      },
+      {
+       "petal": "Bubble",
+       "chance": 3.52,
+       "rarity": 5,
+       "amount": 2
+      }
+     ]
+    }
+   ],
+   "7": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 31.9,
+       "rarity": 4,
+       "amount": 3
+      },
+      {
+       "petal": "Bubble",
+       "chance": 66.7,
+       "rarity": 5,
+       "amount": 3
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.25,
+       "rarity": 6,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "8": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 12.36,
+       "rarity": 4,
+       "amount": 5
+      },
+      {
+       "petal": "Bubble",
+       "chance": 80.66,
+       "rarity": 5,
+       "amount": 5
+      },
+      {
+       "petal": "Bubble",
+       "chance": 6.98,
+       "rarity": 6,
+       "amount": 2
+      }
+     ]
+    }
+   ],
+   "9": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 38.2,
+       "rarity": 5,
+       "amount": 10
+      },
+      {
+       "petal": "Bubble",
+       "chance": 61.2,
+       "rarity": 6,
+       "amount": 5
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.52,
+       "rarity": 7,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "10": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 46.3,
+       "rarity": 6,
+       "amount": 20
+      },
+      {
+       "petal": "Bubble",
+       "chance": 53.6,
+       "rarity": 6,
+       "amount": 40
+      }
+     ]
+    }
+   ],
+   "11": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 38.2,
+       "rarity": 6,
+       "amount": 50
+      },
+      {
+       "petal": "Bubble",
+       "chance": 61.2,
+       "rarity": 7,
+       "amount": 5
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.52,
+       "rarity": 8,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "12": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 0.05,
+       "rarity": 6,
+       "amount": 50
+      },
+      {
+       "petal": "Bubble",
+       "chance": 53.6,
+       "rarity": 7,
+       "amount": 100
+      },
+      {
+       "petal": "Bubble",
+       "chance": 45.8,
+       "rarity": 7,
+       "amount": 900
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.41,
+       "rarity": 8,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "13": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 18.6,
+       "rarity": 7,
+       "amount": 500
+      },
+      {
+       "petal": "Bubble",
+       "chance": 80.1,
+       "rarity": 8,
+       "amount": 24
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.12,
+       "rarity": 8,
+       "amount": 60
+      }
+     ]
+    }
+   ],
+   "14": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 6.6,
+       "rarity": 7,
+       "amount": 2000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 92.1,
+       "rarity": 8,
+       "amount": 86
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.29,
+       "rarity": 9,
+       "amount": 2
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.01,
+       "rarity": 10,
+       "amount": 1
+      }
+     ]
+    }
+   ],
+   "15": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 90.2,
+       "rarity": 8,
+       "amount": 278
+      },
+      {
+       "petal": "Bubble",
+       "chance": 7.89,
+       "rarity": 9,
+       "amount": 10
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.84,
+       "rarity": 10,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.07,
+       "rarity": 10,
+       "amount": 2
+      }
+     ]
+    }
+   ],
+   "16": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 87.19,
+       "rarity": 9,
+       "amount": 600
+      },
+      {
+       "petal": "Bubble",
+       "chance": 7.89,
+       "rarity": 9,
+       "amount": 1200
+      },
+      {
+       "petal": "Bubble",
+       "chance": 3.72,
+       "rarity": 10,
+       "amount": 10
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.2,
+       "rarity": 10,
+       "amount": 20
+      }
+     ]
+    }
+   ],
+   "17": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 69.01,
+       "rarity": 9,
+       "amount": 5000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 21.86,
+       "rarity": 9,
+       "amount": 10000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 7,
+       "rarity": 10,
+       "amount": 75
+      },
+      {
+       "petal": "Bubble",
+       "chance": 2.04,
+       "rarity": 11,
+       "amount": 1
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.09,
+       "rarity": 9,
+       "amount": 31000
+      }
+     ]
+    }
+   ],
+   "18": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 64.31,
+       "rarity": 10,
+       "amount": 300
+      },
+      {
+       "petal": "Bubble",
+       "chance": 24.89,
+       "rarity": 11,
+       "amount": 3
+      },
+      {
+       "petal": "Bubble",
+       "chance": 8.72,
+       "rarity": 10,
+       "amount": 2600
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.96,
+       "rarity": 11,
+       "amount": 24
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.12,
+       "rarity": 10,
+       "amount": 12000
+      }
+     ]
+    }
+   ],
+   "19": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 74.39,
+       "rarity": 10,
+       "amount": 4500
+      },
+      {
+       "petal": "Bubble",
+       "chance": 19.75,
+       "rarity": 10,
+       "amount": 10000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 3.522,
+       "rarity": 11,
+       "amount": 48
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.462,
+       "rarity": 11,
+       "amount": 100
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.872,
+       "rarity": 11,
+       "amount": 200
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.004,
+       "rarity": 11,
+       "amount": 300
+      }
+     ]
+    }
+   ],
+   "20": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 78.39,
+       "rarity": 11,
+       "amount": 456
+      },
+      {
+       "petal": "Bubble",
+       "chance": 14.85,
+       "rarity": 10,
+       "amount": 250000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 3.985,
+       "rarity": 12,
+       "amount": 3
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.866,
+       "rarity": 12,
+       "amount": 6
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.901,
+       "rarity": 11,
+       "amount": 4000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.008,
+       "rarity": 11,
+       "amount": 9100
+      }
+     ]
+    }
+   ],
+   "21": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 6.6,
+       "rarity": 11,
+       "amount": 9100
+      },
+      {
+       "petal": "Bubble",
+       "chance": 92.1,
+       "rarity": 12,
+       "amount": 51
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.29,
+       "rarity": 11,
+       "amount": 32000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.01,
+       "rarity": 12,
+       "amount": 135
+      }
+     ]
+    }
+   ],
+   "22": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 71.11,
+       "rarity": 12,
+       "amount": 1080
+      },
+      {
+       "petal": "Bubble",
+       "chance": 22.13,
+       "rarity": 13,
+       "amount": 5
+      },
+      {
+       "petal": "Bubble",
+       "chance": 6.75,
+       "rarity": 13,
+       "amount": 8
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.01,
+       "rarity": 13,
+       "amount": 12
+      }
+     ]
+    }
+   ],
+   "23": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 84.21,
+       "rarity": 13,
+       "amount": 25
+      },
+      {
+       "petal": "Bubble",
+       "chance": 12.16,
+       "rarity": 12,
+       "amount": 20000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 2.45,
+       "rarity": 13,
+       "amount": 100
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.16,
+       "rarity": 12,
+       "amount": 94000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.02,
+       "rarity": 13,
+       "amount": 600
+      }
+     ]
+    }
+   ],
+   "24": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 83.94,
+       "rarity": 13,
+       "amount": 500
+      },
+      {
+       "petal": "Bubble",
+       "chance": 11.04,
+       "rarity": 12,
+       "amount": 450000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 3.97,
+       "rarity": 14,
+       "amount": 3
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.01,
+       "rarity": 11,
+       "amount": 1000000000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.04,
+       "rarity": 13,
+       "amount": 13000
+      }
+     ]
+    }
+   ],
+   "25": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 88.53,
+       "rarity": 14,
+       "amount": 50
+      },
+      {
+       "petal": "Bubble",
+       "chance": 8.65,
+       "rarity": 13,
+       "amount": 37500
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.94,
+       "rarity": 14,
+       "amount": 200
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.85,
+       "rarity": 12,
+       "amount": 56250000
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.03,
+       "rarity": 13,
+       "amount": 487500
+      }
+     ]
+    }
+   ],
+   "26": [
+    {
+     "weight": 1,
+     "drops": [
+      {
+       "petal": "Bubble",
+       "chance": 89.52,
+       "rarity": 14,
+       "amount": 800
+      },
+      {
+       "petal": "Bubble",
+       "chance": 8.64,
+       "rarity": 14,
+       "amount": 2600
+      },
+      {
+       "petal": "Bubble",
+       "chance": 1.23,
+       "rarity": 15,
+       "amount": 12
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.58,
+       "rarity": 15,
+       "amount": 24
+      },
+      {
+       "petal": "Bubble",
+       "chance": 0.03,
+       "rarity": 13,
+       "amount": 4125000
+      }
+     ]
+    }
+   ]
+  }
+ },
  "Puddle": {
   "tiers": {
    "0": [

@@ -5601,6 +5601,107 @@ if (commandCheck("/pity")) {
                 state.router.postMessage(terrainWriter.build());
             }
         }
+
+        // Send gradient configuration to edited clients once.
+        if (!this.__sentGradients) {
+            this.__sentGradients = true;
+
+            const gradientWriter = new Writer(true);
+
+            gradientWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+            gradientWriter.setUint16(this.id);
+            gradientWriter.setUint8(CLIENT_BOUND.CUSTOM_GRADIENTS);
+
+            gradientWriter.setUint8(tiers.length);
+
+            tiers.forEach((tier, index) => {
+                gradientWriter.setUint8(index);
+
+                if (tier.gradient) {
+                    const g = tier.gradient;
+
+                    gradientWriter.setUint8(1);
+                    gradientWriter.setUint8(1);
+
+                    gradientWriter.setStringUTF8(g.soft ?? "");
+                    gradientWriter.setStringUTF8(g.base ?? "");
+                    gradientWriter.setStringUTF8(g.mid ?? "");
+                    gradientWriter.setStringUTF8(g.glow ?? "");
+                    gradientWriter.setStringUTF8(g.border ?? "");
+                    gradientWriter.setStringUTF8(g.back ?? "");
+
+                    gradientWriter.setUint8(g.particlecount ?? 2);
+                    gradientWriter.setStringUTF8(g.particleglowcolor ?? "");
+                    gradientWriter.setStringUTF8(g.particledotcolor ?? "");
+                    gradientWriter.setStringUTF8(g.particleshadowcolor ?? "");
+
+                } else if (tier.gradient_2) {
+                    const g = tier.gradient_2;
+
+                    gradientWriter.setUint8(1);
+                    gradientWriter.setUint8(2);
+
+                    gradientWriter.setUint8(g.lines ?? 1);
+                    gradientWriter.setFloat32(g.size ?? 0.15);
+
+                    gradientWriter.setUint32(g.delay ?? 1000);
+                    gradientWriter.setUint32(g.cycleDelay ?? 0);
+
+                    gradientWriter.setFloat32(g.speed ?? 1);
+
+                    gradientWriter.setUint8(
+                        (g.reversed_animation ?? false) ? 1 : 0
+                    );
+
+                    gradientWriter.setStringUTF8(g.linecolor ?? "#ffffff");
+                    gradientWriter.setStringUTF8(g.lineglow ?? "#ffffff");
+                    gradientWriter.setStringUTF8(g.border ?? "");
+                    gradientWriter.setStringUTF8(g.back ?? "");
+
+                    gradientWriter.setUint8(g.particlecount ?? 2);
+                    gradientWriter.setStringUTF8(g.particleglowcolor ?? "");
+                    gradientWriter.setStringUTF8(g.particledotcolor ?? "");
+                    gradientWriter.setStringUTF8(g.particleshadowcolor ?? "");
+
+                } else if (tier.gradient_3) {
+                    const g = tier.gradient_3;
+
+                    gradientWriter.setUint8(1);
+                    gradientWriter.setUint8(3);
+
+                    const rings = Array.isArray(g.rings) ? g.rings : [];
+                    gradientWriter.setUint8(rings.length);
+
+                    for (const ring of rings) {
+                        gradientWriter.setStringUTF8(ring.color ?? "#ffffff");
+                        gradientWriter.setStringUTF8(
+                            ring.glow ?? ring.ringglow ?? ring.color ?? "#ffffff"
+                        );
+                    }
+
+                    gradientWriter.setUint32(g.delay ?? 180);
+                    gradientWriter.setUint32(g.cycleDelay ?? 0);
+                    gradientWriter.setFloat32(g.speed ?? 1.9);
+
+                    gradientWriter.setUint8(
+                        (g.reversed_animation ?? g.revert_animation) ? 1 : 0
+                    );
+
+                    gradientWriter.setStringUTF8(g.border ?? "");
+                    gradientWriter.setStringUTF8(g.back ?? "");
+
+                    gradientWriter.setUint8(g.particlecount ?? 2);
+                    gradientWriter.setStringUTF8(g.particleglowcolor ?? "");
+                    gradientWriter.setStringUTF8(g.particledotcolor ?? "");
+                    gradientWriter.setStringUTF8(g.particleshadowcolor ?? "");
+
+                } else {
+                    gradientWriter.setUint8(0);
+                }
+            });
+
+            state.router.postMessage(gradientWriter.build());
+        }
     }
 
     sendRoom() {

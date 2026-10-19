@@ -17,7 +17,7 @@ export const petalConfigs = [
         .setDescription("This one makes your petals spin faster."),
     new PetalConfig("Heavy", 22.5 * 2, 250, 2.0)
         .setSize(1.25)
-        .setDensity(10)
+        .setDensity(2.5)
         .setDescription("A more chunky petal that hits harder but takes longer to recharge."),
     new PetalConfig("Stinger", 51.25, 1, 87 * .95 * .95)
         .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
@@ -37,11 +37,15 @@ export const petalConfigs = [
         .setSize(1.2)
         .setConstantHeal(5.5)
         .setDescription("A petal that heals you over time by the power of photosynthesis."),
-    new PetalConfig("Wing", 28.125, 32, 32)
+    new PetalConfig("Wing", 28.125, 17, [17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 20, 21, 22])
+        .setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], "Wing", 1)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7], 1, !0)
         .setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setWingMovement(true)
         .setDescription("It comes and it goes."),
     new PetalConfig("Bone", 33.75, 15, 28)
+        .setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 6, 6, 6, 6], "Bone", 0)
+        .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 6, 6, 6, 6], 1, !0)
         .setSize(1.6)
         .setArmor(8)
         .setDescription("A petal that reduces incoming damage."),
@@ -102,7 +106,7 @@ export const petalConfigs = [
         .setIgnoreWalls(1)
         .setDescription("[object null object]"),
     new PetalConfig("Third Eye", 0, 0, 0)
-        .setExtraRange(.175)
+        .setExtraRange(.15)
         .setMulti(0, false)
         .setWearable(WEARABLES.THIRD_EYE)
         .setDescription("Through the eye of the beholder comes extra range."),
@@ -282,7 +286,7 @@ export const petalConfigs = [
         .setMulti(3, true)
         .setLaunchable(.7, 55)
         .setAutoLock(Math.PI * .15)
-        .setDensity(1.00005)
+        .setDensity(1.000005)
         .setDescription("A cloud of dust that can be launched at enemies."),
     new PetalConfig("Armor", 0, 0, 0)
         .setMulti(0, false)
@@ -543,7 +547,7 @@ export const petalConfigs = [
     new PetalConfig("Shovel", 30, 1, 1).setIcon(.8, 1, "Shovel", -45)
         .setDrawing(new Drawing().addAction("beginPath").addAction("line", -.65, 0, 1, 0).addAction("stroke", "#614c39", .225, 0).addAction("beginPath").addAction("moveTo", .6, .65).addAction("lineTo", .6, -.65).addAction("lineTo", 1.35, -.55).addAction("lineTo", 1.7, -.15).addAction("lineTo", 1.7, .15).addAction("lineTo", 1.35, .55).addAction("lineTo", .6, .65).addAction("closePath").addAction("paint", "#c7ccd1", .225, .2).addAction("beginPath").addAction("moveTo", .6, -.1).addAction("lineTo", 1.2, 0).addAction("lineTo", .6, .1).addAction("closePath").addAction("fill", "#9fa3a7").addAction("beginPath").addAction("moveTo", -1.2, .35).addAction("lineTo", -1, .35).addAction("quadraticCurveTo", -.35, 0, -1, -.35).addAction("lineTo", -1.2, -.35).addAction("closePath").addAction("stroke", "#4a3f35", .252, 0)
         ).setDescription("Disables colliding with mobs for 5s, cooldown of 70s after using. Note: Renders kind of broken and buggy but main logic actually works."),
-    new PetalConfig("Blood Leaf", 12.5, 18, 35.5).setSize(2).setIcon(1, 1, "Leaf", 0)
+    new PetalConfig("Blood Leaf", 12.5, 18, 35.5).setSize(2).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7], "Blood Leaf", 0).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7], 1)
         .setTierMinimumMobRarityForBloodLeafDamage(0, 0)
         .setTierMinimumMobRarityForBloodLeafDamage(1, 0)
         .setTierMinimumMobRarityForBloodLeafDamage(2, 0)
