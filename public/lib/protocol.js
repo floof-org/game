@@ -635,7 +635,7 @@ export class PetalConfig {
 
     setExtraVision(extraVision) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].extraVision = extraVision * Math.pow(1.45, i);
+            this.tiers[i].extraVision = extraVision * Math.pow(1.15, i);
         }
 
         return this;
