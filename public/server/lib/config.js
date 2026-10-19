@@ -1028,7 +1028,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Fire Spellbook"), .03),
     new MobConfig("Jellyfish", 62, 74, 35, 2.5)
         .setAggressive(1)
-        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2 * .5)
+        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2 * .5 * .85)
         .addDrop(petalIDOf("Lightning"))
         .addDrop(petalIDOf("Jelly")),
     new MobConfig("Cactus", 50, 20, 30, 0)
