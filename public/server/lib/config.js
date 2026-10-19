@@ -19,7 +19,7 @@ export const petalConfigs = [
         .setSize(1.25)
         .setDensity(10)
         .setDescription("A more chunky petal that hits harder but takes longer to recharge."),
-    new PetalConfig("Stinger", 51.25, 1, 87 * .95)
+    new PetalConfig("Stinger", 51.25, 1, 87 * .95 * .95)
         .setMulti([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15], 1)
         .setDescription("A fragile petal that deals lots of damage."),
     new PetalConfig("Rice", 0, .5, 5)
