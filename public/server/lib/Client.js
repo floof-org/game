@@ -2527,7 +2527,7 @@ export default class Client {
 
                 if (args.length < 3) {
                     this.systemMessage(
-                        "Usage: /random [clientID] [rarity] [mob] <amount>",
+                        "Usage: /refund [clientID,username,...] [rarity] [mob] <amount>",
                         "#ffaa00"
                     );
                     return;
@@ -2545,8 +2545,8 @@ export default class Client {
                 for (const entry of targetSpecs) {
                     let target = null;
 
-                    if (!isNaN(entry)) {
-                        target = state.clients.get(parseInt(entry, 10));
+                    if (/^\d+$/.test(entry)) {
+                        target = state.clients.get(Number(entry));
                     } else {
                         for (const client of state.clients.values()) {
                             if (
@@ -2560,18 +2560,24 @@ export default class Client {
                     }
 
                     if (target) {
-                        if (!seenTargets.has(target)) {
-                            targets.push({ client: target, username: target.username || String(target.id) });
-                            seenTargets.add(target);
+                        const key = `client:${target.id}`;
+
+                        if (!seenTargets.has(key)) {
+                            targets.push({
+                                client: target,
+                                username: target.username || String(target.id)
+                            });
+                            seenTargets.add(key);
                         }
+
                         continue;
                     }
 
-                    if (isNaN(entry)) {
+                    if (!/^\d+$/.test(entry)) {
                         const match = accounts.findByName(entry);
 
                         if (match?.save?.data) {
-                            const key = match.save.username?.toLowerCase() || entry.toLowerCase();
+                            const key = `account:${match.save.username?.toLowerCase() || entry.toLowerCase()}`;
 
                             if (!seenTargets.has(key)) {
                                 targets.push({
@@ -2590,7 +2596,6 @@ export default class Client {
                 }
 
                 const normalize = str => str.toLowerCase().replace(/\s+/g, "");
-
                 const rarityOrder = tiers.map(tier => tier.name);
 
                 const shortcuts = {
@@ -2615,8 +2620,8 @@ export default class Client {
 
                 let rarityIndex;
 
-                if (!isNaN(rarityArg)) {
-                    rarityIndex = parseInt(rarityArg, 10);
+                if (/^\d+$/.test(rarityArg)) {
+                    rarityIndex = Number(rarityArg);
                 } else {
                     rarityIndex = rarityOrder.findIndex(
                         name => normalize(name) === rarityArg
@@ -2636,18 +2641,13 @@ export default class Client {
 
                 let multiplier = 1;
 
-                if (args.length > 1 && !isNaN(args.at(-1))) {
-                    multiplier = parseInt(args.pop(), 10);
+                if (args.length > 1 && /^\d+$/.test(args.at(-1))) {
+                    multiplier = Number(args.pop());
 
-                    if (!Number.isFinite(multiplier) || multiplier < 1) {
+                    if (!Number.isSafeInteger(multiplier) || multiplier < 1) {
                         this.systemMessage("Invalid amount.", "#ff5555");
                         return;
                     }
-                }
-
-                if (multiplier > 10000) {
-                    this.systemMessage("Amount is capped at 10000.", "#ffaa00");
-                    multiplier = 10000;
                 }
 
                 const mobNameRaw = args.join(" ");
@@ -2668,27 +2668,26 @@ export default class Client {
                     return;
                 }
 
+                // Roll rewards once; the multiplier scales each reward afterward.
                 const rolled = [];
                 const rollCount = globalThis.LUCKY_DROPS_EVENT ? 2 : 1;
 
-                for (let i = 0; i < multiplier; i++) {
-                    for (let roll = 0; roll < rollCount; roll++) {
-                        for (const row of rows) {
-                            if (Math.random() > row.chance) continue;
+                for (let roll = 0; roll < rollCount; roll++) {
+                    for (const row of rows) {
+                        if (Math.random() > row.chance) continue;
 
-                            const entry = pickWeighted(row.entries);
+                        const entry = pickWeighted(row.entries);
 
-                            if (
-                                entry &&
-                                tiers[entry.rarity] &&
-                                Number.isInteger(entry.index)
-                            ) {
-                                rolled.push({
-                                    rarity: entry.rarity,
-                                    index: entry.index,
-                                    amount: entry.amount || 1
-                                });
-                            }
+                        if (
+                            entry &&
+                            tiers[entry.rarity] &&
+                            Number.isInteger(entry.index)
+                        ) {
+                            rolled.push({
+                                rarity: entry.rarity,
+                                index: entry.index,
+                                amount: (entry.amount || 1) * multiplier
+                            });
                         }
                     }
                 }
@@ -2724,7 +2723,7 @@ export default class Client {
                         target.syncInventoryExact();
 
                         target.systemMessage(
-                            `You received ${rolled.length} ${rarity.name} ${mob.name} drop${rolled.length === 1 ? "" : "s"}!`,
+                            `You received ${rolled.length} ${rarity.name} ${mob.name} drop${rolled.length === 1 ? "" : "s"} (x${multiplier} rewards)!`,
                             "#55ff55"
                         );
                     } else {
@@ -2744,6 +2743,7 @@ export default class Client {
                     );
                 }
 
+                // Announce high-rarity rewards.
                 const announced = new Map();
 
                 for (const entry of rolled) {
@@ -2787,6 +2787,8 @@ export default class Client {
                     0
                 );
 
+                const targetNames = targets.map(target => target.username).join(", ");
+
                 this.systemMessage(
                     `Rolled ${rarity.name} ${mob.name} x${multiplier}:`,
                     rarity.color || "#55ff55"
@@ -2800,13 +2802,13 @@ export default class Client {
                     if (!itemRarity) continue;
 
                     this.systemMessage(
-                        `[${targets.map(target => target.username).join(", ")}] + ${entry.amount} ${itemRarity} ${itemName}`,
+                        `[${targetNames}] + ${entry.amount} ${itemRarity} ${itemName}`,
                         "#ffffff"
                     );
                 }
 
                 this.systemMessage(
-                    `Granted ${rolled.length} drop${rolled.length === 1 ? "" : "s"} (${totalItems} petals) from ${rarity.name} ${mob.name} to ${targets.map(target => target.username).join(", ")}.`,
+                    `Granted ${rolled.length} drop${rolled.length === 1 ? "" : "s"} (${totalItems} petals) from ${rarity.name} ${mob.name} to ${targetNames}.`,
                     "#55ff55"
                 );
             })();
