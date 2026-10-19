@@ -6,6 +6,7 @@ import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY, CRAFT_FAIL_ANNOUNCE_RARITY } from "./CraftManager.js";
 import { SQUADS, SQUAD_LEVEL_RANGE, SQUAD_MAX_MEMBERS, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
+import { DROP_LOOKUP } from "./config.js";
 
 const blockList = [];
 fetch((typeof Bun !== "undefined" ? Bun.env.GAME_SERVER : "") + "/profanity.txt").then(res => res.text()).then(txt => {
