@@ -1700,6 +1700,9 @@ mobConfigs[mobIDOf("Puddle")].setAntHoleSpawns([{
     index: mobIDOf("Lilypad"),
     count: 5
 }, {
+    index: mobIDOf("Bubble"),
+    count: 3
+}, {
     index: mobIDOf("Jellyfish"),
     count: 1,
     minHealthRatio: .01
