@@ -83,26 +83,26 @@ function normalizeName(str) {
 function announceCraft(client, result) {
     if (result.error) return;
 
-        if (result.crafted > 0) {
-            const nextIndex = result.nextRarityIndex;
-            if (nextIndex >= CRAFT_ANNOUNCE_RARITY) {
-                const text = result.crafted === 1
-                    ? `${client.lootName()} Has Crafted A ${result.nextRarityName} ${result.petalName}!`
-                    : `${client.lootName()} Has Crafted ${result.crafted}x ${result.nextRarityName} ${result.petalName}!`;
+    if (result.crafted > 0) {
+        const nextIndex = result.nextRarityIndex;
+        if (nextIndex >= CRAFT_ANNOUNCE_RARITY) {
+            const text = result.crafted === 1
+                ? `${client.lootName()} Has Crafted A ${result.nextRarityName} ${result.petalName}!`
+                : `${client.lootName()} Has Crafted ${result.crafted}x ${result.nextRarityName} ${result.petalName}!`;
 
-                state.clients.forEach(other => other.systemMessage(text, tiers[result.nextRarityIndex].color));
-            }
-            return;
+            state.clients.forEach(other => other.systemMessage(text, tiers[result.nextRarityIndex].color));
         }
+        return;
+    }
 
-        client.systemMessage(`Craft Failed... (-${result.spent} ${result.rarityName}) ${result.petalName}`, "#ff5555");
+    client.systemMessage(`Craft Failed... (-${result.spent} ${result.rarityName}) ${result.petalName}`, "#ff5555");
 
-        // failures are announced one rarity earlier than successes
-        const failNextIndex = result.nextRarityIndex;
-        if (failNextIndex >= CRAFT_FAIL_ANNOUNCE_RARITY && tiers[failNextIndex]) {
-            const text = `${client.lootName()} Failed To Craft A ${result.nextRarityName} ${result.petalName}!`;
-            state.clients.forEach(other => other.systemMessage(text, tiers[failNextIndex].color));
-        }
+    // failures are announced one rarity earlier than successes
+    const failNextIndex = result.nextRarityIndex;
+    if (failNextIndex >= CRAFT_FAIL_ANNOUNCE_RARITY && tiers[failNextIndex]) {
+        const text = `${client.lootName()} Failed To Craft A ${result.nextRarityName} ${result.petalName}!`;
+        state.clients.forEach(other => other.systemMessage(text, tiers[failNextIndex].color));
+    }
 }
 
 const MIN_SLOTS = 5;
@@ -1194,7 +1194,7 @@ export default class Client {
                 if (this.userId === state.secretKey && this.masterPermissions < 1) this.nameColor = "#F5D230";
 
                 state.playerCount++;
-                
+
                 if (state.useCraftingProtocol) {
                     this.talk(CLIENT_BOUND.CRAFT_INIT);
                 }
@@ -2389,102 +2389,133 @@ export default class Client {
                 const args = e.slice(5).trim().split(/\s+/).filter(Boolean);
 
                 if (args.length < 3) {
-                    this.systemMessage("Usage: /give [player] [petal] [rarity] <amount>", "#ffaa00");
+                    this.systemMessage(
+                        "Usage: /give [clientID] [rarity] [petal] <amount>",
+                        "#ffaa00"
+                    );
                     return;
                 }
 
-                const [playerName, petalArg, rarityArg, amountArg] = args;
+                // Resolve one target or a comma-separated list of targets
+                const targetPart = args.shift();
+                const targets = [];
 
-                // petal names may omit spaces: both "fire missile" and "firemissile" resolve
-                const normalize = s => s.toLowerCase().replace(/\s+/g, "");
-                const normalizedPetal = normalize(petalArg);
+                const resolveTarget = entry => {
+                    let target = null;
 
-                let petalIndex = petalConfigs.findIndex(petal => petal?.name?.toLowerCase() === petalArg.toLowerCase());
-
-                if (petalIndex < 0) {
-                    petalIndex = petalConfigs.findIndex(petal => petal?.name && normalize(petal.name) === normalizedPetal);
-                }
-
-                if (petalIndex < 0) {
-                    this.systemMessage(`Petal "${petalArg}" not found.`, "#ff5555");
-                    return;
-                }
-
-                let amount = 1;
-
-                if (amountArg !== undefined) {
-                    amount = parseInt(amountArg);
-
-                    if (isNaN(amount) || amount < 1) {
-                        this.systemMessage(`Invalid amount: ${amountArg}`, "#ff5555");
-                        return;
+                    if (!isNaN(entry)) {
+                        target = state.clients.get(parseInt(entry, 10));
                     }
-                }
 
-                let rarityIndex = null;
-
-                if (!isNaN(rarityArg)) {
-                    rarityIndex = parseInt(rarityArg);
-                } else {
-                    const lower = rarityArg.toLowerCase();
-
-                    for (let i = 0; i < tiers.length; i++) {
-                        if (tiers[i].name.toLowerCase() === lower) {
-                            rarityIndex = i;
-                            break;
+                    if (!target) {
+                        for (const client of state.clients.values()) {
+                            if (
+                                client.username?.toLowerCase() ===
+                                entry.toLowerCase()
+                            ) {
+                                target = client;
+                                break;
+                            }
                         }
                     }
+
+                    return target;
+                };
+
+                const targetEntries =
+                    targetPart.startsWith("[") && targetPart.endsWith("]")
+                        ? targetPart.slice(1, -1).split(",").map(v => v.trim()).filter(Boolean)
+                        : [targetPart];
+
+                for (const entry of targetEntries) {
+                    const target = resolveTarget(entry);
+
+                    if (target && !targets.includes(target)) {
+                        targets.push(target);
+                    }
                 }
 
-                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
-                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                if (targets.length === 0) {
+                    this.systemMessage("No valid players found.", "#ff5555");
+                    return;
+                }
+
+                const normalize = value =>
+                    value.toLowerCase().replace(/\s+/g, "");
+
+                const rawRarityArg = args.shift();
+                const rarityOrder = tiers.map(tier => normalize(tier.name));
+
+                let rarityIndex = -1;
+
+                if (!isNaN(rawRarityArg)) {
+                    const index = parseInt(rawRarityArg, 10);
+
+                    if (
+                        index >= 0 &&
+                        index < rarityOrder.length
+                    ) {
+                        rarityIndex = index;
+                    }
+                } else {
+                    rarityIndex = rarityOrder.indexOf(normalize(rawRarityArg));
+                }
+
+                if (rarityIndex === -1) {
+                    this.systemMessage("Invalid rarity.", "#ff5555");
                     return;
                 }
 
                 const rarity = tiers[rarityIndex];
-                let target = null;
 
-                for (const client of state.clients.values()) {
-                    if (!client.verified || client === undefined) continue;
+                let amount = 1;
 
-                    if (client.username.toLowerCase() === playerName.toLowerCase()) {
-                        target = client;
-                        break;
-                    }
+                if (args.length > 0 && !isNaN(args.at(-1))) {
+                    amount = Math.max(1, parseInt(args.pop(), 10));
                 }
 
-                if (target) {
-                    if (!target.inventory[rarity.name]) target.inventory[rarity.name] = {};
-                    target.inventory[rarity.name][petalIndex] = (target.inventory[rarity.name][petalIndex] || 0) + amount;
+                const petalArg = args.join(" ").toLowerCase();
+
+                if (!petalArg) {
+                    this.systemMessage("Invalid petal.", "#ff5555");
+                    return;
+                }
+
+                const petalIndex = petalConfigs.findIndex(
+                    petal => petal?.name?.toLowerCase() === petalArg
+                );
+
+                if (petalIndex === -1) {
+                    this.systemMessage("Invalid petal.", "#ff5555");
+                    return;
+                }
+
+                const petalName = petalConfigs[petalIndex].name;
+
+                for (const target of targets) {
+                    target.inventory ??= {};
+                    target.inventory[rarity.name] ??= {};
+
+                    target.inventory[rarity.name][petalIndex] =
+                        (target.inventory[rarity.name][petalIndex] || 0) + amount;
+
                     accounts.saveClient(target);
                     target.syncInventoryExact();
 
-                    const label = amount === 1 ? "" : ` x${amount}`;
-
-                    target.systemMessage(`You received ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${label}!`, "#55ff55");
-                    this.systemMessage(`Gave ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${label} to ${target.username}.`, "#55ff55");
-                    return;
+                    target.systemMessage(
+                        `You received ${amount} ${rarity.name} ${petalName}.`,
+                        rarity.color || "#55ff55"
+                    );
                 }
 
-                const match = accounts.findByName(playerName);
-
-                if (!match) {
-                    this.systemMessage(`Player "${playerName}" not found.`, "#ff5555");
-                    return;
-                }
-
-                match.save.data ??= {};
-                match.save.data.inventory ??= {};
-                match.save.data.inventory[rarity.name] ??= {};
-                match.save.data.inventory[rarity.name][petalIndex] = (match.save.data.inventory[rarity.name][petalIndex] || 0) + amount;
-                accounts.persist().catch(err => console.warn("[Accounts] Save failed:", err));
-
-                const offlineLabel = amount === 1 ? "" : ` x${amount}`;
-
-                this.systemMessage(`Gave ${amount} ${rarity.name} ${petalConfigs[petalIndex].name}${offlineLabel} to ${match.save.username} offline.`, "#55ff55");
+                this.systemMessage(
+                    `Gave [${targets.map(target => target.username || target.id).join(", ")}] ${rarity.name} ${petalName} x${amount}.`,
+                    rarity.color || "#55ff55"
+                );
             })();
 
             return;
+
         }
 
         // /refund
@@ -2492,167 +2523,291 @@ export default class Client {
             (async () => {
                 if (!requireOwner()) return;
 
-                const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
+                const args = e.substring(7).trim().split(/\s+/).filter(Boolean);
 
-                if (args.length < 4) {
-                    this.systemMessage("Usage: /refund [player] [rarity] [mob] <count>", "#ffaa00");
+                if (args.length < 3) {
+                    this.systemMessage(
+                        "Usage: /random [clientID] [rarity] [mob] <amount>",
+                        "#ffaa00"
+                    );
                     return;
                 }
 
-                const [playerName, rarityArg, mobArg, countArg] = args;
+                const targetPart = args.shift();
+                const targetSpecs =
+                    targetPart.startsWith("[") && targetPart.endsWith("]")
+                        ? targetPart.slice(1, -1).split(",").map(v => v.trim()).filter(Boolean)
+                        : [targetPart];
 
-                let rarityIndex = null;
+                const targets = [];
+                const seenTargets = new Set();
 
-                if (!isNaN(rarityArg)) {
-                    rarityIndex = parseInt(rarityArg);
-                } else {
-                    const lower = rarityArg.toLowerCase();
+                for (const entry of targetSpecs) {
+                    let target = null;
 
-                    for (let i = 0; i < tiers.length; i++) {
-                        if (tiers[i].name.toLowerCase() === lower) {
-                            rarityIndex = i;
-                            break;
+                    if (!isNaN(entry)) {
+                        target = state.clients.get(parseInt(entry, 10));
+                    } else {
+                        for (const client of state.clients.values()) {
+                            if (
+                                client?.verified &&
+                                client.username?.toLowerCase() === entry.toLowerCase()
+                            ) {
+                                target = client;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (target) {
+                        if (!seenTargets.has(target)) {
+                            targets.push({ client: target, username: target.username || String(target.id) });
+                            seenTargets.add(target);
+                        }
+                        continue;
+                    }
+
+                    if (isNaN(entry)) {
+                        const match = accounts.findByName(entry);
+
+                        if (match?.save?.data) {
+                            const key = match.save.username?.toLowerCase() || entry.toLowerCase();
+
+                            if (!seenTargets.has(key)) {
+                                targets.push({
+                                    account: match,
+                                    username: match.save.username || entry
+                                });
+                                seenTargets.add(key);
+                            }
                         }
                     }
                 }
 
-                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
-                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                if (targets.length === 0) {
+                    this.systemMessage("No valid players found.", "#ff5555");
+                    return;
+                }
+
+                const normalize = str => str.toLowerCase().replace(/\s+/g, "");
+
+                const rarityOrder = tiers.map(tier => tier.name);
+
+                const shortcuts = {
+                    u: "uncommon",
+                    leg: "legendary",
+                    ul: "ultra",
+                    gala: "galaxium",
+                    trans: "transcestrial",
+                    null: "nullified",
+                    final: "finalist",
+                    epsi: "epsilation",
+                    izo: "izolational",
+                    chro: "chronodynamic",
+                    abs: "absolutefictional"
+                };
+
+                let rarityArg = normalize(args.shift());
+
+                if (shortcuts[rarityArg]) {
+                    rarityArg = shortcuts[rarityArg];
+                }
+
+                let rarityIndex;
+
+                if (!isNaN(rarityArg)) {
+                    rarityIndex = parseInt(rarityArg, 10);
+                } else {
+                    rarityIndex = rarityOrder.findIndex(
+                        name => normalize(name) === rarityArg
+                    );
+                }
+
+                if (
+                    !Number.isInteger(rarityIndex) ||
+                    rarityIndex < 0 ||
+                    rarityIndex >= tiers.length
+                ) {
+                    this.systemMessage("Invalid rarity.", "#ff5555");
                     return;
                 }
 
                 const rarity = tiers[rarityIndex];
 
-                // mob names may omit spaces, same rule as petals
-                const normalize = s => s.toLowerCase().replace(/\s+/g, "");
-                const normalizedMob = normalize(mobArg);
+                let multiplier = 1;
 
-                let mobIndex = mobConfigs.findIndex(mob => mob?.name?.toLowerCase() === mobArg.toLowerCase());
+                if (args.length > 1 && !isNaN(args.at(-1))) {
+                    multiplier = parseInt(args.pop(), 10);
 
-                if (mobIndex < 0) {
-                    mobIndex = mobConfigs.findIndex(mob => mob?.name && normalize(mob.name) === normalizedMob);
+                    if (!Number.isFinite(multiplier) || multiplier < 1) {
+                        this.systemMessage("Invalid amount.", "#ff5555");
+                        return;
+                    }
                 }
 
-                if (mobIndex < 0) {
-                    this.systemMessage(`Mob "${mobArg}" not found.`, "#ff5555");
+                if (multiplier > 10000) {
+                    this.systemMessage("Amount is capped at 10000.", "#ffaa00");
+                    multiplier = 10000;
+                }
+
+                const mobNameRaw = args.join(" ");
+                const mob = findMobByName(mobNameRaw);
+
+                if (!mob) {
+                    this.systemMessage(`Mob not found: ${mobNameRaw}`, "#ff5555");
                     return;
                 }
 
-                const mob = mobConfigs[mobIndex];
+                const dropLookup = globalThis._DROP_LOOKUP ?? globalThis.DROP_LOOKUP;
+                const rows = dropLookup?.[mob.name]?.[rarityIndex];
 
-                // rolls use the table branch when the mob has one, so a refund matches
-                // what a real kill of that mob at that tier would have dropped
-                const rows = DROP_LOOKUP?.[mob.name]?.[rarityIndex];
-
-                if (!rows) {
-                    this.systemMessage(`${mob.name} has no drop table at ${rarity.name}.`, "#ff5555");
+                if (!rows || rows.length === 0) {
+                    this.systemMessage(
+                        `${mob.name} has no drop table at ${rarity.name}.`,
+                        "#ff5555"
+                    );
                     return;
                 }
 
-                let count = parseInt(countArg);
-
-                if (isNaN(count) || count < 1) {
-                    this.systemMessage(`Invalid count: ${countArg}`, "#ff5555");
-                    return;
-                }
-
-                if (count > 10000) {
-                    this.systemMessage("Count is capped at 10000.", "#ffaa00");
-                    count = 10000;
-                }
-
-                // roll every drop first, then hand them over, so nothing is granted on a bad target
                 const rolled = [];
+                const rollCount = globalThis.LUCKY_DROPS_EVENT ? 2 : 1;
 
-                // mirrors the table branch of Mob#onDeath: one pass over the rows per
-                // kill, and the lucky drops event doubles that pass
-                let rollCount = 1;
-                if (globalThis.LUCKY_DROPS_EVENT) rollCount = 2;
-
-                for (let i = 0; i < count; i++) {
+                for (let i = 0; i < multiplier; i++) {
                     for (let roll = 0; roll < rollCount; roll++) {
                         for (const row of rows) {
                             if (Math.random() > row.chance) continue;
+
                             const entry = pickWeighted(row.entries);
-                            if (entry) rolled.push(entry);
+
+                            if (
+                                entry &&
+                                tiers[entry.rarity] &&
+                                Number.isInteger(entry.index)
+                            ) {
+                                rolled.push({
+                                    rarity: entry.rarity,
+                                    index: entry.index,
+                                    amount: entry.amount || 1
+                                });
+                            }
                         }
                     }
                 }
 
                 if (rolled.length === 0) {
-                    this.systemMessage(`No drops rolled for ${rarity.name} ${mob.name}.`, "#ffaa00");
+                    this.systemMessage(
+                        `Rolled ${rarity.name} ${mob.name} but got nothing.`,
+                        "#ffaa00"
+                    );
                     return;
                 }
 
-                // online target first, then an offline save
-                let target = null;
-
-                for (const client of state.clients.values()) {
-                    if (!client?.verified) continue;
-                    if (client.username.toLowerCase() === playerName.toLowerCase()) {
-                        target = client;
-                        break;
-                    }
-                }
-
-                // the table decides the petal rarity per entry, so credit each drop under its
-                // own rarity rather than the mob rarity that was passed in
                 const grant = (bag, entry) => {
-                    const name = tiers[entry.rarity]?.name;
-                    if (!name) return;
-                    if (!bag[name]) bag[name] = {};
-                    bag[name][entry.index] = (bag[name][entry.index] || 0) + entry.amount;
+                    const rarityName = tiers[entry.rarity]?.name;
+
+                    if (!rarityName) return;
+
+                    bag[rarityName] ??= {};
+                    bag[rarityName][entry.index] =
+                        (bag[rarityName][entry.index] || 0) + entry.amount;
                 };
 
-                if (target) {
-                    for (const entry of rolled) grant(target.inventory, entry);
+                for (const targetInfo of targets) {
+                    if (targetInfo.client) {
+                        const target = targetInfo.client;
+                        target.inventory ??= {};
 
-                    accounts.saveClient(target);
-                    target.syncInventoryExact();
+                        for (const entry of rolled) {
+                            grant(target.inventory, entry);
+                        }
 
-                    target.systemMessage(`You were refunded ${rolled.length} ${rarity.name} ${mob.name} drop${rolled.length === 1 ? "" : "s"}!`, "#55ff55");
-                } else {
-                    const match = accounts.findByName(playerName);
+                        accounts.saveClient(target);
+                        target.syncInventoryExact();
 
-                    if (!match) {
-                        this.systemMessage(`Player "${playerName}" not found.`, "#ff5555");
-                        return;
+                        target.systemMessage(
+                            `You received ${rolled.length} ${rarity.name} ${mob.name} drop${rolled.length === 1 ? "" : "s"}!`,
+                            "#55ff55"
+                        );
+                    } else {
+                        const match = targetInfo.account;
+                        match.save.data ??= {};
+                        match.save.data.inventory ??= {};
+
+                        for (const entry of rolled) {
+                            grant(match.save.data.inventory, entry);
+                        }
                     }
-
-                    match.save.data ??= {};
-                    match.save.data.inventory ??= {};
-
-                    for (const entry of rolled) grant(match.save.data.inventory, entry);
-
-                    accounts.persist().catch(err => console.warn("[Accounts] Save failed:", err));
                 }
 
-                // the drop announcement in Entity.js keys off the MOB rarity, not the rarity
-                // of the petal that came out, so r27 beetle drops get announced
-                // even when the petal itself is Common
+                if (targets.some(target => target.account)) {
+                    accounts.persist().catch(err =>
+                        console.warn("[Accounts] Save failed:", err)
+                    );
+                }
+
                 const announced = new Map();
 
                 for (const entry of rolled) {
-                    // Entity.js force announces this one petal regardless of mob rarity
-                    const forceAnnounce = petalConfigs[entry.index]?.name === "ӇЄҲƛƓƠƝ";
+                    const itemName = petalConfigs[entry.index]?.name;
+                    const forceAnnounce = itemName === "ӇЄҲƛƓƠƝ";
+
                     if (rarityIndex < 18 && !forceAnnounce) continue;
+
                     const key = `${entry.rarity}:${entry.index}`;
-                    if (!announced.has(key)) announced.set(key, { rarity: entry.rarity, index: entry.index, amount: 0 });
+
+                    if (!announced.has(key)) {
+                        announced.set(key, {
+                            rarity: entry.rarity,
+                            index: entry.index,
+                            amount: 0
+                        });
+                    }
+
                     announced.get(key).amount += entry.amount;
                 }
 
                 for (const group of announced.values()) {
                     const rarityData = tiers[group.rarity];
+
                     if (!rarityData) continue;
-                    const itemName = petalConfigs[group.index]?.name ?? `Item ${group.index}`;
-                    const msg = `x${group.amount} ${rarityData.name} ${itemName} refunded to ${target ? target.username : (accounts.findByName(playerName)?.save.username ?? playerName)}`;
-                    state.clients.forEach(client => client.systemMessage(msg, rarityData.color));
+
+                    const itemName =
+                        petalConfigs[group.index]?.name ?? `Item ${group.index}`;
+
+                    const msg =
+                        `x${group.amount} ${rarityData.name} ${itemName} refunded to ` +
+                        targets.map(target => target.username).join(", ");
+
+                    state.clients.forEach(client =>
+                        client.systemMessage(msg, rarityData.color)
+                    );
                 }
 
-                const summary = rolled.reduce((sum, entry) => sum + entry.amount, 0);
+                const totalItems = rolled.reduce(
+                    (sum, entry) => sum + entry.amount,
+                    0
+                );
 
                 this.systemMessage(
-                    `Refunded ${rolled.length} drop${rolled.length === 1 ? "" : "s"} (${summary} petals) of ${rarity.name} ${mob.name} to ${playerName}.`,
+                    `Rolled ${rarity.name} ${mob.name} x${multiplier}:`,
+                    rarity.color || "#55ff55"
+                );
+
+                for (const entry of rolled) {
+                    const itemName =
+                        petalConfigs[entry.index]?.name ?? `Item ${entry.index}`;
+                    const itemRarity = tiers[entry.rarity]?.name;
+
+                    if (!itemRarity) continue;
+
+                    this.systemMessage(
+                        `[${targets.map(target => target.username).join(", ")}] + ${entry.amount} ${itemRarity} ${itemName}`,
+                        "#ffffff"
+                    );
+                }
+
+                this.systemMessage(
+                    `Granted ${rolled.length} drop${rolled.length === 1 ? "" : "s"} (${totalItems} petals) from ${rarity.name} ${mob.name} to ${targets.map(target => target.username).join(", ")}.`,
                     "#55ff55"
                 );
             })();
@@ -2672,1989 +2827,1992 @@ export default class Client {
                     return;
                 }
 
-                const [rarityArg, ...rest] = args;
+                if (args.length < 3) {
+                    this.systemMessage(
+                        "Usage: /remove [clientID] [rarity] [petal] <amount>",
+                        "#ffaa00"
+                    );
+                    return;
+                }
 
-                let rarityIndex = null;
+                // Resolve one target or a comma-separated list of targets
+                const targetPart = args.shift();
+                const targets = [];
 
-                if (!isNaN(rarityArg)) {
-                    rarityIndex = parseInt(rarityArg);
-                } else {
-                    const lower = rarityArg.toLowerCase();
+                const resolveTarget = entry => {
+                    let target = null;
 
-                    for (let i = 0; i < tiers.length; i++) {
-                        if (tiers[i].name.toLowerCase() === lower) {
-                            rarityIndex = i;
-                            break;
+                    if (!isNaN(entry)) {
+                        target = state.clients.get(parseInt(entry, 10));
+                    }
+
+                    if (!target) {
+                        for (const client of state.clients.values()) {
+                            if (
+                                client.username?.toLowerCase() ===
+                                entry.toLowerCase()
+                            ) {
+                                target = client;
+                                break;
+                            }
                         }
+                    }
+
+                    return target;
+                };
+
+                const targetEntries =
+                    targetPart.startsWith("[") && targetPart.endsWith("]")
+                        ? targetPart.slice(1, -1).split(",").map(v => v.trim()).filter(Boolean)
+                        : [targetPart];
+
+                for (const entry of targetEntries) {
+                    const target = resolveTarget(entry);
+
+                    if (target && !targets.includes(target)) {
+                        targets.push(target);
                     }
                 }
 
-                if (rarityIndex === null || rarityIndex < 0 || rarityIndex >= tiers.length) {
-                    this.systemMessage(`Invalid rarity: ${rarityArg}`, "#ff5555");
+                if (targets.length === 0) {
+                    this.systemMessage("No valid players found.", "#ff5555");
+                    return;
+                }
+
+                const normalize = value =>
+                    value.toLowerCase().replace(/\s+/g, "");
+
+                const rawRarityArg = args.shift();
+                const rarityOrder = tiers.map(tier => normalize(tier.name));
+
+                let rarityIndex = -1;
+
+                if (!isNaN(rawRarityArg)) {
+                    const index = parseInt(rawRarityArg, 10);
+
+                    if (index >= 0 && index < rarityOrder.length) {
+                        rarityIndex = index;
+                    }
+                } else {
+                    rarityIndex = rarityOrder.indexOf(normalize(rawRarityArg));
+                }
+
+                if (rarityIndex === -1) {
+                    this.systemMessage("Invalid rarity.", "#ff5555");
                     return;
                 }
 
                 const rarity = tiers[rarityIndex];
 
-                // Optional [player] before <amount>: a trailing number is the
-                // amount, anything before it names another online player.
-                // Without a player the command targets yourself.
-                const petalArg = rest[0];
-                let target = this;
-                let amountArg;
-                const nameTokens = rest.slice(1);
+                let amount = Infinity;
 
-                if (nameTokens.length > 0 && !isNaN(nameTokens[nameTokens.length - 1])) {
-                    amountArg = nameTokens.pop();
+                if (args.length > 1 && !isNaN(args.at(-1))) {
+                    amount = Math.max(1, parseInt(args.pop(), 10));
                 }
 
-                let offlineMatch = null;
+                const petalArg = args.join(" ").toLowerCase();
+                const deleteAll = petalArg === "all";
 
-                if (nameTokens.length > 0) {
-                    const wanted = nameTokens.join(" ");
+                let petalIndex = -1;
 
-                    target = [...state.clients.values()].find(client => client?.verified && typeof client.username === "string" && client.username.toLowerCase() === wanted.toLowerCase()) ?? null;
+                if (!deleteAll) {
+                    if (!petalArg) {
+                        this.systemMessage("Invalid petal.", "#ff5555");
+                        return;
+                    }
 
-                    // fall back to the stored save so offline players can be cleaned up too
-                    if (!target) offlineMatch = accounts.findByName(wanted);
+                    petalIndex = petalConfigs.findIndex(
+                        petal => petal?.name?.toLowerCase() === petalArg
+                    );
 
-                    if (!target && !offlineMatch) {
-                        this.systemMessage(`Player "${wanted}" not found or offline.`, "#ff5555");
+                    if (petalIndex < 0) {
+                        petalIndex = petalConfigs.findIndex(
+                            petal => petal?.name && normalize(petal.name) === normalize(petalArg)
+                        );
+                    }
+
+                    if (petalIndex < 0) {
+                        this.systemMessage("Invalid petal.", "#ff5555");
                         return;
                     }
                 }
 
-                const targetName = target === this ? "You" : (target ? target.username : offlineMatch.save.username);
+                const petalName = deleteAll
+                    ? null
+                    : petalConfigs[petalIndex].name;
 
-                // everything below works on one inventory bag, online or from the save
-                const bag = target ? target.inventory : (offlineMatch.save.data ??= {}).inventory;
+                let removedAnyone = false;
+                const emptyMainSlot = { id: 0, rarity: 0 };
 
-                // no petal given: wipe the whole rarity, bag and equipped copies alike
-                if (rest.length === 0) {
-                    const slotBag = target ?? (offlineMatch.save.data ??= {});
-                    const slotLists = [
-                        { list: slotBag.slots, empty: { id: 0, rarity: 0 }, main: true },
-                        { list: slotBag.secondarySlots, empty: null, main: false }
-                    ];
+                for (const target of targets) {
+                    target.inventory ??= {};
 
-                    const petals = bag[rarity.name] || {};
-                    let removed = Object.values(petals).reduce((sum, count) => sum + count, 0);
+                    const bag = target.inventory;
+                    const rarityBag = bag[rarity.name] ?? {};
+                    let removed = 0;
 
-                    for (const { list, empty, main } of slotLists) {
-                        if (!Array.isArray(list)) continue;
+                    if (deleteAll) {
+                        for (const key of Object.keys(rarityBag)) {
+                            const count = Number(rarityBag[key]) || 0;
+                            removed += count;
+                            rarityBag[key] = 0;
+                        }
+                    } else {
+                        const current = Number(rarityBag[petalIndex]) || 0;
+                        const fromBag = Math.min(current, amount);
 
-                        for (let i = 0; i < list.length; i++) {
-                            const slot = list[i];
-                            if (!slot || +slot.rarity !== rarityIndex) continue;
-                            removed++;
-                            list[i] = empty;
-                            if (main && target?.body?.petalSlots[i]) target.body.setSlot(i, empty.id, empty.rarity);
+                        if (fromBag > 0) {
+                            rarityBag[petalIndex] = current - fromBag;
+                            removed += fromBag;
                         }
                     }
 
-                    if (removed <= 0) {
-                        this.systemMessage(`${target === this ? "You do" : `${targetName} does`} not have any ${rarity.name} petals.`, "#ff5555");
-                        return;
+                    const slotLists = [
+                        { list: target.slots, main: true },
+                        { list: target.secondarySlots, main: false }
+                    ];
+
+                    for (const { list, main } of slotLists) {
+                        if (!Array.isArray(list)) continue;
+
+                        for (let i = 0; i < list.length; i++) {
+                            if (removed >= amount) break;
+
+                            const slot = list[i];
+                            if (!slot || +slot.rarity !== rarityIndex) continue;
+
+                            if (!deleteAll && +slot.id !== petalIndex) continue;
+
+                            list[i] = main ? emptyMainSlot : null;
+
+                            if (main && target.body?.petalSlots[i]) {
+                                target.body.setSlot(i, emptyMainSlot.id, emptyMainSlot.rarity);
+                            }
+
+                            removed++;
+                        }
+
+                        if (removed >= amount) break;
                     }
 
-                    // Zero the counts instead of dropping the keys: the client merges the world
-                    // update inventory per petal id and never forgets ids the server stops
-                    // sending, so a removed entry would keep showing up in the inventory view.
-                    bag[rarity.name] ??= {};
-                    for (const id of Object.keys(bag[rarity.name])) {
-                        bag[rarity.name][id] = 0;
-                    }
+                    if (removed <= 0) continue;
 
-                    if (target) {
-                        accounts.saveClient(target);
-                        // the target client only learns about the change if we push it,
-                        // otherwise the edit lands on the server and stays invisible
-                        target.syncInventoryExact();
-                    } else {
-                        await accounts.persist();
-                    }
+                    removedAnyone = true;
 
-                    this.systemMessage(`Removed all ${removed} ${rarity.name} petals${target ? (target === this ? "!" : ` from ${target.username}!`) : ` from ${targetName} offline!`}`, "#55ff55");
-                    if (target && target !== this) {
-                        target.systemMessage(`${this.username} removed ${removed} of your ${rarity.name} petals.`, "#ff5555");
-                    }
-                    return;
-                }
-
-                // petal names may omit spaces: both "fire missile" and "firemissile" resolve
-                const normalize = s => s.toLowerCase().replace(/\s+/g, "");
-                const normalizedPetal = normalize(petalArg);
-
-                let petalIndex = petalConfigs.findIndex(petal => petal?.name?.toLowerCase() === petalArg.toLowerCase());
-
-                if (petalIndex < 0) {
-                    petalIndex = petalConfigs.findIndex(petal => petal?.name && normalize(petal.name) === normalizedPetal);
-                }
-
-                if (petalIndex < 0) {
-                    this.systemMessage(`Petal "${petalArg}" not found.`, "#ff5555");
-                    return;
-                }
-
-                // omitting the amount removes every copy, bag and equipped alike
-                let amount = Infinity;
-
-                if (amountArg !== undefined) {
-                    amount = parseInt(amountArg);
-
-                    if (isNaN(amount) || amount < 1) {
-                        this.systemMessage(`Invalid amount: ${amountArg}`, "#ff5555");
-                        return;
-                    }
-                }
-
-                // a petal can be sitting in the bag or equipped, so count both
-                const slotBag = target ?? (offlineMatch.save.data ??= {});
-                // an empty main slot is { id: 0, rarity: 0 }, not null: sanitizeSlots
-                // never produces null there and a fresh player starts with all of them set
-                const slotLists = [
-                    { list: slotBag.slots, empty: { id: 0, rarity: 0 }, main: true },
-                    { list: slotBag.secondarySlots, empty: null, main: false }
-                ];
-
-                const matches = list => Array.isArray(list)
-                    ? list.filter(slot => slot && +slot.id === petalIndex && +slot.rarity === rarityIndex).length
-                    : 0;
-
-                const owned = (bag[rarity.name]?.[petalIndex] || 0) + slotLists.reduce((sum, s) => sum + matches(s.list), 0);
-
-                if (owned <= 0) {
-                    this.systemMessage(`${target === this ? "You do" : `${targetName} does`} not have any ${rarity.name} ${petalConfigs[petalIndex].name}.`, "#ff5555");
-                    return;
-                }
-
-                let remaining = Math.min(amount, owned);
-                let removed = 0;
-
-                // bag first, then equipped copies
-                const fromBag = Math.min(remaining, bag[rarity.name]?.[petalIndex] || 0);
-
-                if (fromBag > 0) {
-                    bag[rarity.name][petalIndex] = Math.max(0, (bag[rarity.name]?.[petalIndex] || 0) - fromBag);
-                    remaining -= fromBag;
-                    removed += fromBag;
-                }
-
-                for (const { list, empty, main } of slotLists) {
-                    if (remaining <= 0 || !Array.isArray(list)) continue;
-
-                    for (let i = 0; i < list.length && remaining > 0; i++) {
-                        const slot = list[i];
-                        if (!slot || +slot.id !== petalIndex || +slot.rarity !== rarityIndex) continue;
-                        list[i] = empty;
-                        // setSlot destroys the old PetalSlot and defines the new one, so the
-                        // equipped petals stop without leaving a dangling slot behind
-                        if (main && target?.body?.petalSlots[i]) target.body.setSlot(i, empty.id, empty.rarity);
-                        remaining--;
-                        removed++;
-                    }
-                }
-
-                if (target) {
                     accounts.saveClient(target);
                     target.syncInventoryExact();
-                } else {
-                    await accounts.persist();
+
+                    target.systemMessage(
+                        deleteAll
+                            ? `You lost ${removed} ${rarity.name} petals.`
+                            : `You lost ${removed} ${rarity.name} ${petalName}.`,
+                        rarity.color || "#ff5555"
+                    );
                 }
 
-                this.systemMessage(`Removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name}${target ? (target === this ? "!" : ` from ${target.username}!`) : ` from ${targetName} offline!`}`, "#55ff55");
-                if (target && target !== this) {
-                    target.systemMessage(`${this.username} removed ${removed} ${rarity.name} ${petalConfigs[petalIndex].name} from your inventory.`, "#ff5555");
+                if (!removedAnyone) {
+                    this.systemMessage(
+                        deleteAll
+                            ? `None of the selected players had any ${rarity.name} petals.`
+                            : `None of the selected players had any ${rarity.name} ${petalName}.`,
+                        "#ff5555"
+                    );
+                    return;
                 }
+
+                this.systemMessage(
+                    deleteAll
+                        ? `Removed all ${rarity.name} petals from [${targets.map(t => t.username || t.id).join(", ")}].`
+                        : `Removed [${targets.map(t => t.username || t.id).join(", ")}] ${rarity.name} ${petalName} x${amount === Infinity ? "all" : amount}.`,
+                    rarity.color || "#ff5555"
+                );
             })();
 
             return;
         }
 
         // /pity
-if (commandCheck("/pity")) {
-
-                                const args = e.substring(5).trim().split(/\s+/).filter(Boolean);
-
-                                const craftChances = {
-                                    common: 100,
-                                    uncommon: 64,
-                                    rare: 32,
-                                    epic: 16,
-                                    legendary: 8,
-                                    mythic: 4,
-                                    ultra: 2,
-                                    super: 1,
-                                    ancient: 0.5,
-                                    omega: 0.4,
-                                    eternal: 0.3,
-                                    unique: 0.2,
-                                    hyper: 0.1,
-                                    galaxium: 0.09,
-                                    millom: 0.08,
-                                    fictional: 0.07,
-                                    transcestrial: 0.05,
-                                    chaos: 0.0425,
-                                    absiorcadinary: 0.035,
-                                    absolutefictional: 0.0275,
-                                    nullified: 0.02,
-                                    hyperfixation: 0.01,
-                                    atlantical: 0.001,
-                                    alpha: 0.0009,
-                                    finalist: 0.0008,
-                                    epsilation: 0.0007,
-                                    improbable: 0.0006,
-                                    izolational: 0.0005,
-                                    chronodynamic: 0.0001,
-                                    multiversal: 0.00001
-                                };
-
-                                const pityIncrements = {
-                                    uncommon: 0.5,
-                                    rare: 0.4,
-                                    epic: 0.3,
-                                    legendary: 0.2,
-                                    mythic: 0.1,
-                                    ultra: 0.05,
-                                    super: 0.04,
-                                    ancient: 0.016,
-                                    omega: 0.013,
-                                    eternal: 0.01,
-                                    unique: 0.008,
-                                    hyper: 0.0072,
-                                    galaxium: 0.0065,
-                                    millom: 0.0057,
-                                    fictional: 0.005,
-                                    transcestrial: 0.004,
-                                    chaos: 0.0026,
-                                    absiorcadinary: 0.002,
-                                    absolutefictional: 0.0004,
-                                    nullified: 0.00029,
-                                    hyperfixation: 0.00027,
-                                    atlantical: 0.00025,
-                                    alpha: 0.000238,
-                                    finalist: 0.00022,
-                                    epsilation: 0.00021,
-                                    improbable: 0.0002,
-                                    izolational: 0.00013,
-                                    chronodynamic: 0.0001,
-                                    multiversal: 0.00004
-                                };
-
-                                const AttemptsForBigPityIncrements = {
-                                    uncommon: 10,
-                                    rare: 20,
-                                    epic: 30,
-                                    legendary: 40,
-                                    mythic: 50,
-                                    ultra: 80,
-                                    super: 100,
-                                    ancient: 120,
-                                    omega: 150,
-                                    eternal: 200,
-                                    unique: 250,
-                                    hyper: 275,
-                                    galaxium: 300,
-                                    millom: 350,
-                                    fictional: 400,
-                                    transcestrial: 450,
-                                    chaos: 500,
-                                    absiorcadinary: 600,
-                                    absolutefictional: 700,
-                                    nullified: 900,
-                                    hyperfixation: 1100,
-                                    atlantical: 2000,
-                                    alpha: 4500,
-                                    finalist: 9000,
-                                    epsilation: 9500,
-                                    improbable: 10000,
-                                    izolational: 15000,
-                                    chronodynamic: 20000,
-                                    multiversal: 50000
-                                };
-
-                                const rarityOrder = Object.keys(craftChances);
-
-                                const formatChance = n => {
-                                    if (n >= 1) return n.toFixed(2).replace(/\.?0+$/, "");
-                                    if (n >= 0.01) return n.toFixed(3).replace(/\.?0+$/, "");
-                                    if (n >= 0.001) return n.toFixed(4).replace(/\.?0+$/, "");
-                                    return n.toFixed(6).replace(/\.?0+$/, "");
-                                };
-
-                                this.craftAttempts ??= {};
-
-                                for (const r of rarityOrder) {
-                                    const val = this.craftAttempts[r];
-
-                                    if (typeof val === "number") {
-                                        const arr = new Array(128);
-                                        if (val > 0) arr[10] = val;
-                                        this.craftAttempts[r] = arr;
-                                    }
-                                    else if (Array.isArray(val)) {
-                                        continue;
-                                    }
-                                    else if (!val || typeof val !== "object") {
-                                        this.craftAttempts[r] = new Array(128);
-                                    }
-                                    else {
-                                        this.craftAttempts[r] = craftAttemptsToArray({ [r]: val })[r];
-                                    }
-                                }
-
-                                if (args.length < 1) {
-                                    this.systemMessage("Usage: /pity [rarity] <petal>", "#ffe65d");
-                                    return;
-                                }
-
-                                // Rarity names can be multiple words (e.g. Absolute Fictional),
-                                // so match the longest leading token run.
-                                let rarityIndex = -1;
-                                for (let i = args.length; i > 0; i--) {
-                                    const candidate = args.slice(0, i).join(" ").toLowerCase().replace(/\s+/g, "");
-                                    const found = rarityOrder.indexOf(candidate);
-                                    if (found !== -1) {
-                                        rarityIndex = found;
-                                        args.splice(0, i);
-                                        break;
-                                    }
-                                }
-
-                                if (rarityIndex === -1 || rarityIndex === rarityOrder.length - 1) {
-                                    this.systemMessage("Invalid or max rarity.", "#ff5555");
-                                    return;
-                                }
-
-                                const nextRarityIndex = rarityIndex + 1;
-                                const nextRarity = tiers[nextRarityIndex].name
-                                    .toLowerCase()
-                                    .replace(/\s+/g, "");
-
-                                const up = tiers[nextRarityIndex];
-                                const pityBucket = this.craftAttempts[nextRarity] || [];
-
-                                const baseChance = craftChances[nextRarity] || 0;
-                                const pityInc = pityIncrements[nextRarity] || 0;
-                                const bigReq = AttemptsForBigPityIncrements[nextRarity];
-
-                                function getBonusPity(fails) {
-                                    if (bigReq && fails >= bigReq) {
-                                        const extraFails = fails - bigReq + 1;
-                                        return extraFails * 2.5;
-                                    }
-
-                                    return 0;
-                                }
-
-                                function getRealPity(fails) {
-                                    return (fails * pityInc) + getBonusPity(fails);
-                                }
-
-                                function getTotalChance(fails) {
-                                    let chance = baseChance + getRealPity(fails);
-                                    if (chance > 100) chance = 100;
-                                    return chance;
-                                }
-
-                                if (args.length > 0) {
-
-                                    const petalArg = args.join(" ").toLowerCase();
-
-                                    const petalIndex = Object.values(petalConfigs)
-                                        .findIndex(p => p.name.toLowerCase() === petalArg);
-
-                                    if (petalIndex === -1) {
-                                        this.systemMessage("Invalid petal.", "#ff5555");
-                                        return;
-                                    }
-
-                                    const petal = Object.values(petalConfigs)[petalIndex];
-                                    const fails = Number(pityBucket[petalIndex] || 0);
-
-                                    const pityBonus = getRealPity(fails);
-                                    const totalChance = getTotalChance(fails);
-
-                                    this.systemMessage(
-                                        `${tiers[nextRarityIndex].name} ${petal.name} pity:`,
-                                        tiers[nextRarityIndex].color
-                                    );
-
-                                    this.systemMessage(
-                                        `${formatChance(totalChance)}% (+${formatChance(pityBonus)} pity)`,
-                                        tiers[nextRarityIndex].color
-                                    );
-
-                                    this.systemMessage(
-                                        `Current Attempt: ${fails + 1}`,
-                                        tiers[nextRarityIndex].color
-                                    );
-
-                                    if (bigReq) {
-                                        this.systemMessage(
-                                            `Attempts for PRNG: ${fails}/${bigReq}`,
-                                            tiers[nextRarityIndex].color
-                                        );
-                                    }
-
-                                    return;
-                                }
-
-                                this.systemMessage(
-                                    `All pity for ${tiers[nextRarityIndex].name}:`,
-                                    tiers[nextRarityIndex].color
-                                );
-
-                                let found = 0;
-                                let delay = 250;
-                                let totalAttempts = 0;
-
-                                for (let i = 0; i < pityBucket.length; i++) {
-
-                                    const fails = Number(pityBucket[i] || 0);
-                                    if (fails <= 0) continue;
-                                    totalAttempts += fails;
-
-                                    const petal = Object.values(petalConfigs)[i];
-                                    if (!petal) continue;
-
-                                    found++;
-
-                                    const pityBonus = getRealPity(fails);
-                                    const totalChance = getTotalChance(fails);
-
-                                    setTimeout(() => {
-                                        this.systemMessage(
-                                            `${petal.name}: ${formatChance(totalChance)}% (+${formatChance(pityBonus)} pity)`,
-                                            tiers[nextRarityIndex].color
-                                        );
-                                    }, delay);
-
-                                    delay += 250;
-                                }
-
-                                if (found > 0) {
-                                    this.systemMessage(
-                                        `Total attempts: ${totalAttempts}`,
-                                        tiers[nextRarityIndex].color
-                                    );
-                                }
-
-                                if (found === 0) {
-                                    this.systemMessage(
-                                        `No active pity for ${tiers[nextRarityIndex].name}.`,
-                                        tiers[nextRarityIndex].color
-                                    );
-                                }
-
-                                return;
-                            }
-
-                            // mobinfo
-                            if (commandCheck("/mobinfo")) {
-                                const args = e.substring(8).trim().split(/\s+/).filter(Boolean);
-
-                                if (args.length < 2) {
-                                    this.systemMessage("Usage: /mobinfo [rarity] [mob]", "#ffe65d");
-                                    return;
-                                }
-
-                                const raw = e.substring(8).trim();
-
-                                if (!raw) {
-                                    this.systemMessage("Usage: /mobinfo [rarity] [mob]", "#ffe65d");
-                                    return;
-                                }
-
-                                const rarityOrder = [
-                                    "Common", "Uncommon", "Rare", "Epic",
-                                    "Legendary", "Mythic", "Ultra", "Super",
-                                    "Ancient", "Omega", "Eternal", "Unique",
-                                    "Hyper", "Galaxium", "Millom",
-                                    "Fictional", "Transcestrial", "Chaos",
-                                    "Absiorcadinary", "Absolute Fictional",
-                                    "Nullified", "Hyperfixation",
-                                    "Atlantical", "Alpha",
-                                    "Finalist", "Epsilation",
-                                    "Improbable", "Izolational",
-                                    "Chronodynamic", "Multiversal"
-                                ];
-
-                                const normalize = str => str.toLowerCase().replace(/\s+/g, "");
-
-                                const formatNumber = num => {
-                                    const abs = Math.abs(num);
-                                    const suffixes = [
-                                        ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
-                                        ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
-                                        ["Ud", 1e36], ["Dc", 1e33],
-                                        ["Nv", 1e30],
-                                        ["Oc", 1e27],
-                                        ["Sp", 1e24],
-                                        ["Sx", 1e21],
-                                        ["Qt", 1e18],
-                                        ["Qd", 1e15],
-                                        ["t", 1e12],
-                                        ["b", 1e9],
-                                        ["m", 1e6],
-                                        ["k", 1e3]
-                                    ];
-
-                                    for (const [suffix, value] of suffixes) {
-                                        if (abs >= value) {
-                                            let formatted = (num / value).toFixed(2);
-                                            formatted = formatted.replace(/\.?0+$/, "");
-                                            return formatted + suffix;
-                                        }
-                                    }
-
-                                    return Math.round(num).toString();
-                                };
-
-                                let rarityIndex = -1;
-                                let matchedRarity = null;
-                                let rarityTokenCount = 0;
-
-                                for (let i = args.length; i > 0; i--) {
-                                    const candidate = args.slice(0, i).join(" ");
-                                    const normCandidate = normalize(candidate);
-
-                                    const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
-
-                                    if (index !== -1) {
-                                        rarityIndex = index;
-                                        matchedRarity = rarityOrder[index];
-                                        rarityTokenCount = i;
-                                        break;
-                                    }
-                                }
-
-                                if (rarityIndex === -1 && !isNaN(args[0])) {
-                                    const num = parseInt(args[0]);
-                                    if (rarityOrder[num]) {
-                                        rarityIndex = num;
-                                        matchedRarity = rarityOrder[num];
-                                        rarityTokenCount = 1;
-                                    }
-                                }
-
-                                if (rarityIndex === -1) {
-                                    this.systemMessage("Invalid rarity.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const mobPart = args.slice(rarityTokenCount).join(" ");
-                                const mobNormalized = normalize(mobPart);
-
-                                const mob = globalThis._mobList.find(
-                                    m => normalize(m.name) === mobNormalized
-                                );
-
-                                if (!mob) {
-                                    this.systemMessage("Mob not found.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const table = this.room?.isWaves
-                                    ? globalThis.WAVES_RARITY_TABLE
-                                    : globalThis.RARITY_TABLE;
-
-                                if (!table || rarityIndex < 0 || !table[rarityIndex]) {
-                                    this.systemMessage("Invalid rarity.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const rarityData = table[rarityIndex];
-                                const rarityName = rarityOrder[rarityIndex];
-
-                                const finalHealth = mob.health * rarityData.health;
-                                const finalDamage = mob.damage * rarityData.damage;
-                                const armor = rarityData.armor ?? 0;
-
-                                this.systemMessage(
-                                    `${rarityName} ${mob.name}: Health: ${formatNumber(finalHealth)}, Damage: ${formatNumber(finalDamage)}, Armor: ${formatNumber(armor)}`,
-                                    tiers[rarityIndex]?.color || "#ffffff"
-                                );
-                            }
-
-                            // bossinfo
-                            if (commandCheck("/bossinfo")) {
-                                const args = e.substring(9).trim().split(/\s+/).filter(Boolean);
-
-                                if (args.length < 2) {
-                                    this.systemMessage("Usage: /bossinfo [rarity] [mob]", "#ffe65d");
-                                    return;
-                                }
-
-                                const raw = e.substring(9).trim();
-
-                                if (!raw) {
-                                    this.systemMessage("Usage: /bossinfo [rarity] [mob]", "#ffe65d");
-                                    return;
-                                }
-
-                                const rarityOrder = [
-                                    "Common", "Uncommon", "Rare", "Epic",
-                                    "Legendary", "Mythic", "Ultra", "Super",
-                                    "Ancient", "Omega", "Eternal", "Unique",
-                                    "Hyper", "Galaxium", "Millom",
-                                    "Fictional", "Transcestrial", "Chaos",
-                                    "Absiorcadinary", "Absolute Fictional",
-                                    "Nullified", "Hyperfixation",
-                                    "Atlantical", "Alpha",
-                                    "Finalist", "Epsilation",
-                                    "Improbable", "Izolational",
-                                    "Chronodynamic", "Multiversal"
-                                ];
-
-                                const normalize = str => str.toLowerCase().replace(/\s+/g, "");
-
-                                const formatNumber = num => {
-                                    const abs = Math.abs(num);
-                                    const suffixes = [
-                                        ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
-                                        ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
-                                        ["Ud", 1e36], ["Dc", 1e33],
-                                        ["Nv", 1e30],
-                                        ["Oc", 1e27],
-                                        ["Sp", 1e24],
-                                        ["Sx", 1e21],
-                                        ["Qt", 1e18],
-                                        ["Qd", 1e15],
-                                        ["t", 1e12],
-                                        ["b", 1e9],
-                                        ["m", 1e6],
-                                        ["k", 1e3]
-                                    ];
-
-                                    for (const [suffix, value] of suffixes) {
-                                        if (abs >= value) {
-                                            let formatted = (num / value).toFixed(2);
-                                            formatted = formatted.replace(/\.?0+$/, "");
-                                            return formatted + suffix;
-                                        }
-                                    }
-
-                                    return Math.round(num).toString();
-                                };
-
-                                let rarityIndex = -1;
-                                let matchedRarity = null;
-                                let rarityTokenCount = 0;
-
-                                for (let i = args.length; i > 0; i--) {
-                                    const candidate = args.slice(0, i).join(" ");
-                                    const normCandidate = normalize(candidate);
-
-                                    const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
-
-                                    if (index !== -1) {
-                                        rarityIndex = index;
-                                        matchedRarity = rarityOrder[index];
-                                        rarityTokenCount = i;
-                                        break;
-                                    }
-                                }
-
-                                if (rarityIndex === -1 && !isNaN(args[0])) {
-                                    const num = parseInt(args[0]);
-                                    if (rarityOrder[num]) {
-                                        rarityIndex = num;
-                                        matchedRarity = rarityOrder[num];
-                                        rarityTokenCount = 1;
-                                    }
-                                }
-
-                                if (rarityIndex === -1) {
-                                    this.systemMessage("Invalid rarity.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const mobPart = args.slice(rarityTokenCount).join(" ");
-                                const mobNormalized = normalize(mobPart);
-
-                                const mob = globalThis._mobList.find(
-                                    m => normalize(m.name) === mobNormalized
-                                );
-
-                                if (!mob) {
-                                    this.systemMessage("Mob not found.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const table = this.room?.isWaves
-                                    ? globalThis.WAVES_RARITY_TABLE
-                                    : globalThis.RARITY_BOSSES;
-
-                                if (!table || rarityIndex < 0 || !table[rarityIndex]) {
-                                    this.systemMessage("Invalid rarity.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const rarityData = table[rarityIndex];
-                                const rarityName = rarityOrder[rarityIndex];
-
-                                const finalHealth = mob.health * rarityData.health;
-                                const finalDamage = mob.damage * rarityData.damage;
-                                const armor = rarityData.armor ?? 0;
-
-                                this.systemMessage(
-                                    `${rarityName} ${mob.name}: Health: ${formatNumber(finalHealth)}, Damage: ${formatNumber(finalDamage)}`,
-                                    tiers[rarityIndex]?.color || "#ffffff"
-                                );
-
-                                if (mob.name === "Beetle") {
-
-                                    this.systemMessage("Special abilities:", "#55ffff");
-                                    this.systemMessage("Shrinks and shoots projectiles at high speed.", "#ffe65d");
-
-                                } else if (mob.name === "Scorpion") {
-
-                                    this.systemMessage("Special abilities:", "#55ffff");
-                                    this.systemMessage("Shoots rapid poisonous missiles at 8 angles and a Pincer projectile.", "#ffe65d");
-
-                                }
-                            }
-
-                            // /petalinfo
-                            if (commandCheck("/petalinfo")) {
-                                const args = e.substring(10).trim().split(/\s+/).filter(Boolean);
-
-                                if (args.length < 1) {
-                                    this.systemMessage("Usage: /petalinfo [rarity] [bloodleaf/bloodlight/pomegranate/shinywing]", "#ffe65d");
-                                    return;
-                                }
-
-                                const normalize = str => str.toLowerCase().replace(/\s+/g, "");
-
-                                const formatNumber = num => {
-                                    const abs = Math.abs(num);
-                                    const suffixes = [
-                                        ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
-                                        ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
-                                        ["Ud", 1e36], ["Dc", 1e33],
-                                        ["Nv", 1e30],
-                                        ["Oc", 1e27],
-                                        ["Sp", 1e24],
-                                        ["Sx", 1e21],
-                                        ["Qt", 1e18],
-                                        ["Qd", 1e15],
-                                        ["t", 1e12],
-                                        ["b", 1e9],
-                                        ["m", 1e6],
-                                        ["k", 1e3]
-                                    ];
-
-                                    for (const [suffix, value] of suffixes) {
-                                        if (abs >= value) {
-                                            let formatted = (num / value).toFixed(2);
-                                            formatted = formatted.replace(/\.?0+$/, "");
-                                            return formatted + suffix;
-                                        }
-                                    }
-
-                                    let formatted = Number(num).toFixed(2);
-                                    formatted = formatted.replace(/\.?0+$/, "");
-                                    return formatted;
-                                };
-
-                                const rarityOrder = globalThis.RARITY_ORDER;
-
-                                let rarityIndex = -1;
-                                let rarityTokenCount = 0;
-
-                                for (let i = args.length; i > 0; i--) {
-                                    const candidate = args.slice(0, i).join(" ");
-                                    const normCandidate = normalize(candidate);
-
-                                    const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
-
-                                    if (index !== -1) {
-                                        rarityIndex = index;
-                                        rarityTokenCount = i;
-                                        break;
-                                    }
-                                }
-
-                                if (rarityIndex === -1 && !isNaN(args[0])) {
-                                    const num = parseInt(args[0]);
-                                    if (rarityOrder[num] !== undefined) {
-                                        rarityIndex = num;
-                                        rarityTokenCount = 1;
-                                    }
-                                }
-
-                                if (rarityIndex === -1) {
-                                    this.systemMessage("Invalid rarity.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const petal = args.slice(rarityTokenCount).join(" ").toLowerCase().replace(/\s+/g, "");
-
-                                if (!petal) {
-                                    this.systemMessage("Invalid petal.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const tier = rarityIndex;
-
-                                if (petal === "bloodleaf" || petal === "blood") {
-
-                                    const table = globalThis.BLOOD_LEAF_TABLE;
-                                    const list = globalThis._itemList;
-
-                                    if (!table || !list) {
-                                        this.systemMessage("Missing data tables.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const data = table[tier];
-
-                                    if (!data) {
-                                        this.systemMessage(`No data for Blood Leaf tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const baseItem = list.find(i => i?.name === "Blood Leaf");
-                                    if (!baseItem) {
-                                        this.systemMessage("Blood Leaf item not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const killsData =
-                                        (this.bloodLeafKills && typeof this.bloodLeafKills === "object")
-                                            ? this.bloodLeafKills
-                                            : {};
-
-                                    const currentKills = killsData[tier] ?? 0;
-
-                                    const baseDamage = baseItem.damage ?? 1;
-                                    const scaledBaseDamage = baseDamage * petalTierMultiplier(tier);
-
-                                    const maxMultiplier = 1 + data.cap;
-                                    const perKillMultiplier = 1 + data.perKill;
-
-                                    const currentMultiplier = Math.min(
-                                        1 + (currentKills * data.perKill),
-                                        maxMultiplier
-                                    );
-
-                                    const currentDamage = scaledBaseDamage * currentMultiplier;
-
-                                    const damagePerKill = scaledBaseDamage * perKillMultiplier;
-                                    const maxDamage = scaledBaseDamage * maxMultiplier;
-
-                                    const killsToMax = Math.ceil(data.cap / data.perKill);
-
-                                    this.systemMessage(`Blood Leaf Tier ${tier}:`, "#ff2f4f");
-                                    this.systemMessage(`- Current Kills: ${formatNumber(currentKills)}`, "#ff8080");
-                                    this.systemMessage(`- Current Petal Damage: ${formatNumber(currentDamage)}`, "#ffb347");
-                                    this.systemMessage(`- Base Damage: ${formatNumber(scaledBaseDamage)}`, "#FFFFFF");
-
-                                    const bonusPerKill = damagePerKill - scaledBaseDamage;
-
-                                    this.systemMessage(`- Bonus per kill: +${formatNumber(bonusPerKill)} damage`, "#FFFFFF");
-                                    this.systemMessage(`- Max Damage: ${formatNumber(maxDamage)}`, "#3bedb5");
-                                    this.systemMessage(`- Max reached at ~${formatNumber(killsToMax)} kills`, "#AAAAAA");
-
-                                    const bloodLeafData = list.find(i => i?.name === "Blood Leaf");
-
-                                    const minMobReq =
-                                        bloodLeafData?.minimumMobRarityForBloodLeafDamage?.[tier];
-
-                                    const rarityName = globalThis.RARITY_ORDER?.[minMobReq] ?? `Tier ${minMobReq}`;
-                                    const rarityColor = tiers?.[minMobReq]?.color ?? "#ffd36b";
-
-                                    if (minMobReq !== undefined) {
-                                        this.systemMessage(`- Minimum mob rarity required: ${rarityName}`, rarityColor);
-                                    } else {
-                                        this.systemMessage(`- Minimum mob rarity required: None`, "#888888");
-                                    }
-
-                                    return;
-                                }
-
-                                if (petal === "bloodlight" || petal === "blight") {
-
-                                    const bloodLightTable = globalThis.BLOOD_LIGHT_TABLE;
-                                    const list = globalThis._itemList;
-
-                                    if (!bloodLightTable || !list) {
-                                        this.systemMessage("Missing data tables.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const ratioMultiplier = bloodLightTable[tier] ?? bloodLightTable[bloodLightTable.length - 1];
-
-                                    const baseItem = list.find(i => i?.name === "Blood Light");
-                                    if (!baseItem) {
-                                        this.systemMessage("Blood Light item not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const baseDamage = Array.isArray(baseItem.damage)
-                                        ? (baseItem.damage[tier] ?? baseItem.damage[baseItem.damage.length - 1])
-                                        : (baseItem.damage ?? 1);
-
-                                    const scaledDamage = baseDamage * petalTierMultiplier(tier);
-
-                                    const baseRatio = Array.isArray(baseItem.bloodLightRatio)
-                                        ? (baseItem.bloodLightRatio[tier] ?? baseItem.bloodLightRatio[baseItem.bloodLightRatio.length - 1])
-                                        : (baseItem.bloodLightRatio ?? 0.1);
-
-                                    const finalRatio = baseRatio * ratioMultiplier;
-                                    const selfDamage = scaledDamage * finalRatio;
-
-                                    this.systemMessage(`Blood Light Tier ${tier}:`, "#ff2f4f");
-                                    this.systemMessage(`- Base Damage: ${formatNumber(scaledDamage)}`, "#FFFFFF");
-                                    this.systemMessage(`- Self Damage Ratio: ${formatNumber(finalRatio * 100)}%`, "#ff9aa2");
-                                    this.systemMessage(`- Self Damage per hit: ${formatNumber(selfDamage)}`, "#ff5555");
-
-                                    return;
-                                }
-
-                                if (petal === "pomegranate" || petal === "pome") {
-
-                                    const pomegranateTable = globalThis.POMEGRANATE_TABLE;
-                                    const list = globalThis._itemList;
-
-                                    if (!pomegranateTable || !list) {
-                                        this.systemMessage("Missing data tables.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const ratioMultiplier = pomegranateTable[tier] ?? pomegranateTable[pomegranateTable.length - 1];
-
-                                    const baseItem = list.find(i => i?.name === "Pomegranate");
-                                    if (!baseItem) {
-                                        this.systemMessage("Pomegranate item not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const baseDamage = Array.isArray(baseItem.damage)
-                                        ? (baseItem.damage[tier] ?? baseItem.damage[baseItem.damage.length - 1])
-                                        : (baseItem.damage ?? 1);
-
-                                    const scaledDamage = baseDamage * petalTierMultiplier(tier);
-
-                                    const baseRatio = Array.isArray(baseItem.PomegranateRatio)
-                                        ? (baseItem.PomegranateRatio[tier] ?? baseItem.PomegranateRatio[baseItem.PomegranateRatio.length - 1])
-                                        : (baseItem.PomegranateRatio ?? 0.1);
-
-                                    const finalRatio = baseRatio * ratioMultiplier;
-                                    const selfDamage = scaledDamage * finalRatio;
-
-                                    this.systemMessage(`Pomegranate Tier ${tier}:`, "#ff2f4f");
-                                    this.systemMessage(`- Base Damage: ${formatNumber(scaledDamage)}`, "#FFFFFF");
-                                    this.systemMessage(`- Self Damage Ratio: ${formatNumber(finalRatio * 100)}%`, "#ff9aa2");
-                                    this.systemMessage(`- Self Damage per hit: ${formatNumber(selfDamage)}`, "#ff5555");
-
-                                    return;
-                                }
-
-                                if (petal === "shinywing" || petal === "shiny") {
-
-                                    const table = globalThis.SHINY_WING_TABLE;
-                                    const list = globalThis._itemList;
-
-                                    if (!table || !list) {
-                                        this.systemMessage("Missing data tables.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const data = table[tier];
-
-                                    if (!data) {
-                                        this.systemMessage(`No data for Shiny Wing tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const baseItem = list.find(i => i?.name === "Shiny Wing");
-                                    if (!baseItem) {
-                                        this.systemMessage("Shiny Wing item not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const baseDamage = baseItem.damage ?? 1;
-                                    const scaledBaseDamage = baseDamage * petalTierMultiplier(tier);
-
-                                    const BASE_SPEED = 0.125;
-                                    const currentSpeed = this.body?.rotationSpeed ?? 0.125;
-
-                                    const normalizedCurrent =
-                                        Math.max(0, (currentSpeed - BASE_SPEED) / BASE_SPEED);
-
-                                    const currentBonus =
-                                        Math.min(normalizedCurrent * data.perSpeed, data.cap);
-
-                                    const currentDamage =
-                                        scaledBaseDamage * (1 + currentBonus);
-
-                                    const testSpeeds = [0.125, 0.15, 0.175, 0.20, 0.25, 0.30, 0.40, 0.50];
-
-                                    this.systemMessage(`Shiny Wing Tier ${tier}:`, "#ffd84d");
-                                    this.systemMessage(`- Current Petal Speed: ${formatNumber(currentSpeed)}`, "#87CEFA");
-                                    this.systemMessage(`- Current Petal Damage: ${formatNumber(currentDamage)}`, "#ffb347");
-                                    this.systemMessage(`- Base Damage: ${formatNumber(scaledBaseDamage)}`, "#FFFFFF");
-
-                                    testSpeeds.forEach(speed => {
-                                        const normalized = Math.max(0, (speed - BASE_SPEED) / BASE_SPEED);
-                                        const rawBonus = normalized * data.perSpeed;
-                                        const finalBonus = Math.min(rawBonus, data.cap);
-
-                                        const finalDamage = scaledBaseDamage * (1 + finalBonus);
-                                        const bonusDamage = finalDamage - scaledBaseDamage;
-
-                                        this.systemMessage(
-                                            `- At speed ${formatNumber(speed)} → +${formatNumber(bonusDamage)} damage`,
-                                            "#AAAAFF"
-                                        );
-                                    });
-
-                                    const maxDamage = scaledBaseDamage * (1 + data.cap);
-
-                                    this.systemMessage(`- Max Damage: ${formatNumber(maxDamage)}`, "#3bedb5");
-
-                                    return;
-                                }
-
-                                if (petal === "clover" || petal === "clov") {
-
-                                    const list = globalThis._itemList;
-
-                                    if (!list) {
-                                        this.systemMessage("Missing data tables.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const item = list.find(i => i?.name === "Clover");
-
-                                    if (!item) {
-                                        this.systemMessage("Clover item not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const chance = item.cloverTiers?.[tier]?.chance ?? 0;
-
-                                    this.systemMessage(`Clover Tier ${tier}:`, "#7CFC00");
-                                    this.systemMessage(`- Double Drop Chance: ${formatNumber(chance * 100)}%`, "#FFFFFF");
-
-                                    return;
-                                }
-
-                                const list = globalThis._itemList;
-
-                                if (!list) {
-                                    this.systemMessage("Missing data tables.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const petalNorm = normalize(petal);
-                                const item = list.find(i => normalize(i?.name) === petalNorm);
-
-                                if (!item) {
-                                    this.systemMessage("Petal not found.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const tierStats = item.tiers?.[tier];
-                                if (!tierStats) {
-                                    this.systemMessage(`No custom stats for tier ${tier}`, "#ff5e5e");
-                                    return;
-                                }
-
-                                const color = tiers[tier]?.color || "#ffffff";
-                                const rarityName = globalThis.RARITY_ORDER?.[tier] ?? `Tier ${tier}`;
-
-                                this.systemMessage(`${rarityName} ${item.name}:`, color);
-
-                                function formatLabel(str) {
-                                    return str
-                                        .replace(/([A-Z])/g, " $1")
-                                        .replace(/^./, c => c.toUpperCase());
-                                }
-
-                                if (tierStats.spawnable) {
-                                    const mobIndex = tierStats.spawnable.index;
-                                    const mobRarity = tierStats.spawnable.rarity;
-
-                                    const mobConfig = globalThis._mobList?.[mobIndex];
-                                    const mobTier = mobConfig?.tiers?.[mobRarity];
-                                    const summonScale = globalThis.SUMMON_STATS?.[mobRarity];
-
-                                    if (!mobConfig) this.systemMessage("- Missing mobConfig", "#ff5555");
-                                    if (!mobTier) this.systemMessage("- Missing mobTier", "#ff5555");
-                                    if (!summonScale) this.systemMessage("- Missing summonScale", "#ff5555");
-
-                                    if (mobConfig && mobTier && summonScale) {
-                                        const summonHealth = (mobTier.baseHealth ?? mobTier.health ?? 0) * summonScale.health;
-                                        const summonDamage = (mobTier.baseDamage ?? mobTier.damage ?? 0) * summonScale.damage;
-
-                                        this.systemMessage(`- Summons: ${mobConfig.name || `Mob ${mobIndex}`}`, "#55ffff");
-                                        this.systemMessage(`- Summon Health: ${formatNumber(summonHealth)}`, "#55ffff");
-                                        this.systemMessage(`- Summon Damage: ${formatNumber(summonDamage)}`, "#55ffff");
-                                    }
-                                }
-
-                                function printStats(obj, prefix = "") {
-                                    for (const [key, value] of Object.entries(obj)) {
-
-                                        if (key === "spawnable") continue;
-
-                                        const fullLabel = prefix
-                                            ? `${prefix} ${formatLabel(key)}`
-                                            : formatLabel(key);
-
-                                        if (typeof value === "number") {
-                                            if (value === 0 || value === 1) continue;
-                                            this.systemMessage(`- ${fullLabel}: ${formatNumber(value)}`, "#FFFFFF");
-                                        }
-
-                                        else if (typeof value === "string") {
-                                            if (!value) continue;
-                                            this.systemMessage(`- ${fullLabel}: ${value}`, "#FFFFFF");
-                                        }
-
-                                        else if (value && typeof value === "object") {
-                                            printStats.call(this, value, fullLabel);
-                                        }
-                                    }
-                                }
-
-                                printStats.call(this, tierStats);
-
-                                return;
-
-                            }
-
-                            // /info
-                            if (commandCheck("/info")) {
-                                const args = e.substring(5).trim().split(/\s+/).filter(Boolean);
-
-                                if (args.length < 1) {
-                                    this.systemMessage("Usage: /info [rarity] [gemstone (ruby,emerald,diamond,uranium,amuletoffire)]", "#ffe65d");
-                                    return;
-                                }
-
-                                const normalize = str => str.toLowerCase().replace(/\s+/g, "");
-
-                                const formatAmountNoX = n => {
-                                    if (n === 1) return "1";
-                                    const format = (value, suffix) => {
-                                        const rounded = Math.round(value * 10) / 10;
-                                        return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${suffix}`;
-                                    };
-                                    if (n >= 1e12) return format(n / 1e12, "t");
-                                    if (n >= 1e15) return format(n / 1e15, "qd");
-                                    if (n >= 1e18) return format(n / 1e18, "qt");
-                                    if (n >= 1e9) return format(n / 1e9, "b");
-                                    if (n >= 1e6) return format(n / 1e6, "m");
-                                    if (n >= 1e3) return format(n / 1e3, "k");
-                                    return `${n}`;
-                                };
-
-                                const rarityOrder = globalThis.RARITY_ORDER ?? RARITY_ORDER;
-                                const list = globalThis._itemList ?? petalConfigs;
-
-                                let rarityIndex = -1;
-                                let rarityTokenCount = 0;
-
-                                for (let i = args.length; i > 0; i--) {
-                                    const candidate = args.slice(0, i).join(" ");
-                                    const normCandidate = normalize(candidate);
-
-                                    const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
-
-                                    if (index !== -1) {
-                                        rarityIndex = index;
-                                        rarityTokenCount = i;
-                                        break;
-                                    }
-                                }
-
-                                if (rarityIndex === -1 && !isNaN(args[0])) {
-                                    const num = parseInt(args[0]);
-                                    if (rarityOrder[num] !== undefined) {
-                                        rarityIndex = num;
-                                        rarityTokenCount = 1;
-                                    }
-                                }
-
-                                if (rarityIndex === -1) {
-                                    this.systemMessage("Invalid rarity.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const gemstone = args.slice(rarityTokenCount).join(" ").toLowerCase().replace(/\s+/g, "");
-
-                                if (!gemstone) {
-                                    this.systemMessage("Invalid gemstone.", "#ff5e5e");
-                                    return;
-                                }
-
-                                const tier = rarityIndex;
-
-                                // diamond
-                                if (gemstone === "diamond") {
-                                    if (tier < 7) {
-                                        this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const table = globalThis.DIAMOND_TABLE;
-
-                                    if (!table) {
-                                        this.systemMessage("Diamond table not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const reduction = table[tier];
-
-                                    if (reduction === undefined) {
-                                        this.systemMessage(`No data for Diamond tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const percent = (reduction * 100).toFixed(0);
-
-                                    this.systemMessage(
-                                        `Diamond Tier ${tier}: ${percent}% damage reduction`,
-                                        "#00e1ff"
-                                    );
-
-                                    return;
-                                }
-
-                                // emerald
-                                if (gemstone === "emerald") {
-                                    if (tier < 7) {
-                                        this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const EMERALD_INDEX = list?.findIndex(i => i?.name === "Emerald") ?? -1;
-
-                                    if (!list || EMERALD_INDEX < 0) {
-                                        this.systemMessage("Emerald item not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const emerald = list[EMERALD_INDEX];
-
-                                    const base = emerald?.emerald;
-                                    const tierData = emerald?.emeraldTiers?.[tier];
-
-                                    if (!base || !tierData) {
-                                        this.systemMessage(`No data for Emerald tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
-
-                                    this.systemMessage(`Emerald Tier ${tier}:`, "#3bedb5");
-                                    this.systemMessage(`- Cooldown: ${base.cooldown}ms`, "#FFFFFF");
-                                    this.systemMessage(`- Max clones: ${base.maxClones}`, "#FFFFFF");
-                                    this.systemMessage(`- Minimum mob rarity required: ${tierData.min}`, "#FFFFFF");
-                                    this.systemMessage(`- Maximum mob rarity (capped): ${tierData.max}`, "#FFFFFF");
-
-                                    return;
-                                }
-
-                                // ruby
-                                if (gemstone === "ruby") {
-                                    if (tier < 7) {
-                                        this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const RUBY_INDEX = list?.findIndex(i => i?.name === "Ruby") ?? -1;
-
-                                    if (!list || RUBY_INDEX < 0) {
-                                        this.systemMessage("Ruby item not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const ruby = list[RUBY_INDEX];
-                                    const tierData = ruby?.rubySummonTiers?.[tier];
-
-                                    if (!tierData) {
-                                        this.systemMessage(`No data for Ruby tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const lifetime = tierData.lifetime ?? 0;
-                                    const map = tierData.map ?? {};
-
-                                    this.systemMessage(`Ruby Tier ${tier}:`, "#ff4b5c");
-                                    this.systemMessage(
-                                        `- Summon Lifetime: ${+(lifetime / 1000).toFixed(3)}s`,
-                                        "#FFFFFF"
-                                    );
-
-                                    const entries = Object.entries(map)
-                                        .map(([k, v]) => [parseInt(k), v]);
-
-                                    if (tierData.max !== null && tierData.maxSummon !== null) {
-                                        const alreadyExists = entries.some(([k]) => k === tierData.max);
-
-                                        if (!alreadyExists) {
-                                            entries.push([tierData.max, tierData.maxSummon]);
-                                        }
-                                    }
-
-                                    entries.forEach(([mobRarity, summonRarity]) => {
-                                        const fromName = rarityOrder[mobRarity] ?? mobRarity;
-                                        const toName = rarityOrder[summonRarity] ?? summonRarity;
-
-                                        const fromColor = tiers[mobRarity]?.color || "#FFFFFF";
-                                        const toColor = tiers[summonRarity]?.color || "#FFFFFF";
-
-                                        this.systemMessage(`${fromName} Mob`, fromColor);
-                                        this.systemMessage(`   ↓ becomes ↓`, "#AAAAAA");
-                                        this.systemMessage(`${toName} Summon`, toColor);
-                                    });
-
-                                    return;
-                                }
-
-                                // uranium
-                                if (gemstone === "uranium") {
-                                    if (tier < 7) {
-                                        this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const URANIUM_INDEX = list?.findIndex(i => i?.name === "Uranium") ?? -1;
-
-                                    if (!list || URANIUM_INDEX < 0) {
-                                        this.systemMessage("Uranium item not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const uranium = list[URANIUM_INDEX];
-                                    const tierData = uranium?.uraniumTiers?.[tier];
-
-                                    if (!tierData) {
-                                        this.systemMessage(`No data for Uranium tier ${tier}`, "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const duration = tierData.duration ?? 0;
-                                    const min = tierData.min ?? 0;
-                                    const max = tierData.max ?? 0;
-
-                                    const minName = rarityOrder[min] ?? min;
-                                    const maxName = rarityOrder[max] ?? max;
-
-                                    this.systemMessage(`Uranium Tier ${tier}:`, "#7dff7d");
-                                    this.systemMessage(`- Freeze Duration: ${duration}ms`, "#FFFFFF");
-                                    this.systemMessage(`- Minimum mob rarity required: ${minName}`, tiers[min]?.color || "#FFFFFF");
-                                    this.systemMessage(`- Maximum mob rarity (capped): ${maxName}`, tiers[max]?.color || "#FFFFFF");
-
-                                    return;
-                                }
-
-                                // amulet of fire
-                                if (gemstone === "amuletoffire" || gemstone === "fire.aura" || gemstone === "fireaura") {
-                                    if (tier < 11) {
-                                        this.systemMessage("Amulets must be Unique+ (11)", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    if (!list) {
-                                        this.systemMessage("Item list not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const fireAura = list.find(i => i?.name === "fire.aura");
-
-                                    if (!fireAura) {
-                                        this.systemMessage("fire.aura not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const baseDamage =
-                                        fireAura?.damage ??
-                                        fireAura?.dmg ??
-                                        fireAura?.auraDamage;
-
-                                    if (baseDamage == null) {
-                                        this.systemMessage("Base aura damage not found.", "#ff5e5e");
-                                        return;
-                                    }
-
-                                    const scaledDamage = baseDamage * petalTierMultiplier(tier);
-
-                                    const sizes = globalThis.PETAL_RARITY_SIZES;
-                                    const sizeScale = sizes[tier] ?? sizes[sizes.length - 1];
-
-                                    const formattedDamage = formatAmountNoX(scaledDamage);
-                                    const formattedSize = formatAmountNoX(sizeScale);
-
-                                    this.systemMessage(`Amulet of Fire Tier ${tier}:`, "#ffaa00");
-                                    this.systemMessage(
-                                        `- Aura Damage: ${formattedDamage}`,
-                                        "#ff6a00"
-                                    );
-                                    this.systemMessage(
-                                        `- Aura Size: ${formattedSize}`,
-                                        "#7ad7ff"
-                                    );
-                                    return;
-                                }
-
-                                this.systemMessage(`Unknown gemstone: ${gemstone}`, "#ff5e5e");
-                                return;
-                            }
-
-                            // disable join announcements
-                            if (commandCheck("/disablejoin") || commandCheck("/disablejoinannouncements")) {
+        if (commandCheck("/pity")) {
+
+            const args = e.substring(5).trim().split(/\s+/).filter(Boolean);
+
+            const craftChances = {
+                common: 100,
+                uncommon: 64,
+                rare: 32,
+                epic: 16,
+                legendary: 8,
+                mythic: 4,
+                ultra: 2,
+                super: 1,
+                ancient: 0.5,
+                omega: 0.4,
+                eternal: 0.3,
+                unique: 0.2,
+                hyper: 0.1,
+                galaxium: 0.09,
+                millom: 0.08,
+                fictional: 0.07,
+                transcestrial: 0.05,
+                chaos: 0.0425,
+                absiorcadinary: 0.035,
+                absolutefictional: 0.0275,
+                nullified: 0.02,
+                hyperfixation: 0.01,
+                atlantical: 0.001,
+                alpha: 0.0009,
+                finalist: 0.0008,
+                epsilation: 0.0007,
+                improbable: 0.0006,
+                izolational: 0.0005,
+                chronodynamic: 0.0001,
+                multiversal: 0.00001
+            };
+
+            const pityIncrements = {
+                uncommon: 0.5,
+                rare: 0.4,
+                epic: 0.3,
+                legendary: 0.2,
+                mythic: 0.1,
+                ultra: 0.05,
+                super: 0.04,
+                ancient: 0.016,
+                omega: 0.013,
+                eternal: 0.01,
+                unique: 0.008,
+                hyper: 0.0072,
+                galaxium: 0.0065,
+                millom: 0.0057,
+                fictional: 0.005,
+                transcestrial: 0.004,
+                chaos: 0.0026,
+                absiorcadinary: 0.002,
+                absolutefictional: 0.0004,
+                nullified: 0.00029,
+                hyperfixation: 0.00027,
+                atlantical: 0.00025,
+                alpha: 0.000238,
+                finalist: 0.00022,
+                epsilation: 0.00021,
+                improbable: 0.0002,
+                izolational: 0.00013,
+                chronodynamic: 0.0001,
+                multiversal: 0.00004
+            };
+
+            const AttemptsForBigPityIncrements = {
+                uncommon: 10,
+                rare: 20,
+                epic: 30,
+                legendary: 40,
+                mythic: 50,
+                ultra: 80,
+                super: 100,
+                ancient: 120,
+                omega: 150,
+                eternal: 200,
+                unique: 250,
+                hyper: 275,
+                galaxium: 300,
+                millom: 350,
+                fictional: 400,
+                transcestrial: 450,
+                chaos: 500,
+                absiorcadinary: 600,
+                absolutefictional: 700,
+                nullified: 900,
+                hyperfixation: 1100,
+                atlantical: 2000,
+                alpha: 4500,
+                finalist: 9000,
+                epsilation: 9500,
+                improbable: 10000,
+                izolational: 15000,
+                chronodynamic: 20000,
+                multiversal: 50000
+            };
+
+            const rarityOrder = Object.keys(craftChances);
+
+            const formatChance = n => {
+                if (n >= 1) return n.toFixed(2).replace(/\.?0+$/, "");
+                if (n >= 0.01) return n.toFixed(3).replace(/\.?0+$/, "");
+                if (n >= 0.001) return n.toFixed(4).replace(/\.?0+$/, "");
+                return n.toFixed(6).replace(/\.?0+$/, "");
+            };
+
+            this.craftAttempts ??= {};
+
+            for (const r of rarityOrder) {
+                const val = this.craftAttempts[r];
+
+                if (typeof val === "number") {
+                    const arr = new Array(128);
+                    if (val > 0) arr[10] = val;
+                    this.craftAttempts[r] = arr;
+                }
+                else if (Array.isArray(val)) {
+                    continue;
+                }
+                else if (!val || typeof val !== "object") {
+                    this.craftAttempts[r] = new Array(128);
+                }
+                else {
+                    this.craftAttempts[r] = craftAttemptsToArray({ [r]: val })[r];
+                }
+            }
+
+            if (args.length < 1) {
+                this.systemMessage("Usage: /pity [rarity] <petal>", "#ffe65d");
+                return;
+            }
+
+            // Rarity names can be multiple words (e.g. Absolute Fictional),
+            // so match the longest leading token run.
+            let rarityIndex = -1;
+            for (let i = args.length; i > 0; i--) {
+                const candidate = args.slice(0, i).join(" ").toLowerCase().replace(/\s+/g, "");
+                const found = rarityOrder.indexOf(candidate);
+                if (found !== -1) {
+                    rarityIndex = found;
+                    args.splice(0, i);
+                    break;
+                }
+            }
+
+            if (rarityIndex === -1 || rarityIndex === rarityOrder.length - 1) {
+                this.systemMessage("Invalid or max rarity.", "#ff5555");
+                return;
+            }
+
+            const nextRarityIndex = rarityIndex + 1;
+            const nextRarity = tiers[nextRarityIndex].name
+                .toLowerCase()
+                .replace(/\s+/g, "");
+
+            const up = tiers[nextRarityIndex];
+            const pityBucket = this.craftAttempts[nextRarity] || [];
+
+            const baseChance = craftChances[nextRarity] || 0;
+            const pityInc = pityIncrements[nextRarity] || 0;
+            const bigReq = AttemptsForBigPityIncrements[nextRarity];
+
+            function getBonusPity(fails) {
+                if (bigReq && fails >= bigReq) {
+                    const extraFails = fails - bigReq + 1;
+                    return extraFails * 2.5;
+                }
+
+                return 0;
+            }
+
+            function getRealPity(fails) {
+                return (fails * pityInc) + getBonusPity(fails);
+            }
+
+            function getTotalChance(fails) {
+                let chance = baseChance + getRealPity(fails);
+                if (chance > 100) chance = 100;
+                return chance;
+            }
+
+            if (args.length > 0) {
+
+                const petalArg = args.join(" ").toLowerCase();
+
+                const petalIndex = Object.values(petalConfigs)
+                    .findIndex(p => p.name.toLowerCase() === petalArg);
+
+                if (petalIndex === -1) {
+                    this.systemMessage("Invalid petal.", "#ff5555");
+                    return;
+                }
+
+                const petal = Object.values(petalConfigs)[petalIndex];
+                const fails = Number(pityBucket[petalIndex] || 0);
+
+                const pityBonus = getRealPity(fails);
+                const totalChance = getTotalChance(fails);
+
+                this.systemMessage(
+                    `${tiers[nextRarityIndex].name} ${petal.name} pity:`,
+                    tiers[nextRarityIndex].color
+                );
+
+                this.systemMessage(
+                    `${formatChance(totalChance)}% (+${formatChance(pityBonus)} pity)`,
+                    tiers[nextRarityIndex].color
+                );
+
+                this.systemMessage(
+                    `Current Attempt: ${fails + 1}`,
+                    tiers[nextRarityIndex].color
+                );
+
+                if (bigReq) {
+                    this.systemMessage(
+                        `Attempts for PRNG: ${fails}/${bigReq}`,
+                        tiers[nextRarityIndex].color
+                    );
+                }
+
+                return;
+            }
+
+            this.systemMessage(
+                `All pity for ${tiers[nextRarityIndex].name}:`,
+                tiers[nextRarityIndex].color
+            );
+
+            let found = 0;
+            let delay = 250;
+            let totalAttempts = 0;
+
+            for (let i = 0; i < pityBucket.length; i++) {
+
+                const fails = Number(pityBucket[i] || 0);
+                if (fails <= 0) continue;
+                totalAttempts += fails;
+
+                const petal = Object.values(petalConfigs)[i];
+                if (!petal) continue;
+
+                found++;
+
+                const pityBonus = getRealPity(fails);
+                const totalChance = getTotalChance(fails);
+
+                setTimeout(() => {
+                    this.systemMessage(
+                        `${petal.name}: ${formatChance(totalChance)}% (+${formatChance(pityBonus)} pity)`,
+                        tiers[nextRarityIndex].color
+                    );
+                }, delay);
+
+                delay += 250;
+            }
+
+            if (found > 0) {
+                this.systemMessage(
+                    `Total attempts: ${totalAttempts}`,
+                    tiers[nextRarityIndex].color
+                );
+            }
+
+            if (found === 0) {
+                this.systemMessage(
+                    `No active pity for ${tiers[nextRarityIndex].name}.`,
+                    tiers[nextRarityIndex].color
+                );
+            }
+
+            return;
+        }
+
+        // mobinfo
+        if (commandCheck("/mobinfo")) {
+            const args = e.substring(8).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 2) {
+                this.systemMessage("Usage: /mobinfo [rarity] [mob]", "#ffe65d");
+                return;
+            }
+
+            const raw = e.substring(8).trim();
+
+            if (!raw) {
+                this.systemMessage("Usage: /mobinfo [rarity] [mob]", "#ffe65d");
+                return;
+            }
+
+            const rarityOrder = [
+                "Common", "Uncommon", "Rare", "Epic",
+                "Legendary", "Mythic", "Ultra", "Super",
+                "Ancient", "Omega", "Eternal", "Unique",
+                "Hyper", "Galaxium", "Millom",
+                "Fictional", "Transcestrial", "Chaos",
+                "Absiorcadinary", "Absolute Fictional",
+                "Nullified", "Hyperfixation",
+                "Atlantical", "Alpha",
+                "Finalist", "Epsilation",
+                "Improbable", "Izolational",
+                "Chronodynamic", "Multiversal"
+            ];
+
+            const normalize = str => str.toLowerCase().replace(/\s+/g, "");
+
+            const formatNumber = num => {
+                const abs = Math.abs(num);
+                const suffixes = [
+                    ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
+                    ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
+                    ["Ud", 1e36], ["Dc", 1e33],
+                    ["Nv", 1e30],
+                    ["Oc", 1e27],
+                    ["Sp", 1e24],
+                    ["Sx", 1e21],
+                    ["Qt", 1e18],
+                    ["Qd", 1e15],
+                    ["t", 1e12],
+                    ["b", 1e9],
+                    ["m", 1e6],
+                    ["k", 1e3]
+                ];
+
+                for (const [suffix, value] of suffixes) {
+                    if (abs >= value) {
+                        let formatted = (num / value).toFixed(2);
+                        formatted = formatted.replace(/\.?0+$/, "");
+                        return formatted + suffix;
+                    }
+                }
+
+                return Math.round(num).toString();
+            };
+
+            let rarityIndex = -1;
+            let matchedRarity = null;
+            let rarityTokenCount = 0;
+
+            for (let i = args.length; i > 0; i--) {
+                const candidate = args.slice(0, i).join(" ");
+                const normCandidate = normalize(candidate);
+
+                const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
+
+                if (index !== -1) {
+                    rarityIndex = index;
+                    matchedRarity = rarityOrder[index];
+                    rarityTokenCount = i;
+                    break;
+                }
+            }
+
+            if (rarityIndex === -1 && !isNaN(args[0])) {
+                const num = parseInt(args[0]);
+                if (rarityOrder[num]) {
+                    rarityIndex = num;
+                    matchedRarity = rarityOrder[num];
+                    rarityTokenCount = 1;
+                }
+            }
+
+            if (rarityIndex === -1) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const mobPart = args.slice(rarityTokenCount).join(" ");
+            const mobNormalized = normalize(mobPart);
+
+            const mob = globalThis._mobList.find(
+                m => normalize(m.name) === mobNormalized
+            );
+
+            if (!mob) {
+                this.systemMessage("Mob not found.", "#ff5e5e");
+                return;
+            }
+
+            const table = this.room?.isWaves
+                ? globalThis.WAVES_RARITY_TABLE
+                : globalThis.RARITY_TABLE;
+
+            if (!table || rarityIndex < 0 || !table[rarityIndex]) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const rarityData = table[rarityIndex];
+            const rarityName = rarityOrder[rarityIndex];
+
+            const finalHealth = mob.health * rarityData.health;
+            const finalDamage = mob.damage * rarityData.damage;
+            const armor = rarityData.armor ?? 0;
+
+            this.systemMessage(
+                `${rarityName} ${mob.name}: Health: ${formatNumber(finalHealth)}, Damage: ${formatNumber(finalDamage)}, Armor: ${formatNumber(armor)}`,
+                tiers[rarityIndex]?.color || "#ffffff"
+            );
+        }
+
+        // bossinfo
+        if (commandCheck("/bossinfo")) {
+            const args = e.substring(9).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 2) {
+                this.systemMessage("Usage: /bossinfo [rarity] [mob]", "#ffe65d");
+                return;
+            }
+
+            const raw = e.substring(9).trim();
+
+            if (!raw) {
+                this.systemMessage("Usage: /bossinfo [rarity] [mob]", "#ffe65d");
+                return;
+            }
+
+            const rarityOrder = [
+                "Common", "Uncommon", "Rare", "Epic",
+                "Legendary", "Mythic", "Ultra", "Super",
+                "Ancient", "Omega", "Eternal", "Unique",
+                "Hyper", "Galaxium", "Millom",
+                "Fictional", "Transcestrial", "Chaos",
+                "Absiorcadinary", "Absolute Fictional",
+                "Nullified", "Hyperfixation",
+                "Atlantical", "Alpha",
+                "Finalist", "Epsilation",
+                "Improbable", "Izolational",
+                "Chronodynamic", "Multiversal"
+            ];
+
+            const normalize = str => str.toLowerCase().replace(/\s+/g, "");
+
+            const formatNumber = num => {
+                const abs = Math.abs(num);
+                const suffixes = [
+                    ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
+                    ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
+                    ["Ud", 1e36], ["Dc", 1e33],
+                    ["Nv", 1e30],
+                    ["Oc", 1e27],
+                    ["Sp", 1e24],
+                    ["Sx", 1e21],
+                    ["Qt", 1e18],
+                    ["Qd", 1e15],
+                    ["t", 1e12],
+                    ["b", 1e9],
+                    ["m", 1e6],
+                    ["k", 1e3]
+                ];
+
+                for (const [suffix, value] of suffixes) {
+                    if (abs >= value) {
+                        let formatted = (num / value).toFixed(2);
+                        formatted = formatted.replace(/\.?0+$/, "");
+                        return formatted + suffix;
+                    }
+                }
+
+                return Math.round(num).toString();
+            };
+
+            let rarityIndex = -1;
+            let matchedRarity = null;
+            let rarityTokenCount = 0;
+
+            for (let i = args.length; i > 0; i--) {
+                const candidate = args.slice(0, i).join(" ");
+                const normCandidate = normalize(candidate);
+
+                const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
+
+                if (index !== -1) {
+                    rarityIndex = index;
+                    matchedRarity = rarityOrder[index];
+                    rarityTokenCount = i;
+                    break;
+                }
+            }
+
+            if (rarityIndex === -1 && !isNaN(args[0])) {
+                const num = parseInt(args[0]);
+                if (rarityOrder[num]) {
+                    rarityIndex = num;
+                    matchedRarity = rarityOrder[num];
+                    rarityTokenCount = 1;
+                }
+            }
+
+            if (rarityIndex === -1) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const mobPart = args.slice(rarityTokenCount).join(" ");
+            const mobNormalized = normalize(mobPart);
+
+            const mob = globalThis._mobList.find(
+                m => normalize(m.name) === mobNormalized
+            );
+
+            if (!mob) {
+                this.systemMessage("Mob not found.", "#ff5e5e");
+                return;
+            }
+
+            const table = this.room?.isWaves
+                ? globalThis.WAVES_RARITY_TABLE
+                : globalThis.RARITY_BOSSES;
+
+            if (!table || rarityIndex < 0 || !table[rarityIndex]) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const rarityData = table[rarityIndex];
+            const rarityName = rarityOrder[rarityIndex];
+
+            const finalHealth = mob.health * rarityData.health;
+            const finalDamage = mob.damage * rarityData.damage;
+            const armor = rarityData.armor ?? 0;
+
+            this.systemMessage(
+                `${rarityName} ${mob.name}: Health: ${formatNumber(finalHealth)}, Damage: ${formatNumber(finalDamage)}`,
+                tiers[rarityIndex]?.color || "#ffffff"
+            );
+
+            if (mob.name === "Beetle") {
+
+                this.systemMessage("Special abilities:", "#55ffff");
+                this.systemMessage("Shrinks and shoots projectiles at high speed.", "#ffe65d");
+
+            } else if (mob.name === "Scorpion") {
+
+                this.systemMessage("Special abilities:", "#55ffff");
+                this.systemMessage("Shoots rapid poisonous missiles at 8 angles and a Pincer projectile.", "#ffe65d");
+
+            }
+        }
+
+        // /petalinfo
+        if (commandCheck("/petalinfo")) {
+            const args = e.substring(10).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 1) {
+                this.systemMessage("Usage: /petalinfo [rarity] [bloodleaf/bloodlight/pomegranate/shinywing]", "#ffe65d");
+                return;
+            }
+
+            const normalize = str => str.toLowerCase().replace(/\s+/g, "");
+
+            const formatNumber = num => {
+                const abs = Math.abs(num);
+                const suffixes = [
+                    ["Nd", 1e60], ["Od", 1e57], ["Spd", 1e54], ["Sxd", 1e51],
+                    ["Qid", 1e48], ["Qad", 1e45], ["Td", 1e42], ["Dd", 1e39],
+                    ["Ud", 1e36], ["Dc", 1e33],
+                    ["Nv", 1e30],
+                    ["Oc", 1e27],
+                    ["Sp", 1e24],
+                    ["Sx", 1e21],
+                    ["Qt", 1e18],
+                    ["Qd", 1e15],
+                    ["t", 1e12],
+                    ["b", 1e9],
+                    ["m", 1e6],
+                    ["k", 1e3]
+                ];
+
+                for (const [suffix, value] of suffixes) {
+                    if (abs >= value) {
+                        let formatted = (num / value).toFixed(2);
+                        formatted = formatted.replace(/\.?0+$/, "");
+                        return formatted + suffix;
+                    }
+                }
+
+                let formatted = Number(num).toFixed(2);
+                formatted = formatted.replace(/\.?0+$/, "");
+                return formatted;
+            };
+
+            const rarityOrder = globalThis.RARITY_ORDER;
+
+            let rarityIndex = -1;
+            let rarityTokenCount = 0;
+
+            for (let i = args.length; i > 0; i--) {
+                const candidate = args.slice(0, i).join(" ");
+                const normCandidate = normalize(candidate);
+
+                const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
+
+                if (index !== -1) {
+                    rarityIndex = index;
+                    rarityTokenCount = i;
+                    break;
+                }
+            }
+
+            if (rarityIndex === -1 && !isNaN(args[0])) {
+                const num = parseInt(args[0]);
+                if (rarityOrder[num] !== undefined) {
+                    rarityIndex = num;
+                    rarityTokenCount = 1;
+                }
+            }
+
+            if (rarityIndex === -1) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const petal = args.slice(rarityTokenCount).join(" ").toLowerCase().replace(/\s+/g, "");
+
+            if (!petal) {
+                this.systemMessage("Invalid petal.", "#ff5e5e");
+                return;
+            }
+
+            const tier = rarityIndex;
+
+            if (petal === "bloodleaf" || petal === "blood") {
+
+                const table = globalThis.BLOOD_LEAF_TABLE;
+                const list = globalThis._itemList;
+
+                if (!table || !list) {
+                    this.systemMessage("Missing data tables.", "#ff5e5e");
+                    return;
+                }
+
+                const data = table[tier];
+
+                if (!data) {
+                    this.systemMessage(`No data for Blood Leaf tier ${tier}`, "#ff5e5e");
+                    return;
+                }
+
+                const baseItem = list.find(i => i?.name === "Blood Leaf");
+                if (!baseItem) {
+                    this.systemMessage("Blood Leaf item not found.", "#ff5e5e");
+                    return;
+                }
+
+                const killsData =
+                    (this.bloodLeafKills && typeof this.bloodLeafKills === "object")
+                        ? this.bloodLeafKills
+                        : {};
+
+                const currentKills = killsData[tier] ?? 0;
+
+                const baseDamage = baseItem.damage ?? 1;
+                const scaledBaseDamage = baseDamage * petalTierMultiplier(tier);
+
+                const maxMultiplier = 1 + data.cap;
+                const perKillMultiplier = 1 + data.perKill;
+
+                const currentMultiplier = Math.min(
+                    1 + (currentKills * data.perKill),
+                    maxMultiplier
+                );
+
+                const currentDamage = scaledBaseDamage * currentMultiplier;
+
+                const damagePerKill = scaledBaseDamage * perKillMultiplier;
+                const maxDamage = scaledBaseDamage * maxMultiplier;
+
+                const killsToMax = Math.ceil(data.cap / data.perKill);
+
+                this.systemMessage(`Blood Leaf Tier ${tier}:`, "#ff2f4f");
+                this.systemMessage(`- Current Kills: ${formatNumber(currentKills)}`, "#ff8080");
+                this.systemMessage(`- Current Petal Damage: ${formatNumber(currentDamage)}`, "#ffb347");
+                this.systemMessage(`- Base Damage: ${formatNumber(scaledBaseDamage)}`, "#FFFFFF");
+
+                const bonusPerKill = damagePerKill - scaledBaseDamage;
+
+                this.systemMessage(`- Bonus per kill: +${formatNumber(bonusPerKill)} damage`, "#FFFFFF");
+                this.systemMessage(`- Max Damage: ${formatNumber(maxDamage)}`, "#3bedb5");
+                this.systemMessage(`- Max reached at ~${formatNumber(killsToMax)} kills`, "#AAAAAA");
+
+                const bloodLeafData = list.find(i => i?.name === "Blood Leaf");
+
+                const minMobReq =
+                    bloodLeafData?.minimumMobRarityForBloodLeafDamage?.[tier];
+
+                const rarityName = globalThis.RARITY_ORDER?.[minMobReq] ?? `Tier ${minMobReq}`;
+                const rarityColor = tiers?.[minMobReq]?.color ?? "#ffd36b";
+
+                if (minMobReq !== undefined) {
+                    this.systemMessage(`- Minimum mob rarity required: ${rarityName}`, rarityColor);
+                } else {
+                    this.systemMessage(`- Minimum mob rarity required: None`, "#888888");
+                }
+
+                return;
+            }
+
+            if (petal === "bloodlight" || petal === "blight") {
+
+                const bloodLightTable = globalThis.BLOOD_LIGHT_TABLE;
+                const list = globalThis._itemList;
+
+                if (!bloodLightTable || !list) {
+                    this.systemMessage("Missing data tables.", "#ff5e5e");
+                    return;
+                }
+
+                const ratioMultiplier = bloodLightTable[tier] ?? bloodLightTable[bloodLightTable.length - 1];
+
+                const baseItem = list.find(i => i?.name === "Blood Light");
+                if (!baseItem) {
+                    this.systemMessage("Blood Light item not found.", "#ff5e5e");
+                    return;
+                }
+
+                const baseDamage = Array.isArray(baseItem.damage)
+                    ? (baseItem.damage[tier] ?? baseItem.damage[baseItem.damage.length - 1])
+                    : (baseItem.damage ?? 1);
+
+                const scaledDamage = baseDamage * petalTierMultiplier(tier);
+
+                const baseRatio = Array.isArray(baseItem.bloodLightRatio)
+                    ? (baseItem.bloodLightRatio[tier] ?? baseItem.bloodLightRatio[baseItem.bloodLightRatio.length - 1])
+                    : (baseItem.bloodLightRatio ?? 0.1);
+
+                const finalRatio = baseRatio * ratioMultiplier;
+                const selfDamage = scaledDamage * finalRatio;
+
+                this.systemMessage(`Blood Light Tier ${tier}:`, "#ff2f4f");
+                this.systemMessage(`- Base Damage: ${formatNumber(scaledDamage)}`, "#FFFFFF");
+                this.systemMessage(`- Self Damage Ratio: ${formatNumber(finalRatio * 100)}%`, "#ff9aa2");
+                this.systemMessage(`- Self Damage per hit: ${formatNumber(selfDamage)}`, "#ff5555");
+
+                return;
+            }
+
+            if (petal === "pomegranate" || petal === "pome") {
+
+                const pomegranateTable = globalThis.POMEGRANATE_TABLE;
+                const list = globalThis._itemList;
+
+                if (!pomegranateTable || !list) {
+                    this.systemMessage("Missing data tables.", "#ff5e5e");
+                    return;
+                }
+
+                const ratioMultiplier = pomegranateTable[tier] ?? pomegranateTable[pomegranateTable.length - 1];
+
+                const baseItem = list.find(i => i?.name === "Pomegranate");
+                if (!baseItem) {
+                    this.systemMessage("Pomegranate item not found.", "#ff5e5e");
+                    return;
+                }
+
+                const baseDamage = Array.isArray(baseItem.damage)
+                    ? (baseItem.damage[tier] ?? baseItem.damage[baseItem.damage.length - 1])
+                    : (baseItem.damage ?? 1);
+
+                const scaledDamage = baseDamage * petalTierMultiplier(tier);
+
+                const baseRatio = Array.isArray(baseItem.PomegranateRatio)
+                    ? (baseItem.PomegranateRatio[tier] ?? baseItem.PomegranateRatio[baseItem.PomegranateRatio.length - 1])
+                    : (baseItem.PomegranateRatio ?? 0.1);
+
+                const finalRatio = baseRatio * ratioMultiplier;
+                const selfDamage = scaledDamage * finalRatio;
+
+                this.systemMessage(`Pomegranate Tier ${tier}:`, "#ff2f4f");
+                this.systemMessage(`- Base Damage: ${formatNumber(scaledDamage)}`, "#FFFFFF");
+                this.systemMessage(`- Self Damage Ratio: ${formatNumber(finalRatio * 100)}%`, "#ff9aa2");
+                this.systemMessage(`- Self Damage per hit: ${formatNumber(selfDamage)}`, "#ff5555");
+
+                return;
+            }
+
+            if (petal === "shinywing" || petal === "shiny") {
+
+                const table = globalThis.SHINY_WING_TABLE;
+                const list = globalThis._itemList;
+
+                if (!table || !list) {
+                    this.systemMessage("Missing data tables.", "#ff5e5e");
+                    return;
+                }
+
+                const data = table[tier];
+
+                if (!data) {
+                    this.systemMessage(`No data for Shiny Wing tier ${tier}`, "#ff5e5e");
+                    return;
+                }
+
+                const baseItem = list.find(i => i?.name === "Shiny Wing");
+                if (!baseItem) {
+                    this.systemMessage("Shiny Wing item not found.", "#ff5e5e");
+                    return;
+                }
+
+                const baseDamage = baseItem.damage ?? 1;
+                const scaledBaseDamage = baseDamage * petalTierMultiplier(tier);
+
+                const BASE_SPEED = 0.125;
+                const currentSpeed = this.body?.rotationSpeed ?? 0.125;
+
+                const normalizedCurrent =
+                    Math.max(0, (currentSpeed - BASE_SPEED) / BASE_SPEED);
+
+                const currentBonus =
+                    Math.min(normalizedCurrent * data.perSpeed, data.cap);
+
+                const currentDamage =
+                    scaledBaseDamage * (1 + currentBonus);
+
+                const testSpeeds = [0.125, 0.15, 0.175, 0.20, 0.25, 0.30, 0.40, 0.50];
+
+                this.systemMessage(`Shiny Wing Tier ${tier}:`, "#ffd84d");
+                this.systemMessage(`- Current Petal Speed: ${formatNumber(currentSpeed)}`, "#87CEFA");
+                this.systemMessage(`- Current Petal Damage: ${formatNumber(currentDamage)}`, "#ffb347");
+                this.systemMessage(`- Base Damage: ${formatNumber(scaledBaseDamage)}`, "#FFFFFF");
+
+                testSpeeds.forEach(speed => {
+                    const normalized = Math.max(0, (speed - BASE_SPEED) / BASE_SPEED);
+                    const rawBonus = normalized * data.perSpeed;
+                    const finalBonus = Math.min(rawBonus, data.cap);
+
+                    const finalDamage = scaledBaseDamage * (1 + finalBonus);
+                    const bonusDamage = finalDamage - scaledBaseDamage;
+
+                    this.systemMessage(
+                        `- At speed ${formatNumber(speed)} → +${formatNumber(bonusDamage)} damage`,
+                        "#AAAAFF"
+                    );
+                });
+
+                const maxDamage = scaledBaseDamage * (1 + data.cap);
+
+                this.systemMessage(`- Max Damage: ${formatNumber(maxDamage)}`, "#3bedb5");
+
+                return;
+            }
+
+            if (petal === "clover" || petal === "clov") {
+
+                const list = globalThis._itemList;
+
+                if (!list) {
+                    this.systemMessage("Missing data tables.", "#ff5e5e");
+                    return;
+                }
+
+                const item = list.find(i => i?.name === "Clover");
+
+                if (!item) {
+                    this.systemMessage("Clover item not found.", "#ff5e5e");
+                    return;
+                }
+
+                const chance = item.cloverTiers?.[tier]?.chance ?? 0;
+
+                this.systemMessage(`Clover Tier ${tier}:`, "#7CFC00");
+                this.systemMessage(`- Double Drop Chance: ${formatNumber(chance * 100)}%`, "#FFFFFF");
+
+                return;
+            }
+
+            const list = globalThis._itemList;
+
+            if (!list) {
+                this.systemMessage("Missing data tables.", "#ff5e5e");
+                return;
+            }
+
+            const petalNorm = normalize(petal);
+            const item = list.find(i => normalize(i?.name) === petalNorm);
+
+            if (!item) {
+                this.systemMessage("Petal not found.", "#ff5e5e");
+                return;
+            }
+
+            const tierStats = item.tiers?.[tier];
+            if (!tierStats) {
+                this.systemMessage(`No custom stats for tier ${tier}`, "#ff5e5e");
+                return;
+            }
+
+            const color = tiers[tier]?.color || "#ffffff";
+            const rarityName = globalThis.RARITY_ORDER?.[tier] ?? `Tier ${tier}`;
+
+            this.systemMessage(`${rarityName} ${item.name}:`, color);
+
+            function formatLabel(str) {
+                return str
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, c => c.toUpperCase());
+            }
+
+            if (tierStats.spawnable) {
+                const mobIndex = tierStats.spawnable.index;
+                const mobRarity = tierStats.spawnable.rarity;
+
+                const mobConfig = globalThis._mobList?.[mobIndex];
+                const mobTier = mobConfig?.tiers?.[mobRarity];
+                const summonScale = globalThis.SUMMON_STATS?.[mobRarity];
+
+                if (!mobConfig) this.systemMessage("- Missing mobConfig", "#ff5555");
+                if (!mobTier) this.systemMessage("- Missing mobTier", "#ff5555");
+                if (!summonScale) this.systemMessage("- Missing summonScale", "#ff5555");
+
+                if (mobConfig && mobTier && summonScale) {
+                    const summonHealth = (mobTier.baseHealth ?? mobTier.health ?? 0) * summonScale.health;
+                    const summonDamage = (mobTier.baseDamage ?? mobTier.damage ?? 0) * summonScale.damage;
+
+                    this.systemMessage(`- Summons: ${mobConfig.name || `Mob ${mobIndex}`}`, "#55ffff");
+                    this.systemMessage(`- Summon Health: ${formatNumber(summonHealth)}`, "#55ffff");
+                    this.systemMessage(`- Summon Damage: ${formatNumber(summonDamage)}`, "#55ffff");
+                }
+            }
+
+            function printStats(obj, prefix = "") {
+                for (const [key, value] of Object.entries(obj)) {
+
+                    if (key === "spawnable") continue;
+
+                    const fullLabel = prefix
+                        ? `${prefix} ${formatLabel(key)}`
+                        : formatLabel(key);
+
+                    if (typeof value === "number") {
+                        if (value === 0 || value === 1) continue;
+                        this.systemMessage(`- ${fullLabel}: ${formatNumber(value)}`, "#FFFFFF");
+                    }
+
+                    else if (typeof value === "string") {
+                        if (!value) continue;
+                        this.systemMessage(`- ${fullLabel}: ${value}`, "#FFFFFF");
+                    }
+
+                    else if (value && typeof value === "object") {
+                        printStats.call(this, value, fullLabel);
+                    }
+                }
+            }
+
+            printStats.call(this, tierStats);
+
+            return;
 
         }
-    if (commandCheck("/coords")) {
-        this.systemMessage(`Your position: ${this.body?.x}, ${this.body?.y}`)
-    }
+
+        // /info
+        if (commandCheck("/info")) {
+            const args = e.substring(5).trim().split(/\s+/).filter(Boolean);
+
+            if (args.length < 1) {
+                this.systemMessage("Usage: /info [rarity] [gemstone (ruby,emerald,diamond,uranium,amuletoffire)]", "#ffe65d");
+                return;
+            }
+
+            const normalize = str => str.toLowerCase().replace(/\s+/g, "");
+
+            const formatAmountNoX = n => {
+                if (n === 1) return "1";
+                const format = (value, suffix) => {
+                    const rounded = Math.round(value * 10) / 10;
+                    return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}${suffix}`;
+                };
+                if (n >= 1e12) return format(n / 1e12, "t");
+                if (n >= 1e15) return format(n / 1e15, "qd");
+                if (n >= 1e18) return format(n / 1e18, "qt");
+                if (n >= 1e9) return format(n / 1e9, "b");
+                if (n >= 1e6) return format(n / 1e6, "m");
+                if (n >= 1e3) return format(n / 1e3, "k");
+                return `${n}`;
+            };
+
+            const rarityOrder = globalThis.RARITY_ORDER ?? RARITY_ORDER;
+            const list = globalThis._itemList ?? petalConfigs;
+
+            let rarityIndex = -1;
+            let rarityTokenCount = 0;
+
+            for (let i = args.length; i > 0; i--) {
+                const candidate = args.slice(0, i).join(" ");
+                const normCandidate = normalize(candidate);
+
+                const index = rarityOrder.findIndex(r => normalize(r) === normCandidate);
+
+                if (index !== -1) {
+                    rarityIndex = index;
+                    rarityTokenCount = i;
+                    break;
+                }
+            }
+
+            if (rarityIndex === -1 && !isNaN(args[0])) {
+                const num = parseInt(args[0]);
+                if (rarityOrder[num] !== undefined) {
+                    rarityIndex = num;
+                    rarityTokenCount = 1;
+                }
+            }
+
+            if (rarityIndex === -1) {
+                this.systemMessage("Invalid rarity.", "#ff5e5e");
+                return;
+            }
+
+            const gemstone = args.slice(rarityTokenCount).join(" ").toLowerCase().replace(/\s+/g, "");
+
+            if (!gemstone) {
+                this.systemMessage("Invalid gemstone.", "#ff5e5e");
+                return;
+            }
+
+            const tier = rarityIndex;
+
+            // diamond
+            if (gemstone === "diamond") {
+                if (tier < 7) {
+                    this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
+                    return;
+                }
+
+                const table = globalThis.DIAMOND_TABLE;
+
+                if (!table) {
+                    this.systemMessage("Diamond table not found.", "#ff5e5e");
+                    return;
+                }
+
+                const reduction = table[tier];
+
+                if (reduction === undefined) {
+                    this.systemMessage(`No data for Diamond tier ${tier}`, "#ff5e5e");
+                    return;
+                }
+
+                const percent = (reduction * 100).toFixed(0);
+
+                this.systemMessage(
+                    `Diamond Tier ${tier}: ${percent}% damage reduction`,
+                    "#00e1ff"
+                );
+
+                return;
+            }
+
+            // emerald
+            if (gemstone === "emerald") {
+                if (tier < 7) {
+                    this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
+                    return;
+                }
+
+                const EMERALD_INDEX = list?.findIndex(i => i?.name === "Emerald") ?? -1;
+
+                if (!list || EMERALD_INDEX < 0) {
+                    this.systemMessage("Emerald item not found.", "#ff5e5e");
+                    return;
+                }
+
+                const emerald = list[EMERALD_INDEX];
+
+                const base = emerald?.emerald;
+                const tierData = emerald?.emeraldTiers?.[tier];
+
+                if (!base || !tierData) {
+                    this.systemMessage(`No data for Emerald tier ${tier}`, "#ff5e5e");
+                    return;
+                }
+
+                this.systemMessage(`Emerald Tier ${tier}:`, "#3bedb5");
+                this.systemMessage(`- Cooldown: ${base.cooldown}ms`, "#FFFFFF");
+                this.systemMessage(`- Max clones: ${base.maxClones}`, "#FFFFFF");
+                this.systemMessage(`- Minimum mob rarity required: ${tierData.min}`, "#FFFFFF");
+                this.systemMessage(`- Maximum mob rarity (capped): ${tierData.max}`, "#FFFFFF");
+
+                return;
+            }
+
+            // ruby
+            if (gemstone === "ruby") {
+                if (tier < 7) {
+                    this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
+                    return;
+                }
+
+                const RUBY_INDEX = list?.findIndex(i => i?.name === "Ruby") ?? -1;
+
+                if (!list || RUBY_INDEX < 0) {
+                    this.systemMessage("Ruby item not found.", "#ff5e5e");
+                    return;
+                }
+
+                const ruby = list[RUBY_INDEX];
+                const tierData = ruby?.rubySummonTiers?.[tier];
+
+                if (!tierData) {
+                    this.systemMessage(`No data for Ruby tier ${tier}`, "#ff5e5e");
+                    return;
+                }
+
+                const lifetime = tierData.lifetime ?? 0;
+                const map = tierData.map ?? {};
+
+                this.systemMessage(`Ruby Tier ${tier}:`, "#ff4b5c");
+                this.systemMessage(
+                    `- Summon Lifetime: ${+(lifetime / 1000).toFixed(3)}s`,
+                    "#FFFFFF"
+                );
+
+                const entries = Object.entries(map)
+                    .map(([k, v]) => [parseInt(k), v]);
+
+                if (tierData.max !== null && tierData.maxSummon !== null) {
+                    const alreadyExists = entries.some(([k]) => k === tierData.max);
+
+                    if (!alreadyExists) {
+                        entries.push([tierData.max, tierData.maxSummon]);
+                    }
+                }
+
+                entries.forEach(([mobRarity, summonRarity]) => {
+                    const fromName = rarityOrder[mobRarity] ?? mobRarity;
+                    const toName = rarityOrder[summonRarity] ?? summonRarity;
+
+                    const fromColor = tiers[mobRarity]?.color || "#FFFFFF";
+                    const toColor = tiers[summonRarity]?.color || "#FFFFFF";
+
+                    this.systemMessage(`${fromName} Mob`, fromColor);
+                    this.systemMessage(`   ↓ becomes ↓`, "#AAAAAA");
+                    this.systemMessage(`${toName} Summon`, toColor);
+                });
+
+                return;
+            }
+
+            // uranium
+            if (gemstone === "uranium") {
+                if (tier < 7) {
+                    this.systemMessage("Gemstones must be Super+ (7)", "#ff5e5e");
+                    return;
+                }
+
+                const URANIUM_INDEX = list?.findIndex(i => i?.name === "Uranium") ?? -1;
+
+                if (!list || URANIUM_INDEX < 0) {
+                    this.systemMessage("Uranium item not found.", "#ff5e5e");
+                    return;
+                }
+
+                const uranium = list[URANIUM_INDEX];
+                const tierData = uranium?.uraniumTiers?.[tier];
+
+                if (!tierData) {
+                    this.systemMessage(`No data for Uranium tier ${tier}`, "#ff5e5e");
+                    return;
+                }
+
+                const duration = tierData.duration ?? 0;
+                const min = tierData.min ?? 0;
+                const max = tierData.max ?? 0;
+
+                const minName = rarityOrder[min] ?? min;
+                const maxName = rarityOrder[max] ?? max;
+
+                this.systemMessage(`Uranium Tier ${tier}:`, "#7dff7d");
+                this.systemMessage(`- Freeze Duration: ${duration}ms`, "#FFFFFF");
+                this.systemMessage(`- Minimum mob rarity required: ${minName}`, tiers[min]?.color || "#FFFFFF");
+                this.systemMessage(`- Maximum mob rarity (capped): ${maxName}`, tiers[max]?.color || "#FFFFFF");
+
+                return;
+            }
+
+            // amulet of fire
+            if (gemstone === "amuletoffire" || gemstone === "fire.aura" || gemstone === "fireaura") {
+                if (tier < 11) {
+                    this.systemMessage("Amulets must be Unique+ (11)", "#ff5e5e");
+                    return;
+                }
+
+                if (!list) {
+                    this.systemMessage("Item list not found.", "#ff5e5e");
+                    return;
+                }
+
+                const fireAura = list.find(i => i?.name === "fire.aura");
+
+                if (!fireAura) {
+                    this.systemMessage("fire.aura not found.", "#ff5e5e");
+                    return;
+                }
+
+                const baseDamage =
+                    fireAura?.damage ??
+                    fireAura?.dmg ??
+                    fireAura?.auraDamage;
+
+                if (baseDamage == null) {
+                    this.systemMessage("Base aura damage not found.", "#ff5e5e");
+                    return;
+                }
+
+                const scaledDamage = baseDamage * petalTierMultiplier(tier);
+
+                const sizes = globalThis.PETAL_RARITY_SIZES;
+                const sizeScale = sizes[tier] ?? sizes[sizes.length - 1];
+
+                const formattedDamage = formatAmountNoX(scaledDamage);
+                const formattedSize = formatAmountNoX(sizeScale);
+
+                this.systemMessage(`Amulet of Fire Tier ${tier}:`, "#ffaa00");
+                this.systemMessage(
+                    `- Aura Damage: ${formattedDamage}`,
+                    "#ff6a00"
+                );
+                this.systemMessage(
+                    `- Aura Size: ${formattedSize}`,
+                    "#7ad7ff"
+                );
+                return;
+            }
+
+            this.systemMessage(`Unknown gemstone: ${gemstone}`, "#ff5e5e");
+            return;
+        }
+
+        // disable join announcements
+        if (commandCheck("/disablejoin") || commandCheck("/disablejoinannouncements")) {
+
+        }
+        if (commandCheck("/coords")) {
+            this.systemMessage(`Your position: ${this.body?.x}, ${this.body?.y}`)
+        }
         if (commandCheck("/craft")) {
 
-                                if (this.isCrafting) {
-                                    this.systemMessage("Craft already in progress.", "#DE1F1F");
-                                    return;
+            if (this.isCrafting) {
+                this.systemMessage("Craft already in progress.", "#DE1F1F");
+                return;
+            }
+            this.isCrafting = true;
+
+            try {
+
+                const args = e.substring(6).trim().split(/\s+/).filter(Boolean);
+                const MAX_PETALS_PER_COMMAND = 1000000000000000;
+                const PETALS_PER_ATTEMPT = 5;
+
+                const craftChances = {
+                    common: 100,
+                    uncommon: 64,
+                    rare: 32,
+                    epic: 16,
+                    legendary: 8,
+                    mythic: 4,
+                    ultra: 2,
+                    super: 1,
+                    ancient: 0.5,
+                    omega: 0.4,
+                    eternal: 0.3,
+                    unique: 0.2,
+                    hyper: 0.1,
+                    galaxium: 0.09,
+                    millom: 0.08,
+                    fictional: 0.07,
+                    transcestrial: 0.05,
+                    chaos: 0.0425,
+                    absiorcadinary: 0.035,
+                    absolutefictional: 0.0275,
+                    nullified: 0.02,
+                    hyperfixation: 0.01,
+                    atlantical: 0.001,
+                    alpha: 0.0009,
+                    finalist: 0.0008,
+                    epsilation: 0.0007,
+                    improbable: 0.0006,
+                    izolational: 0.0005,
+                    chronodynamic: 0.0001,
+                    multiversal: 0.00001
+                };
+
+                const pityIncrements = {
+                    uncommon: 0.5,
+                    rare: 0.4,
+                    epic: 0.3,
+                    legendary: 0.2,
+                    mythic: 0.1,
+                    ultra: 0.05,
+                    super: 0.04,
+                    ancient: 0.016,
+                    omega: 0.013,
+                    eternal: 0.01,
+                    unique: 0.008,
+                    hyper: 0.0072,
+                    galaxium: 0.0065,
+                    millom: 0.0057,
+                    fictional: 0.005,
+                    transcestrial: 0.004,
+                    chaos: 0.0026,
+                    absiorcadinary: 0.002,
+                    absolutefictional: 0.0004,
+                    nullified: 0.00029,
+                    hyperfixation: 0.00027,
+                    atlantical: 0.00025,
+                    alpha: 0.000238,
+                    finalist: 0.00022,
+                    epsilation: 0.00021,
+                    improbable: 0.0002,
+                    izolational: 0.00013,
+                    chronodynamic: 0.0001,
+                    multiversal: 0.00004
+                };
+
+                const AttemptsForBigPityIncrements = {
+                    uncommon: 10,
+                    rare: 20,
+                    epic: 30,
+                    legendary: 40,
+                    mythic: 50,
+                    ultra: 80,
+                    super: 100,
+                    ancient: 120,
+                    omega: 150,
+                    eternal: 200,
+                    unique: 250,
+                    hyper: 275,
+                    galaxium: 300,
+                    millom: 350,
+                    fictional: 400,
+                    transcestrial: 450,
+                    chaos: 500,
+                    absiorcadinary: 600,
+                    absolutefictional: 700,
+                    nullified: 900,
+                    hyperfixation: 1100,
+                    atlantical: 2000,
+                    alpha: 4500,
+                    finalist: 9000,
+                    epsilation: 9500,
+                    improbable: 10000,
+                    izolational: 15000,
+                    chronodynamic: 20000,
+                    multiversal: 50000
+                };
+
+                const rarityOrder = Object.keys(craftChances);
+
+                const formatChance = n => {
+                    if (n >= 1) return n.toFixed(2).replace(/\.?0+$/, "");
+                    if (n >= 0.01) return n.toFixed(3).replace(/\.?0+$/, "");
+                    if (n >= 0.001) return n.toFixed(4).replace(/\.?0+$/, "");
+                    return n.toFixed(6).replace(/\.?0+$/, "");
+                };
+
+                this.craftAttempts ??= {};
+
+                for (const r of rarityOrder) {
+                    const val = this.craftAttempts[r];
+
+                    if (typeof val === "number") {
+                        const arr = new Array(128);
+                        if (val > 0) arr[10] = val;
+                        this.craftAttempts[r] = arr;
+                    }
+
+                    else if (Array.isArray(val)) {
+                        continue;
+                    }
+
+                    else if (!val || typeof val !== "object") {
+                        this.craftAttempts[r] = new Array(128);
+                    }
+
+                    else {
+                        this.craftAttempts[r] = craftAttemptsToArray({ [r]: val })[r];
+                    }
+                }
+
+                if (args.length === 0) {
+
+                    let delay = 0;
+
+                    for (const rarity of rarityOrder) {
+
+                        const rarityObj = Object.values(tiers)
+                            .find(r => r.name.toLowerCase().replace(/\s+/g, "") === rarity);
+
+                        const base = craftChances[rarity];
+                        const bigReq = AttemptsForBigPityIncrements[rarity];
+
+                        const prngText = bigReq
+                            ? ` | PRNG starts at attempt: ${bigReq}`
+                            : "";
+
+                        setTimeout(() => {
+                            this.systemMessage(
+                                `${rarityObj?.name || rarity}: ${formatChance(base)}%${prngText}`,
+                                rarityObj?.color || "#ffffff"
+                            );
+                        }, delay);
+
+                        delay += 500;
+                    }
+
+                    setTimeout(() => {
+                        this.systemMessage("Usage: /craft [rarity] [petal] <amount>", "#ffe65d");
+                        this.systemMessage("To view pity: /pity", "#ffe65d");
+                    }, delay + 500);
+
+                    return;
+                }
+
+                // Rarity names can be multiple words (e.g. Absolute Fictional),
+                // so match the longest leading token run before falling back to a numeric index.
+                let rarityIndex = -1;
+                let rarityTokenCount = 0;
+                for (let i = args.length; i > 0; i--) {
+                    const candidate = args.slice(0, i).join(" ").toLowerCase().replace(/\s+/g, "");
+                    const found = rarityOrder.indexOf(candidate);
+                    if (found !== -1) {
+                        rarityIndex = found;
+                        rarityTokenCount = i;
+                        break;
+                    }
+                }
+                if (rarityIndex === -1 && args.length > 0 && !isNaN(args[0])) {
+
+                    const num = parseInt(args[0], 10);
+
+                    if (num >= 0 && num < rarityOrder.length) {
+                        rarityIndex = num;
+                        rarityTokenCount = 1;
+                    }
+
+                }
+                args.splice(0, rarityTokenCount);
+                const rawAmount = !isNaN(args.at(-1)) ? parseInt(args.pop(), 10) : null;
+                const petalArg = args.join(" ").toLowerCase();
+
+                if (!petalArg) {
+                    this.systemMessage("Invalid petal.", "#DE1F1F");
+                    return;
+                }
+
+
+                if (rarityIndex === -1 || rarityIndex === rarityOrder.length - 1) {
+                    this.systemMessage("Invalid or max rarity.", "#DE1F1F");
+                    return;
+                }
+
+                if (petalArg === "basic") {
+                    this.systemMessage("This petal cant be crafted.", "#DE1F1F");
+                    return;
+                }
+
+                const nextRarityIndex = rarityIndex + 1;
+                const nextRarity = tiers[nextRarityIndex]
+                    ?.name.toLowerCase()
+                    .replace(/\s+/g, "");
+                // announce flags set below by migrated logic
+
+                const upName = tiers[nextRarityIndex].name;
+
+                const petalIndex = Object.values(petalConfigs)
+                    .findIndex(p => p.name.toLowerCase() === petalArg);
+
+                if (petalIndex === -1) {
+                    this.systemMessage("Invalid petal.", "#DE1F1F");
+                    return;
+                }
+
+                const rarityName = tiers[rarityIndex].name;
+                const bucket = this.inventory?.[rarityName] || {};
+                let owned = Number(bucket[petalIndex] || 0);
+
+                if (owned < PETALS_PER_ATTEMPT) {
+                    this.systemMessage("You need at least 5 of the same petal and rarity.", "#DE1F1F");
+                    return;
+                }
+
+                let usable = rawAmount == null ? owned : Math.min(rawAmount, owned);
+                usable = Math.min(usable, MAX_PETALS_PER_COMMAND);
+
+                if (usable < PETALS_PER_ATTEMPT) {
+                    this.systemMessage("You need at least 5 of the same petal and rarity.", "#DE1F1F");
+                    return;
+                }
+
+                // CRAFT LOOP
+                let spent = 0;
+                let attempts = 0;
+                let successes = 0;
+
+                this.craftAttempts[nextRarity] ??= new Array(128);
+
+                let pity = Number(
+                    this.craftAttempts[nextRarity][petalIndex] || 0
+                );
+
+                const baseChance = craftChances[nextRarity];
+                const normalPityInc = pityIncrements[nextRarity] || 0;
+                const bigPityReq = AttemptsForBigPityIncrements[nextRarity];
+
+                let effectiveP = baseChance / 100;
+
+                if (baseChance < 1) {
+
+                    let survival = 1;
+                    let avgAttempts = 0;
+
+                    for (let i = 0; i < 100000; i++) {
+
+                        avgAttempts += survival;
+
+                        let c = baseChance + i * normalPityInc;
+
+                        if (bigPityReq && i >= bigPityReq) {
+                            c += (i - bigPityReq + 1) * 2.5;
+                        }
+
+                        if (c > 100) c = 100;
+
+                        survival *= 1 - c / 100;
+
+                        if (survival < 1e-12) break;
+                    }
+
+                    effectiveP = 1 / avgAttempts;
+                }
+
+                let gained = 0;
+
+                while (
+                    owned >= PETALS_PER_ATTEMPT &&
+                    usable - spent >= PETALS_PER_ATTEMPT
+                ) {
+                    const remaining = usable - spent;
+
+                    if (remaining < 1) break;
+
+                    let bonusPity = 0;
+
+                    if (bigPityReq && pity >= bigPityReq) {
+                        const extraFails = pity - bigPityReq + 1;
+                        bonusPity = extraFails * 2.5;
+                    }
+
+                    let chance =
+                        baseChance +
+                        (pity * normalPityInc) +
+                        bonusPity;
+
+                    if (chance > 100) chance = 100;
+
+
+                    // MASS BATCH 
+                    if (chance < 1 && usable - spent > 1000) {
+
+                        const p = chance / 100;
+
+                        const remainingPool = Math.min(
+                            owned,
+                            usable - spent
+                        );
+
+                        if (remainingPool >= 1e5) {
+
+                            const avgCost = (5 * p) + (2.5 * (1 - p));
+                            const n = Math.floor(remainingPool / avgCost);
+
+                            if (n > 0) {
+
+                                const mean = n * effectiveP;
+                                const std = Math.sqrt(n * effectiveP * (1 - effectiveP));
+
+                                const u1 = Math.random() || 1e-12;
+                                const u2 = Math.random() || 1e-12;
+
+                                const z =
+                                    Math.sqrt(-2 * Math.log(u1)) *
+                                    Math.cos(2 * Math.PI * u2);
+
+                                let varianceBoost = 1.35;
+                                let luckBoost = 1;
+
+                                if (p <= 0.00001) {
+                                    varianceBoost = 3.5;
+                                    luckBoost = 1.75;
                                 }
-                                this.isCrafting = true;
-
-                                try {
-
-                                    const args = e.substring(6).trim().split(/\s+/).filter(Boolean);
-                                    const MAX_PETALS_PER_COMMAND = 1000000000000000;
-                                    const PETALS_PER_ATTEMPT = 5;
-
-                                    const craftChances = {
-                                        common: 100,
-                                        uncommon: 64,
-                                        rare: 32,
-                                        epic: 16,
-                                        legendary: 8,
-                                        mythic: 4,
-                                        ultra: 2,
-                                        super: 1,
-                                        ancient: 0.5,
-                                        omega: 0.4,
-                                        eternal: 0.3,
-                                        unique: 0.2,
-                                        hyper: 0.1,
-                                        galaxium: 0.09,
-                                        millom: 0.08,
-                                        fictional: 0.07,
-                                        transcestrial: 0.05,
-                                        chaos: 0.0425,
-                                        absiorcadinary: 0.035,
-                                        absolutefictional: 0.0275,
-                                        nullified: 0.02,
-                                        hyperfixation: 0.01,
-                                        atlantical: 0.001,
-                                        alpha: 0.0009,
-                                        finalist: 0.0008,
-                                        epsilation: 0.0007,
-                                        improbable: 0.0006,
-                                        izolational: 0.0005,
-                                        chronodynamic: 0.0001,
-                                        multiversal: 0.00001
-                                    };
-
-                                    const pityIncrements = {
-                                        uncommon: 0.5,
-                                        rare: 0.4,
-                                        epic: 0.3,
-                                        legendary: 0.2,
-                                        mythic: 0.1,
-                                        ultra: 0.05,
-                                        super: 0.04,
-                                        ancient: 0.016,
-                                        omega: 0.013,
-                                        eternal: 0.01,
-                                        unique: 0.008,
-                                        hyper: 0.0072,
-                                        galaxium: 0.0065,
-                                        millom: 0.0057,
-                                        fictional: 0.005,
-                                        transcestrial: 0.004,
-                                        chaos: 0.0026,
-                                        absiorcadinary: 0.002,
-                                        absolutefictional: 0.0004,
-                                        nullified: 0.00029,
-                                        hyperfixation: 0.00027,
-                                        atlantical: 0.00025,
-                                        alpha: 0.000238,
-                                        finalist: 0.00022,
-                                        epsilation: 0.00021,
-                                        improbable: 0.0002,
-                                        izolational: 0.00013,
-                                        chronodynamic: 0.0001,
-                                        multiversal: 0.00004
-                                    };
-
-                                    const AttemptsForBigPityIncrements = {
-                                        uncommon: 10,
-                                        rare: 20,
-                                        epic: 30,
-                                        legendary: 40,
-                                        mythic: 50,
-                                        ultra: 80,
-                                        super: 100,
-                                        ancient: 120,
-                                        omega: 150,
-                                        eternal: 200,
-                                        unique: 250,
-                                        hyper: 275,
-                                        galaxium: 300,
-                                        millom: 350,
-                                        fictional: 400,
-                                        transcestrial: 450,
-                                        chaos: 500,
-                                        absiorcadinary: 600,
-                                        absolutefictional: 700,
-                                        nullified: 900,
-                                        hyperfixation: 1100,
-                                        atlantical: 2000,
-                                        alpha: 4500,
-                                        finalist: 9000,
-                                        epsilation: 9500,
-                                        improbable: 10000,
-                                        izolational: 15000,
-                                        chronodynamic: 20000,
-                                        multiversal: 50000
-                                    };
-
-                                    const rarityOrder = Object.keys(craftChances);
-
-                                    const formatChance = n => {
-                                        if (n >= 1) return n.toFixed(2).replace(/\.?0+$/, "");
-                                        if (n >= 0.01) return n.toFixed(3).replace(/\.?0+$/, "");
-                                        if (n >= 0.001) return n.toFixed(4).replace(/\.?0+$/, "");
-                                        return n.toFixed(6).replace(/\.?0+$/, "");
-                                    };
-
-                                    this.craftAttempts ??= {};
-
-                                    for (const r of rarityOrder) {
-                                        const val = this.craftAttempts[r];
-
-                                        if (typeof val === "number") {
-                                            const arr = new Array(128);
-                                            if (val > 0) arr[10] = val;
-                                            this.craftAttempts[r] = arr;
-                                        }
-
-                                        else if (Array.isArray(val)) {
-                                            continue;
-                                        }
-
-                                        else if (!val || typeof val !== "object") {
-                                            this.craftAttempts[r] = new Array(128);
-                                        }
-
-                                        else {
-                                            this.craftAttempts[r] = craftAttemptsToArray({ [r]: val })[r];
-                                        }
-                                    }
-
-                                    if (args.length === 0) {
-
-                                        let delay = 0;
-
-                                        for (const rarity of rarityOrder) {
-
-                                            const rarityObj = Object.values(tiers)
-                                                .find(r => r.name.toLowerCase().replace(/\s+/g, "") === rarity);
-
-                                            const base = craftChances[rarity];
-                                            const bigReq = AttemptsForBigPityIncrements[rarity];
-
-                                            const prngText = bigReq
-                                                ? ` | PRNG starts at attempt: ${bigReq}`
-                                                : "";
-
-                                            setTimeout(() => {
-                                                this.systemMessage(
-                                                    `${rarityObj?.name || rarity}: ${formatChance(base)}%${prngText}`,
-                                                    rarityObj?.color || "#ffffff"
-                                                );
-                                            }, delay);
-
-                                            delay += 500;
-                                        }
-
-                                        setTimeout(() => {
-                                            this.systemMessage("Usage: /craft [rarity] [petal] <amount>", "#ffe65d");
-                                            this.systemMessage("To view pity: /pity", "#ffe65d");
-                                        }, delay + 500);
-
-                                        return;
-                                    }
-
-                                    // Rarity names can be multiple words (e.g. Absolute Fictional),
-                                    // so match the longest leading token run before falling back to a numeric index.
-                                    let rarityIndex = -1;
-                                    let rarityTokenCount = 0;
-                                    for (let i = args.length; i > 0; i--) {
-                                        const candidate = args.slice(0, i).join(" ").toLowerCase().replace(/\s+/g, "");
-                                        const found = rarityOrder.indexOf(candidate);
-                                        if (found !== -1) {
-                                            rarityIndex = found;
-                                            rarityTokenCount = i;
-                                            break;
-                                        }
-                                    }
-                                    if (rarityIndex === -1 && args.length > 0 && !isNaN(args[0])) {
-
-                                        const num = parseInt(args[0], 10);
-
-                                        if (num >= 0 && num < rarityOrder.length) {
-                                            rarityIndex = num;
-                                            rarityTokenCount = 1;
-                                        }
-
-                                    }
-                                    args.splice(0, rarityTokenCount);
-                                    const rawAmount = !isNaN(args.at(-1)) ? parseInt(args.pop(), 10) : null;
-                                    const petalArg = args.join(" ").toLowerCase();
-
-                                    if (!petalArg) {
-                                        this.systemMessage("Invalid petal.", "#DE1F1F");
-                                        return;
-                                    }
-
-
-                                    if (rarityIndex === -1 || rarityIndex === rarityOrder.length - 1) {
-                                        this.systemMessage("Invalid or max rarity.", "#DE1F1F");
-                                        return;
-                                    }
-
-                                    if (petalArg === "basic") {
-                                        this.systemMessage("This petal cant be crafted.", "#DE1F1F");
-                                        return;
-                                    }
-
-                                    const nextRarityIndex = rarityIndex + 1;
-                                    const nextRarity = tiers[nextRarityIndex]
-                                        ?.name.toLowerCase()
-                                        .replace(/\s+/g, "");
-                                    // announce flags set below by migrated logic
-
-                                    const upName = tiers[nextRarityIndex].name;
-
-                                    const petalIndex = Object.values(petalConfigs)
-                                        .findIndex(p => p.name.toLowerCase() === petalArg);
-
-                                    if (petalIndex === -1) {
-                                        this.systemMessage("Invalid petal.", "#DE1F1F");
-                                        return;
-                                    }
-
-                                    const rarityName = tiers[rarityIndex].name;
-                                    const bucket = this.inventory?.[rarityName] || {};
-                        let owned = Number(bucket[petalIndex] || 0);
-
-                                    if (owned < PETALS_PER_ATTEMPT) {
-                                        this.systemMessage("You need at least 5 of the same petal and rarity.", "#DE1F1F");
-                                        return;
-                                    }
-
-                                    let usable = rawAmount == null ? owned : Math.min(rawAmount, owned);
-                                    usable = Math.min(usable, MAX_PETALS_PER_COMMAND);
-
-                                    if (usable < PETALS_PER_ATTEMPT) {
-                                        this.systemMessage("You need at least 5 of the same petal and rarity.", "#DE1F1F");
-                                        return;
-                                    }
-
-                                    // CRAFT LOOP
-                                    let spent = 0;
-                                    let attempts = 0;
-                                    let successes = 0;
-
-                                    this.craftAttempts[nextRarity] ??= new Array(128);
-
-                                    let pity = Number(
-                                        this.craftAttempts[nextRarity][petalIndex] || 0
-                                    );
-
-                                    const baseChance = craftChances[nextRarity];
-                                    const normalPityInc = pityIncrements[nextRarity] || 0;
-                                    const bigPityReq = AttemptsForBigPityIncrements[nextRarity];
-
-                                    let effectiveP = baseChance / 100;
-
-                                    if (baseChance < 1) {
-
-                                        let survival = 1;
-                                        let avgAttempts = 0;
-
-                                        for (let i = 0; i < 100000; i++) {
-
-                                            avgAttempts += survival;
-
-                                            let c = baseChance + i * normalPityInc;
-
-                                            if (bigPityReq && i >= bigPityReq) {
-                                                c += (i - bigPityReq + 1) * 2.5;
-                                            }
-
-                                            if (c > 100) c = 100;
-
-                                            survival *= 1 - c / 100;
-
-                                            if (survival < 1e-12) break;
-                                        }
-
-                                        effectiveP = 1 / avgAttempts;
-                                    }
-
-                                    let gained = 0;
-
-                                    while (
-                                        owned >= PETALS_PER_ATTEMPT &&
-                                        usable - spent >= PETALS_PER_ATTEMPT
-                                    ) {
-                                        const remaining = usable - spent;
-
-                                        if (remaining < 1) break;
-
-                                        let bonusPity = 0;
-
-                                        if (bigPityReq && pity >= bigPityReq) {
-                                            const extraFails = pity - bigPityReq + 1;
-                                            bonusPity = extraFails * 2.5;
-                                        }
-
-                                        let chance =
-                                            baseChance +
-                                            (pity * normalPityInc) +
-                                            bonusPity;
-
-                                        if (chance > 100) chance = 100;
-
-
-                                        // MASS BATCH 
-                                        if (chance < 1 && usable - spent > 1000) {
-
-                                            const p = chance / 100;
-
-                                            const remainingPool = Math.min(
-                                                owned,
-                                                usable - spent
-                                            );
-
-                                            if (remainingPool >= 1e5) {
-
-                                                const avgCost = (5 * p) + (2.5 * (1 - p));
-                                                const n = Math.floor(remainingPool / avgCost);
-
-                                                if (n > 0) {
-
-                                                    const mean = n * effectiveP;
-                                                    const std = Math.sqrt(n * effectiveP * (1 - effectiveP));
-
-                                                    const u1 = Math.random() || 1e-12;
-                                                    const u2 = Math.random() || 1e-12;
-
-                                                    const z =
-                                                        Math.sqrt(-2 * Math.log(u1)) *
-                                                        Math.cos(2 * Math.PI * u2);
-
-                                                    let varianceBoost = 1.35;
-                                                    let luckBoost = 1;
-
-                                                    if (p <= 0.00001) {
-                                                        varianceBoost = 3.5;
-                                                        luckBoost = 1.75;
-                                                    }
-                                                    else if (p <= 0.0001) {
-                                                        varianceBoost = 2.25;
-                                                        luckBoost = 1.35;
-                                                    }
-
-                                                    let batchSuccesses =
-                                                        Math.round((mean * luckBoost) + z * std * varianceBoost);
-
-                                                    if (batchSuccesses < 0) batchSuccesses = 0;
-                                                    if (batchSuccesses > n) batchSuccesses = n;
-
-                                                    const used = Math.min(
-                                                        remainingPool,
-                                                        Math.floor(n * avgCost * 0.97)
-                                                    );
-
-                                                    spent += used;
-                                                    owned -= used;
-
-                                                    successes += batchSuccesses;
-                                                    gained += batchSuccesses;
-                                                    attempts += n;
-
-                                                    pity = batchSuccesses > 0 ? 0 : pity + n;
-
-                                                    continue;
-                                                }
-                                            }
-
-                                            const simAttempts = Math.min(
-                                                Math.floor(remainingPool / 2.5),
-                                                1000
-                                            );
-
-                                            if (simAttempts > 0) {
-
-                                                let batchSuccesses = 0;
-                                                let localSpent = 0;
-                                                let localPity = pity;
-
-                                                for (let i = 0; i < simAttempts; i++) {
-
-                                                    if (owned - localSpent < 5) break;
-                                                    if (usable - spent - localSpent < 5) break;
-
-                                                    let rollChance =
-                                                        baseChance +
-                                                        (localPity * normalPityInc);
-
-                                                    if (bigPityReq && localPity >= bigPityReq) {
-                                                        rollChance +=
-                                                            (localPity - bigPityReq + 1) * 2.5;
-                                                    }
-
-                                                    if (rollChance > 100) rollChance = 100;
-
-                                                    if (Math.random() * 100 < rollChance) {
-                                                        localSpent += 5;
-                                                        batchSuccesses++;
-                                                        localPity = 0;
-                                                    } else {
-                                                        let loss = (Math.random() * 4 | 0) + 1;
-                                                        localSpent += loss;
-                                                        localPity++;
-                                                    }
-                                                }
-
-                                                spent += localSpent;
-                                                owned -= localSpent;
-
-                                                successes += batchSuccesses;
-                                                gained += batchSuccesses;
-                                                attempts += simAttempts;
-
-                                                pity = localPity;
-                                                continue;
-                                            }
-                                        }
-
-                                        const guaranteed = chance >= 100;
-                                        const roll = guaranteed ? 0 : Math.random() * 100;
-
-                                        // success
-                                        if (guaranteed || roll < chance) {
-
-                                            if (remaining < PETALS_PER_ATTEMPT) {
-                                                break;
-                                            }
-
-                                            owned -= PETALS_PER_ATTEMPT;
-                                            spent += PETALS_PER_ATTEMPT;
-
-                                            successes++;
-                                            attempts++;
-                                            gained++;
-
-                                            pity = 0;
-                                        }
-
-                                        // fail
-                                        else {
-
-                                            let loss = (Math.random() * 4 | 0) + 1;
-
-                                            if (loss > remaining) {
-                                                break;
-                                            }
-
-                                            if (loss > owned) loss = owned;
-
-                                            owned -= loss;
-                                            spent += loss;
-
-                                            pity++;
-                                            attempts++;
-                                        }
-                                    }
-
-                                    if (pity > 0) {
-                                        this.craftAttempts[nextRarity][petalIndex] = pity;
-                                    } else {
-                                        delete this.craftAttempts[nextRarity][petalIndex];
-                                    }
-
-                                    if (owned <= 0) bucket[petalIndex] = 0;
-                        else bucket[petalIndex] = owned;
-
-                                    if (gained > 0) {
-
-                                        this.inventory[tiers[nextRarityIndex].name] ??= {};
-                        this.inventory[tiers[nextRarityIndex].name][petalIndex] =
-                            (this.inventory[tiers[nextRarityIndex].name][petalIndex] || 0) + gained;
-                                    }
-
-                                    const up = tiers[nextRarityIndex];
-
-                                    // announcements, same thresholds as announceCraft so chat and protocol
-                                    // crafting cannot drift apart
-                                    if (successes > 0) {
-
-                                        if (nextRarityIndex >= CRAFT_ANNOUNCE_RARITY) {
-                                            state.clients.forEach(c=>c.systemMessage(
-                                                `${this.username} has crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}`,
-                                                tiers[nextRarityIndex].color));
-                                        }
-
-                                    } else {
-
-                                        // failures announce from Millom upwards
-                                        if (nextRarityIndex >= CRAFT_FAIL_ANNOUNCE_RARITY) {
-                                            state.clients.forEach(c=>c.systemMessage(
-                                                `${this.username} failed to craft ${tiers[nextRarityIndex].name} ${petalArg} after ${attempts} failed attempt${attempts !== 1 ? "s" : ""}.`,
-                                                "#ff5555"));
-                                        }
-
-                                    }
-
-                                    if (successes === 0) {
-
-                                        this.systemMessage(
-                                            `Craft failed after ${attempts} attempts. (${owned} left)`,
-                                            "#DE1F1F"
-                                        );
-
-                                    } else {
-
-                                        this.systemMessage(
-                                            `Crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}. (${owned} left)`,
-                                            tiers[nextRarityIndex].color
-                                        );
-                                    }
-
-                                } catch (err) {
-
-                                    console.error("Craft command failed:", err);
-                                    this.systemMessage("Craft failed due to an internal error.", "#DE1F1F");
-
-                                } finally {
-
-                                    this.isCrafting = false;
-
+                                else if (p <= 0.0001) {
+                                    varianceBoost = 2.25;
+                                    luckBoost = 1.35;
                                 }
 
-                                return;
+                                let batchSuccesses =
+                                    Math.round((mean * luckBoost) + z * std * varianceBoost);
+
+                                if (batchSuccesses < 0) batchSuccesses = 0;
+                                if (batchSuccesses > n) batchSuccesses = n;
+
+                                const used = Math.min(
+                                    remainingPool,
+                                    Math.floor(n * avgCost * 0.97)
+                                );
+
+                                spent += used;
+                                owned -= used;
+
+                                successes += batchSuccesses;
+                                gained += batchSuccesses;
+                                attempts += n;
+
+                                pity = batchSuccesses > 0 ? 0 : pity + n;
+
+                                continue;
+                            }
+                        }
+
+                        const simAttempts = Math.min(
+                            Math.floor(remainingPool / 2.5),
+                            1000
+                        );
+
+                        if (simAttempts > 0) {
+
+                            let batchSuccesses = 0;
+                            let localSpent = 0;
+                            let localPity = pity;
+
+                            for (let i = 0; i < simAttempts; i++) {
+
+                                if (owned - localSpent < 5) break;
+                                if (usable - spent - localSpent < 5) break;
+
+                                let rollChance =
+                                    baseChance +
+                                    (localPity * normalPityInc);
+
+                                if (bigPityReq && localPity >= bigPityReq) {
+                                    rollChance +=
+                                        (localPity - bigPityReq + 1) * 2.5;
+                                }
+
+                                if (rollChance > 100) rollChance = 100;
+
+                                if (Math.random() * 100 < rollChance) {
+                                    localSpent += 5;
+                                    batchSuccesses++;
+                                    localPity = 0;
+                                } else {
+                                    let loss = (Math.random() * 4 | 0) + 1;
+                                    localSpent += loss;
+                                    localPity++;
+                                }
                             }
 
-                            // /pity
-                            
+                            spent += localSpent;
+                            owned -= localSpent;
+
+                            successes += batchSuccesses;
+                            gained += batchSuccesses;
+                            attempts += simAttempts;
+
+                            pity = localPity;
+                            continue;
+                        }
+                    }
+
+                    const guaranteed = chance >= 100;
+                    const roll = guaranteed ? 0 : Math.random() * 100;
+
+                    // success
+                    if (guaranteed || roll < chance) {
+
+                        if (remaining < PETALS_PER_ATTEMPT) {
+                            break;
+                        }
+
+                        owned -= PETALS_PER_ATTEMPT;
+                        spent += PETALS_PER_ATTEMPT;
+
+                        successes++;
+                        attempts++;
+                        gained++;
+
+                        pity = 0;
+                    }
+
+                    // fail
+                    else {
+
+                        let loss = (Math.random() * 4 | 0) + 1;
+
+                        if (loss > remaining) {
+                            break;
+                        }
+
+                        if (loss > owned) loss = owned;
+
+                        owned -= loss;
+                        spent += loss;
+
+                        pity++;
+                        attempts++;
+                    }
+                }
+
+                if (pity > 0) {
+                    this.craftAttempts[nextRarity][petalIndex] = pity;
+                } else {
+                    delete this.craftAttempts[nextRarity][petalIndex];
+                }
+
+                if (owned <= 0) bucket[petalIndex] = 0;
+                else bucket[petalIndex] = owned;
+
+                if (gained > 0) {
+
+                    this.inventory[tiers[nextRarityIndex].name] ??= {};
+                    this.inventory[tiers[nextRarityIndex].name][petalIndex] =
+                        (this.inventory[tiers[nextRarityIndex].name][petalIndex] || 0) + gained;
+                }
+
+                const up = tiers[nextRarityIndex];
+
+                // announcements, same thresholds as announceCraft so chat and protocol
+                // crafting cannot drift apart
+                if (successes > 0) {
+
+                    if (nextRarityIndex >= CRAFT_ANNOUNCE_RARITY) {
+                        state.clients.forEach(c => c.systemMessage(
+                            `${this.username} has crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}`,
+                            tiers[nextRarityIndex].color));
+                    }
+
+                } else {
+
+                    // failures announce from Millom upwards
+                    if (nextRarityIndex >= CRAFT_FAIL_ANNOUNCE_RARITY) {
+                        state.clients.forEach(c => c.systemMessage(
+                            `${this.username} failed to craft ${tiers[nextRarityIndex].name} ${petalArg} after ${attempts} failed attempt${attempts !== 1 ? "s" : ""}.`,
+                            "#ff5555"));
+                    }
+
+                }
+
+                if (successes === 0) {
+
+                    this.systemMessage(
+                        `Craft failed after ${attempts} attempts. (${owned} left)`,
+                        "#DE1F1F"
+                    );
+
+                } else {
+
+                    this.systemMessage(
+                        `Crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}. (${owned} left)`,
+                        tiers[nextRarityIndex].color
+                    );
+                }
+
+            } catch (err) {
+
+                console.error("Craft command failed:", err);
+                this.systemMessage("Craft failed due to an internal error.", "#DE1F1F");
+
+            } finally {
+
+                this.isCrafting = false;
+
+            }
+
+            return;
+        }
+
 
         // /addall
         if (commandCheck("/addall")) {
