@@ -5367,7 +5367,10 @@ if (commandCheck("/pity")) {
     }
 
     terminate() {
-        state.router.postMessage(new Uint8Array([ROUTER_PACKET_TYPES.CLOSE_CLIENT, this.id]));
+        // The id has to go out as two little-endian bytes: the router reads it back
+        // with u8ToU16. As a single byte every id above 255 was truncated, so the
+        // router closed some other socket and the kicked client stayed in the game.
+        state.router.postMessage(new Uint8Array([ROUTER_PACKET_TYPES.CLOSE_CLIENT, this.id & 0xFF, this.id >> 8 & 0xFF]));
     }
 
     kick(reason = "Unknown Reason") {
