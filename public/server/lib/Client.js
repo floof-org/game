@@ -2523,7 +2523,7 @@ export default class Client {
             (async () => {
                 if (!requireOwner()) return;
 
-                const args = e.substring(7).trim().split(/\s+/).filter(Boolean);
+                const args = e.slice(7).trim().split(/\s+/).filter(Boolean);
 
                 if (args.length < 3) {
                     this.systemMessage(
