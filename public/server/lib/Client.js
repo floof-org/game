@@ -4723,69 +4723,6 @@ if (commandCheck("/pity")) {
             return;
         }
 
-        // /mobinfo
-        if (commandCheck("/mobinfo")) {
-            const args = e.substring(8).trim().split(/\s+/).filter(Boolean);
-
-            if (args.length < 2 || !e.substring(8).trim()) {
-                this.systemMessage("Usage: /mobinfo [rarity] [mob]", "#ffe65d");
-                return;
-            }
-
-            let rarityIndex = -1;
-            let rarityTokenCount = 0;
-
-            for (let i = args.length; i > 0; i--) {
-                const normCandidate = normalizeName(args.slice(0, i).join(" "));
-                const index = RARITY_ORDER.findIndex(r => normalizeName(r) === normCandidate);
-
-                if (index !== -1) {
-                    rarityIndex = index;
-                    rarityTokenCount = i;
-                    break;
-                }
-            }
-
-            if (rarityIndex === -1 && !isNaN(args[0])) {
-                const num = parseInt(args[0]);
-
-                if (RARITY_ORDER[num]) {
-                    rarityIndex = num;
-                    rarityTokenCount = 1;
-                }
-            }
-
-            if (rarityIndex === -1) {
-                this.systemMessage("Invalid rarity.", "#ff5e5e");
-                return;
-            }
-
-            const mobName = args.slice(rarityTokenCount).join(" ");
-            const mob = findMobByName(mobName);
-
-            if (!mob) {
-                this.systemMessage("Mob not found.", "#ff5e5e");
-                return;
-            }
-
-            const rarityData = RARITY_TABLE[rarityIndex];
-
-            if (!rarityData) {
-                this.systemMessage("Invalid rarity.", "#ff5e5e");
-                return;
-            }
-
-            const finalHealth = mob.health * rarityData.health;
-            const finalDamage = mob.damage * rarityData.damage;
-            const armor = rarityData.armor ?? 0;
-
-            this.systemMessage(
-                `${RARITY_ORDER[rarityIndex]} ${mob.name}: Health: ${formatNumber(finalHealth)}, Damage: ${formatNumber(finalDamage)}, Armor: ${formatNumber(armor)}`,
-                tiers[rarityIndex]?.color || "#ffffff"
-            );
-            return;
-        }
-
         // /petalinfo (alias: /petal)
         if (commandCheck("/petalinfo") || e.toLowerCase().startsWith("/petal ") || e.toLowerCase() === "/petal") {
             const cmdLen = e.toLowerCase().startsWith("/petalinfo") ? 10 : 6;
