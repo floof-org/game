@@ -922,7 +922,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Faster"))
         .addDrop(petalIDOf("Web"), .5)
         .addDrop(petalIDOf("Third Eye"), .025, 5),
-    new MobConfig("Beetle", 30, 10, 38, 3)
+    new MobConfig("Beetle", 30, 10, 30, 3)
         .setAggressive(1)
         .addDrop(petalIDOf("Iris"))
         .addDrop(petalIDOf("Pincer"), .8)
@@ -992,16 +992,16 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Sand"))
         .addDrop(petalIDOf("Glass"), .7)
         .addDrop(petalIDOf("Stick"), .2, 2),
-    new MobConfig("Scorpion", 45, 54.5, 38, 3)
+    new MobConfig("Scorpion", 45, 54.5, 32.5, 3)
         .setAggressive(1)
         .setStrafes(30, 15, 1.25)
         .setProjectile({
             petalIndex: petalIDOf("Scorpion Missile.projectile"),
             cooldown: 22.5 * 2,
-            health: 2 * .5,
-            damage: 2,
+            health: .05,
+            damage: .01,
             speed: 5,
-            range: 65,
+            range: 800,
             size: .2
         })
         .addDrop(petalIDOf("Pincer"))
