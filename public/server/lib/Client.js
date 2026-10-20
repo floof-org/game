@@ -1734,7 +1734,7 @@ export default class Client {
 
             this.systemMessage(`Online players (${online.length}):`, "#00f2ff");
             for (const client of online) {
-                this.systemMessage(`- ${client.username}`, "#55ff55");
+                this.systemMessage(`- ${client.username} (ID: ${client.id})`, "#55ff55");
             }
             return;
         }
