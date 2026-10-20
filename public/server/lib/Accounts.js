@@ -169,6 +169,17 @@ class Accounts {
 
     /** last seen Discord name -> save, used when the player is offline */
     findByName(query) {
+        // a numeric token means a client id, so admins can target an exact
+        // connection the same way they do with findTargetClient
+        const trimmed = String(query ?? "").trim();
+        const asNumber = Number(trimmed);
+
+        if (Number.isFinite(asNumber) && String(trimmed) !== "") {
+            for (const [discordId, save] of this.saves) {
+                if (Number(discordId) === asNumber) return { discordId, save };
+            }
+        }
+
         const lower = normalizeName(query);
 
         for (const [discordId, save] of this.saves) {

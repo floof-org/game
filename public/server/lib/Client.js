@@ -154,7 +154,18 @@ function formatDuration(ms) {
 }
 
 function findTargetClient(playerName) {
-    const lower = playerName.toLowerCase();
+    const trimmed = String(playerName ?? "").trim();
+    const asNumber = Number(trimmed);
+
+    // a numeric token is treated as a client id first, so admins can act on
+    // the exact connection shown by /online instead of guessing the username
+    if (Number.isFinite(asNumber) && String(trimmed) !== "") {
+        const byId = state.clients.get(asNumber);
+
+        if (byId?.verified) return byId;
+    }
+
+    const lower = trimmed.toLowerCase();
 
     for (const client of state.clients.values()) {
         if (!client.verified || client === undefined) continue;
@@ -175,6 +186,21 @@ function resolveModerationTarget(playerName) {
 
     if (client) {
         return { discordId: String(client.userId ?? ""), playerName: client.discordName || client.username, client };
+    }
+
+    const trimmed = String(playerName ?? "").trim();
+    const asNumber = Number(trimmed);
+
+    // offline lookup by client id: findModerated only matches by name, so add the id path
+    if (Number.isFinite(asNumber) && String(trimmed) !== "") {
+        for (const [discordId, save] of accounts.saves) {
+            if (Number(discordId) === asNumber) {
+                const entry = accounts.moderation.get(String(discordId));
+                if (entry) return { discordId, playerName: save.username || String(discordId), client: null };
+                // no punishment record yet: still allow the admin to target them by id
+                return { discordId: String(discordId), playerName: save.username || String(discordId), client: null };
+            }
+        }
     }
 
     const discordId = accounts.findModerated(playerName);
@@ -2573,6 +2599,8 @@ export default class Client {
                         continue;
                     }
 
+                    // a numeric token is a client id, so admins can target an exact
+                    // connection the same way they do with the other commands
                     if (!/^\d+$/.test(entry)) {
                         const match = accounts.findByName(entry);
 
