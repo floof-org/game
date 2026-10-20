@@ -1628,14 +1628,18 @@ export default class Client {
                     return;
                 }
 
-                if (!/^[\w\s,.!?'"@#%^&*()_\-+=:;<>\/\\|[\]{}~`\u00A0-\uFFFF]{1,128}$/.test(message)) {
-                    this.systemMessage("That message is too long or contains invalid characters.", "#CACA22");
-                    this.frownyMessages++;
+                // Owners bypass every chat filter: the regex, spam and slur checks
+                // below all return early for them, so nothing they type is blocked.
+                if (this.masterPermissions < 2) {
+                    if (!/^[\w\s,.!?'"@#%^&*()_\-+=:;<>\/\\|[\]{}~`\u00A0-\uFFFF]{1,128}$/.test(message)) {
+                        this.systemMessage("That message is too long or contains invalid characters.", "#CACA22");
+                        this.frownyMessages++;
 
-                    if (this.frownyMessages >= 5) {
-                        this.kick("Abusing chat");
+                        if (this.frownyMessages >= 5) {
+                            this.kick("Abusing chat");
+                        }
+                        return;
                     }
-                    return;
                 }
 
                 if (message.startsWith("/")) {
@@ -1667,24 +1671,26 @@ export default class Client {
                     return false;
                 };
 
-                if (isSpam(message)) {
-                    this.systemMessage("Please refrain from spamming.", "#22CACA");
-                    this.frownyMessages++;
+                if (this.masterPermissions < 2) {
+                    if (isSpam(message)) {
+                        this.systemMessage("Please refrain from spamming.", "#22CACA");
+                        this.frownyMessages++;
 
-                    if (this.frownyMessages >= 5) {
-                        this.kick("Abusing chat");
+                        if (this.frownyMessages >= 5) {
+                            this.kick("Abusing chat");
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                if (tripsFilter(message)) {
-                    this.systemMessage("Please refrain from saying slurs.", "#CA2222");
-                    this.frownyMessages++;
+                    if (tripsFilter(message)) {
+                        this.systemMessage("Please refrain from saying slurs.", "#CA2222");
+                        this.frownyMessages++;
 
-                    if (this.frownyMessages >= 5) {
-                        this.kick("Abusing chat");
+                        if (this.frownyMessages >= 5) {
+                            this.kick("Abusing chat");
+                        }
+                        return;
                     }
-                    return;
                 }
 
                 if (performance.now() - this.lastChat < 500) {
