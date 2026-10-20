@@ -243,7 +243,17 @@ export class PetalSlot {
         this.config.tiers[rarityID].reloadReduction && (this.player.reloadReduction /= (1 + (this.config.tiers[rarityID].reloadReduction / 100)));
         this.player.health.set(Math.max(1e-10, this.player.health.maxHealth + this.config.tiers[rarityID].extraHealth));
         this.player.health.damageReduction += this.config.tiers[rarityID].damageReduction;
-        this.player.size += this.config.tiers[rarityID].extraSize;
+        const extraSize = this.config.tiers[rarityID].extraSize;
+        if (this.config.name === "Air") {
+            // Air does not stack: only the highest rarity bonus counts
+            const current = this.player.airSizeBonus || 0;
+            if (extraSize > current) {
+                this.player.size += extraSize - current;
+                this.player.airSizeBonus = extraSize;
+            }
+        } else {
+            this.player.size += extraSize;
+        }
         this.player.speed *= this.config.tiers[rarityID].speedMultiplier;
         this.rarity = rarityID;
 
@@ -329,7 +339,23 @@ export class PetalSlot {
         this.petals.forEach(petal => petal?.destroy());
         this.player.health.set(this.player.health.maxHealth - this.config.tiers[this.rarity].extraHealth);
         this.player.health.damageReduction -= this.config.tiers[this.rarity].damageReduction;
-        this.player.size -= this.config.tiers[this.rarity].extraSize;
+        const removedSize = this.config.tiers[this.rarity].extraSize;
+        if (this.config.name === "Air") {
+            // Recalculate the max Air bonus after this slot is gone
+            let maxAir = 0;
+            for (const slot of this.player.petalSlots) {
+                if (slot && slot !== this && slot.config?.name === "Air") {
+                    maxAir = Math.max(maxAir, slot.config.tiers[slot.rarity].extraSize);
+                }
+            }
+            const current = this.player.airSizeBonus || 0;
+            if (maxAir < current) {
+                this.player.size -= current - maxAir;
+                this.player.airSizeBonus = maxAir;
+            }
+        } else {
+            this.player.size -= removedSize;
+        }
         this.player.speed /= this.config.tiers[this.rarity].speedMultiplier;
         this.config.tiers[this.rarity].reloadReduction && (this.player.reloadReduction *= (1 + (this.config.tiers[this.rarity].reloadReduction / 100)));
         this.cooldowns = new Array(this.amount).fill(-100);
@@ -2108,6 +2134,7 @@ export class Player extends Entity {
         this.size = 17;
         this.extraPickupRange = 0;
         this.armor = 0;
+        this.airSizeBonus = 0;
 
         /** @type {PetalSlot[]} */
         this.petalSlots = [];
