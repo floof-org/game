@@ -69,7 +69,8 @@ const VALID_COMMANDS = new Set([
     "/give", "/addall", "/remove", "/refund", "/craft", "/pity", "/online", "/saveall",
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
-    "/mute", "/kick", "/ban", "/unban", "/unmute", "/coords"
+    "/mute", "/kick", "/ban", "/unban", "/unmute", "/coords",
+    "/title"
 ]);
 
 function normalizeName(str) {
@@ -4307,6 +4308,20 @@ export default class Client {
         if (commandCheck("/coords")) {
             this.systemMessage(`Your position: ${this.body?.x}, ${this.body?.y}`)
         }
+        if (commandCheck("/title")) {
+            if (!requireOwner()) return;
+
+            const text = e.substring(6).trim();
+
+            if (!text) {
+                this.systemMessage("Usage: /title [text]", "#ffaa00");
+                return;
+            }
+
+            Client.broadcastTitle(text, "#FFFFFF", 5);
+            this.systemMessage(`Title sent to all players: ${text}`, "#55ff55");
+            return;
+        }
         if (commandCheck("/craft")) {
 
             if (this.isCrafting) {
@@ -5403,6 +5418,27 @@ export default class Client {
             message: message,
             color: color
         });
+    }
+
+    /**
+     * Minecraft-style /title: big text shown in the center of every player's
+     * screen. The duration is in seconds, the client is expected to fade it
+     * in and out over that time.
+     */
+    title(text, color = "#FFFFFF", duration = 5) {
+        const writer = new Writer(true);
+        writer.setUint8(CLIENT_BOUND.TITLE);
+        writer.setStringUTF8(text);
+        writer.setStringUTF8(color);
+        writer.setFloat32(duration);
+        this.talk(writer.build());
+    }
+
+    /** Broadcast a title to every connected player. */
+    static broadcastTitle(text, color = "#FFFFFF", duration = 5) {
+        for (const client of state.clients.values()) {
+            client.title(text, color, duration);
+        }
     }
 
     talk(type, data) {
