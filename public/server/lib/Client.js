@@ -1289,6 +1289,15 @@ export default class Client {
                             key: state.secretKey
                         });
                     } break;
+                    case DEV_CHEAT_IDS.TITLE: {
+                        // Minecraft-style title: text, colour and duration are read off
+                        // the wire and relayed to every connected player.
+                        const text = reader.getStringUTF8();
+                        const color = reader.getStringUTF8();
+                        const duration = reader.getFloat32();
+
+                        Client.broadcastTitle(text, color, duration);
+                    } break;
                 }
             } break;
             case SERVER_BOUND.CHAT_MESSAGE: {
@@ -1368,6 +1377,26 @@ export default class Client {
             message: message,
             color: color
         });
+    }
+
+    /**
+     * Minecraft-style title: big text shown in the centre of the screen.
+     * The duration is in seconds; the client fades it in and out.
+     */
+    title(text, color = "#FFFFFF", duration = 5) {
+        const writer = new Writer(true);
+        writer.setUint8(CLIENT_BOUND.TITLE);
+        writer.setStringUTF8(text);
+        writer.setStringUTF8(color);
+        writer.setFloat32(duration);
+        this.talk(writer.build());
+    }
+
+    /** Send a title to every connected player. */
+    static broadcastTitle(text, color = "#FFFFFF", duration = 5) {
+        for (const client of state.clients.values()) {
+            client.title(text, color, duration);
+        }
     }
 
     talk(type, data) {
