@@ -1810,6 +1810,7 @@ export const CLIENT_BOUND = {
     CHAT_MESSAGE: 0x0A,
     CRAFT_INIT: 0x0B,
     CRAFT_RESULT: 0x0C,
+    TITLE: 0x0D,
 
     CUSTOM_GRADIENTS: 111,
     TERRAIN_SCORES: 113,
@@ -1839,7 +1840,8 @@ export const DEV_CHEAT_IDS = {
     SPAWN_MOB: 0x03,
     SET_PETAL: 0x04,
     SET_XP: 0x05,
-    INFO_DUMP: 0x06
+    INFO_DUMP: 0x06,
+    TITLE: 0x07
 };
 
 // In an 8 bit flag, 0x80 is the highest bit that can be set (0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80)

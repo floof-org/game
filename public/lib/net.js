@@ -2024,7 +2024,14 @@ case CLIENT_BOUND.TERRAIN_SCORES: {
                     new ChatMessage(1, errorMsg, util.colors.legendary);
                     state.craftMenu.abortCraft();
                 }
-                break;
+                case CLIENT_BOUND.TITLE: // Title packet
+                    {
+                        const text = reader.getStringUTF8();
+                        const color = reader.getStringUTF8();
+                        const duration = reader.getFloat32();
+                        new ChatMessage(1, text, color);
+                    }
+                    break;
         }
     }
 
