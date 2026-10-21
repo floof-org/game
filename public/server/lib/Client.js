@@ -4820,7 +4820,7 @@ export default class Client {
                     // failures announce from Millom upwards
                     if (nextRarityIndex >= CRAFT_FAIL_ANNOUNCE_RARITY) {
                         state.clients.forEach(c => c.systemMessage(
-                            `${this.username} failed to craft ${tiers[nextRarityIndex].name} ${petalArg} after ${attempts} failed attempt${attempts !== 1 ? "s" : ""}.`,
+                            "millom --> fictional",
                             "#ff5555"));
                     }
 
@@ -4829,14 +4829,14 @@ export default class Client {
                 if (successes === 0) {
 
                     this.systemMessage(
-                        `Craft failed after ${attempts} attempts. (${owned} left)`,
+                        "millom --> fictional",
                         "#DE1F1F"
                     );
 
                 } else {
 
                     this.systemMessage(
-                        `Crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}. (${owned} left)`,
+                        "millom",
                         tiers[nextRarityIndex].color
                     );
                 }

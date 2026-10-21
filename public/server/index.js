@@ -208,7 +208,7 @@ setInterval(() => {
 
             if (info.rarity >= state.announceRarity && state.announceRarity > -1) {
                 if (!tiers[info.rarity]) console.error(`Rarity returns undefined: ${info.rarity}`);
-                else state.clients.forEach(c => c.systemMessage(applyArticle(tiers[info.rarity].name, true) + " " + cfg.name + " has spawned!", tiers[info.rarity].color));
+                else state.clients.forEach(c => c.systemMessage("alpha+", tiers[info.rarity].color));
             }
             }
         } else if (state.isLineMap) {
