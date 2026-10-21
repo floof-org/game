@@ -779,9 +779,9 @@ export const petalConfigs = [
     new PetalConfig("Lens", 112.5, 2500, 44).setSize(3.6).setDown(1).setPetalAttractsAggro(1)
         .setDrawing(new Drawing().addAction("rotate", -45).addAction("opacity", .7).addAction("beginPath").addAction("moveTo", .95, .275).addAction("lineTo", .95, -.275).addAction("lineTo", -.95, -.275).addAction("lineTo", -.95, .275).addAction("fill", "#FFFFFF").addAction("opacity", .35).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#FFFFFF").addAction("opacity", 1).addAction("stroke", "#FFFFFF", .2, 0)
         ).setDescription("Lures mobs to this petal until destroyed, can be placed down too."),
-    new PetalConfig("Salt", 32.5, 11, 44).setSize(1.2).setDamageReflection(globalThis.salt_table)
+    new PetalConfig("Salt", 32.5, 11, 44).setSize(1.2)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("paint", "#FFFFFF", .25, .2)
-        ).setDescription("Reflects damage."),
+        ).setDescription("Increases body collision damage. 3 salts equal firemissile damage."),
     new PetalConfig("Rubber", 15, 95, 1.1).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5], "Rubber", 0).setSize(1.55).setAttractsLightning(1).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5], 0).setDescription("Attracts lightning. Does not stack.")
         .setDrawing(new Drawing().addAction("rotate", -15).addAction("beginPath").addAction("dipPolygon", 4, 1, 0, 0).addAction("paint", "#ebeef5", .2, .2).addAction("beginPath").addAction("dipPolygon", 4, .5, Math.PI, 0).addAction("fill", "#ffffff")
         ),

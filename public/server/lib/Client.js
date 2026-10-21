@@ -1119,7 +1119,20 @@ export default class Client {
     }
 
     get bodyDamageAdjustment() {
-        return 5 + 1 * Math.pow(this.level, 1.5);
+        const base = 5 + 1 * Math.pow(this.level, 1.5);
+        // Add extra body damage from Salt petals (3 salts = firemissile damage at same rarity)
+        const saltExtra = this.slots.reduce((acc, slot) => {
+            if (slot && slot.id > 0) {
+                const petalName = petalConfigs.find(p => p.id === slot.id)?.name;
+                if (petalName === "Salt") {
+                    const tier = slot.rarity ?? 0;
+                    const petalTierMultiplier = globalThis.PETAL_TIER_TABLE?.[tier]?.damage ?? Math.pow(2, tier);
+                    return acc + 6.17 * petalTierMultiplier;
+                }
+            }
+            return acc;
+        }, 0);
+        return base + saltExtra;
     }
 
     get highestRarity() {

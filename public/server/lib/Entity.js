@@ -2462,7 +2462,18 @@ class FakeClient {
     }
 
     get bodyDamageAdjustment() {
-        return 5 + 1 * Math.pow(this.level, 1.5);
+        const base = 5 + 1 * Math.pow(this.level, 1.5);
+        // Add extra body damage from Salt petals (3 salts = firemissile damage at same rarity)
+        const saltExtra = this.body.petalSlots.reduce((acc, slot) => {
+            if (slot && slot.config?.name === "Salt") {
+                const tier = slot.rarity;
+                // per-salt extra body damage: 18.5/3 * petalTierMultiplier(tier) ≈ 6.17 * tierMultiplier
+                const petalTierMultiplier = globalThis.PETAL_TIER_TABLE?.[tier]?.damage ?? Math.pow(2, tier);
+                return acc + 6.17 * petalTierMultiplier;
+            }
+            return acc;
+        }, 0);
+        return base + saltExtra;
     }
 
     get highestRarity() {
