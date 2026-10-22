@@ -86,17 +86,22 @@ function announceCraft(client, result) {
     if (result.crafted > 0) {
         const nextIndex = result.nextRarityIndex;
         if (nextIndex >= CRAFT_ANNOUNCE_RARITY) {
-            state.clients.forEach(other => other.systemMessage("millom", tiers[result.nextRarityIndex].color));
+            const text = result.crafted === 1
+                ? `${client.lootName()} Has Crafted A ${result.nextRarityName} ${result.petalName}!`
+                : `${client.lootName()} Has Crafted ${result.crafted}x ${result.nextRarityName} ${result.petalName}!`;
+
+            state.clients.forEach(other => other.systemMessage(text, tiers[result.nextRarityIndex].color));
         }
         return;
     }
 
-    client.systemMessage("millom --> fictional", "#ff5555");
+    client.systemMessage(`Craft Failed... (-${result.spent} ${result.rarityName}) ${result.petalName}`, "#ff5555");
 
     // failures are announced one rarity later than successes
     const failNextIndex = result.nextRarityIndex;
     if (failNextIndex >= CRAFT_FAIL_ANNOUNCE_RARITY && tiers[failNextIndex]) {
-        state.clients.forEach(other => other.systemMessage("millom --> fictional", tiers[failNextIndex].color));
+        const text = `${client.lootName()} Failed To Craft A ${result.nextRarityName} ${result.petalName}!`;
+        state.clients.forEach(other => other.systemMessage(text, tiers[failNextIndex].color));
     }
 }
 
@@ -4814,7 +4819,7 @@ export default class Client {
 
                     if (nextRarityIndex >= CRAFT_ANNOUNCE_RARITY) {
                         state.clients.forEach(c => c.systemMessage(
-                            "millom",
+                            `${this.username} has crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}`,
                             tiers[nextRarityIndex].color));
                     }
 
@@ -4823,7 +4828,7 @@ export default class Client {
                     // failures announce from Fictional upwards
                     if (nextRarityIndex >= CRAFT_FAIL_ANNOUNCE_RARITY) {
                         state.clients.forEach(c => c.systemMessage(
-                            "millom --> fictional",
+                            `${this.username} failed to craft ${tiers[nextRarityIndex].name} ${petalArg} after ${attempts} failed attempt${attempts !== 1 ? "s" : ""}.`,
                             "#ff5555"));
                     }
 
@@ -4832,14 +4837,14 @@ export default class Client {
                 if (successes === 0) {
 
                     this.systemMessage(
-                        "millom --> fictional",
+                        `Craft failed after ${attempts} attempts. (${owned} left)`,
                         "#DE1F1F"
                     );
 
                 } else {
 
                     this.systemMessage(
-                        "millom",
+                        `Crafted ${successes} ${tiers[nextRarityIndex].name} ${petalArg}${successes !== 1 ? "s" : ""}. (${owned} left)`,
                         tiers[nextRarityIndex].color
                     );
                 }
