@@ -1904,6 +1904,10 @@ export class Petal extends Entity {
             this.phases = true;
         }
 
+        if (config.invulnerable) {
+            this.health.invulnerable = true;
+        }
+
         this.attractsLightning = config.attractsLightning;
 
         if (tier.boost) {

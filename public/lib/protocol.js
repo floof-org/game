@@ -1054,6 +1054,11 @@ export class PetalConfig {
         return this;
     }
 
+    setInvulnerable(invulnerable = true) {
+        this.invulnerable = invulnerable;
+        return this;
+    }
+
     setDensity(density) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].density = density * Math.pow(1.25, i);
