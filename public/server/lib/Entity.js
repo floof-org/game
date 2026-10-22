@@ -1062,6 +1062,49 @@ export class Entity {
             this.collisionIDs.add(other.id);
             other.collisionIDs.add(this.id);
 
+            // Lilypad aura healing migrated from WhiteHole.js: an invisible
+            // Lilypad.aura heals any summon it overlaps once per second.
+            // This must run before the same-team petal filter below, since a
+            // summon and its aura always share a team.
+            const isLilypadAura = ent => ent.type === ENTITY_TYPES.PETAL && ent.config?.name === "Lilypad.aura";
+            const isSummon = ent => ent.type === ENTITY_TYPES.MOB && ent.team !== -69;
+
+            if ((isLilypadAura(this) && isSummon(other)) || (isLilypadAura(other) && isSummon(this))) {
+                const dx = this.x - other.x;
+                const dy = this.y - other.y;
+
+                if (dx !== 0 || dy !== 0) {
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (this.size + other.size >= dist) {
+                        const aura = isLilypadAura(this) ? this : other;
+                        const summon = aura === this ? other : this;
+
+                        if (summon.config?.name !== "Lilypad (Summon)") {
+                            const now = Date.now();
+
+                            summon._lilypadAuraHealUntil ??= 0;
+
+                            if (now >= summon._lilypadAuraHealUntil) {
+                                const tier = aura.config?.tiers?.[aura.rarity];
+                                const ratio = tier?.summonHealing ?? 0;
+
+                                if (ratio > 0 && summon.health?.maxHealth > 0) {
+                                    summon.health.health = Math.min(
+                                        summon.health.maxHealth,
+                                        summon.health.health + summon.health.maxHealth * ratio
+                                    );
+                                }
+
+                                summon._lilypadAuraHealUntil = now + 1000;
+                            }
+                        }
+                    }
+                }
+
+                return;
+            }
+
             if (this.parent.team === other.parent.team && (this.type === ENTITY_TYPES.PETAL || other.type === ENTITY_TYPES.PETAL || (this.type === ENTITY_TYPES.PLAYER && other.type === ENTITY_TYPES.MOB) || (other.type === ENTITY_TYPES.PLAYER && this.type === ENTITY_TYPES.MOB))) {
                 return;
             }
@@ -3048,6 +3091,51 @@ export class Mob extends Entity {
         if (this.summonExpireAt && performance.now() >= this.summonExpireAt) {
             this.destroy();
             return;
+        }
+
+        // Lilypad aura migrated from WhiteHole.js: every Lilypad (Summon)
+        // carries an invisible aura that follows it and heals nearby summons.
+        if (this.config?.name === "Lilypad (Summon)" && !this._lilypadAura && !this.isAura) {
+            const auraIndex = petalIDOf("Lilypad.aura");
+
+            if (auraIndex >= 0) {
+                const aura = new Petal(this, -1, -1);
+
+                aura.isAura = true;
+                aura.define(petalConfigs[auraIndex], this.rarity);
+                aura.parent = this;
+                aura.team = this.team;
+                aura.friendly = this.friendly;
+                aura.nullCollision = true;
+                aura.damage = 0;
+                aura.pushability = 0;
+                aura.launched = false;
+                aura.range = 999999;
+                aura.speed = 0;
+                aura.spinSpeed = 0;
+                aura.size = this.size * 2.55;
+                this._lilypadAura = aura;
+
+                const oldUpdate = aura.update.bind(aura);
+                const summon = this;
+
+                aura.update = () => {
+                    aura.x = summon.x;
+                    aura.y = summon.y;
+                    aura.velocity.x = summon.velocity.x;
+                    aura.velocity.y = summon.velocity.y;
+                    aura.facing = summon.facing;
+                    aura.size = summon.size * 2.55;
+                    aura.rarity = summon.rarity;
+
+                    if (summon.health?.isDead) {
+                        aura.destroy();
+                        return;
+                    }
+
+                    oldUpdate();
+                };
+            }
         }
 
         // Frozen mobs hold still but everything else ticks, and pacified
