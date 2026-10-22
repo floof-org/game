@@ -3650,7 +3650,7 @@ export class Mob extends Entity {
             const itemName = petalConfigs[index]?.name ?? `Item ${index}`;
             const rarityData = tiers[rarity];
             if (!rarityData) return;
-            // Announce drops from Nullified and higher mobs, keeping the
+            // Announce drops from Alpha and higher mobs, keeping the
             // WhiteHole message format.
             const forceAnnounce = itemName === "ӇЄҲƛƓƠƝ";
             if (this.rarity < state.announceRarity && !forceAnnounce) return;
@@ -3778,7 +3778,7 @@ export class Mob extends Entity {
                     playerNames += `, ${username}`;
                 }
             }
-            const msg = "alpha+";
+            const msg = `x${group.amount} ${group.rarityData.name} ${group.itemName} dropped by ${playerNames}`;
             state.clients.forEach(client => {
                 client.systemMessage(msg, group.rarityData.color);
             });
@@ -3808,7 +3808,9 @@ export class Mob extends Entity {
                 const last = shown[shown.length - 1];
                 const rest = shown.slice(0, -1);
 
-                killText = "alpha+";
+                killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by "
+                    + (rest.length > 0 ? rest.join(", ") + (rest.length > 1 ? ", and " : " and ") : "") + last
+                    + (hidden > 0 ? " and " + hidden + " more" : "");
             } 
 
             if (killText) {

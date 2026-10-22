@@ -6,7 +6,7 @@ import SpatialHashGrid from "./SpatialHashGrid.js";
  * Lowest mob rarity that gets a kill message or a drop announcement.
  * Exported so a lobby that overrides it cannot silently drift away from the default.
  */
-export const DEFAULT_ANNOUNCE_RARITY = 21; // Hyperfixation
+export const DEFAULT_ANNOUNCE_RARITY = 23; // Alpha
 
 // Zone coords work on a [-1, 1] scale with [0, 0] being the center of the map
 export class Zone {
