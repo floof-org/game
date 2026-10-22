@@ -1115,17 +1115,12 @@ export default class Client {
 
     get bodyDamageAdjustment() {
         const base = 5 + 1 * Math.pow(this.level, 1.5);
-        // Add extra body damage from Salt petals (3 salts = firemissile damage at same rarity)
+        // Salt petals add their per-tier body contact damage bonus.
         const saltExtra = this.slots.reduce((acc, slot) => {
-            if (slot && slot.id > 0) {
-                const petalName = petalConfigs.find(p => p.id === slot.id)?.name;
-                if (petalName === "Salt") {
-                    const tier = slot.rarity ?? 0;
-                    const petalTierMultiplier = globalThis.PETAL_TIER_TABLE?.[tier]?.damage ?? Math.pow(2, tier);
-                    return acc + 6.17 * petalTierMultiplier;
-                }
-            }
-            return acc;
+            if (!slot || slot.id <= 0) return acc;
+
+            const config = petalConfigs.find(p => p.id === slot.id);
+            return acc + (config?.tiers?.[slot.rarity ?? 0]?.bodyDamageBonus ?? 0);
         }, 0);
         return base + saltExtra;
     }
@@ -4999,6 +4994,7 @@ export default class Client {
             if (tier.constantHeal > 0) lines.push(`- Constant Heal: ${formatNumber(tier.constantHeal)}`);
             if (tier.damageReduction > 0) lines.push(`- Damage Reduction: ${Math.round(tier.damageReduction * 100)}%`);
             if (tier.armor > 0) lines.push(`- Armor: ${formatNumber(tier.armor)}`);
+            if (tier.bodyDamageBonus > 0) lines.push(`- Body Damage: +${formatNumber(tier.bodyDamageBonus)}`);
 
             if (config.description) {
                 lines.push(`- ${config.description}`);

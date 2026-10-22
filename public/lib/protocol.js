@@ -743,6 +743,15 @@ export class PetalConfig {
         return this;
     }
 
+    setBodyDamageBonus(bonus) {
+        this.bodyDamageBonus = bonus;
+        for (let i = 0; i < this.tiers.length; i++) {
+            this.tiers[i].bodyDamageBonus = bonus * petalTierMultiplier(i);
+        }
+
+        return this;
+    }
+
     setSize(sizeRatio) {
         if (Array.isArray(sizeRatio)) {
             this.sizeRatio = sizeRatio[sizeRatio.length - 1] ?? this.sizeRatio;
