@@ -129,7 +129,7 @@ export const petalConfigs = [
         .setPoison(2, 5)
         .setEnemySpeedMultiplier(.6, 5)
         .setDescription("Poisonous, and it slows down your enemies. A perfect double whammy."),
-    new PetalConfig("Beetle Egg", 450, 2.5, 1)
+    new PetalConfig("Beetle Egg", 45, 25, 1)
         .setSize(1.5)
         .setHuddles(1)
         .setDescription("Something might pop out of this!"),
@@ -196,7 +196,7 @@ export const petalConfigs = [
         .setSpeedMultiplier(1.03)
         .setHuddles(1)
         .setDescription("This special cocaine will make you go fast!"),
-    new PetalConfig("Ant Egg", 562.5, 2.5, 1)
+    new PetalConfig("Ant Egg", 56.25, 25, 1)
         .setSize(1.1)
         .setMulti(4, false)
         .setHuddles(1)
@@ -337,11 +337,11 @@ export const petalConfigs = [
         .setHuddles(1)
         .setMulti(2, false)
         .setDescription("A fragile branch from the Wilt."),
-    new PetalConfig("Leech Egg", 450, 2.5, 1)
+    new PetalConfig("Leech Egg", 45, 25, 1)
         .setSize(1.5)
         .setHuddles(1)
         .setDescription("Summons leeches to help protect you!"),
-    new PetalConfig("Hornet Egg", 450, 2.5, 1)
+    new PetalConfig("Hornet Egg", 45, 25, 1)
         .setSize(1.5)
         .setMulti(2, false)
         .setHuddles(1)
@@ -355,15 +355,15 @@ export const petalConfigs = [
         .setDescription("Sharp against the strong, weak against the weak."),
     new PetalConfig("Bullet.projectile", 1000, 12, 2)
         .setDescription("[object null object]"),
-    new PetalConfig("Square Egg", 450, 5, 1)
+    new PetalConfig("Square Egg", 45, 50, 1)
         .setSize(1.2)
         .setHuddles(1)
         .setDescription("This isn't from this world..."),
-    new PetalConfig("Triangle Egg", 675, 10, 2)
+    new PetalConfig("Triangle Egg", 67.5, 100, 2)
         .setSize(1.5)
         .setHuddles(1)
         .setDescription("This isn't from this world..."),
-    new PetalConfig("Pentagon Egg", 900, 20, 4)
+    new PetalConfig("Pentagon Egg", 90, 200, 4)
         .setSize(1.8)
         .setHuddles(1)
         .setDescription("This isn't from this world..."),
@@ -378,10 +378,10 @@ export const petalConfigs = [
     new PetalConfig("Rare Cactus", 25, 40, 40).setIcon(1, 1, "Cactus", 0).setSize(1.25).setExtraHealth(175).setDrawing(new Drawing()
         .addAction("beginPath").addAction("dipPolygon", 9, 1, 3, 0).addAction("closePath").addAction("paint", "#e6d450", .2, .2).addAction("beginPath").addAction("dipPolygon", 8, .525, 3, 0).addAction("closePath").addAction("paint", "#ede084", .15, 0).addAction("beginPath").addAction("circle", 0, 0, .3).addAction("closePath").addAction("fill", "#f8f4d3")
         ).setDescription("This shiny cactus will give you 5x extra health than normal cactus and his sharp thorns will deal massive damage."),
-    new PetalConfig("Scorpion Egg", 450, 2.5, 1)
+    new PetalConfig("Scorpion Egg", 45, 25, 1).setIcon(1, 1, "Egg", 0).setSize(1.5).setHuddles(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("ellipse", 0, 0, .775, 1, 0).addAction("paint", "#c69a2d", .2, .2).addAction("beginPath").addAction("ellipse", 0, 0, .4, .6, 0).addAction("fill", "#b28a28")
         ).setDescription("Where did you get this?"),
-    new PetalConfig("Jellyfish Egg", 450, 2.5, 1)
+    new PetalConfig("Jellyfish Egg", 45, 25, 1).setIcon(1, 1, "Egg", 0).setSize(1.5).setHuddles(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("ellipse", 0, 0, .775, 1, 0).addAction("opacity", .4).addAction("fill", "#ffffff").addAction("opacity", .6).addAction("stroke", "#ffffff", .2, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 0, 0).addAction("circle", -.175, .4, .275).addAction("moveTo", 0, 0).addAction("circle", .3, 0, .225).addAction("moveTo", 0, 0).addAction("circle", -.25, -.25, .175).addAction("moveTo", 0, 0).addAction("circle", .125, -.55, .13).addAction("fill", "#ffffff").addAction("closePath")
         ).setDescription(["May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "May be op idk.", "Dude how"]),
     new PetalConfig("Ruby", 22.5, 5, 17.5).setSize(1.5)
@@ -899,9 +899,10 @@ export const petalConfigs = [
 }
 
 // desert-maze balance: every sub-petal of a multi-petal flower deals 25% more
-// damage (Fire Missile is exempt since its damage scales through setMulti too).
+// damage (Fire Missile is exempt since its damage scales through setMulti too,
+// eggs are exempt so their summon petals keep the WhiteHole.js stats).
 for (const petal of petalConfigs) {
-    if (petal.name === "Fire Missile") continue;
+    if (petal.name === "Fire Missile" || petal.name.endsWith("Egg")) continue;
 
     const hasSubPetals = petal.tiers.some(tier => tier.count > 1);
     if (!hasSubPetals) continue;
@@ -951,7 +952,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Faster"))
         .addDrop(petalIDOf("Web"), .5)
         .addDrop(petalIDOf("Third Eye"), .025, 5),
-    new MobConfig("Beetle", 300, 1, 30, 3)
+    new MobConfig("Beetle", 30, 10, 30, 3)
         .setAggressive(1)
         .addDrop(petalIDOf("Iris"))
         .addDrop(petalIDOf("Pincer"), .8)
@@ -1055,7 +1056,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Bone"))
         .addDrop(petalIDOf("Lightning"), .2)
         .addDrop(petalIDOf("Fire Spellbook"), .03),
-    new MobConfig("Jellyfish", 620, 7.4, 35, 2.5)
+    new MobConfig("Jellyfish", 62, 74, 35, 2.5)
         .setAggressive(1)
         .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2 * .5 * .85)
         .addDrop(petalIDOf("Lightning"))
@@ -1073,7 +1074,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Light"), .5)
         .addDrop(petalIDOf("Leaf"), .5)
         .addDrop(petalIDOf("Corn"), .5),
-    new MobConfig("Soldier Ant", 250, 0.5, 20, 3.75)
+    new MobConfig("Soldier Ant", 25, 5, 20, 3.75)
         .setSizeStep(2)
         .setAggressive(1)
         .addDrop(petalIDOf("Faster"), .5)

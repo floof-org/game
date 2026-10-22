@@ -708,7 +708,7 @@ export class PetalSlot {
 
                         const fireAmuletIndex = petalIDOf("Amulet of Fire");
 
-                        if (this.player.slots?.some(slot => slot.config?.id === fireAmuletIndex)) {
+                        if (this.player.client?.slots?.some(slot => slot?.id === fireAmuletIndex)) {
                             const firestormIndex = mobIDOf("Firestorm (Summon)");
 
                             if (firestormIndex >= 0 && spawnConfig.name === "Sandstorm") {

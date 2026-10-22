@@ -622,6 +622,9 @@ export class MobTier {
     constructor(tier, health, damage, size) {
         const rarityData = RARITY_TABLE[Math.min(tier, 29)] ?? {};
 
+        this.baseHealth = health;
+        this.baseDamage = damage;
+        this.baseSize = size;
         this.health = health * (rarityData.health ?? 1);
         this.damage = damage * (rarityData.damage ?? 1);
         this.size = size;
