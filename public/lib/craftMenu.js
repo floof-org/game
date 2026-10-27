@@ -3,6 +3,470 @@ import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net
 import { formatAmount } from "./inventory.js";
 import { SERVER_BOUND } from "./protocol.js";
 
+const TAU = Math.PI * 2;
+
+const decay = (x) => 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+
+class FrameClock {
+  constructor() {
+    this.last = null;
+    this.dtMs = 0;
+    this.frames = 0;
+    this.elapsed = 0;
+  }
+  tick(now) {
+    if (this.last === null) this.last = now;
+    this.dtMs = Math.min(Math.max(now - this.last, 0), 1000);
+    this.last = now;
+    this.frames = this.dtMs / 16;
+    this.elapsed += this.dtMs;
+  }
+  pause() {
+    this.last = null;
+    this.dtMs = 0;
+    this.frames = 0;
+  }
+  smooth(rate) {
+    return 1 - decay(rate * this.frames);
+  }
+}
+
+function approach(current, target, factor) {
+  const diff = target - current;
+  return Math.abs(diff) < 1e-4 ? target : current + diff * factor;
+}
+
+function updateAndPrune(list) {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const anim = list[i];
+    if (!anim.done) anim.update();
+    if (anim.done) list.splice(i, 1);
+  }
+}
+
+class PopInTween {
+  constructor(el, clock, spinTurns = 1.5) {
+    this.el = el;
+    this.clock = clock;
+    this.spinTurns = spinTurns;
+    this.progress = 0;
+    this.done = false;
+    this.apply();
+  }
+  apply() {
+    this.el.style.transform =
+      'scale(' + this.progress + ') rotate(' + ((1 - this.progress) * TAU * -this.spinTurns) + 'rad)';
+  }
+  update() {
+    this.progress = approach(this.progress, 1, this.clock.smooth(0.2));
+    this.apply();
+    if (this.progress === 1 || !this.el.isConnected) this.done = true;
+  }
+}
+
+const cellKey = (petalIdx, rarIdx) => petalIdx + '|' + rarIdx;
+
+function applyPop(el, p) {
+  el.style.transform = 'scale(' + p + ') rotate(' + ((1 - p) * TAU * -1.5) + 'rad)';
+}
+
+class CraftInventoryGrid {
+  constructor({ clock, getIcon, formatAmount }) {
+    this.clock = clock;
+    this.getIcon = getIcon;
+    this.formatAmount = formatAmount;
+    this.pop = new Map();
+    this.prev = null;
+    this.els = new Map();
+  }
+
+  prime() { this.prev = null; this.pop.clear(); }
+
+  diffInventory(keys) {
+    if (this.prev) {
+      for (const key of keys) if (!this.prev.has(key)) this.pop.set(key, 0);
+    }
+    this.prev = keys;
+  }
+
+  resetCells() { this.els = new Map(); }
+
+  release(key) { this.els.delete(key); }
+
+  cellCanvas(petalIdx, rarIdx, count, size) {
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    c.style.cssText = 'width:' + size + 'px;height:' + size + 'px;display:block;pointer-events:none;transition:none;';
+    const ctx = c.getContext('2d');
+    try {
+      const src = this.getIcon(petalIdx, rarIdx, 'oneshot');
+      if (src) ctx.drawImage(src, 0, 0, size, size);
+    } catch (_) {}
+    if (count > 1) {
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.font = 'bold ' + Math.round(size * 0.25) + 'px Ubuntu';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'top';
+      const txt = 'x' + this.formatAmount(count);
+      ctx.strokeText(txt, size - 4, 4);
+      ctx.fillText(txt, size - 4, 4);
+    }
+    const key = cellKey(petalIdx, rarIdx);
+    this.els.set(key, c);
+    const p = this.pop.get(key);
+    if (p !== undefined) applyPop(c, p);
+    return c;
+  }
+
+  busy() { return this.pop.size > 0; }
+
+  update() {
+    const factor = this.clock.smooth(0.2);
+    for (const [key, p] of this.pop) {
+      const next = approach(p, 1, factor);
+      const el = this.els.get(key);
+      if (next === 1) {
+        this.pop.delete(key);
+        if (el) el.style.transform = '';
+      } else {
+        this.pop.set(key, next);
+        if (el) applyPop(el, next);
+      }
+    }
+  }
+}
+
+const BOARD = 150;
+const CENTER = BOARD / 2;
+const SLOT = 48;
+const RESULT = 60;
+const SLOT_COUNT = 5;
+const SLOT_BG = 'rgba(0,0,0,.15)';
+const OUTLINE = '1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,0 1px 0 #000,0 -1px 0 #000,1px 0 0 #000,-1px 0 0 #000';
+
+class CraftBoardView {
+  constructor(craft, { state, clock, getIcon, formatAmount }) {
+    this.craft = craft;
+    this.state = state;
+    this.clock = clock;
+    this.getIcon = getIcon;
+    this.formatAmount = formatAmount;
+    this.animations = [];
+
+    this.crafting = false;
+    this.pendingResult = null;
+    this.spinTarget = 0;
+    this.spinPhase = 0;
+    this.blend = 0;
+    this.resultInfo = null;
+    this.burstPending = false;
+    this.failCounts = null;
+    this._lastPhase = NaN;
+    this._lastBlend = NaN;
+
+    this.el = document.createElement('div');
+    this.el.style.cssText =
+      'display:flex;justify-content:center;align-items:center;height:' + (BOARD + 60) + 'px;' +
+      'margin-bottom:8px;flex:0 0 auto;';
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:4px;';
+    this.el.appendChild(row);
+
+    this.ringEl = document.createElement('div');
+    this.ringEl.style.cssText =
+      'position:relative;width:' + BOARD + 'px;height:' + BOARD + 'px;margin:30px 50px 30px 30px;z-index:1;';
+    row.appendChild(this.ringEl);
+
+    this.slots = [];
+    for (let i = 0; i < SLOT_COUNT; i++) {
+      const el = document.createElement('div');
+      el.style.cssText =
+        'position:absolute;left:0;top:0;width:' + SLOT + 'px;height:' + SLOT + 'px;' +
+        'transition:none;will-change:transform;';
+      const box = document.createElement('div');
+      box.style.cssText =
+        'position:relative;width:' + SLOT + 'px;height:' + SLOT + 'px;border-radius:4px;background:' + SLOT_BG + ';';
+      el.appendChild(box);
+      const slot = { el, box, wrap: null, sig: '', petalIdx: null, rarity: null };
+      el.addEventListener('click', () => {
+        if (!slot.sig || this.craft.craftResult) return;
+        this.craft.clearCraft();
+        this.craft.refresh();
+      });
+      el.addEventListener('mouseenter', () => { if (slot.sig) this._hover(slot.petalIdx, slot.rarity, el); });
+      el.addEventListener('mouseleave', () => { if (slot.sig) this._unhover(slot.petalIdx, slot.rarity); });
+      this.ringEl.appendChild(el);
+      this.slots.push(slot);
+    }
+
+    this.resultEl = document.createElement('div');
+    this.resultEl.style.cssText =
+      'position:absolute;left:0;top:0;display:none;cursor:pointer;z-index:1;transition:none;will-change:transform;' +
+      'width:' + RESULT + 'px;height:' + RESULT + 'px;border-radius:4px;background:' + SLOT_BG + ';';
+    this.resultEl.addEventListener('click', () => {
+      this.craft.craftResult = null;
+      this.craft.craftResultToken++;
+      this.craft.clearCraft();
+      this.craft.refresh();
+    });
+    this.resultEl.addEventListener('mouseenter', () => {
+      if (this.resultInfo) this._hover(this.resultInfo.petalIdx, this.resultInfo.rarity, this.resultEl);
+    });
+    this.resultEl.addEventListener('mouseleave', () => {
+      if (this.resultInfo) this._unhover(this.resultInfo.petalIdx, this.resultInfo.rarity);
+    });
+    this.ringEl.appendChild(this.resultEl);
+
+    const side = document.createElement('div');
+    side.style.cssText = 'position:relative;';
+    row.appendChild(side);
+
+    this.craftBtn = document.createElement('div');
+    this.craftBtn.textContent = 'Craft';
+    this.craftBtn.style.cssText =
+      'cursor:pointer;display:grid;place-items:center;position:relative;overflow:hidden;' +
+      'border:2px solid rgba(0,0,0,.2);border-radius:5px;background:#bbb;padding:6px 18px;white-space:nowrap;' +
+      'font-family:Ubuntu,sans-serif;font-weight:bold;font-size:22px;color:#fff;text-shadow:' + OUTLINE + ';' +
+      'user-select:none;transition:none;';
+    this.craftBtn.addEventListener('click', () => { if (this._canCraft()) this.craft.doCraft(); });
+    this.craftBtn.addEventListener('mouseenter', () => { if (this._canCraft()) this.craftBtn.style.filter = 'brightness(1.15)'; });
+    this.craftBtn.addEventListener('mouseleave', () => { this.craftBtn.style.filter = ''; });
+    side.appendChild(this.craftBtn);
+
+    this.rateEl = document.createElement('div');
+    this.rateEl.style.cssText =
+      'position:absolute;top:100%;left:50%;transform:translate(-50%,2px);white-space:nowrap;' +
+      'color:#fff;font-weight:bold;font-size:14px;font-family:Ubuntu,sans-serif;text-shadow:' + OUTLINE + ';';
+    side.appendChild(this.rateEl);
+
+    this.statusEl = document.createElement('div');
+    this.statusEl.style.cssText =
+      'position:absolute;left:calc(100% + 18px);top:50%;transform:translateY(-50%);white-space:nowrap;' +
+      'font-weight:bold;font-size:20px;font-family:Ubuntu,sans-serif;text-shadow:' + OUTLINE + ';';
+    side.appendChild(this.statusEl);
+
+    this._layout();
+    this.sync();
+  }
+
+  beginCraft() {
+    this.crafting = true;
+    this.pendingResult = null;
+    this.spinTarget = 0;
+    this.spinPhase = 0;
+    this.burstPending = false;
+    this.failCounts = null;
+    this._clearResult();
+    this.sync();
+  }
+
+  receiveResult(result) {
+    if (this.crafting) this.pendingResult = result;
+  }
+
+  abort() {
+    this.crafting = false;
+    this.pendingResult = null;
+    this.spinTarget = Math.round(this.spinPhase);
+    this.sync();
+  }
+
+  busy() {
+    const collapsed = this._collapsed();
+    return (
+      this.crafting || !!this.pendingResult || this.animations.length > 0 ||
+      Math.abs(this.blend - (collapsed ? 1 : 0)) > 1e-4 || Math.abs(this.spinPhase - this.spinTarget) > 1e-4
+    );
+  }
+
+  _collapsed() {
+    const cr = this.craft.craftResult;
+    return !!cr && cr.type === 'success';
+  }
+
+  sync() {
+    const craft = this.craft;
+    const cr = craft.craftResult;
+    const pending = !!cr && cr.type === 'pending';
+    if (this.crafting && !pending) this.abort();
+
+    const snap = !!cr && Array.isArray(cr.slots);
+    const petalIdx = snap ? cr.petalIdx : craft.craftPetalIdx;
+    const rarity = snap ? cr.fromRarity : craft.craftRarity;
+    if (!cr) this.failCounts = null;
+    const counts = this.failCounts && cr && cr.type === 'fail' ? this.failCounts : (snap ? cr.slots : craft.craftSlots);
+
+    for (let i = 0; i < SLOT_COUNT; i++) {
+      const slot = this.slots[i];
+      const count = petalIdx != null && rarity != null ? counts[i] : 0;
+      const sig = count > 0 ? petalIdx + '|' + rarity + '|' + count : '';
+      if (sig !== slot.sig) {
+        const wasEmpty = slot.sig === '';
+        if (slot.wrap) { slot.wrap.remove(); slot.wrap = null; }
+        slot.sig = sig;
+        slot.petalIdx = sig ? petalIdx : null;
+        slot.rarity = sig ? rarity : null;
+        if (sig) {
+          slot.wrap = this._petalEl(petalIdx, rarity, count, SLOT);
+          slot.box.appendChild(slot.wrap);
+          if (wasEmpty) this.animations.push(new PopInTween(slot.wrap, this.clock, 1.5));
+        }
+      }
+      const cursor = sig && !cr ? 'pointer' : 'default';
+      if (slot.el.style.cursor !== cursor) slot.el.style.cursor = cursor;
+    }
+
+    const rate = craft.getCraftRateText() + '% success rate';
+    if (this.rateEl.textContent !== rate) this.rateEl.textContent = rate;
+    const can = this._canCraft();
+    const tier = craft.craftRarity != null && this.state.tiers ? this.state.tiers[craft.craftRarity] : null;
+    const bg = can && tier && tier.color ? tier.color : '#bbb';
+    if (this.craftBtn.style.background !== bg) this.craftBtn.style.background = bg;
+    const ptr = can ? 'pointer' : 'default';
+    if (this.craftBtn.style.cursor !== ptr) this.craftBtn.style.cursor = ptr;
+
+    let color = '#fff', text = '';
+    if (cr) {
+      if (cr.type === 'success') { color = '#4ade80'; text = 'Success. +' + cr.delta; }
+      else if (cr.type === 'fail') { color = '#ff6b6b'; text = 'Failed after ' + cr.attempts + ' attempt(s).'; }
+      else text = 'Crafting...';
+    }
+    if (this.statusEl.textContent !== text) this.statusEl.textContent = text;
+    if (this.statusEl.style.color !== color) this.statusEl.style.color = color;
+  }
+
+  _petalEl(petalIdx, rarity, count, size) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:absolute;left:0;top:0;width:' + size + 'px;height:' + size + 'px;border-radius:4px;transition:none;';
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    c.style.cssText = 'width:' + size + 'px;height:' + size + 'px;display:block;pointer-events:none;';
+    try { c.getContext('2d').drawImage(this.getIcon(petalIdx, rarity), 0, 0, size, size); } catch (_) {}
+    wrap.appendChild(c);
+    const badge = document.createElement('div');
+    badge.textContent = 'x' + this.formatAmount(count);
+    badge.style.cssText =
+      'position:absolute;left:90%;bottom:80%;transform:translate(-50%,0) rotate(30deg);' +
+      'font-size:14px;font-weight:bold;font-family:Ubuntu,sans-serif;color:#fff;white-space:nowrap;' +
+      'pointer-events:none;text-shadow:' + OUTLINE + ';';
+    wrap.appendChild(badge);
+    return wrap;
+  }
+
+  _canCraft() {
+    let staged = 0;
+    for (let i = 0; i < SLOT_COUNT; i++) staged += this.craft.craftSlots[i] || 0;
+    return !this.crafting && this.craft.craftPetalIdx != null && staged >= SLOT_COUNT;
+  }
+
+  _hover(petalIdx, rarity, el) {
+    this.craft.hoverEntry = { index: petalIdx, rarity: rarity };
+    this.craft.showTooltip(el);
+  }
+  _unhover(petalIdx, rarity) {
+    const h = this.craft.hoverEntry;
+    if (h && h.index === petalIdx && h.rarity === rarity) {
+      this.craft.hoverEntry = null;
+      this.craft.tip.style.display = 'none';
+    }
+  }
+
+  _clearResult() {
+    this.resultInfo = null;
+    this.resultEl.style.display = 'none';
+    this.resultEl.replaceChildren();
+  }
+
+  _showResult(res) {
+    const rarity = res.fromRarity + 1;
+    const tier = this.state && this.state.tiers && this.state.tiers[rarity];
+    if (res.type !== 'success' || !tier || res.petalIdx == null) return;
+    this.resultInfo = { petalIdx: res.petalIdx, rarity: rarity, count: res.delta };
+    this.resultEl.replaceChildren(this._petalEl(res.petalIdx, rarity, res.delta, RESULT));
+    this.resultEl.style.display = 'block';
+    this.resultEl.style.transform = this._resultTransform(0);
+    this.burstPending = true;
+  }
+
+  update() {
+    this.sync();
+    const clock = this.clock, craft = this.craft;
+
+    if (this.crafting) {
+      const fast = !!craft.FAST_CRAFT;
+      const step = fast ? 1 : 2;
+      const into = this.spinTarget % step;
+      const advance = clock.dtMs / (fast ? 400 : 800);
+      this.spinTarget += advance;
+      if (into + advance > step && this.pendingResult) this._reveal(step);
+    }
+
+    this.spinPhase = approach(this.spinPhase, this.spinTarget, clock.smooth(0.1));
+    this.blend = approach(this.blend, this._collapsed() ? 1 : 0, clock.smooth(0.2));
+
+    if (this._lastPhase !== this.spinPhase || this._lastBlend !== this.blend) this._layout();
+    if (this._lastBlend !== this.blend && this.resultInfo) {
+      this.resultEl.style.transform = this._resultTransform(this.blend);
+    }
+    this._lastPhase = this.spinPhase;
+    this._lastBlend = this.blend;
+
+    if (this.burstPending && this.blend > 0.85) {
+      this.burstPending = false;
+      const tier = this.state.tiers[this.resultInfo.rarity];
+      craft.spawnSuccessBurst(this.ringEl, CENTER, CENTER, (tier && tier.color) || '#ffd860');
+    }
+    if (this.resultInfo && !this._collapsed() && this.blend === 0) this._clearResult();
+
+    updateAndPrune(this.animations);
+  }
+
+  _reveal(step) {
+    const res = this.pendingResult;
+    this.pendingResult = null;
+    this.crafting = false;
+    this.spinTarget = Math.floor(this.spinTarget / step) * step;
+    if (res.type === 'fail') this.failCounts = this._failLayout(res);
+    this._showResult(res);
+    this.craft.setCraftResult(res);
+  }
+
+  _failLayout(res) {
+    const slots = res.slots || [];
+    let total = 0;
+    for (let i = 0; i < SLOT_COUNT; i++) total += slots[i] || 0;
+    const left = Math.max(0, total - SLOT_COUNT * (res.attempts || 0));
+    const counts = new Array(SLOT_COUNT).fill(0);
+    if (left < SLOT_COUNT) {
+      const keep = [0, 1, 2, 3, 4];
+      for (let n = SLOT_COUNT - left; n > 0; n--) keep.splice(Math.floor(Math.random() * keep.length), 1);
+      for (const i of keep) counts[i] = 1;
+    } else {
+      const extra = left % SLOT_COUNT;
+      const per = (left - extra) / SLOT_COUNT;
+      for (let i = 0; i < SLOT_COUNT; i++) counts[i] = per + (i < extra ? 1 : 0);
+    }
+    return counts;
+  }
+
+  _layout() {
+    const scale = 1 - this.blend;
+    const e = (1 - 0.4 * (0.5 * Math.sin(this.spinPhase * TAU) + 0.5)) * scale;
+    for (let i = 0; i < SLOT_COUNT; i++) {
+      const angle = (i / SLOT_COUNT) * TAU + this.spinPhase * TAU;
+      const x = (Math.cos(angle) * e * 0.5 + 0.5) * BOARD;
+      const y = (Math.sin(angle) * e * 0.5 + 0.5) * BOARD;
+      this.slots[i].el.style.transform = 'translate(-50%, -50%) translate(' + x + 'px, ' + y + 'px) scale(' + scale + ')';
+    }
+  }
+
+  _resultTransform(p) {
+    return 'translate(-50%, -50%) translate(' + CENTER + 'px, ' + CENTER + 'px) rotate(' + (p * TAU) + 'rad) scale(' + p + ')';
+  }
+}
+
 var craftRef = null;
 
 (function () {
@@ -47,10 +511,13 @@ var craftRef = null;
 
   craft.injectAttempts = 0;
 
-  craft.orbitRAF = null;
-  craft.orbitLastPositions = [];
-  craft.orbitCurrentProgress = 0;
-  craft.easeRAF = null;
+  craft.clock = new FrameClock();
+  craft.isOpen = false;
+  craft.panelT = 0;
+  craft._panelLastT = -1;
+  craft.board = null;
+  craft.invGrid = null;
+  craft._raf = null;
 
   craft._debugMode = false;
   craft._simNextOutcome = null;
@@ -61,12 +528,9 @@ var craftRef = null;
   craft.PITY_WINDOW_MS = 2500;
   craft.POST_LOGIN_PITY_DELAY_MS = 1500;
   craft.PITY_INIT_POLL_MS = 2500;
-  craft.ORBIT_DURATION_MS = 1800;
-  craft.FALL_DURATION_MS = 333;
-  craft.EASE_DURATION_MS = 333;
+  craft.FAST_CRAFT = false;
 
   craft.DESERT_PITY_MIN_TIER_IDX = 3;
-  craft.SUCCESS_SPIRAL_SWEEP = Math.PI / 2;
 
   craft.PITY_HEADER_RE = /^All\s+pity\s+for\s+(.+?):/i;
   craft.PITY_NONE_RE = /^No\s+active\s+pity\s+for\s+.+?\.?\s*$/i;
@@ -173,19 +637,6 @@ var craftRef = null;
     'stroke-linejoin="round" aria-hidden="true">' +
     '<path d="M14 2 L9 7 M9 3 L9 7 L13 7"/>' +
     '<path d="M2 14 L7 9 M3 9 L7 9 L7 13"/></svg>';
-
-  craft.STAR_CENTER = { x: 130, y: 100 };
-  craft.STAR_OUTER = 65;
-  craft.STAR_INNER = 48;
-  craft.STAR_POINTS = [];
-  for (var _sk = 0; _sk < 10; _sk++) {
-    var _sa = (-Math.PI / 2) + _sk * (Math.PI / 5);
-    var _sr = (_sk % 2 === 0) ? craft.STAR_OUTER : craft.STAR_INNER;
-    craft.STAR_POINTS.push({
-      x: craft.STAR_CENTER.x + _sr * Math.cos(_sa),
-      y: craft.STAR_CENTER.y + _sr * Math.sin(_sa),
-    });
-  }
 
   craft.dlog = function () {
     if (craft._debugMode) console.log.apply(console, ['[CraftMenu]'].concat([].slice.call(arguments)));
@@ -441,41 +892,6 @@ var craftRef = null;
     return null;
   };
 
-  craft._cellCache = new Map();
-  craft._cellCacheKeys = [];
-  craft._CELL_CACHE_MAX = 2000;
-  craft.getCellBitmap = function (petalIdx, rarIdx, displayed, SIZE) {
-    var key = petalIdx + '|' + rarIdx + '|' + displayed + '|' + SIZE;
-    var hit = craft._cellCache.get(key);
-    if (hit) return hit;
-    var off = (typeof OffscreenCanvas !== 'undefined')
-      ? new OffscreenCanvas(SIZE, SIZE)
-      : document.createElement('canvas');
-    off.width = SIZE; off.height = SIZE;
-    var octx = off.getContext('2d');
-    try {
-      var src = getPetalIcon(petalIdx, rarIdx, "oneshot");
-      if (src) octx.drawImage(src, 0, 0, SIZE, SIZE);
-    } catch (_) {}
-    if (displayed > 1) {
-      octx.fillStyle = '#fff';
-      octx.strokeStyle = '#000';
-      octx.lineWidth = 2;
-      octx.font = 'bold ' + Math.round(SIZE * 0.25) + 'px Ubuntu';
-      octx.textAlign = 'right';
-      octx.textBaseline = 'top';
-      var txt = 'x' + formatAmount(displayed);
-      octx.strokeText(txt, SIZE - 4, 4);
-      octx.fillText(txt, SIZE - 4, 4);
-    }
-    craft._cellCache.set(key, off);
-    craft._cellCacheKeys.push(key);
-    if (craft._cellCacheKeys.length > craft._CELL_CACHE_MAX) {
-      craft._cellCache.delete(craft._cellCacheKeys.shift());
-    }
-    return off;
-  };
-
   craft._tooltipCache = new Map();
   craft._tooltipCacheKeys = [];
   craft._TOOLTIP_CACHE_MAX = 200;
@@ -499,39 +915,10 @@ var craftRef = null;
     return off;
   };
 
-  craft._cellObserver = null;
-  craft.makeCellObserver = function (root) {
-    if (typeof IntersectionObserver === 'undefined') return null;
-    var obs = new IntersectionObserver(function (entries) {
-      for (var i = 0; i < entries.length; i++) {
-        var entry = entries[i];
-        if (!entry.isIntersecting) continue;
-        var el = entry.target;
-        if (el._craftInflated) { obs.unobserve(el); continue; }
-        var ds = el.dataset;
-        var pidx = +ds.fcPidx, ridx = +ds.fcRidx;
-        var disp = +ds.fcDisp, sz = +ds.fcSize;
-        var bitmap = craft.getCellBitmap(pidx, ridx, disp, sz);
-        if (!bitmap) { obs.unobserve(el); continue; }
-        var cv = document.createElement('canvas');
-        cv.width = sz; cv.height = sz;
-        cv.style.cssText =
-          'width:' + sz + 'px;height:' + sz + 'px;display:block;pointer-events:none;';
-        try { cv.getContext('2d').drawImage(bitmap, 0, 0); } catch (_) {}
-        el.appendChild(cv);
-        el._craftInflated = true;
-        obs.unobserve(el);
-      }
-    }, { root: root, rootMargin: '400px 0px 400px 0px', threshold: 0 });
-    return obs;
-  };
-
   craft._searchDebounceTimer = null;
   craft._SEARCH_DEBOUNCE_MS = 80;
 
   craft.clearCellCaches = function () {
-    craft._cellCache.clear();
-    craft._cellCacheKeys.length = 0;
     craft._tooltipCache.clear();
     craft._tooltipCacheKeys.length = 0;
   };
@@ -652,7 +1039,7 @@ var craftRef = null;
     if (craft.btn.style.display !== newDisplay) {
       craft.btn.style.display = newDisplay;
       if (!shouldShow) {
-        if (craft.panel) craft.panel.style.display = 'none';
+        if (craft.panel) craft.setOpen(false, true);
         if (craft.tip) craft.tip.style.display = 'none';
         craft.hoverEntry = null;
       }
@@ -685,7 +1072,10 @@ var craftRef = null;
         'position:fixed;display:none;flex-direction:column;' +
         'background:#db9d5a;border-radius:8px;border:4px solid #a47040;' +
         'padding:8px;z-index:9999;font-family:Ubuntu,sans-serif;color:#fff;' +
-        'overflow:hidden;box-sizing:border-box;';
+        'overflow:hidden;box-sizing:border-box;' +
+        'transition:width .25s ease-in-out,height .25s ease-in-out,max-width .25s ease-in-out,' +
+        'max-height .25s ease-in-out,left .25s ease-in-out,right .25s ease-in-out,' +
+        'top .25s ease-in-out,bottom .25s ease-in-out;';
       craft.applyPanelSize();
       document.body.appendChild(craft.panel);
 
@@ -697,6 +1087,7 @@ var craftRef = null;
       craft.tipCanvas = document.createElement('canvas');
       craft.tip.appendChild(craft.tipCanvas);
       document.body.appendChild(craft.tip);
+      craft.initBoard();
 
       craft.btn.addEventListener('click', craft.togglePanel);
       c.appendChild(craft.btn);
@@ -727,12 +1118,9 @@ var craftRef = null;
 
   craft.scheduleResult = function (result) {
     if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
-    var tokenAtSchedule = craft.craftResultToken;
-    setTimeout(function () {
-      if (craft.craftResultToken !== tokenAtSchedule) return;
-      if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
-      craft.setCraftResult(result);
-    }, craft.FALL_DURATION_MS);
+    if (!craft.board) return;
+    craft.board.receiveResult(result);
+    craft.startLoop();
   }
 
   craft.setupCraftChatLogger = function () {
@@ -839,14 +1227,48 @@ var craftRef = null;
 
   craft.togglePanel = function () {
     if (!craft.panel) return;
-    if (craft.panel.style.display === 'none') {
-      craft.panel.style.display = 'flex';
-      craft.applyPanelSize();
-      craft.render();
+    craft.setOpen(!craft.isOpen);
+  };
+
+  craft.setOpen = function (open, instant) {
+    if (!craft.panel) return;
+    craft.isOpen = !!open;
+    if (open) {
+      if (craft.panel.style.display === 'none') {
+        craft.panel.style.display = 'flex';
+        craft.applyPanelSize();
+        craft.invGrid && craft.invGrid.prime();
+        craft.applyPanelTransform();
+        craft.render();
+      }
+      if (instant) { craft.panelT = 1; craft.applyPanelTransform(); }
     } else {
-      craft.panel.style.display = 'none';
       craft.hoverEntry = null;
-      craft.tip.style.display = 'none';
+      if (craft.tip) craft.tip.style.display = 'none';
+      if (instant) {
+        craft.panelT = 0;
+        craft._panelLastT = 0;
+        craft.panel.style.display = 'none';
+      }
+    }
+    craft.startLoop();
+  };
+
+  craft.applyPanelTransform = function () {
+    var offset = 130 * (1 - craft.panelT);
+    craft.panel.style.transform = craft.panelT >= 1 ? '' : 'translate(0%, ' + offset + '%)';
+    craft.panel.style.willChange = craft.panelT < 1 ? 'transform' : '';
+  };
+
+  craft.updatePanelAnim = function () {
+    if (!craft.panel) return;
+    craft.panelT = approach(craft.panelT, craft.isOpen ? 1 : 0, craft.clock.smooth(0.25));
+    if (craft.panelT !== craft._panelLastT) {
+      craft._panelLastT = craft.panelT;
+      craft.applyPanelTransform();
+    }
+    if (!craft.isOpen && craft.panelT === 0 && craft.panel.style.display !== 'none') {
+      craft.panel.style.display = 'none';
     }
   };
 
@@ -859,13 +1281,15 @@ var craftRef = null;
   craft.setCraftResult = function (result) {
     var t = ++craft.craftResultToken;
     craft.craftResult = result;
-    if (craft.panel && craft.panel.style.display !== 'none') craft.render();
+    if (result && result.type === 'pending' && craft.board) craft.board.beginCraft();
+    craft.startLoop();
+    craft.refresh();
 
     if (result && result.type === 'success') return;
     setTimeout(function () {
       if (craft.craftResultToken === t) {
         craft.craftResult = null;
-        if (craft.panel && craft.panel.style.display !== 'none') craft.render();
+        craft.refresh();
       }
     }, craft.CRAFT_RESULT_TTL_MS);
   };
@@ -877,48 +1301,148 @@ var craftRef = null;
     craft.craftResult = null;
     clearInterval(craft.poll);
     craft.clearCraft();
-    if (craft.panel && craft.panel.style.display !== 'none') craft.render();
+    if (craft.board) craft.board.abort();
+    craft.refresh();
   }
 
-  craft.loadCraft = function (petalIdx, rarity, owned, shift) {
+  craft._streak = 0;
+  craft._streakKey = null;
+  craft._streakUntil = 0;
 
-    if (craft.craftResult && craft.craftResult.type !== 'pending') {
+  craft.stagedTotal = function () {
+    var t = 0;
+    for (var i = 0; i < 5; i++) t += craft.craftSlots[i];
+    return t;
+  };
+
+  craft.isPending = function () {
+    return !!craft.craftResult && craft.craftResult.type === 'pending';
+  };
+
+  craft.canUseCell = function (petalIdx, rarIdx, displayed) {
+    if (craft.isPending() || displayed <= 0) return false;
+    if (!(state.tiers && state.tiers[rarIdx + 1])) return false;
+    var selected = craft.craftPetalIdx === petalIdx && craft.craftRarity === rarIdx;
+    return displayed >= 5 || (selected && craft.stagedTotal() >= 5);
+  };
+
+  craft.loadCraft = function (petalIdx, rarity, owned, shift) {
+    if (craft.isPending()) return false;
+    if (!(state.tiers && state.tiers[rarity + 1])) return false;
+
+    var same = craft.craftPetalIdx === petalIdx && craft.craftRarity === rarity;
+    var staged = same ? craft.stagedTotal() : 0;
+    var available = owned - staged;
+    if (available <= 0) return false;
+
+    var key = petalIdx + '|' + rarity;
+    var now = performance.now();
+    craft._streak = (craft._streakKey === key && now < craft._streakUntil) ? craft._streak + 1 : 1;
+    craft._streakKey = key;
+    craft._streakUntil = now + 500;
+
+    var amount = Math.min(shift ? available : 5 * craft._streak, available);
+
+    if (craft.craftResult) {
       craft.craftResult = null;
       craft.craftResultToken++;
     }
-
     if (craft._simNextOutcome != null) {
       craft.dlog('re-stage cleared pending SimCraft outcome:', craft._simNextOutcome);
       craft._simNextOutcome = null;
     }
-    if (shift) {
-      craft.craftPetalIdx = petalIdx;
-      craft.craftRarity = rarity;
-      var per = Math.floor(owned / 5);
-      var rem = owned - per * 5;
-      var counts = [per, per, per, per, per];
-      var idxs = [0, 1, 2, 3, 4];
-      for (var i = idxs.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var t = idxs[i]; idxs[i] = idxs[j]; idxs[j] = t;
+
+    craft.craftPetalIdx = petalIdx;
+    craft.craftRarity = rarity;
+    var total = staged + amount;
+    var extra = total % 5;
+    var per = (total - extra) / 5;
+    var counts = [];
+    for (var i = 0; i < 5; i++) counts.push(per + (i < extra ? 1 : 0));
+    craft.craftSlots = counts;
+    return true;
+  };
+
+  craft.computeRows = function (s) {
+    var petalIdxSet = new Set();
+    Object.keys(s.inventory).forEach(function (tn) {
+      var petals = s.inventory[tn] || {};
+      Object.keys(petals).forEach(function (pid) {
+        if (petals[pid] > 0) petalIdxSet.add(Number(pid));
+      });
+    });
+    var rows = Array.from(petalIdxSet);
+    rows.sort(function (a, b) {
+      var an = (s.petalConfigs[a] || {}).name || '';
+      var bn = (s.petalConfigs[b] || {}).name || '';
+      return an.localeCompare(bn);
+    });
+    var emptyInventory = !rows.length;
+    if (craft.searchQuery) {
+      var q = craft.searchQuery.toLowerCase();
+      rows = rows.filter(function (idx) {
+        var name = ((s.petalConfigs[idx] || {}).name || '').toLowerCase();
+        return name.indexOf(q) !== -1;
+      });
+    }
+    return { rows: rows, emptyInventory: emptyInventory };
+  };
+
+  craft.rowSignature = function (rows, nRarities, size) {
+    return rows.join(',') + '|' + nRarities + '|' + size + '|' + craft.searchQuery;
+  };
+
+  craft.paintCell = function (cell) {
+    var tier = state.tiers[cell.rarIdx];
+    var owned = (state.inventory[tier.name] || {})[cell.petalIdx] || 0;
+    var selected = cell.petalIdx === craft.craftPetalIdx && cell.rarIdx === craft.craftRarity;
+    var displayed = owned - (selected ? craft.stagedTotal() : 0);
+    var usable = craft.canUseCell(cell.petalIdx, cell.rarIdx, displayed);
+    var el = cell.el;
+    cell.owned = owned;
+    cell.displayed = displayed;
+    cell.usable = usable;
+    if (displayed > 0) {
+      if (cell.shownCount !== displayed) {
+        el.replaceChildren(craft.invGrid.cellCanvas(cell.petalIdx, cell.rarIdx, displayed, cell.size));
+        cell.shownCount = displayed;
       }
-      for (var k = 0; k < rem; k++) counts[idxs[k]]++;
-      craft.craftSlots = counts;
+      el.style.cursor = usable ? 'pointer' : 'default';
+      el.style.filter = usable ? '' : 'grayscale(1)';
+      el.style.opacity = usable ? '' : '0.55';
+    } else {
+      if (cell.shownCount) {
+        el.replaceChildren();
+        craft.invGrid.release(cellKey(cell.petalIdx, cell.rarIdx));
+        cell.shownCount = 0;
+        var h = craft.hoverEntry;
+        if (h && h.index === cell.petalIdx && h.rarity === cell.rarIdx) {
+          craft.hoverEntry = null;
+          craft.tip.style.display = 'none';
+        }
+      }
+      el.style.cursor = 'default';
+      el.style.filter = '';
+      el.style.opacity = '';
+    }
+  };
+
+  craft.refresh = function () {
+    if (!craft.panel || craft.panel.style.display === 'none') return;
+    var s = state;
+    var intact = !!(craft._grid && craft._grid.isConnected && s && s.inventory && s.tiers && s.petalConfigs);
+    if (intact) {
+      var info = craft.computeRows(s);
+      intact = info.rows.length > 0 &&
+        craft.rowSignature(info.rows, s.tiers.length, craft.computeIconSize(s.tiers.length)) === craft._rowSig;
+    }
+    if (!intact) {
+      craft.render();
       return;
     }
-
-    var sameTarget = craft.craftPetalIdx === petalIdx && craft.craftRarity === rarity && craft.craftPetalIdx != null;
-    if (sameTarget) {
-      var staged = 0;
-      for (var s = 0; s < 5; s++) staged += craft.craftSlots[s];
-      if (owned - staged >= 5) {
-        for (var ii = 0; ii < 5; ii++) craft.craftSlots[ii]++;
-      }
-    } else {
-      craft.craftPetalIdx = petalIdx;
-      craft.craftRarity = rarity;
-      craft.craftSlots = [1, 1, 1, 1, 1];
-    }
+    craft.diffInventoryForPops(s);
+    for (var i = 0; i < craft._cells.length; i++) craft.paintCell(craft._cells[i]);
+    craft.board.sync();
   };
 
   craft.doCraft = function () {
@@ -949,7 +1473,6 @@ var craftRef = null;
       sendChatMessage('/craft ' + tierName + ' ' + petalName + ' ' + total);
     }
 
-    craft.orbitLastPositions = [];
     craft.setCraftResult({
       type: 'pending',
       delta: total,
@@ -968,69 +1491,9 @@ var craftRef = null;
         clearInterval(craft.poll);
         craft.clearCraft();
 
-        if (craft.panel && craft.panel.style.display !== 'none' && !craft.craftResult) {
-          craft.render();
-        }
+        if (!craft.craftResult) craft.refresh();
       }
     }, 100);
-  };
-
-  craft.starPoint = function (progress) {
-    var t = (progress - Math.floor(progress)) * 10;
-    var i0 = Math.floor(t) % 10;
-    var localT = t - Math.floor(t);
-    var p0 = craft.STAR_POINTS[(i0 + 9) % 10];
-    var p1 = craft.STAR_POINTS[i0];
-    var p2 = craft.STAR_POINTS[(i0 + 1) % 10];
-    var p3 = craft.STAR_POINTS[(i0 + 2) % 10];
-    var t2 = localT * localT;
-    var t3 = t2 * localT;
-    return {
-      x: 0.5 * (2 * p1.x + (-p0.x + p2.x) * localT + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
-      y: 0.5 * (2 * p1.y + (-p0.y + p2.y) * localT + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3),
-    };
-  };
-
-  craft.stopOrbitAnimation = function () {
-    if (craft.orbitRAF) cancelAnimationFrame(craft.orbitRAF);
-    craft.orbitRAF = null;
-  };
-  craft.stopEaseAnimation = function () {
-    if (craft.easeRAF) cancelAnimationFrame(craft.easeRAF);
-    craft.easeRAF = null;
-  };
-
-  craft.startOrbitAnimation = function (container) {
-    craft.stopOrbitAnimation();
-
-    var slots = container.querySelectorAll('[data-craft-orbit]');
-    if (!slots.length) {
-      craft.orbitRAF = null;
-      return;
-    }
-    var start = performance.now();
-    function tick(now) {
-      if (!craft.craftResult || craft.craftResult.type !== 'pending') {
-        craft.orbitRAF = null;
-        return;
-      }
-      if (!craft._pageActive) {
-        craft.orbitRAF = requestAnimationFrame(tick);
-        return;
-      }
-      var progress = ((now - start) / craft.ORBIT_DURATION_MS) % 1;
-      craft.orbitCurrentProgress = progress;
-      for (var i = 0; i < slots.length; i++) {
-        var p = (progress + i / 5) % 1;
-        var pt = craft.starPoint(p);
-        var tx = pt.x - 25, ty = pt.y - 25;
-        slots[i].style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
-
-        craft.orbitLastPositions[i] = { x: tx, y: ty };
-      }
-      craft.orbitRAF = requestAnimationFrame(tick);
-    }
-    craft.orbitRAF = requestAnimationFrame(tick);
   };
 
   craft.mixWithWhite = function (hex, amount) {
@@ -1042,71 +1505,6 @@ var craftRef = null;
     g = Math.round(g + (255 - g) * amount);
     b = Math.round(b + (255 - b) * amount);
     return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
-  };
-
-  craft.startEaseAnimation = function (container, type) {
-    craft.stopEaseAnimation();
-    if (!craft.craftResult || (craft.craftResult.type !== 'success' && craft.craftResult.type !== 'fail')) {
-      return;
-    }
-    var slots = container.querySelectorAll('[data-craft-ease]');
-    if (!slots.length) {
-
-      craft.craftResult._easeComplete = true;
-      return;
-    }
-    var startTime = craft.craftResult._easeStartTime;
-    if (!startTime) {
-      startTime = performance.now();
-      craft.craftResult._easeStartTime = startTime;
-    }
-
-    var slotProgresses = [];
-    for (var i = 0; i < 5; i++) {
-      slotProgresses[i] = (craft.orbitCurrentProgress + i / 5) % 1;
-    }
-    var tokenAtSchedule = craft.craftResultToken;
-    function tick(now) {
-      if (craft.craftResultToken !== tokenAtSchedule) { craft.easeRAF = null; return; }
-      if (!craft.craftResult || (craft.craftResult.type !== 'success' && craft.craftResult.type !== 'fail')) {
-        craft.easeRAF = null;
-        return;
-      }
-      var p = Math.min(1, (now - startTime) / craft.EASE_DURATION_MS);
-      var inv = 1 - p;
-      var eased = 1 - inv * inv;
-      if (type === 'fail') {
-        for (var i = 0; i < slots.length; i++) {
-          var pStart = slotProgresses[i];
-          var pCurrent = (pStart + 0.2 * eased) % 1;
-          var pt = craft.starPoint(pCurrent);
-          slots[i].style.transform = 'translate(' + (pt.x - 25) + 'px,' + (pt.y - 25) + 'px)';
-        }
-      } else {
-
-        for (var i = 0; i < slots.length; i++) {
-          var sp = craft.orbitLastPositions[i];
-          if (!sp) continue;
-          var rx = sp.x + 25 - craft.STAR_CENTER.x;
-          var ry = sp.y + 25 - craft.STAR_CENTER.y;
-          var startAngle = Math.atan2(ry, rx);
-          var startRadius = Math.sqrt(rx * rx + ry * ry);
-          var angle = startAngle + craft.SUCCESS_SPIRAL_SWEEP * eased;
-          var radius = startRadius * (1 - eased);
-          var x = craft.STAR_CENTER.x + radius * Math.cos(angle) - 25;
-          var y = craft.STAR_CENTER.y + radius * Math.sin(angle) - 25;
-          slots[i].style.transform = 'translate(' + x + 'px,' + y + 'px)';
-        }
-      }
-      if (p < 1) {
-        craft.easeRAF = requestAnimationFrame(tick);
-      } else {
-        craft.easeRAF = null;
-        craft.craftResult._easeComplete = true;
-        if (craft.panel && craft.panel.style.display !== 'none') craft.render();
-      }
-    }
-    craft.easeRAF = requestAnimationFrame(tick);
   };
 
   craft.spawnSuccessBurst = function (container, cx, cy, baseColor) {
@@ -1142,193 +1540,10 @@ var craftRef = null;
     }
   };
 
-  craft.renderCraftArea = function (getIcon) {
-    var box = document.createElement('div');
-
-    box.style.cssText =
-      'position:relative;height:200px;background:transparent;' +
-      'margin-bottom:8px;flex:0 0 auto;overflow:hidden;';
-
-    var SLOT = 50;
-    var slotPositions = [
-      { left: 105, top: 10  },
-      { left: 167, top: 55  },
-      { left: 143, top: 128 },
-      { left: 67,  top: 128 },
-      { left: 43,  top: 55  },
-    ];
-    var EMPTY_BG = '#a06d3e';
-
-    var hasSnap = craft.craftResult && Array.isArray(craft.craftResult.slots);
-    var snapSlots = hasSnap ? craft.craftResult.slots : craft.craftSlots;
-    var snapPetalIdx = hasSnap ? craft.craftResult.petalIdx : craft.craftPetalIdx;
-    var snapRarity = hasSnap ? craft.craftResult.fromRarity : craft.craftRarity;
-
-    var orbiting = craft.craftResult && craft.craftResult.type === 'pending';
-    var merging = craft.craftResult && craft.craftResult.type === 'success';
-    var failed = craft.craftResult && craft.craftResult.type === 'fail';
-
-    var easeComplete = (merging || failed) && craft.craftResult._easeComplete;
-    var easing = (merging || failed) && !easeComplete;
-    var firstFinalFrame = merging && easeComplete && !craft.craftResult._mergeStarted;
-    if (firstFinalFrame) craft.craftResult._mergeStarted = true;
-
-    if (!merging || easing) {
-      for (var i = 0; i < 5; i++) {
-        var slot = document.createElement('div');
-
-        var filled = !failed && snapSlots[i] > 0 && snapPetalIdx != null && snapRarity != null;
-        var clickable = filled && !craft.craftResult;
-
-        var initLeft = slotPositions[i].left, initTop = slotPositions[i].top;
-        if (easing && craft.orbitLastPositions[i]) {
-          initLeft = craft.orbitLastPositions[i].x;
-          initTop = craft.orbitLastPositions[i].y;
-        }
-        slot.style.cssText =
-          'position:absolute;left:0;top:0;transition:none;' +
-          'width:' + SLOT + 'px;height:' + SLOT + 'px;background:' + EMPTY_BG + ';' +
-          'border-radius:8px;cursor:' + (clickable ? 'pointer' : 'default') + ';' +
-          'transform:translate(' + initLeft + 'px,' + initTop + 'px);' +
-          ((orbiting && filled) || easing ? 'will-change:transform;' : '');
-        if (orbiting && filled) slot.setAttribute('data-craft-orbit', String(i));
-
-        if (easing) slot.setAttribute('data-craft-ease', String(i));
-
-        if (filled) {
-          var sc = document.createElement('canvas');
-          sc.width = SLOT; sc.height = SLOT;
-          sc.style.cssText = 'width:' + SLOT + 'px;height:' + SLOT + 'px;display:block;';
-          var sctx = sc.getContext('2d');
-          try {
-            sctx.drawImage(getIcon(snapPetalIdx, snapRarity), 0, 0, SLOT, SLOT);
-          } catch (_) {}
-          sctx.fillStyle = '#fff';
-          sctx.strokeStyle = '#000';
-          sctx.lineWidth = 2;
-          sctx.font = 'bold 12px Ubuntu';
-          sctx.textAlign = 'right';
-          sctx.textBaseline = 'top';
-          if (snapSlots[i] > 1) {
-          var t = 'x' + formatAmount(snapSlots[i]);
-          sctx.strokeText(t, SLOT - 4, 4);
-          sctx.fillText(t, SLOT - 4, 4);
-          }
-          slot.appendChild(sc);
-
-          if (clickable) {
-            slot.addEventListener('click', function () {
-
-              craft.clearCraft();
-              craft.render();
-            });
-          }
-
-          (function (pi, ri, el) {
-            el.addEventListener('mouseenter', function () {
-              craft.hoverEntry = { index: pi, rarity: ri };
-              craft.showTooltip(el);
-            });
-            el.addEventListener('mouseleave', function () {
-              if (craft.hoverEntry && craft.hoverEntry.index === pi && craft.hoverEntry.rarity === ri) {
-                craft.hoverEntry = null;
-                craft.tip.style.display = 'none';
-              }
-            });
-          })(snapPetalIdx, snapRarity, slot);
-        }
-
-        box.appendChild(slot);
-      }
-    }
-
-    if (merging && easeComplete && snapPetalIdx != null && snapRarity != null) {
-      var resultRarity = snapRarity + 1;
-      var st = state;
-      var resultTier = st && st.tiers && st.tiers[resultRarity];
-      if (resultTier) {
-        var centerSlot = document.createElement('div');
-        centerSlot.style.cssText =
-          'position:absolute;' +
-          'left:' + (craft.STAR_CENTER.x - SLOT / 2) + 'px;' +
-          'top:' + (craft.STAR_CENTER.y - SLOT / 2) + 'px;' +
-          'width:' + SLOT + 'px;height:' + SLOT + 'px;background:' + EMPTY_BG + ';' +
-          'border-radius:8px;cursor:pointer;';
-
-        centerSlot.addEventListener('click', function () {
-          craft.craftResult = null;
-          craft.craftResultToken++;
-          craft.clearCraft();
-          craft.render();
-        });
-        var csc = document.createElement('canvas');
-        csc.width = SLOT; csc.height = SLOT;
-        csc.style.cssText = 'width:' + SLOT + 'px;height:' + SLOT + 'px;display:block;';
-        var csctx = csc.getContext('2d');
-        try {
-          csctx.drawImage(getIcon(snapPetalIdx, resultRarity), 0, 0, SLOT, SLOT);
-        } catch (_) {}
-        csctx.fillStyle = '#fff';
-        csctx.strokeStyle = '#000';
-        csctx.lineWidth = 2;
-        csctx.font = 'bold 12px Ubuntu';
-        csctx.textAlign = 'right';
-        csctx.textBaseline = 'top';
-        if (craft.craftResult.delta > 1) {
-           var cct = 'x' + formatAmount(craft.craftResult.delta);
-               csctx.strokeText(cct, SLOT - 4, 4);
-               csctx.fillText(cct, SLOT - 4, 4);
-        }
-        centerSlot.appendChild(csc);
-
-        (function (pi, ri, el) {
-          el.addEventListener('mouseenter', function () {
-            craft.hoverEntry = { index: pi, rarity: ri };
-            craft.showTooltip(el);
-          });
-          el.addEventListener('mouseleave', function () {
-            if (craft.hoverEntry && craft.hoverEntry.index === pi && craft.hoverEntry.rarity === ri) {
-              craft.hoverEntry = null;
-              craft.tip.style.display = 'none';
-            }
-          });
-        })(snapPetalIdx, resultRarity, centerSlot);
-        box.appendChild(centerSlot);
-      }
-    }
-
-    if (firstFinalFrame) {
-      var burstStateRef = state;
-      var burstTier = burstStateRef && burstStateRef.tiers && burstStateRef.tiers[snapRarity + 1];
-      var burstColor = (burstTier && burstTier.color) || '#ffd860';
-      craft.spawnSuccessBurst(box, craft.STAR_CENTER.x, craft.STAR_CENTER.y, burstColor);
-    }
-
-    if (orbiting) {
-      craft.startOrbitAnimation(box);
-      craft.stopEaseAnimation();
-    } else if (easing) {
-      craft.stopOrbitAnimation();
-      craft.startEaseAnimation(box, merging ? 'success' : 'fail');
-    } else {
-      craft.stopOrbitAnimation();
-      craft.stopEaseAnimation();
-    }
-
-    var craftBtn = document.createElement('button');
-    craftBtn.textContent = 'Craft';
-    craftBtn.style.cssText =
-      'position:absolute;left:260px;top:80px;background:#cfcfcf;' +
-      'border:2px solid #aaa;border-radius:6px;padding:4px 18px;' +
-      'font-family:Ubuntu,sans-serif;font-weight:bold;font-size:14px;' +
-      'cursor:pointer;color:#000;';
-    craftBtn.addEventListener('click', craft.doCraft);
-    box.appendChild(craftBtn);
-
+  craft.getCraftRateText = function () {
     var rateText = '?';
     if (craft.craftRarity != null) {
       var st = state;
-
       var nextTier = st && st.tiers && st.tiers[craft.craftRarity + 1];
       var tn = nextTier && nextTier.name;
       if (tn) {
@@ -1345,36 +1560,53 @@ var craftRef = null;
         rateText = "0";
       }
     }
-    var sr = document.createElement('div');
-    sr.textContent = rateText + '% success rate';
-    sr.style.cssText =
-      'position:absolute;left:245px;top:125px;color:#fff;font-weight:bold;' +
-      'font-size:13px;font-family:Ubuntu,sans-serif;' +
-      'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;';
-    box.appendChild(sr);
+    return rateText;
+  };
 
-    if (craft.craftResult) {
-      var color, text;
-      if (craft.craftResult.type === 'success') {
-        color = '#4ade80';
-        text = 'Success. +' + craft.craftResult.delta;
-      } else if (craft.craftResult.type === 'fail') {
-        color = '#ff6b6b';
-        text = 'Failed after ' + craft.craftResult.attempts + ' attempt(s).';
-      } else {
-        color = '#fff';
-        text = 'Crafting...';
+  craft.initBoard = function () {
+    if (craft.board) return;
+    craft.invGrid = new CraftInventoryGrid({ clock: craft.clock, getIcon: getPetalIcon, formatAmount: formatAmount });
+    craft.board = new CraftBoardView(craft, { state: state, clock: craft.clock, getIcon: getPetalIcon, formatAmount: formatAmount });
+  };
+
+  craft.diffInventoryForPops = function (s) {
+    if (!craft.invGrid) return;
+    var stagedTotal = 0;
+    for (var i = 0; i < 5; i++) stagedTotal += craft.craftSlots[i];
+    var keys = new Set();
+    s.tiers.forEach(function (tier, rarIdx) {
+      var inv = s.inventory[tier.name] || {};
+      for (var pid in inv) {
+        var staged = (+pid === craft.craftPetalIdx && rarIdx === craft.craftRarity) ? stagedTotal : 0;
+        if (inv[pid] - staged > 0) keys.add(cellKey(+pid, rarIdx));
       }
-      var rDiv = document.createElement('div');
-      rDiv.textContent = text;
-      rDiv.style.cssText =
-        'position:absolute;left:370px;top:90px;color:' + color + ';' +
-        'font-weight:bold;font-size:20px;font-family:Ubuntu,sans-serif;' +
-        'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;';
-      box.appendChild(rDiv);
-    }
+    });
+    craft.invGrid.diffInventory(keys);
+  };
 
-    return box;
+  craft.panelVisible = function () {
+    return !!craft.panel && craft.panel.style.display !== 'none';
+  };
+
+  craft.startLoop = function () {
+    if (craft._raf) return;
+    craft._raf = requestAnimationFrame(craft.frame);
+  };
+
+  craft.frame = function (now) {
+    craft._raf = null;
+    craft.clock.tick(now);
+    craft.updatePanelAnim();
+    var visible = craft.panelVisible();
+    if (craft.board) craft.board.update();
+    if (craft.invGrid && visible) {
+      craft.invGrid.update();
+    }
+    if (visible || (craft.board && craft.board.busy())) {
+      craft._raf = requestAnimationFrame(craft.frame);
+    } else {
+      craft.clock.pause();
+    }
   };
 
   craft.render = function () {
@@ -1387,6 +1619,8 @@ var craftRef = null;
       var savedScrollLeft = oldWrap ? oldWrap.scrollLeft : 0;
 
       craft.panel.innerHTML = '';
+      craft._grid = null;
+      craft._cells = [];
 
       var headerBar = document.createElement('div');
       headerBar.style.cssText =
@@ -1457,31 +1691,15 @@ var craftRef = null;
         return;
       }
 
-      craft.panel.appendChild(craft.renderCraftArea(getIcon));
+      craft.board.sync();
+      craft.panel.appendChild(craft.board.el);
+      craft.startLoop();
 
-      var petalIdxSet = new Set();
-      Object.keys(s.inventory).forEach(function (tn) {
-        var petals = s.inventory[tn] || {};
-        Object.keys(petals).forEach(function (pid) {
-          if (petals[pid] > 0) petalIdxSet.add(Number(pid));
-        });
-      });
-      var petalIndices = Array.from(petalIdxSet);
-      petalIndices.sort(function (a, b) {
-        var an = (s.petalConfigs[a] || {}).name || '';
-        var bn = (s.petalConfigs[b] || {}).name || '';
-        return an.localeCompare(bn);
-      });
+      var rowInfo = craft.computeRows(s);
+      var petalIndices = rowInfo.rows;
+      var emptyInventory = rowInfo.emptyInventory;
 
-      var emptyInventory = !petalIndices.length;
-
-      if (craft.searchQuery) {
-        var q = craft.searchQuery.toLowerCase();
-        petalIndices = petalIndices.filter(function (idx) {
-          var name = ((s.petalConfigs[idx] || {}).name || '').toLowerCase();
-          return name.indexOf(q) !== -1;
-        });
-      }
+      craft.diffInventoryForPops(s);
 
       if (!petalIndices.length) {
         var emp = document.createElement('div');
@@ -1508,8 +1726,6 @@ var craftRef = null;
         'gap:5px;align-items:center;width:max-content;';
       gridWrapper.appendChild(grid);
 
-      craft._cellObserver = craft.makeCellObserver(gridWrapper);
-
       s.tiers.forEach(function (tier) {
         var th = document.createElement('div');
         th.textContent = tier.name || '';
@@ -1521,66 +1737,36 @@ var craftRef = null;
         grid.appendChild(th);
       });
 
-      var stagedTotal = 0;
-      for (var st = 0; st < 5; st++) stagedTotal += craft.craftSlots[st];
+      craft.invGrid.resetCells();
+      craft._grid = grid;
+      craft._rowSig = craft.rowSignature(petalIndices, nRarities, SIZE);
 
       petalIndices.forEach(function (petalIdx) {
         s.tiers.forEach(function (tier, rarIdx) {
-          var owned = (s.inventory[tier.name] || {})[petalIdx] || 0;
-          var staged = (petalIdx === craft.craftPetalIdx && rarIdx === craft.craftRarity) ? stagedTotal : 0;
-          var displayed = owned - staged;
-          if (displayed > 0) {
-            var canCraft = displayed >= 5;
-            var host = document.createElement('div');
-            host.style.cssText =
-              'box-sizing:border-box;' +
-              'width:' + SIZE + 'px;height:' + SIZE + 'px;' +
-              'background:#a87545;border-radius:6px;' +
-              'cursor:' + (canCraft ? 'pointer' : 'default') + ';' +
-              (canCraft ? '' : 'filter:grayscale(1);opacity:0.55;');
-            host.dataset.fcPidx = petalIdx;
-            host.dataset.fcRidx = rarIdx;
-            host.dataset.fcDisp = displayed;
-            host.dataset.fcSize = SIZE;
-            (function (pi, ri, ownedCount, canClick, el) {
-              el.addEventListener('mouseenter', function () {
-                craft.hoverEntry = { index: pi, rarity: ri };
-                craft.showTooltip(el);
-              });
-              el.addEventListener('mouseleave', function () {
-                if (craft.hoverEntry && craft.hoverEntry.index === pi && craft.hoverEntry.rarity === ri) {
-                  craft.hoverEntry = null;
-                  craft.tip.style.display = 'none';
-                }
-              });
-              if (canClick) {
-                el.addEventListener('click', function (ev) {
-                  craft.loadCraft(pi, ri, ownedCount, !!ev.shiftKey);
-                  craft.render();
-                });
-              }
-            })(petalIdx, rarIdx, owned, canCraft, host);
-            var _cellKey = petalIdx + '|' + rarIdx + '|' + displayed + '|' + SIZE;
-            if (craft._cellCache.has(_cellKey)) {
-              var _bm = craft._cellCache.get(_cellKey);
-              var _cv = document.createElement('canvas');
-              _cv.width = SIZE; _cv.height = SIZE;
-              _cv.style.cssText = 'width:' + SIZE + 'px;height:' + SIZE + 'px;display:block;pointer-events:none;';
-              try { _cv.getContext('2d').drawImage(_bm, 0, 0); } catch (_) {}
-              host.appendChild(_cv);
-              host._craftInflated = true;
-            } else if (craft._cellObserver) {
-              craft._cellObserver.observe(host);
+          var host = document.createElement('div');
+          host.style.cssText =
+            'box-sizing:border-box;' +
+            'width:' + SIZE + 'px;height:' + SIZE + 'px;' +
+            'background:#a87545;border-radius:6px;';
+          var cell = { el: host, petalIdx: petalIdx, rarIdx: rarIdx, size: SIZE, owned: 0, displayed: 0, usable: false, shownCount: 0 };
+          host.addEventListener('mouseenter', function () {
+            if (cell.displayed <= 0) return;
+            craft.hoverEntry = { index: cell.petalIdx, rarity: cell.rarIdx };
+            craft.showTooltip(host);
+          });
+          host.addEventListener('mouseleave', function () {
+            if (craft.hoverEntry && craft.hoverEntry.index === cell.petalIdx && craft.hoverEntry.rarity === cell.rarIdx) {
+              craft.hoverEntry = null;
+              craft.tip.style.display = 'none';
             }
-            grid.appendChild(host);
-          } else {
-            var ph = document.createElement('div');
-            ph.style.cssText =
-              'box-sizing:border-box;' +
-              'width:' + SIZE + 'px;height:' + SIZE + 'px;' +
-              'background:#a87545;border-radius:6px;';
-            grid.appendChild(ph);
-          }
+          });
+          host.addEventListener('click', function (ev) {
+            if (!cell.usable) return;
+            if (craft.loadCraft(cell.petalIdx, cell.rarIdx, cell.owned, !!ev.shiftKey)) craft.refresh();
+          });
+          craft._cells.push(cell);
+          craft.paintCell(cell);
+          grid.appendChild(host);
         });
       });
 
@@ -1685,7 +1871,6 @@ var craftRef = null;
       }
     }
     var counts = craft.craftSlots.slice();
-    craft.orbitLastPositions = [];
     craft.setCraftResult({
       type: 'pending',
       delta: count,
@@ -1695,16 +1880,9 @@ var craftRef = null;
       startedAt: performance.now(),
     });
     craft.clearCraft();
-    var token = craft.craftResultToken;
-    setTimeout(function () {
-      if (craft.craftResultToken !== token) return;
-      if (!craft.craftResult || craft.craftResult.type !== 'pending') return;
-      if (outcome === 'fail') {
-        craft.setCraftResult({ type: 'fail', attempts: attemptsCount, petalIdx: petalIdx, fromRarity: rarityIdx, slots: counts });
-      } else {
-        craft.setCraftResult({ type: 'success', delta: successes, petalIdx: petalIdx, fromRarity: rarityIdx, slots: counts });
-      }
-    }, craft.FALL_DURATION_MS);
+    craft.scheduleResult(outcome === 'fail'
+      ? { type: 'fail', attempts: attemptsCount, petalIdx: petalIdx, fromRarity: rarityIdx, slots: counts }
+      : { type: 'success', delta: successes, petalIdx: petalIdx, fromRarity: rarityIdx, slots: counts });
     return { outcome: outcome, forced: forced, rate: rateUsed, successes: successes, attempts: attemptsCount, targetTier: targetTierName };
   };
 
@@ -1782,7 +1960,7 @@ function SimCraft(petalName, rarityName, count) {
   if (!doAutoCraft) {
 
     craftRef._simNextOutcome = (outcome === 'success' || outcome === 'fail') ? outcome : 'roll';
-    if (craftRef.panel && craftRef.panel.style.display === 'none') craftRef.panel.style.display = 'flex';
+    if (craftRef.panel && !craftRef.isOpen) craftRef.setOpen(true);
     craftRef.render();
     craftRef.dlog('SimCraft loaded (' + petalName + ', ' + rarityName + ', ' + count + ')');
     return {
@@ -1797,7 +1975,7 @@ function SimCraft(petalName, rarityName, count) {
 
   craftRef._simNextOutcome = null;
   var sim = craftRef._runSimulation(petalIdx, rarityIdx, count, outcome);
-  if (craftRef.panel && craftRef.panel.style.display === 'none') craftRef.panel.style.display = 'flex';
+  if (craftRef.panel && !craftRef.isOpen) craftRef.setOpen(true);
   craftRef.render();
   craftRef.dlog('SimCraft started:', petalName, rarityName, 'count=' + count, 'outcome=' + sim.outcome);
   return {
