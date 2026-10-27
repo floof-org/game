@@ -1298,6 +1298,26 @@ export default class Client {
                 }
 
                 const message = reader.getStringUTF8();
+
+                if (message === "/title" || message.startsWith("/title ")) {
+                    if (this.masterPermissions < 2) {
+                        return this.systemMessage("You are not allowed to run this command.", "#ff5555");
+                    }
+
+                    const text = message.slice(6).trim();
+
+                    if (!text) {
+                        return this.systemMessage("Usage: /title [text]", "#ffaa00");
+                    }
+
+                    if (text.length > 128) {
+                        return this.systemMessage("Title is too long.", "#CACA22");
+                    }
+
+                    Client.broadcastTitle(text);
+                    return;
+                }
+
                 if (!/^[\w\s,.!?'"@#%^&*()_\-+=:;<>\/\\|[\]{}~`\u00A0-\uFFFF]{1,128}$/.test(message)) {
                     this.systemMessage("That message is too long or contains invalid characters.", "#CACA22");
                     this.frownyMessages++;
@@ -1370,6 +1390,20 @@ export default class Client {
         });
     }
 
+    title(text, color = "#FFFFFF", duration = 5) {
+        this.talk(CLIENT_BOUND.TITLE, {
+            text: text,
+            color: color,
+            duration: duration
+        });
+    }
+
+    static broadcastTitle(text, color = "#FFFFFF", duration = 5) {
+        for (const client of state.clients.values()) {
+            client.title(text, color, duration);
+        }
+    }
+
     talk(type, data) {
         const writer = new Writer(true);
         writer.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
@@ -1399,6 +1433,11 @@ export default class Client {
 
                 writer.setStringUTF8(data.message);
                 writer.setStringUTF8(data.color);
+                break;
+            case CLIENT_BOUND.TITLE: // Title packet
+                writer.setStringUTF8(data.text);
+                writer.setStringUTF8(data.color);
+                writer.setFloat32(data.duration);
                 break;
             case CLIENT_BOUND.CRAFT_INIT: // Craft init packet
                 if (!state.useCraftingProtocol) {

@@ -2803,6 +2803,22 @@ function draw() {
         ctx.textBaseline = "middle";
     }
 
+    const title = net.state.title;
+    if (title) {
+        const elapsed = (performance.now() - title.start) / 1000;
+        if (elapsed >= title.duration) {
+            net.state.title = null;
+        } else {
+            const alpha = Math.max(0, Math.min(1, elapsed / 0.25, (title.duration - elapsed) / 0.5));
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            text(title.text, width / 2, height / 3, 48, title.color);
+            ctx.restore();
+        }
+    }
+
     ctx.restore();
 
     if (isMobile) {
