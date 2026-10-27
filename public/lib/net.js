@@ -2024,14 +2024,18 @@ case CLIENT_BOUND.TERRAIN_SCORES: {
                     new ChatMessage(1, errorMsg, util.colors.legendary);
                     state.craftMenu.abortCraft();
                 }
-                case CLIENT_BOUND.TITLE: // Title packet
-                    {
-                        const text = reader.getStringUTF8();
-                        const color = reader.getStringUTF8();
-                        const duration = reader.getFloat32();
-                        new ChatMessage(1, text, color);
-                    }
-                    break;
+                break;
+            case CLIENT_BOUND.TITLE: {
+                const text = reader.getStringUTF8();
+                const color = reader.getStringUTF8();
+                const duration = reader.getFloat32();
+                state.title = {
+                    text: text,
+                    color: color,
+                    duration: duration,
+                    start: performance.now()
+                };
+            } break;
         }
     }
 
@@ -2149,6 +2153,11 @@ case CLIENT_BOUND.TERRAIN_SCORES: {
                             break;
                         case DEV_CHEAT_IDS.INFO_DUMP:
                             writer.setUint32(data.promiseID);
+                            break;
+                        case DEV_CHEAT_IDS.TITLE:
+                            writer.setStringUTF8(data.text);
+                            writer.setStringUTF8(data.color);
+                            writer.setFloat32(data.duration);
                             break;
                     }
                 }

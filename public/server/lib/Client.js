@@ -69,7 +69,8 @@ const VALID_COMMANDS = new Set([
     "/give", "/addall", "/remove", "/refund", "/craft", "/pity", "/online", "/saveall",
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
-    "/mute", "/kick", "/ban", "/unban", "/unmute", "/coords"
+    "/mute", "/kick", "/ban", "/unban", "/unmute", "/coords",
+    "/title"
 ]);
 
 function normalizeName(str) {
@@ -1834,6 +1835,7 @@ export default class Client {
                 "/mute [player] [seconds] - Mutes a player. 0 is permanent, max 30 days.",
                 "/unmute [player] - Removes a player's mute.",
                 "/ban [player] [seconds] - Bans a player. 0 is permanent, max 10 years.",
+                "/title [text] - Broadcasts a title to every player.",
                 "",
                 "Bans and mutes are tied to the player's Discord ID, so renaming",
                 "the Discord username does not remove them.",
@@ -4322,6 +4324,24 @@ export default class Client {
         if (commandCheck("/coords")) {
             this.systemMessage(`Your position: ${this.body?.x}, ${this.body?.y}`)
         }
+        if (commandCheck("/title")) {
+            if (!requireOwner()) return;
+
+            const text = e.substring(6).trim();
+
+            if (!text) {
+                this.systemMessage("Usage: /title [text]", "#ffaa00");
+                return;
+            }
+
+            if (text.length > 128) {
+                this.systemMessage("Title is too long.", "#CACA22");
+                return;
+            }
+
+            Client.broadcastTitle(text);
+            return;
+        }
         if (commandCheck("/craft")) {
 
             if (this.isCrafting) {
@@ -5426,12 +5446,11 @@ export default class Client {
      * The duration is in seconds; the client fades it in and out.
      */
     title(text, color = "#FFFFFF", duration = 5) {
-        const writer = new Writer(true);
-        writer.setUint8(CLIENT_BOUND.TITLE);
-        writer.setStringUTF8(text);
-        writer.setStringUTF8(color);
-        writer.setFloat32(duration);
-        this.talk(writer.build());
+        this.talk(CLIENT_BOUND.TITLE, {
+            text: text,
+            color: color,
+            duration: duration
+        });
     }
 
     /** Send a title to every connected player. */
@@ -5470,6 +5489,11 @@ export default class Client {
 
                 writer.setStringUTF8(data.message);
                 writer.setStringUTF8(data.color);
+                break;
+            case CLIENT_BOUND.TITLE: // Title packet
+                writer.setStringUTF8(data.text);
+                writer.setStringUTF8(data.color);
+                writer.setFloat32(data.duration);
                 break;
             case CLIENT_BOUND.CRAFT_INIT: // Craft init packet
                 if (!state.useCraftingProtocol) {
