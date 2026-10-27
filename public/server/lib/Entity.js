@@ -3562,7 +3562,8 @@ export class Mob extends Entity {
         // (expiry, owner death) carry leftover credit into destroy() and must
         // not loot. Read before super.destroy() zeroes health below.
         const diedInCombat = this.health.health <= 0;
-        const paysOut = diedInCombat || this._hatching === true;
+        const hatched = this._hatching === true;
+        const paysOut = diedInCombat || hatched;
         this._hatching = false;
 
         if (this.countedSummon && this.owner) {
@@ -3646,7 +3647,7 @@ export class Mob extends Entity {
             console.log(`[Loot] ${this.config?.name} r${this.rarity} died with ${damageByClient.size} damager(s), best ${(best / this.health.maxHealth * 100).toFixed(2)}% of max HP, nobody qualified.`);
         }
 
-        let killText = '';
+        let announceText = '';
         const dropAnnouncementGroups = new Map();
         const collectDropAnnouncement = (memberClient, index, rarity, amount) => {
             const itemName = petalConfigs[index]?.name ?? `Item ${index}`;
@@ -3810,13 +3811,17 @@ export class Mob extends Entity {
                 const last = shown[shown.length - 1];
                 const rest = shown.slice(0, -1);
 
-                killText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by "
+                announceText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by "
                     + (rest.length > 0 ? rest.join(", ") + (rest.length > 1 ? ", and " : " and ") : "") + last
                     + (hidden > 0 ? " and " + hidden + " more" : "");
-            } 
+            } else if (!diedInCombat && !hatched) {
+                // Left the map on its own (expiry or owner death). Uses the same
+                // announcement gate as the kill message.
+                announceText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " has despawned";
+            }
 
-            if (killText) {
-                state.clients.forEach(c => c.systemMessage(killText, tiers[this.rarity].color));
+            if (announceText) {
+                state.clients.forEach(c => c.systemMessage(announceText, tiers[this.rarity].color));
             }
         }
     }
