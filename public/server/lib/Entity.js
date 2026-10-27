@@ -1,4 +1,4 @@
-import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, tiers, WEARABLES } from "../../lib/protocol.js";
+import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, SUMMON_STATS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
 import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
 import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
@@ -2778,12 +2778,27 @@ export class Mob extends Entity {
         rarity = Math.min(config.tiers.length - 1, rarity);
         const tier = config.tiers[rarity];
 
-        this.health.set(tier.health);
-        this.damage = tier.damage;
-        this.size = tier.size;
+        const isSummon = this.team !== -69 || this.friendly;
+
+        const stats = isSummon
+            ? {
+                health: (tier.baseHealth ?? tier.health) * (SUMMON_STATS[rarity]?.health ?? 1),
+                damage: (tier.baseDamage ?? tier.damage) * (SUMMON_STATS[rarity]?.damage ?? 1),
+                size: (tier.baseSize ?? tier.size) * (SUMMON_STATS[rarity]?.size ?? 1)
+            }
+            : {
+                health: tier.health,
+                damage: tier.damage,
+                size: tier.size
+            };
+
+        this.health.set(stats.health);
+        this.damage = stats.damage;
+        this.size = stats.size;
         this.speed = config.speed;
         this.index = config.id;
         this.rarity = rarity;
+        this.density = Number.isFinite(tier.density) ? tier.density : 1;
         this.aggressive = config.aggressive;
         this.neutral = config.neutral;
         this.spins = config.spins;
@@ -2819,6 +2834,12 @@ export class Mob extends Entity {
         if (config.damageReflection) {
             this.damageReflection.reflection = config.damageReflection.reflection;
             this.damageReflection.cap = config.damageReflection.cap;
+        }
+
+        if (tier.fixedDamageReflection) {
+            this.fixedDamageReflection = {
+                damage: tier.fixedDamageReflection.damage
+            };
         }
 
         if (tier.armor) {
@@ -3204,10 +3225,21 @@ export class Mob extends Entity {
             this.y = this.head.y - Math.sin(atan2) * (this.size + this.head.size + 1);
             this.facing = atan2;
         } else if (this.speed > 0) {
+            const isAttacking = this.parent?.attack;
+            const isDefending = this.parent?.defend;
+
+            const shouldFollowPlayer =
+                (isDefending && !isAttacking) ||
+                (isDefending && isAttacking);
+
+            const shouldFollowMob =
+                (isAttacking && !isDefending) ||
+                (!isAttacking && !isDefending);
+
             this.tick--;
             if (this.tick2) this.tick2--;
 
-            if (this.target?.health.ratio > 0) {
+            if (shouldFollowMob && this.target?.health.ratio > 0) {
                 if (this.poopable !== null) {
                     this.poopable.ticker++;
 
