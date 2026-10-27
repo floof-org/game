@@ -124,10 +124,10 @@ export const petalConfigs = [
         .setMulti(0, false)
         .setWearable(WEARABLES.THIRD_EYE)
         .setDescription("Through the eye of the beholder comes extra range."),
-    new PetalConfig("Pincer", 8.5, 7.5, 14)
+    new PetalConfig("Pincer", 28.5, 34.5, 64)
         .setSize(1.2)
-        .setPoison(2, 5)
-        .setEnemySpeedMultiplier(.6, 5)
+        .setPoison(12, 5)
+        .setEnemySpeedMultiplier(.6, 15)
         .setDescription("Poisonous, and it slows down your enemies. A perfect double whammy."),
     new PetalConfig("Beetle Egg", 45, 25, 1)
         .setSize(1.5)
@@ -763,10 +763,10 @@ export const petalConfigs = [
         .addAction("stroke", "#853d35", 0.2, 0)
         .addAction("closePath")
         ).setDescription("ƬƦƠƤӇƳ ƤЄƬƛԼ."),
-    new PetalConfig("Fiberglass", 25, 6, 28).setPhases(1)
+    new PetalConfig("Fiberglass", 25, 6, 58).setPhases(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, -1, 0).addAction("paint", "#a7b9d1", .225, .2).addAction("beginPath").addAction("dipPolygon", 7, .5, -1, 180 * Math.PI / 180).addAction("fill", "#bdcadc").addAction("rotate", 20).addAction("beginPath").addAction("circle", 0.4, 0, .275).addAction("fill", "#bdcadc").addAction("rotate", 125).addAction("beginPath").addAction("circle", 0.4, 0, .25).addAction("fill", "#bdcadc").addAction("rotate", 125).addAction("beginPath").addAction("circle", 0.4, 0, .3).addAction("fill", "#bdcadc").addAction("beginPath").addAction("dipPolygon", 12, .6, 7, 0).addAction("fill", "#bdcadc")
         ).setDescription("Fiber?"),
-    new PetalConfig("Fiberglass.projectile", 25, 6, 28)
+    new PetalConfig("Fiberglass.projectile", 25, 6, 58)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, .8, 0).addAction("paint", "#a7b9d1", .225, .2).addAction("beginPath").addAction("dipPolygon", 10, .6, 5, 0).addAction("fill", "#bdcadc").addAction("beginPath").addAction("dipPolygon", 10, .25, -5, 0).addAction("fill", "#a7b9d1")
         ).setDescription("[object null object]"),
     new PetalConfig("Resin", 185, 6, 30).setSize(1.1).setEnemySpeedMultiplier(.45, 5)
@@ -787,7 +787,7 @@ export const petalConfigs = [
     new PetalConfig("Lilypad.aura", 225, 6, 44).setSummonHealing(0.00001)
         .setDrawing(new Drawing().addAction("opacity", 0).addAction("beginPath").addAction("moveTo", 0, 0).addAction("arc", 0, 0, 1, Math.PI * 1 / 4, Math.PI * 2).addAction("lineTo", 0, 0).addAction("paint", "#3AB54A", .2, .2).addAction("opacity", 1)
         ).setDescription("[object null object]"),
-    new PetalConfig("Dune", 22.5 * 3, 60, 60).setSize(4).setPlaceDown(1)
+    new PetalConfig("Dune", 22.5 * 3, 100, 78).setSize(4).setPlaceDown(1)
         .setDrawing(new Drawing().addAction("rotate", 15).addAction("beginPath").addAction("dipPolygon", 3, 1, -1, 0).addAction("paint", "#d4c6a5", .2, .2).addAction("dipPolygon", 3, .7, -1, 0).addAction("fill", "#ecdcb8")
         ).setDescription("Kaboom."),
     new PetalConfig("Lens", 112.5, 2500, 44).setSize(3.6).setDown(1).setPetalAttractsAggro(1)
