@@ -1316,6 +1316,25 @@ export class Entity {
                         this.dandelionCooldown = 1 + (0.5 * other.rarity)
                     }
 
+                    // Fixed damage reflection migrated from WhiteHole.js: Salt
+                    // Flat returns a flat amount of damage to whatever hurt it,
+                    // ignoring damage scaling and armor.
+                    if (this.fixedDamageReflection?.damage > 0 && !other.parent.spawnInvincibility && thisDealt > 0) {
+                        if (isSummon(other)) {
+                            other.health.damage(this.fixedDamageReflection.damage);
+                        } else {
+                            other.parent.health.damage(this.fixedDamageReflection.damage);
+                        }
+                    }
+
+                    if (other.fixedDamageReflection?.damage > 0 && !this.parent.spawnInvincibility && otherDealt > 0) {
+                        if (isSummon(this)) {
+                            this.health.damage(other.fixedDamageReflection.damage);
+                        } else {
+                            this.parent.health.damage(other.fixedDamageReflection.damage);
+                        }
+                    }
+
                     // Thorn spawn migrated from WhiteHole.js: a hurt mob with
                     // thorns fires a thorn projectile in a random direction.
                     const trySpawnThorn = (mob, other) => {
