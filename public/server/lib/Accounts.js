@@ -3,6 +3,17 @@ const ACCOUNTS_FILE = (typeof Bun !== "undefined" && Bun.env.ACCOUNTS_FILE) || "
 // Top level key holding bans and mutes on their own. Prefixed with $ because saves are keyed by numeric Discord ids and cannot collide.
 const MODERATION_KEY = "$moderation";
 
+// One Discord id owns two independent accounts: the owner account keeps the plain
+// id as its key, the player account adds this suffix. Only the Discord id and the
+// owner permission derived from it are shared, progress and inventory are not.
+const PLAYER_SUFFIX = "#player";
+const PROFILES = new Set(["owner", "player"]);
+
+/** storage key for one account profile */
+function saveKey(discordId, profile) {
+    return profile === "player" ? String(discordId) + PLAYER_SUFFIX : String(discordId);
+}
+
 function normalizeName(name) {
     return String(name).toLowerCase();
 }
@@ -120,30 +131,41 @@ class Accounts {
                         continue;
                     }
 
-                    this.saves.set(discordId, {
+                    this.saves.set(saveKey(discordId, "owner"), {
                         username: entry.username || key,
                         data: entry.data || null,
                         createdAt: +entry.createdAt || Date.now(),
-                        lastSeen: +entry.lastLogin || Date.now()
+                        lastSeen: +entry.lastLogin || Date.now(),
+                        discordId: String(discordId),
+                        profile: "owner"
                     });
 
                     migrated++;
                     continue;
                 }
 
-                const discordId = toDiscordId(key);
+                const isPlayer = key.endsWith(PLAYER_SUFFIX);
+                const profile = isPlayer ? "player" : "owner";
+                const discordId = toDiscordId(isPlayer ? key.slice(0, -PLAYER_SUFFIX.length) : key);
 
                 if (!discordId) {
                     dropped.push(entry?.username || key);
                     continue;
                 }
 
-                this.saves.set(discordId, {
+                const save = {
                     username: entry?.username || "",
                     data: entry?.data || null,
                     createdAt: +entry?.createdAt || Date.now(),
-                    lastSeen: +entry?.lastSeen || Date.now()
-                });
+                    lastSeen: +entry?.lastSeen || Date.now(),
+                    discordId: String(discordId),
+                    profile
+                };
+
+                // the selection only lives on the owner record
+                if (profile === "owner" && entry?.activeProfile === "player") save.activeProfile = "player";
+
+                this.saves.set(saveKey(discordId, profile), save);
             }
 
             console.log(`[Accounts] Loaded ${this.saves.size} save(s)${migrated ? `, ${migrated} migrated off the old account layout` : ""}, ${this.moderation.size} moderation record(s)`);
@@ -167,43 +189,84 @@ class Accounts {
         return this.saves.get(String(discordId ?? ""));
     }
 
+    /** which account the next connection loads, "owner" unless the player switched */
+    activeProfile(discordId) {
+        return this.saves.get(String(discordId ?? ""))?.activeProfile === "player" ? "player" : "owner";
+    }
+
+    /** record of one account profile, creating it when missing */
+    profileRecord(discordId, profile = "owner") {
+        const key = saveKey(discordId, profile);
+        let save = this.saves.get(key);
+
+        if (!save) {
+            save = this.blank(discordId, profile);
+            this.saves.set(key, save);
+        }
+
+        return save;
+    }
+
     /** last seen Discord name -> save, used when the player is offline */
     findByName(query) {
         // a numeric token means a client id, so admins can target an exact
         // connection the same way they do with findTargetClient
         const trimmed = String(query ?? "").trim();
         const asNumber = Number(trimmed);
+        let fallback = null;
 
         if (Number.isFinite(asNumber) && String(trimmed) !== "") {
-            for (const [discordId, save] of this.saves) {
-                if (Number(discordId) === asNumber) return { discordId, save };
+            for (const save of this.saves.values()) {
+                if (Number(save.discordId) !== asNumber) continue;
+
+                // both accounts share the Discord name, so prefer the one that loads next
+                if (save.profile === this.activeProfile(save.discordId)) return { discordId: save.discordId, save };
+                fallback ??= { discordId: save.discordId, save };
             }
+
+            if (fallback) return fallback;
         }
 
         const lower = normalizeName(query);
 
-        for (const [discordId, save] of this.saves) {
-            if (normalizeName(save.username) === lower) return { discordId, save };
+        for (const save of this.saves.values()) {
+            if (normalizeName(save.username) !== lower) continue;
+
+            if (save.profile === this.activeProfile(save.discordId)) return { discordId: save.discordId, save };
+            fallback ??= { discordId: save.discordId, save };
         }
 
-        return null;
+        return fallback;
     }
 
     /** empty record for a Discord id that has no save yet */
-    blank(discordId) {
-        return { username: "", data: null, createdAt: Date.now(), lastSeen: Date.now() };
+    blank(discordId, profile = "owner") {
+        return {
+            username: "",
+            data: null,
+            createdAt: Date.now(),
+            lastSeen: Date.now(),
+            discordId: String(discordId ?? ""),
+            profile
+        };
     }
 
     /**
-     * Bind a verified client to the save behind its Discord id, restoring progress when one already exists
+     * Bind a verified client to the account selected for this Discord id, restoring progress when one already exists
      * @param {Client} client
      */
     attach(client) {
         const id = String(client.userId ?? "");
         if (!id) return null;
 
-        const save = this.saves.get(id) || this.blank(id);
-        this.saves.set(id, save);
+        const profile = this.activeProfile(id);
+        client.accountProfile = profile;
+
+        // the owner record carries the selection, so it must exist even when the
+        // owner account has never been played
+        if (profile === "player") this.profileRecord(id, "owner").activeProfile = "player";
+
+        const save = this.profileRecord(id, profile);
 
         save.username = client.discordName || client.username || save.username;
         save.lastSeen = Date.now();
@@ -213,12 +276,26 @@ class Accounts {
         return save;
     }
 
+    /** switch which account loads on the next connection */
+    setActiveProfile(discordId, profile) {
+        const id = String(discordId ?? "");
+
+        if (!id || !PROFILES.has(profile)) return false;
+
+        const owner = this.profileRecord(id, "owner");
+
+        if (profile === "player") owner.activeProfile = "player";
+        else delete owner.activeProfile;
+
+        return true;
+    }
+
     saveClient(client) {
         const id = String(client?.userId ?? "");
         if (!id) return;
 
-        const save = this.saves.get(id) || this.blank(id);
-        this.saves.set(id, save);
+        const profile = client.accountProfile === "player" ? "player" : "owner";
+        const save = this.profileRecord(id, profile);
 
         save.username = client.discordName || client.username || save.username;
         save.lastSeen = Date.now();
@@ -368,9 +445,9 @@ class Accounts {
         }
 
         // when the name in the punishment record does not match, fall back to the name on the save record
-        for (const [discordId, save] of this.saves) {
-            if (normalizeName(save.username) === lower && this.moderation.has(discordId)) {
-                return discordId;
+        for (const save of this.saves.values()) {
+            if (normalizeName(save.username) === lower && this.moderation.has(save.discordId)) {
+                return save.discordId;
             }
         }
 
@@ -383,10 +460,18 @@ class Accounts {
         const write = async () => {
             const output = {};
 
-            for (const [discordId, save] of this.saves) {
-                // a save without progress yet is just a player who connected, do not write those
-                if (!save.data) continue;
-                output[discordId] = save;
+            for (const [key, save] of this.saves) {
+                // a save without progress yet is just a player who connected, do not write those.
+                // The owner record is still written when it carries the account selection.
+                if (!save.data && !save.activeProfile) continue;
+
+                output[key] = {
+                    username: save.username,
+                    data: save.data,
+                    createdAt: save.createdAt,
+                    lastSeen: save.lastSeen,
+                    ...(save.activeProfile === "player" ? { activeProfile: "player" } : {})
+                };
             }
 
             // only write records that have not expired, so the save file cannot grow without bound

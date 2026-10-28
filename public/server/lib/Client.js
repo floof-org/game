@@ -66,7 +66,7 @@ const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/info", "/rarities", "/drops",
     "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/give", "/addall", "/remove", "/refund", "/craft", "/pity", "/online", "/saveall",
+    "/give", "/addall", "/remove", "/refund", "/craft", "/pity", "/online", "/saveall", "/account",
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
     "/mute", "/kick", "/ban", "/unban", "/unmute", "/coords",
@@ -194,13 +194,14 @@ function resolveModerationTarget(playerName) {
 
     // offline lookup by client id: findModerated only matches by name, so add the id path
     if (Number.isFinite(asNumber) && String(trimmed) !== "") {
-        for (const [discordId, save] of accounts.saves) {
-            if (Number(discordId) === asNumber) {
-                const entry = accounts.moderation.get(String(discordId));
-                if (entry) return { discordId, playerName: save.username || String(discordId), client: null };
-                // no punishment record yet: still allow the admin to target them by id
-                return { discordId: String(discordId), playerName: save.username || String(discordId), client: null };
-            }
+        for (const save of accounts.saves.values()) {
+            if (Number(save.discordId) !== asNumber) continue;
+
+            const discordId = String(save.discordId);
+            const entry = accounts.moderation.get(discordId);
+            if (entry) return { discordId, playerName: save.username || discordId, client: null };
+            // no punishment record yet: still allow the admin to target them by id
+            return { discordId, playerName: save.username || discordId, client: null };
         }
     }
 
@@ -957,6 +958,8 @@ export default class Client {
         this.username = "unknown";
         this.discordName = "";
         this.userId = userId;
+        // account profile this session loads and saves: "owner" or "player"
+        this.accountProfile = "owner";
         this.nameColor = ["#FFFFFF", "#D85555", "#F5D230"][+masterPermissions] || "#FFFFFF";
         this.masterPermissions = +masterPermissions;
         this.inventory = {};
@@ -1787,6 +1790,50 @@ export default class Client {
             return;
         }
 
+        // /account
+        if (commandCheck("/account")) {
+            (async () => {
+                if (!requireOwner()) return;
+
+                if (!this.userId) {
+                    this.systemMessage("Guests cannot use this command.", "#ff5555");
+                    return;
+                }
+
+                const arg = e.trim().split(/\s+/)[1]?.toLowerCase();
+                const current = this.accountProfile === "player" ? "player" : "owner";
+
+                if (!arg) {
+                    this.systemMessage(`Current account: ${current}. Next login: ${accounts.activeProfile(this.userId)}.`, "#00f2ff");
+                    this.systemMessage("Usage: /account owner|player - switches the account loaded on the next connection. Progress is not shared.", "#00f2ff");
+                    return;
+                }
+
+                if (arg !== "owner" && arg !== "player") {
+                    this.systemMessage("Usage: /account owner|player", "#ff5555");
+                    return;
+                }
+
+                // store the session that is ending before the selection changes
+                accounts.saveClient(this);
+
+                if (!accounts.setActiveProfile(this.userId, arg)) {
+                    this.systemMessage("Failed to switch account.", "#ff5555");
+                    return;
+                }
+
+                await accounts.persist();
+
+                if (arg === current) {
+                    this.systemMessage(`The ${arg} account is already loaded.`, "#00f2ff");
+                    return;
+                }
+
+                this.systemMessage(`Account switched to ${arg}. Reconnect to load it.`, "#55ff55");
+            })();
+            return;
+        }
+
         // info help
         if (commandCheck("/infocommands")) {
             [
@@ -1831,6 +1878,7 @@ export default class Client {
                 "/refund [player] [rarity] [mob] <count> - Rolls count drops from that mob's drop table at that rarity and grants them to the player. Chaos+ rolls are announced as refunded.",
                 "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
                 "/saveall - Saves every online player's account right now.",
+                "/account <owner|player> - Switches the account loaded on the next connection. Owner only.",
                 "/kick [player] - Kicks a player from the game.",
                 "/mute [player] [seconds] - Mutes a player. 0 is permanent, max 30 days.",
                 "/unmute [player] - Removes a player's mute.",
