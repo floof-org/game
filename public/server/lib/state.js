@@ -360,9 +360,13 @@ const state = {
     lag: {
         fps: 20,
         mspt: 0,
+        worldMs: 0,
+        bytesOut: 0,
 
         ticks: 0,
-        totalTime: 0
+        totalTime: 0,
+        worldTicks: 0,
+        worldTime: 0
     },
 
     updateTerrain: () => {

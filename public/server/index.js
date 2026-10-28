@@ -232,14 +232,31 @@ setInterval(() => {
 }, 1000 / 22.5);
 
 let k = 0;
+let lastLagReport = 0;
 setInterval(() => {
     state.lag.mspt = state.lag.totalTime / Math.max(1, state.lag.ticks);
     state.lag.fps = state.lag.ticks;
+    state.lag.worldMs = state.lag.worldTime / Math.max(1, state.lag.worldTicks);
 
     state.lag.totalTime = 0;
     state.lag.ticks = 0;
+    state.lag.worldTime = 0;
+    state.lag.worldTicks = 0;
 
-    // CHANGE THIS
+    // Only speak up when the server itself is slow: a high tick or world update
+    // cost, or a large amount of outgoing traffic. If the players complain about
+    // latency and no [Lag] line shows up, the delay is on the network path and
+    // not in the game loop.
+    const now = performance.now();
+    if (state.lag.mspt > 25 || state.lag.worldMs > 20 || state.lag.bytesOut > 3 * 1024 * 1024) {
+        if (now - lastLagReport > 10000) {
+            lastLagReport = now;
+            console.warn(`[Lag] tick=${state.lag.mspt.toFixed(2)}ms world=${state.lag.worldMs.toFixed(2)}ms out=${(state.lag.bytesOut / 1024 / 1024).toFixed(2)}MB/s players=${state.clients.size}`);
+        }
+    }
+
+    state.lag.bytesOut = 0;
+
     if (!Router.isSandbox && ++k % 5 === 0) {
         // console.log("FPS:", state.lag.fps, "MSPT:", state.lag.mspt.toFixed(2));
     }
@@ -252,7 +269,14 @@ setInterval(() => {
 }, 256);
 
 // World update loop
-setInterval(() => state.clients.forEach(c => c.worldUpdate()), 1000 / 25);
+setInterval(() => {
+    const start = performance.now();
+
+    state.clients.forEach(c => c.worldUpdate());
+
+    state.lag.worldTime += performance.now() - start;
+    state.lag.worldTicks++;
+}, 1000 / 25);
 
 // Autosave every connected player plus a timestamped backup, every 30 minutes
 setInterval(async () => {
@@ -334,7 +358,10 @@ switch (globalThis.environmentName) {
             }
         }
 
-        state.router.postMessage = data => self.postMessage(data);
+        state.router.postMessage = data => {
+            state.lag.bytesOut += data.byteLength;
+            self.postMessage(data);
+        };
         break;
     case "node":
         throw new Error("Node environment not supported");
@@ -518,6 +545,8 @@ switch (globalThis.environmentName) {
         }
 
         state.router.postMessage = u8 => {
+            state.lag.bytesOut += u8.byteLength;
+
             switch (u8[0]) {
                 case ROUTER_PACKET_TYPES.PIPE_PACKET:
                     const sock = bunSendMap.get(u8ToU16(u8, 1));

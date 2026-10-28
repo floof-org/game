@@ -2798,7 +2798,12 @@ export class Mob extends Entity {
         this.speed = config.speed;
         this.index = config.id;
         this.rarity = rarity;
-        this.density = Number.isFinite(tier.density) ? tier.density : 1;
+        // MobConfig#setDensity grows the value by 1.25^tier, which is tuned for
+        // petal tiers. On a high rarity Jelly summon that lands around 124k, and
+        // the collision push is multiplied by density, so a single touch launches
+        // players and mobs across the map. Cap it at a push that still feels heavy
+        // without breaking the simulation.
+        this.density = Number.isFinite(tier.density) ? Math.min(tier.density, 4) : 1;
         this.aggressive = config.aggressive;
         this.neutral = config.neutral;
         this.spins = config.spins;
@@ -3225,21 +3230,14 @@ export class Mob extends Entity {
             this.y = this.head.y - Math.sin(atan2) * (this.size + this.head.size + 1);
             this.facing = atan2;
         } else if (this.speed > 0) {
-            const isAttacking = this.parent?.attack;
-            const isDefending = this.parent?.defend;
-
-            const shouldFollowPlayer =
-                (isDefending && !isAttacking) ||
-                (isDefending && isAttacking);
-
-            const shouldFollowMob =
-                (isAttacking && !isDefending) ||
-                (!isAttacking && !isDefending);
+            // Defending summons break off and return to their owner, everything
+            // else keeps chasing the current target.
+            const followOwner = this.parent?.defend === true;
 
             this.tick--;
             if (this.tick2) this.tick2--;
 
-            if (shouldFollowMob && this.target?.health.ratio > 0) {
+            if (!followOwner && this.target?.health.ratio > 0) {
                 if (this.poopable !== null) {
                     this.poopable.ticker++;
 
