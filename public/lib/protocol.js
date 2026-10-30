@@ -1364,6 +1364,11 @@ export class PetalConfig {
         return this;
     }
 
+    setZincAbility() {
+        this.zinc = {};
+        return this;
+    }
+
     setPetalAttractsAggro(t) {
         return this.petalAttractsAggro = Boolean(t), this;
     }

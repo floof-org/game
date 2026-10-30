@@ -507,7 +507,7 @@ export class PetalSlot {
 
                 if (this.config.tiers[this.rarity].healing) {
                     let targets = [];
-                    
+
                     state.spatialHash.retrieve({
                         _AABB: {
                             x1: this.player.x - 150,
@@ -520,24 +520,24 @@ export class PetalSlot {
                             targets.push(entity);
                         }
                     });
-                
+
                     let target = null;
-                
+
                     if (this.player.health.ratio < 1) {
                         target = this.player;
                     } else {
                         let teammates = targets.filter(t => t !== this.player && t.health?.ratio < 1);
-                
+
                         if (teammates.length > 0) {
                             target = teammates.sort((a, b) => quickDiff(petal, a) - quickDiff(petal, b))[0];
                         }
                     }
-                
+
                     if (target) {
                         petal.range--;
-                    
+
                         petal.moveAngle = Math.atan2(target.y - petal.y, target.x - petal.x);
-                    
+
                         if (petal.range <= 0) {
                             if (quickDiff(petal, target) < target.size) {
                                 target.health.health = Math.min(target.health.maxHealth, target.health.health + this.config.tiers[this.rarity].healing);
@@ -552,7 +552,7 @@ export class PetalSlot {
 
                 if (this.config.tiers[this.rarity].shield > 0) {
                     let targets = [];
-                    
+
                     state.spatialHash.retrieve({
                         _AABB: {
                             x1: this.player.x - 150,
@@ -565,24 +565,24 @@ export class PetalSlot {
                             targets.push(entity);
                         }
                     });
-                
+
                     let target = null;
-                
+
                     if (this.player.health.shieldRatio < .95) {
                         target = this.player;
                     } else {
                         let teammates = targets.filter(t => t !== this.player && t.health?.shieldRatio < .95);
-                
+
                         if (teammates.length > 0) {
                             target = teammates.sort((a, b) => quickDiff(petal, a) - quickDiff(petal, b))[0];
                         }
                     }
-                
+
                     if (target) {
                         petal.range--;
-                    
+
                         petal.moveAngle = Math.atan2(target.y - petal.y, target.x - petal.x);
-                    
+
                         if (petal.range <= 0) {
                             if (quickDiff(petal, target) < target.size) {
                                 target.health.shield = Math.min(target.health.maxHealth, target.health.shield + this.config.tiers[this.rarity].shield);
@@ -997,7 +997,7 @@ export class Entity {
         for (const e of valid) {
             const d = quickDiff(this, e);
             const a = getAggro(e);
-            if (best === null || a > getAggro(best) || (a === getAggro(best) && d < bestD))  best = e, bestD = d;
+            if (best === null || a > getAggro(best) || (a === getAggro(best) && d < bestD)) best = e, bestD = d;
         }
 
         return best;
@@ -1215,7 +1215,7 @@ export class Entity {
                     const otherCrit = rollDiceCrit(other);
                     if (otherCrit !== null) otherDamageDone = otherCrit;
 
-                    
+
 
                     if (this.extraDamage) if (other.health.ratio > this.extraDamage.minHp && other.health.ratio < this.extraDamage.maxHp) {
                         thisDamageDone += this.damage * this.extraDamage.multiplier;
@@ -1367,7 +1367,7 @@ export class Entity {
                             thorn.moveAngle = angle;
                             thorn.facing = angle;
                             thorn.range = 45;
-                        } catch (err) {}
+                        } catch (err) { }
                     };
                     if (thisDealt > 0) {
                         trySpawnThorn(this, other);
@@ -1467,6 +1467,43 @@ export class Entity {
                                             };
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+
+                    // Zinc armor reduction
+                    {
+                        let zincSource = null;
+
+                        if (this.zinc) zincSource = this;
+                        else if (other.zinc) zincSource = other;
+
+                        if (zincSource) {
+                            const target = zincSource === this ? other : this;
+
+                            if (target?.type === ENTITY_TYPES.MOB && target.config) {
+                                const reduction = globalThis.ZINC_TABLE?.[zincSource.rarity] ?? 0;
+
+                                if (reduction > 0 && target.armor > 0) {
+                                    const now = Date.now();
+                                    const alreadyAffected = target.zincArmorOriginal !== undefined;
+
+                                    if (!alreadyAffected) {
+                                        target.zincArmorOriginal = target.health.armor;
+                                    }
+
+                                    const originalArmor = target.zincArmorOriginal;
+
+                                    target.zincReduction = Math.max(
+                                        target.zincReduction ?? 0,
+                                        reduction
+                                    );
+
+                                    target.armor = originalArmor * (1 - target.zincReduction / 100);
+                                    target.health.armor = target.armor;
+
+                                    target.zincArmorUntil = now + 60000;
                                 }
                             }
                         }
@@ -1645,10 +1682,10 @@ export class Entity {
                 const strength = combinedSize - Math.sqrt(distSqr);
                 const mySizeRatio = this.size / combinedSize;
                 const otherSizeRatio = other.size / combinedSize;
-            
+
                 this.velocity.x += Math.cos(angle) * strength * this.pushability * other.density * otherSizeRatio;
                 this.velocity.y += Math.sin(angle) * strength * this.pushability * other.density * otherSizeRatio;
-            
+
                 other.velocity.x -= Math.cos(angle) * strength * other.pushability * this.density * mySizeRatio;
                 other.velocity.y -= Math.sin(angle) * strength * other.pushability * this.density * mySizeRatio;
             }
@@ -1874,6 +1911,11 @@ export class Petal extends Entity {
         if (config.pacify) {
             this.pacify = { chance: config.pacify.chance };
         }
+
+        if (config.zinc) {
+            this.zinc = {};
+        }
+
         this.size *= (config.tiers?.[rarity]?.sizeRatio ?? config.sizeRatio) * (RARITY_SIZE_MULTIPLIERS[rarity] ?? 1);
         this.index = config.id;
         this.spinSpeed = config.launchable ? 0 : .1;
@@ -2957,7 +2999,7 @@ export class Mob extends Entity {
             const segmentID = Mob.segmentedLength++;
             let count = 3;
             let chance = Math.max(0.1, 0.8 - (this.rarity / 9) * 0.31);
-            
+
             for (let s = 0; s < 27; s++) {
                 if (Math.random() < chance) {
                     count++;
@@ -3196,6 +3238,17 @@ export class Mob extends Entity {
             this.neutral = this.config?.neutral ?? false;
         }
 
+        // Restore original armor
+        if (this.zincArmorUntil && now >= this.zincArmorUntil) {
+
+            this.armor = this.zincArmorOriginal;
+            this.health.armor = this.zincArmorOriginal;
+
+            delete this.zincArmorOriginal;
+            delete this.zincArmorUntil;
+            delete this.zincReduction;
+        }
+
         if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.health.ratio <= .8 ? 180_000 : 90_000)) < performance.now()) {
             // A mob that players are actively fighting holds on instead of
             // despawning with everyone's credit, as in WhiteHole.js.
@@ -3304,7 +3357,7 @@ export class Mob extends Entity {
                         this.extraTicker = 100 + Math.random() * 100;
                     }
                 }
-                
+
                 if (this.config.sandstormMovement) {
                     const angle = Math.atan2(this.target.y - this.y, this.target.x - this.x);
                     const dist = quickDiff(this, this.target);
@@ -3470,67 +3523,67 @@ export class Mob extends Entity {
             } else {
                 this.projectile.tick++;
 
-            if (this.projectile.aimbot && this.target?.velocity.magnitude > 0) {
-                const dist = Math.sqrt(quickDiff(this, this.target));
-                const time = dist / this.projectile.speed / 2;
-                const targetX = this.target.x + this.target.velocity.x * time;
-                const targetY = this.target.y + this.target.velocity.y * time;
-                this.facing = Math.atan2(targetY - this.y, targetX - this.x);
-            }
+                if (this.projectile.aimbot && this.target?.velocity.magnitude > 0) {
+                    const dist = Math.sqrt(quickDiff(this, this.target));
+                    const time = dist / this.projectile.speed / 2;
+                    const targetX = this.target.x + this.target.velocity.x * time;
+                    const targetY = this.target.y + this.target.velocity.y * time;
+                    this.facing = Math.atan2(targetY - this.y, targetX - this.x);
+                }
 
-            if ((this.config.name === "Bumblebee" || this.target?.health.ratio > 0) && this.projectile.tick >= this.projectile.cooldown) {
-                this.projectile.tick = 0;
+                if ((this.config.name === "Bumblebee" || this.target?.health.ratio > 0) && this.projectile.tick >= this.projectile.cooldown) {
+                    this.projectile.tick = 0;
 
-                if (this.projectile.multiShot) {
-                    for (let i = 0; i < this.projectile.multiShot.count; i++) {
-                        setTimeout(() => {
-                            if (this.health.isDead || this.target === null || this.target.health.isDead) {
-                                return;
-                            }
+                    if (this.projectile.multiShot) {
+                        for (let i = 0; i < this.projectile.multiShot.count; i++) {
+                            setTimeout(() => {
+                                if (this.health.isDead || this.target === null || this.target.health.isDead) {
+                                    return;
+                                }
 
-                            const petal = new Petal(this, -1, -1);
-                            petal.define(petalConfigs[this.projectile.petalIndex], this.rarity);
-                            petal.index = this.projectile.petalIndex;
-                            petal.size = this.size * this.projectile.size;
-                            petal.health.set(this.projectile.health);
-                            petal.damage = this.projectile.damage;
-                            petal.speed = this.projectile.speed;
-                            petal.launched = true;
-                            petal.range = this.projectile.range;
-                            petal.spinSpeed = 0;
-                            petal.nullCollision = this.projectile.nullCollision;
+                                const petal = new Petal(this, -1, -1);
+                                petal.define(petalConfigs[this.projectile.petalIndex], this.rarity);
+                                petal.index = this.projectile.petalIndex;
+                                petal.size = this.size * this.projectile.size;
+                                petal.health.set(this.projectile.health);
+                                petal.damage = this.projectile.damage;
+                                petal.speed = this.projectile.speed;
+                                petal.launched = true;
+                                petal.range = this.projectile.range;
+                                petal.spinSpeed = 0;
+                                petal.nullCollision = this.projectile.nullCollision;
 
-                            let ang = this.facing;
+                                let ang = this.facing;
 
-                            if (this.projectile.multiShot.spread > 0) {
-                                ang += (Math.random() - .5) * this.projectile.multiShot.spread;
-                                petal.speed *= 1 + (Math.random() - .5) * this.projectile.multiShot.spread;
-                            }
+                                if (this.projectile.multiShot.spread > 0) {
+                                    ang += (Math.random() - .5) * this.projectile.multiShot.spread;
+                                    petal.speed *= 1 + (Math.random() - .5) * this.projectile.multiShot.spread;
+                                }
 
-                            petal.facing = petal.moveAngle = ang;
-                        }, i * this.projectile.multiShot.delay);
-                    }
-                } else {
-                    const petal = new Petal(this, -1, -1);
-                    petal.define(petalConfigs[this.projectile.petalIndex], this.rarity);
-                    petal.index = this.projectile.petalIndex;
-                    petal.size = this.size * this.projectile.size;
-                    petal.health.set(this.projectile.health);
-                    petal.damage = this.projectile.damage;
-                    petal.speed = this.projectile.speed;
-                    petal.launched = true;
-                    petal.range = this.projectile.range;
-                    petal.spinSpeed = 0;
-                    petal.nullCollision = this.projectile.nullCollision;
-                    petal.facing = petal.moveAngle = this.facing;
-                    
-                    if (this.config.name === "Tank") {
-                        petal.x += Math.cos(this.facing) * (this.size) * 1.25;
-                        petal.y += Math.sin(this.facing) * (this.size) * 1.25;
+                                petal.facing = petal.moveAngle = ang;
+                            }, i * this.projectile.multiShot.delay);
+                        }
+                    } else {
+                        const petal = new Petal(this, -1, -1);
+                        petal.define(petalConfigs[this.projectile.petalIndex], this.rarity);
+                        petal.index = this.projectile.petalIndex;
+                        petal.size = this.size * this.projectile.size;
+                        petal.health.set(this.projectile.health);
+                        petal.damage = this.projectile.damage;
+                        petal.speed = this.projectile.speed;
+                        petal.launched = true;
+                        petal.range = this.projectile.range;
+                        petal.spinSpeed = 0;
+                        petal.nullCollision = this.projectile.nullCollision;
+                        petal.facing = petal.moveAngle = this.facing;
+
+                        if (this.config.name === "Tank") {
+                            petal.x += Math.cos(this.facing) * (this.size) * 1.25;
+                            petal.y += Math.sin(this.facing) * (this.size) * 1.25;
+                        }
                     }
                 }
             }
-        }
         }
 
         // Frozen mobs hold still while everything else ticks.
@@ -3757,31 +3810,31 @@ export class Mob extends Entity {
             const fallbackDrops = mobConfigs[this.index]?.drops ?? [];
 
             if (rows && rows.length && eligibleGroups.length) {
-                    for (const group of eligibleGroups) {
-                        const results = [];
-                        let rollCount = 1;
-                        if (globalThis.LUCKY_DROPS_EVENT) rollCount = 2;
-                        for (let roll = 0; roll < rollCount; roll++) {
-                            for (const row of rows) {
-                                if (Math.random() > row.chance) continue;
-                                const entry = pickWeighted(row.entries);
-                                if (entry) results.push({ ...entry });
-                            }
-                        }
-                        const count = results.length;
-                        for (const memberClient of group.members) {
-                            for (let i = 0; i < count; i++) {
-                                const entry = results[i];
-                                const radius = (10 + Math.min(count, 6) * 3) * 1.75;
-                                const angle = (Math.PI * 2 * i) / count;
-                                new Drop({
-                                    x: this.x + Math.cos(angle) * radius,
-                                    y: this.y + Math.sin(angle) * radius
-                                }, memberClient, entry.index, entry.rarity, entry.amount);
-                                collectDropAnnouncement(memberClient, entry.index, entry.rarity, entry.amount);
-                            }
+                for (const group of eligibleGroups) {
+                    const results = [];
+                    let rollCount = 1;
+                    if (globalThis.LUCKY_DROPS_EVENT) rollCount = 2;
+                    for (let roll = 0; roll < rollCount; roll++) {
+                        for (const row of rows) {
+                            if (Math.random() > row.chance) continue;
+                            const entry = pickWeighted(row.entries);
+                            if (entry) results.push({ ...entry });
                         }
                     }
+                    const count = results.length;
+                    for (const memberClient of group.members) {
+                        for (let i = 0; i < count; i++) {
+                            const entry = results[i];
+                            const radius = (10 + Math.min(count, 6) * 3) * 1.75;
+                            const angle = (Math.PI * 2 * i) / count;
+                            new Drop({
+                                x: this.x + Math.cos(angle) * radius,
+                                y: this.y + Math.sin(angle) * radius
+                            }, memberClient, entry.index, entry.rarity, entry.amount);
+                            collectDropAnnouncement(memberClient, entry.index, entry.rarity, entry.amount);
+                        }
+                    }
+                }
             } else if (fallbackDrops.length && eligibleGroups.length) {
                 // old drop system: rarity rolls per member, drops shared otherwise.
                 // Also covers table mobs whose tier is missing from the table.

@@ -3,6 +3,44 @@ import { DROP_TABLES } from "./dropTables.js";
 export const tiers = structuredClone(_tiers);
 export { Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig };
 
+globalThis.ZINC_TABLE = {
+    0: 0.5,
+    1: 1,
+    2: 1.5,
+    3: 2,
+    4: 3,
+    5: 4,
+    6: 5,
+    7: 6,
+    8: 7,
+    9: 8,
+    10: 9,
+    11: 10,
+    12: 12.5,
+    13: 15,
+    14: 17.5,
+    15: 20,
+    16: 22.5,
+    17: 25,
+    18: 27.5,
+    19: 30,
+    20: 32.5,
+    21: 35,
+    22: 37.5,
+    23: 40,
+    24: 42.5,
+    25: 45,
+    26: 47.5,
+    27: 50,
+    28: 55,
+    29: 60
+};
+
+const ZINC_DESCRIPTIONS = Object.entries(globalThis.ZINC_TABLE).map(
+    ([rarity, reduction]) =>
+        `Decreases armor of affected mob by ${reduction}%. Effect lasts 60s. Does not stack with itself.`
+);
+
 const formatScaledNumber = value => {
     const units = [
         [1e15, "qd"], [1e12, "t"], [1e9, "b"], [1e6, "m"], [1e3, "k"]
@@ -377,7 +415,7 @@ export const petalConfigs = [
         ).setDescription("A really hard piece of rock."),
     new PetalConfig("Rare Cactus", 25, 40, 40).setIcon(1, 1, "Cactus", 0).setSize(1.25).setExtraHealth(175).setDrawing(new Drawing()
         .addAction("beginPath").addAction("dipPolygon", 9, 1, 3, 0).addAction("closePath").addAction("paint", "#e6d450", .2, .2).addAction("beginPath").addAction("dipPolygon", 8, .525, 3, 0).addAction("closePath").addAction("paint", "#ede084", .15, 0).addAction("beginPath").addAction("circle", 0, 0, .3).addAction("closePath").addAction("fill", "#f8f4d3")
-        ).setDescription("This shiny cactus will give you 5x extra health than normal cactus and his sharp thorns will deal massive damage."),
+    ).setDescription("This shiny cactus will give you 5x extra health than normal cactus and his sharp thorns will deal massive damage."),
     new PetalConfig("Scorpion Egg", 45, 25, 1).setIcon(1, 1, "Egg", 0).setSize(1.5).setHuddles(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("ellipse", 0, 0, .775, 1, 0).addAction("paint", "#c69a2d", .2, .2).addAction("beginPath").addAction("ellipse", 0, 0, .4, .6, 0).addAction("fill", "#b28a28")
         ).setDescription("Where did you get this?"),
@@ -479,16 +517,16 @@ export const petalConfigs = [
         .endTierRubyAbility()
         .setDrawing(new Drawing().addAction("rotate", 45).addAction("beginPath").addAction("polygon", 3, 1, 0).addAction("paint", "#e85a5a", .3, .2).addAction("dipPolygon", 3, .3, 1.1, 0).addAction("fill", "#f3acac").addAction("closePath")
         ).setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Mythic dont get converted to summons at all.\nMobs below Omega get converted into Super summons.\nMobs above Ancient get converted into Ancient summons.\nSummons Lifetime: 10s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Ancient dont get converted to summons at all.\nMobs below Unique get converted into Ancient summons.\nMobs above Eternal get converted into Omega summons.\nSummons Lifetime: 11s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Eternal dont get converted to summons at all.\nMobs below Millom get converted into Omega summons.\nMobs above Galaxium get converted into Eternal summons.\nSummons Lifetime: 20s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Galaxium dont get converted to summons at all.\nMobs below Fictional get converted into Eternal summons.\nMobs above Millom get converted into Unique summons.\nSummons Lifetime: 40s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Millom dont get converted to summons at all.\nMobs below Transcestrial get converted into Unique summons.\nMobs above Fictional get converted into Hyper summons.\nSummons Lifetime: 60s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Fictional dont get converted to summons at all.\nMobs below Absiorcadinary get converted into Hyper summons.\nMobs above Chaos get converted into Galaxium summons.\nSummons Lifetime: 70s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Chaos dont get converted to summons at all.\nMobs below Absolute Fictional get converted into Galaxium summons.\nMobs above Absiorcadinary get converted into Millom summons.\nSummons Lifetime: 80s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Absolute Fictional dont get converted to summons at all.\nMobs below Hyperfixation get converted into Millom summons.\nMobs above Nullified get converted into Fictional summons.\nSummons Lifetime: 90s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Hyperfixation dont get converted to summons at all.\nMobs below Alpha get converted into Fictional summons.\nMobs above Atlantical get converted into Transcestrial summons.\nSummons Lifetime: 100s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Atlantical dont get converted to summons at all.\nMobs below Epsilation get converted into Transcestrial summons.\nMobs above Finalist get converted into Chaos summons.\nSummons Lifetime: 105s"
-        , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Finalist dont get converted to summons at all.\nMobs below Izolational get converted into Chaos summons.\nMobs above Improbable get converted into Absiorcadinary summons.\nSummons Lifetime: 110s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Ancient dont get converted to summons at all.\nMobs below Unique get converted into Ancient summons.\nMobs above Eternal get converted into Omega summons.\nSummons Lifetime: 11s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Eternal dont get converted to summons at all.\nMobs below Millom get converted into Omega summons.\nMobs above Galaxium get converted into Eternal summons.\nSummons Lifetime: 20s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Galaxium dont get converted to summons at all.\nMobs below Fictional get converted into Eternal summons.\nMobs above Millom get converted into Unique summons.\nSummons Lifetime: 40s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Millom dont get converted to summons at all.\nMobs below Transcestrial get converted into Unique summons.\nMobs above Fictional get converted into Hyper summons.\nSummons Lifetime: 60s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Fictional dont get converted to summons at all.\nMobs below Absiorcadinary get converted into Hyper summons.\nMobs above Chaos get converted into Galaxium summons.\nSummons Lifetime: 70s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Chaos dont get converted to summons at all.\nMobs below Absolute Fictional get converted into Galaxium summons.\nMobs above Absiorcadinary get converted into Millom summons.\nSummons Lifetime: 80s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Absolute Fictional dont get converted to summons at all.\nMobs below Hyperfixation get converted into Millom summons.\nMobs above Nullified get converted into Fictional summons.\nSummons Lifetime: 90s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Hyperfixation dont get converted to summons at all.\nMobs below Alpha get converted into Fictional summons.\nMobs above Atlantical get converted into Transcestrial summons.\nSummons Lifetime: 100s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Atlantical dont get converted to summons at all.\nMobs below Epsilation get converted into Transcestrial summons.\nMobs above Finalist get converted into Chaos summons.\nSummons Lifetime: 105s"
+            , "Turns everything you kill into summons with the power of friendship. Check /info\nMobs below Finalist dont get converted to summons at all.\nMobs below Izolational get converted into Chaos summons.\nMobs above Improbable get converted into Absiorcadinary summons.\nSummons Lifetime: 110s"
         ]),
     new PetalConfig("Emerald", 675, 1, 0.01).setSize(1.5)
         .setEmeraldAbility(30000, 10)
@@ -534,23 +572,23 @@ export const petalConfigs = [
         .endTierEmeraldAbility()
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 5, 1, 0).addAction("paint", "#76de82", .3, .2).addAction("dipPolygon", 5, .4, 10, 0).addAction("fill", "#baeec0").addAction("closePath")
         ).setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Mythic\nMaximum mob rarity (capped): Eternal"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Super\nMaximum mob rarity (capped): Hyper"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Omega\nMaximum mob rarity (capped): Fictional"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Hyper\nMaximum mob rarity (capped): Chaos"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Galaxium\nMaximum mob rarity (capped): Absolute Fictional"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Fictional\nMaximum mob rarity (capped): Hyperfixation"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Absiorcadinary\nMaximum mob rarity (capped): Alpha"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Nullified\nMaximum mob rarity (capped): Epsilation"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Alpha\nMaximum mob rarity (capped): Izolational"
-        , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Epsilation\nMaximum mob rarity (capped): Multiversal"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Super\nMaximum mob rarity (capped): Hyper"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Omega\nMaximum mob rarity (capped): Fictional"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Hyper\nMaximum mob rarity (capped): Chaos"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Galaxium\nMaximum mob rarity (capped): Absolute Fictional"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Fictional\nMaximum mob rarity (capped): Hyperfixation"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Absiorcadinary\nMaximum mob rarity (capped): Alpha"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Nullified\nMaximum mob rarity (capped): Epsilation"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Alpha\nMaximum mob rarity (capped): Izolational"
+            , "Dupes mobs, pretty magical if you ask me. Check /info\nMinimum mob rarity required: Epsilation\nMaximum mob rarity (capped): Multiversal"
         ]),
     new PetalConfig("Diamond", 60, 1, 9).setSize(1.5)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 4, 1, 0).addAction("paint", "#78cdff", .3, .2).addAction("dipPolygon", 4, .4, 7.2, 0).addAction("fill", "#bbe6ff").addAction("closePath")
         ).setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 5%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 8%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 12%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 15%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 18%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 21%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 24%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 27%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 30%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 33%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: 36%", "Reduces incoming damage. Note: Does not reduce poison or lightning damage. Check /info\nDamage Reduction: undefined%"]),
     new PetalConfig("Coin", 30, 5, 16.85).setSize(1.5)
         .setDrawing(new Drawing()
-        .addAction("beginPath")
-        .addAction("circle", 0, 0, 1).addAction("fill", "#C69B2E").addAction("stroke", "#F5bF39", .2, 0).addAction("beginPath").addAction("arc", 0, 0, .4, Math.PI / 4, Math.PI * 1.8).addAction("stroke", "#FFE783", .25, 0).addAction("beginPath").addAction("line", .05, .4, -.1, .6).addAction("line", -.05, -.4, .1, -.6).addAction("stroke", "#FFE783", .2, 0).addAction("closePath")
+            .addAction("beginPath")
+            .addAction("circle", 0, 0, 1).addAction("fill", "#C69B2E").addAction("stroke", "#F5bF39", .2, 0).addAction("beginPath").addAction("arc", 0, 0, .4, Math.PI / 4, Math.PI * 1.8).addAction("stroke", "#FFE783", .25, 0).addAction("beginPath").addAction("line", .05, .4, -.1, .6).addAction("line", -.05, -.4, .1, -.6).addAction("stroke", "#FFE783", .2, 0).addAction("closePath")
         ).setDescription("Coin."),
     new PetalConfig("Blood Light", 22.5 * .3, 20, 82).setIcon(.6, [1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], "Light", 0).setBloodLight(0.01).setMulti([1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], 0, true)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#a82f2f", .4, .2)
@@ -632,21 +670,21 @@ export const petalConfigs = [
         .setMaximumMobForUraniumAbility(28)
         .setEndTierUraniumAbility()
         .setDrawing(new Drawing()
-        .addAction("beginPath")
-        .addAction("polygon", 6, 0.85, 9.2)
-        .addAction("fill", "#d6fc97")
-        .addAction("stroke", "#a6cf65", 0.35, 0)
-        .addAction("closePath")
+            .addAction("beginPath")
+            .addAction("polygon", 6, 0.85, 9.2)
+            .addAction("fill", "#d6fc97")
+            .addAction("stroke", "#a6cf65", 0.35, 0)
+            .addAction("closePath")
         )
         .setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 7s\nMinimum mob rarity required: Mythic\nMaximum mob rarity (if above no freeze): Hyper",
-        "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 7.5s\nMinimum mob rarity required: Super\nMaximum mob rarity (if above no freeze): Galaxium",
-        "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 8s\nMinimum mob rarity required: Ancient\nMaximum mob rarity (if above no freeze): Millom",
-        "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 8.5s\nMinimum mob rarity required: Eternal\nMaximum mob rarity (if above no freeze): Absiorcadinary",
-        "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 9s\nMinimum mob rarity required: Hyper\nMaximum mob rarity (if above no freeze): Nullified",
-        "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 9.5s\nMinimum mob rarity required: Millom\nMaximum mob rarity (if above no freeze): Atlantical",
-        "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 10s\nMinimum mob rarity required: Transcestrial\nMaximum mob rarity (if above no freeze): Finalist",
-        "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 10.5s\nMinimum mob rarity required: Absiorcadinary\nMaximum mob rarity (if above no freeze): Improbable",
-        "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 11s\nMinimum mob rarity required: Absolute Fictional\nMaximum mob rarity (if above no freeze): Chronodynamic",
+            "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 7.5s\nMinimum mob rarity required: Super\nMaximum mob rarity (if above no freeze): Galaxium",
+            "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 8s\nMinimum mob rarity required: Ancient\nMaximum mob rarity (if above no freeze): Millom",
+            "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 8.5s\nMinimum mob rarity required: Eternal\nMaximum mob rarity (if above no freeze): Absiorcadinary",
+            "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 9s\nMinimum mob rarity required: Hyper\nMaximum mob rarity (if above no freeze): Nullified",
+            "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 9.5s\nMinimum mob rarity required: Millom\nMaximum mob rarity (if above no freeze): Atlantical",
+            "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 10s\nMinimum mob rarity required: Transcestrial\nMaximum mob rarity (if above no freeze): Finalist",
+            "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 10.5s\nMinimum mob rarity required: Absiorcadinary\nMaximum mob rarity (if above no freeze): Improbable",
+            "Freezes mobs and stops them from firing projectiles for an amount of time. Check /info\nFreeze duration: 11s\nMinimum mob rarity required: Absolute Fictional\nMaximum mob rarity (if above no freeze): Chronodynamic",
         ]),
     new PetalConfig("Clover", 52, 11, 11)
         .setTierCloverAbility(5)
@@ -728,40 +766,40 @@ export const petalConfigs = [
         ).setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 0.1%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 0.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 6%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 8%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 10%"]),
     new PetalConfig("Rock.projectile", 2250, 0.0000001, 0.00000005)
         .setDrawing(new Drawing()
-        .addAction("beginPath")
-        .addAction("polygon", 5, 1, 3.2)
-        .addAction("fill", "#707070")
-        .addAction("stroke", "#525252", 0.2, 0)
-        .addAction("closePath")
+            .addAction("beginPath")
+            .addAction("polygon", 5, 1, 3.2)
+            .addAction("fill", "#707070")
+            .addAction("stroke", "#525252", 0.2, 0)
+            .addAction("closePath")
         ).setDescription("[object null object]"),
     new PetalConfig("Pomegranate", 10.125, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setIcon(.85, 1, "Pomegranate", -45).setSize(1.25).setPomegranate(0.005)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", .75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, .75, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", -.75, 0, .75).addAction("paint", "#e52669", .25, .2).addAction("beginPath").addAction("circle", 0, -.75, .75).addAction("paint", "#e52669", .25, .2)
         ).setDescription("A deadly 4 in 1 deal. Deals self damage. Check /petalinfo [rarity] pomegranate"),
     new PetalConfig("projectile.pomegranate", 2250, 6, [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 54]).setPomegranate(0.005).setWallBounces(3)
         .setDrawing(new Drawing()
-        .addAction("beginPath")
-        .addAction("circle", 0, 0, 0.80)
-        .addAction("fill", "#cf235f")
-        .addAction("closePath")
-        .addAction("beginPath")
-        .addAction("circle", 0, 0, 0.50)
-        .addAction("fill", "#ff2b75")
-        .addAction("closePath")
+            .addAction("beginPath")
+            .addAction("circle", 0, 0, 0.80)
+            .addAction("fill", "#cf235f")
+            .addAction("closePath")
+            .addAction("beginPath")
+            .addAction("circle", 0, 0, 0.50)
+            .addAction("fill", "#ff2b75")
+            .addAction("closePath")
         ).setDescription("[object null object]"),
     new PetalConfig("ӇЄҲƛƓƠƝ", 225, 6, 44)
         .setDrawing(new Drawing()
-        .addAction("opacity", 1)
-        .addAction("beginPath")
-        .addAction("polygon", 6, 1.1, 1)
-        .addAction("fill", "#c73626")
-        .addAction("stroke", "#853d35", 0.2, 0)
-        .addAction("closePath")
-        .addAction("beginPath")
-        .addAction("opacity", 0.5)
-        .addAction("polygon", 6, 1.2, 1)
-        .addAction("fill", "#c73626")
-        .addAction("stroke", "#853d35", 0.2, 0)
-        .addAction("closePath")
+            .addAction("opacity", 1)
+            .addAction("beginPath")
+            .addAction("polygon", 6, 1.1, 1)
+            .addAction("fill", "#c73626")
+            .addAction("stroke", "#853d35", 0.2, 0)
+            .addAction("closePath")
+            .addAction("beginPath")
+            .addAction("opacity", 0.5)
+            .addAction("polygon", 6, 1.2, 1)
+            .addAction("fill", "#c73626")
+            .addAction("stroke", "#853d35", 0.2, 0)
+            .addAction("closePath")
         ).setDescription("ƬƦƠƤӇƳ ƤЄƬƛԼ."),
     new PetalConfig("Fiberglass", 25, 6, 58).setPhases(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, -1, 0).addAction("paint", "#a7b9d1", .225, .2).addAction("beginPath").addAction("dipPolygon", 7, .5, -1, 180 * Math.PI / 180).addAction("fill", "#bdcadc").addAction("rotate", 20).addAction("beginPath").addAction("circle", 0.4, 0, .275).addAction("fill", "#bdcadc").addAction("rotate", 125).addAction("beginPath").addAction("circle", 0.4, 0, .25).addAction("fill", "#bdcadc").addAction("rotate", 125).addAction("beginPath").addAction("circle", 0.4, 0, .3).addAction("fill", "#bdcadc").addAction("beginPath").addAction("dipPolygon", 12, .6, 7, 0).addAction("fill", "#bdcadc")
@@ -823,7 +861,7 @@ export const petalConfigs = [
         "The remains of a dark soul. Upon being killed, hold on to life for just a bit longer. Does not stack.\nShadow time: 6.5s",
         "The remains of a dark soul. Upon being killed, hold on to life for just a bit longer. Does not stack.\nShadow time: 7s",
         "The remains of a dark soul. Upon being killed, hold on to life for just a bit longer. Does not stack.\nShadow time: 7.5s"
-        ])
+    ])
         .setDrawing(new Drawing().addAction("opacity", .3).addAction("beginPath").addAction("dipPolygon", 5, 1, -0.825, 0).addAction("fill", "#000000").addAction("beginPath").addAction("dipPolygon", 5, .5, -0.825, 0).addAction("fill", "#000000")
         ),
     new PetalConfig("Amulet of Grace", 225, 1.1, 1.1).setIcon(1, 1, "Amulet", 0).setSize(1.1).setDescription("A rare relic believed to have the power of delaying the inevitable, costing more mana if the wave is higher. Only works in Waves. Check /waveinfo on wave state timeout.")
@@ -831,10 +869,10 @@ export const petalConfigs = [
         ),
     new PetalConfig("Compass", 22, 1.1, 1.1).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5, 5, 5, 8, 8, 8, 8, 10, 10, 10, 14, 14, 14, 16], "Compass", 0).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5, 5, 5, 8, 8, 8, 8, 10, 10, 10, 14, 14, 14, 16], 1).setSize(0.75).setDescription("Broadcasts the color of the highest rarity due to spawn in a wave. Only works in Waves.")
         .setDrawing(new Drawing()
-        .addAction("beginPath").addAction("circle", 0, 0, 1.0).addAction("paint", "#d7d7d7", 0.08, 0.15).addAction("closePath").addAction("beginPath").addAction("circle", 0, 0, 0.82).addAction("fill", "#4fa3df").addAction("closePath")
-        .addAction("beginPath").addAction("moveTo", 0.9599999785423279, 0).addAction("lineTo", 0.9599999785423279, 0).addAction("fill", "#d7d7d7").addAction("closePath").addAction("beginPath").addAction("moveTo", 0.7999999821186066, 0).addAction("lineTo", 0.7999999821186066, 0).addAction("fill", "#4fa3df").addAction("closePath").addAction("beginPath").addAction("moveTo", 0, 0).addAction("lineTo", -0.17999999597668648, -0.17999999597668648).addAction("lineTo", -0.6999999843537807, 0.6999999843537807).addAction("lineTo", 0.17999999597668648, 0.17999999597668648).addAction("lineTo", 0, 0).addAction("fill", "#ffffff").addAction("closePath").addAction("beginPath").addAction("moveTo", 0, 0).addAction("lineTo", 0.17999999597668648, 0.17999999597668648).addAction("lineTo", 0.6999999843537807, -0.6999999843537807).addAction("lineTo", -0.17999999597668648, -0.17999999597668648).addAction("lineTo", 0, 0).addAction("fill", "#e74c3c").addAction("closePath").addAction("beginPath").addAction("moveTo", 0.09999999776482582, 0).addAction("lineTo", 0.09999999776482582, 0).addAction("fill", "#bfbfbf").addAction("closePath")
-        .addAction("circle", 0, 0, 0.12)
-        .addAction("fill", "#bcbcbc")
+            .addAction("beginPath").addAction("circle", 0, 0, 1.0).addAction("paint", "#d7d7d7", 0.08, 0.15).addAction("closePath").addAction("beginPath").addAction("circle", 0, 0, 0.82).addAction("fill", "#4fa3df").addAction("closePath")
+            .addAction("beginPath").addAction("moveTo", 0.9599999785423279, 0).addAction("lineTo", 0.9599999785423279, 0).addAction("fill", "#d7d7d7").addAction("closePath").addAction("beginPath").addAction("moveTo", 0.7999999821186066, 0).addAction("lineTo", 0.7999999821186066, 0).addAction("fill", "#4fa3df").addAction("closePath").addAction("beginPath").addAction("moveTo", 0, 0).addAction("lineTo", -0.17999999597668648, -0.17999999597668648).addAction("lineTo", -0.6999999843537807, 0.6999999843537807).addAction("lineTo", 0.17999999597668648, 0.17999999597668648).addAction("lineTo", 0, 0).addAction("fill", "#ffffff").addAction("closePath").addAction("beginPath").addAction("moveTo", 0, 0).addAction("lineTo", 0.17999999597668648, 0.17999999597668648).addAction("lineTo", 0.6999999843537807, -0.6999999843537807).addAction("lineTo", -0.17999999597668648, -0.17999999597668648).addAction("lineTo", 0, 0).addAction("fill", "#e74c3c").addAction("closePath").addAction("beginPath").addAction("moveTo", 0.09999999776482582, 0).addAction("lineTo", 0.09999999776482582, 0).addAction("fill", "#bfbfbf").addAction("closePath")
+            .addAction("circle", 0, 0, 0.12)
+            .addAction("fill", "#bcbcbc")
         ),
     new PetalConfig("fire.projectile", 15, 0.00000005, 0.00000005).setSize(0.25).setDescription("[object null object]")
         .setDrawing(new Drawing().addAction("beginPath").addAction("opacity", 0.3).addAction("circle", 0, 0, 1).addAction("paint", "#fc4503", .1, .2).addAction("opacity", 1).addAction("closePath")
@@ -853,9 +891,9 @@ export const petalConfigs = [
         "If the current wave has ended, this petal calls for the next wave to start if there are under a certain number of mobs remaining. It also instantly vanquishes all remaining mobs under some rarity without drops. Horns up to Finalist mobs.\nMaximum Mobs: 300",
         "If the current wave has ended, this petal calls for the next wave to start if there are under a certain number of mobs remaining. It also instantly vanquishes all remaining mobs under some rarity without drops. Horns up to Improbable mobs.\nMaximum Mobs: 450",
         "If the current wave has ended, this petal calls for the next wave to start if there are under a certain number of mobs remaining. It also instantly vanquishes all remaining mobs under some rarity without drops. Horns up to Chronodynamic mobs.\nMaximum Mobs: 600"
-        ])
+    ])
         .setDrawing(new Drawing()
-        .addAction("beginPath").addAction("beginPath").addAction("moveTo", 1.16, -0.83).addAction("lineTo", 0.54, -0.37).addAction("lineTo", -0.16, -0.23).addAction("lineTo", -0.86, -0.53).addAction("lineTo", -1.38, -0.99).addAction("lineTo", -1.23, -0.3).addAction("lineTo", -0.76, 0.22).addAction("lineTo", -0.18, 0.64).addAction("lineTo", 0.52, 0.72).addAction("lineTo", 1.28, 0.37).addAction("fill", "#af997e").addAction("closePath").addAction("beginPath").addAction("moveTo", -1.38, -0.99).addAction("lineTo", -0.91, -0.33).addAction("stroke", "#bdab95", 0.15, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -0.91, -0.33).addAction("lineTo", -0.27, 0.03).addAction("stroke", "#bdab95", 0.16, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -0.27, 0.03).addAction("lineTo", 0.33, -0.03).addAction("stroke", "#bdab95", 0.18, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 0.33, -0.03).addAction("lineTo", 1, -0.37).addAction("stroke", "#bdab95", 0.2, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 1.16, -0.83).addAction("quadraticCurveTo", 0.69, -0.15, 1.28, 0.37).addAction("quadraticCurveTo", 1.67, -0.29, 1.16, -0.83).addAction("fill", "#706150").addAction("stroke", "#8f7d67", 0.15, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -0.86, -0.53).addAction("quadraticCurveTo", -1.01, -0.26, -0.76, 0.22).addAction("moveTo", -0.16, -0.23).addAction("quadraticCurveTo", -0.53, 0.15, -0.18, 0.64).addAction("moveTo", 0.54, -0.37).addAction("quadraticCurveTo", 0.17, 0.25, 0.52, 0.72).addAction("stroke", "#8f7d67", 0.15, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 1.16, -0.83).addAction("lineTo", 0.54, -0.37).addAction("lineTo", -0.16, -0.23).addAction("lineTo", -0.86, -0.53).addAction("lineTo", -1.38, -0.99).addAction("lineTo", -1.23, -0.3).addAction("lineTo", -0.76, 0.22).addAction("lineTo", -0.18, 0.64).addAction("lineTo", 0.52, 0.72).addAction("lineTo", 1.28, 0.37).addAction("stroke", "#8f7d67", 0.15, 0).addAction("closePath")
+            .addAction("beginPath").addAction("beginPath").addAction("moveTo", 1.16, -0.83).addAction("lineTo", 0.54, -0.37).addAction("lineTo", -0.16, -0.23).addAction("lineTo", -0.86, -0.53).addAction("lineTo", -1.38, -0.99).addAction("lineTo", -1.23, -0.3).addAction("lineTo", -0.76, 0.22).addAction("lineTo", -0.18, 0.64).addAction("lineTo", 0.52, 0.72).addAction("lineTo", 1.28, 0.37).addAction("fill", "#af997e").addAction("closePath").addAction("beginPath").addAction("moveTo", -1.38, -0.99).addAction("lineTo", -0.91, -0.33).addAction("stroke", "#bdab95", 0.15, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -0.91, -0.33).addAction("lineTo", -0.27, 0.03).addAction("stroke", "#bdab95", 0.16, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -0.27, 0.03).addAction("lineTo", 0.33, -0.03).addAction("stroke", "#bdab95", 0.18, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 0.33, -0.03).addAction("lineTo", 1, -0.37).addAction("stroke", "#bdab95", 0.2, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 1.16, -0.83).addAction("quadraticCurveTo", 0.69, -0.15, 1.28, 0.37).addAction("quadraticCurveTo", 1.67, -0.29, 1.16, -0.83).addAction("fill", "#706150").addAction("stroke", "#8f7d67", 0.15, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -0.86, -0.53).addAction("quadraticCurveTo", -1.01, -0.26, -0.76, 0.22).addAction("moveTo", -0.16, -0.23).addAction("quadraticCurveTo", -0.53, 0.15, -0.18, 0.64).addAction("moveTo", 0.54, -0.37).addAction("quadraticCurveTo", 0.17, 0.25, 0.52, 0.72).addAction("stroke", "#8f7d67", 0.15, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 1.16, -0.83).addAction("lineTo", 0.54, -0.37).addAction("lineTo", -0.16, -0.23).addAction("lineTo", -0.86, -0.53).addAction("lineTo", -1.38, -0.99).addAction("lineTo", -1.23, -0.3).addAction("lineTo", -0.76, 0.22).addAction("lineTo", -0.18, 0.64).addAction("lineTo", 0.52, 0.72).addAction("lineTo", 1.28, 0.37).addAction("stroke", "#8f7d67", 0.15, 0).addAction("closePath")
         ),
     new PetalConfig("Card", 22, 1.1, 1.1).setSize(1.1).setDescription(["Speeds up the wave. Does not stack.\nSpeed Multiplier: x1.00",
         "Speeds up the wave. Does not stack.\nSpeed Multiplier: x1.00",
@@ -876,15 +914,72 @@ export const petalConfigs = [
         "Speeds up the wave. Does not stack.\nSpeed Multiplier: x6.00",
         "Speeds up the wave. Does not stack.\nSpeed Multiplier: x8.00",
         "Speeds up the wave. Does not stack.\nSpeed Multiplier: xundefined"
-        ])
+    ])
         .setDrawing(new Drawing()
-        .addAction("beginPath").addAction("rect", -1.2, -0.8, 2.4, 1.6).addAction("fill", "#ffffff").addAction("closePath").addAction("beginPath").addAction("moveTo", -1.1, 0.35).addAction("lineTo", 1.1, 0.35).addAction("stroke", "#202020", 0.3, 0).addAction("closePath").addAction("beginPath").addAction("rect", -1.2, -0.8, 2.4, 1.6).addAction("stroke", "#cfcfcf", 0.3, 0).addAction("closePath").addAction("beginPath").addAction("rect", -0.9, -0.45, 0.8, 0.5).addAction("fill", "#d4af37").addAction("closePath").addAction("beginPath").addAction("circle", 0.4, -0.2, 0.25).addAction("fill", "#ff9500").addAction("beginPath").addAction("circle", 0.7, -0.2, 0.25).addAction("closePath").addAction("fill", "#ff1500").addAction("closePath")
+            .addAction("beginPath").addAction("rect", -1.2, -0.8, 2.4, 1.6).addAction("fill", "#ffffff").addAction("closePath").addAction("beginPath").addAction("moveTo", -1.1, 0.35).addAction("lineTo", 1.1, 0.35).addAction("stroke", "#202020", 0.3, 0).addAction("closePath").addAction("beginPath").addAction("rect", -1.2, -0.8, 2.4, 1.6).addAction("stroke", "#cfcfcf", 0.3, 0).addAction("closePath").addAction("beginPath").addAction("rect", -0.9, -0.45, 0.8, 0.5).addAction("fill", "#d4af37").addAction("closePath").addAction("beginPath").addAction("circle", 0.4, -0.2, 0.25).addAction("fill", "#ff9500").addAction("beginPath").addAction("circle", 0.7, -0.2, 0.25).addAction("closePath").addAction("fill", "#ff1500").addAction("closePath")
         ),
     new PetalConfig("Golden Leaf", 12.5, 18, 35.5).setSize(2).setIcon(1, 1, "Leaf", 0)
-    .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", -.531, .801).addAction("lineTo", -.634, .534).addAction("lineTo", -.688, .286).addAction("lineTo", -.692, .057).addAction("lineTo", -.647, -.153).addAction("lineTo", -.552, -.343).addAction("lineTo", -.408, -.514).addAction("lineTo", -.214, -.665).addAction("lineTo", .030, -.798).addAction("lineTo", .323, -.911).addAction("lineTo", .666, -1.005).addAction("lineTo", .713, -.653).addAction("lineTo", .723, -.338).addAction("lineTo", .696, -.062).addAction("lineTo", .586, .280).addAction("lineTo", .393, .537).addAction("lineTo", .116, .707).addAction("lineTo", -.245, .792).addAction("lineTo", -.531, .801).addAction("paint", "#d9a62e", .2, .2).addAction("closePath").addAction("beginPath").addAction("moveTo", -.558, .842).addAction("lineTo", -.727, 1.096).addAction("stroke", "#d9a62e", .2, .2).addAction("closePath").addAction("beginPath").addAction("moveTo", -.272, .410).addAction("lineTo", -.221, .302).addAction("lineTo", -.167, .198).addAction("lineTo", -.110, .095).addAction("lineTo", -.051, -.005).addAction("lineTo", .012, -.102).addAction("lineTo", .077, -.197).addAction("lineTo", .145, -.289).addAction("lineTo", .215, -.379).addAction("lineTo", .289, -.466).addAction("lineTo", .365, -.551).addAction("stroke", "#d9a62e", .2, .2).addAction("closePath")
-).setReloadReduction(-5, -1).setDescription(Array.from({ length: 29 }, (_, i) =>
-    `A golden leaf with a mystical regenerational power.\nReload Reduction: ${-5 + (-1 * i)}%`
-)),
+        .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", -.531, .801).addAction("lineTo", -.634, .534).addAction("lineTo", -.688, .286).addAction("lineTo", -.692, .057).addAction("lineTo", -.647, -.153).addAction("lineTo", -.552, -.343).addAction("lineTo", -.408, -.514).addAction("lineTo", -.214, -.665).addAction("lineTo", .030, -.798).addAction("lineTo", .323, -.911).addAction("lineTo", .666, -1.005).addAction("lineTo", .713, -.653).addAction("lineTo", .723, -.338).addAction("lineTo", .696, -.062).addAction("lineTo", .586, .280).addAction("lineTo", .393, .537).addAction("lineTo", .116, .707).addAction("lineTo", -.245, .792).addAction("lineTo", -.531, .801).addAction("paint", "#d9a62e", .2, .2).addAction("closePath").addAction("beginPath").addAction("moveTo", -.558, .842).addAction("lineTo", -.727, 1.096).addAction("stroke", "#d9a62e", .2, .2).addAction("closePath").addAction("beginPath").addAction("moveTo", -.272, .410).addAction("lineTo", -.221, .302).addAction("lineTo", -.167, .198).addAction("lineTo", -.110, .095).addAction("lineTo", -.051, -.005).addAction("lineTo", .012, -.102).addAction("lineTo", .077, -.197).addAction("lineTo", .145, -.289).addAction("lineTo", .215, -.379).addAction("lineTo", .289, -.466).addAction("lineTo", .365, -.551).addAction("stroke", "#d9a62e", .2, .2).addAction("closePath")
+        ).setReloadReduction(-5, -1).setDescription(Array.from({ length: 29 }, (_, i) =>
+            `A golden leaf with a mystical regenerational power.\nReload Reduction: ${-5 + (-1 * i)}%`
+        )),
+
+    new PetalConfig("Zinc", 22.5 * 100, 1, 4)
+        .setSize(1.2)
+        .setZincAbility()
+        .setDrawing(new Drawing()
+            .addAction("beginPath")
+            .addAction("moveTo", -0.49, -1.32)
+            .addAction("lineTo", 0.49, -1.03)
+            .addAction("lineTo", 1.13, -0.07)
+            .addAction("lineTo", 0.09, 1.33)
+            .addAction("lineTo", -1.14, 0.47)
+            .addAction("closePath")
+            .addAction("fill", "#97b3c9")
+            .addAction("stroke", "#728ca1", 0.085, 0)
+
+            .addAction("beginPath")
+            .addAction("moveTo", -0.48, -1.22)
+            .addAction("lineTo", 0.43, -0.95)
+            .addAction("lineTo", 1.03, -0.07)
+            .addAction("lineTo", 0.08, 1.24)
+            .addAction("lineTo", -1.05, 0.44)
+            .addAction("closePath")
+            .addAction("fill", "#97b3c9")
+
+            .addAction("beginPath")
+            .addAction("moveTo", -0.18, -1.22)
+            .addAction("lineTo", -0.03, -1.18)
+            .addAction("lineTo", -0.88, 0.15)
+            .addAction("lineTo", -0.95, 0.09)
+            .addAction("closePath")
+            .addAction("fill", "#c3d8ea")
+
+            .addAction("beginPath")
+            .addAction("moveTo", 0.30, -0.99)
+            .addAction("lineTo", 0.43, -0.95)
+            .addAction("lineTo", -0.33, 0.57)
+            .addAction("lineTo", -0.62, 0.37)
+            .addAction("closePath")
+            .addAction("fill", "#b4cbdc")
+
+            .addAction("beginPath")
+            .addAction("moveTo", 0.69, -0.85)
+            .addAction("lineTo", 0.88, -0.77)
+            .addAction("lineTo", 0.08, 1.24)
+            .addAction("lineTo", -0.21, 1.01)
+            .addAction("closePath")
+            .addAction("fill", "#a9c2d5")
+
+            .addAction("beginPath")
+            .addAction("moveTo", -0.49, -1.32)
+            .addAction("lineTo", 0.49, -1.03)
+            .addAction("lineTo", 1.13, -0.07)
+            .addAction("lineTo", 0.09, 1.33)
+            .addAction("lineTo", -1.14, 0.47)
+            .addAction("closePath")
+            .addAction("stroke", "#728ca1", 0.085, 0))
+        .setDescription(ZINC_DESCRIPTIONS)
 ];
 
 // Salt shows its per-tier body damage bonus in the petal description.
@@ -901,7 +996,7 @@ export const petalConfigs = [
 // desert-maze balance: every sub-petal of a multi-petal flower deals 25% more
 // damage (Fire Missile is exempt since its damage scales through setMulti too,
 // eggs are exempt so their summon petals keep the WhiteHole.js stats).
-for (const petal of petalConfigs) {
+/*for (const petal of petalConfigs) {
     if (petal.name === "Fire Missile" || petal.name.endsWith("Egg")) continue;
 
     const hasSubPetals = petal.tiers.some(tier => tier.count > 1);
@@ -910,7 +1005,7 @@ for (const petal of petalConfigs) {
     for (const tier of petal.tiers) {
         if (tier.count > 1) tier.damage = tier.damage * 1.25;
     }
-}
+}*/
 
 export const petalIDOf = name => petalConfigs.findIndex(p => p.name === name);
 
@@ -1412,7 +1507,7 @@ export const mobConfigs = [
     new MobConfig("Sandstone", 75, 5, 32, 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, .3, 0).addAction("paint", "#d4be94", .225, .2).addAction("beginPath").addAction("dipPolygon", 8, .6, .3, 0).addAction("fill", "#dbc9a6").addAction("beginPath").addAction("dipPolygon", 8, .4, .3, 0).addAction("fill", "#d4be94")
         )
-        ,
+    ,
     new MobConfig("Beetle Pod", 40, 2, 30, 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1.1, 1, Math.PI).addAction("paint", "#7e519a", .2, .2).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("paint", "#7e519a", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .5).addAction("fill", "#915db0")
         ),
@@ -1421,20 +1516,20 @@ export const mobConfigs = [
         ),
     new MobConfig("ӇЄҲƛƓƠƝ", 300, 22, 30, 0)
         .setDrawing(new Drawing()
-        .addAction("beginPath")
-        .addAction("opacity", 0.5)
-        .addAction("polygon", 6, 1.2, 1)
-        .addAction("fill", "#c73626")
-        .addAction("stroke", "#853d35", 0.2, 0)
-        .addAction("closePath")
-        .addAction("beginPath")
-        .addAction("opacity", 1)
-        .addAction("polygon", 6, 1.1, 1)
-        .addAction("fill", "#c73626")
-        .addAction("stroke", "#853d35", 0.2, 0)
-        .addAction("closePath")
+            .addAction("beginPath")
+            .addAction("opacity", 0.5)
+            .addAction("polygon", 6, 1.2, 1)
+            .addAction("fill", "#c73626")
+            .addAction("stroke", "#853d35", 0.2, 0)
+            .addAction("closePath")
+            .addAction("beginPath")
+            .addAction("opacity", 1)
+            .addAction("polygon", 6, 1.1, 1)
+            .addAction("fill", "#c73626")
+            .addAction("stroke", "#853d35", 0.2, 0)
+            .addAction("closePath")
         )
-        ,
+    ,
     new MobConfig("Shiny Soldier Ant", 12, 22, 15, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5).setProjectile({
         petalIndex: petalIDOf("Missile"),
         cooldown: 45,
@@ -1443,49 +1538,49 @@ export const mobConfigs = [
         speed: 5,
         range: 850,
         size: .5
-        })
+    })
         .setDrawing(
-        new Drawing()
-        .addAction("beginPath")
-        .addAction("circle", -1.1, 0, 0.667)
-        .addAction("fill", "#f5df16")
-        .addAction("stroke", "#d6c52b", 0.4, 0)
-        .addAction("closePath")
-        .addAction("beginPath")
-        .addAction("opacity", 0.3)
-        .addAction("ellipse", -0.667, -0.375, 1.6875, 0.625, 18)
-        .addAction("ellipse", -0.667, 0.375, 1.6875, 0.625, -18)
-        .addAction("fill", "#ffffff")
-        .addAction("closePath")
-        .addAction("opacity", 1)
-        .addAction("beginPath")
-        .addAction("moveTo", 0, -0.7)
-        .addAction("quadraticCurveTo", 1.25, -0.5, 1.5, -0.4)
-        .addAction("stroke", "#2b1d0e", 0.5, 0)
-        .addAction("closePath")
-        .addAction("beginPath")
-        .addAction("moveTo", 0, 0.7)
-        .addAction("quadraticCurveTo", 1.25, 0.5, 1.5, 0.4)
-        .addAction("stroke", "#2b1d0e", 0.5, 0)
-        .addAction("closePath")
-        .addAction("beginPath")
-        .addAction("circle", 0, 0, 1)
-        .addAction("fill", "#f5df16")
-        .addAction("stroke", "#d6c52b", 0.4, 0)
-        .addAction("closePath")
+            new Drawing()
+                .addAction("beginPath")
+                .addAction("circle", -1.1, 0, 0.667)
+                .addAction("fill", "#f5df16")
+                .addAction("stroke", "#d6c52b", 0.4, 0)
+                .addAction("closePath")
+                .addAction("beginPath")
+                .addAction("opacity", 0.3)
+                .addAction("ellipse", -0.667, -0.375, 1.6875, 0.625, 18)
+                .addAction("ellipse", -0.667, 0.375, 1.6875, 0.625, -18)
+                .addAction("fill", "#ffffff")
+                .addAction("closePath")
+                .addAction("opacity", 1)
+                .addAction("beginPath")
+                .addAction("moveTo", 0, -0.7)
+                .addAction("quadraticCurveTo", 1.25, -0.5, 1.5, -0.4)
+                .addAction("stroke", "#2b1d0e", 0.5, 0)
+                .addAction("closePath")
+                .addAction("beginPath")
+                .addAction("moveTo", 0, 0.7)
+                .addAction("quadraticCurveTo", 1.25, 0.5, 1.5, 0.4)
+                .addAction("stroke", "#2b1d0e", 0.5, 0)
+                .addAction("closePath")
+                .addAction("beginPath")
+                .addAction("circle", 0, 0, 1)
+                .addAction("fill", "#f5df16")
+                .addAction("stroke", "#d6c52b", 0.4, 0)
+                .addAction("closePath")
         )
-        ,
+    ,
     new MobConfig("Desert Shrub", 40, 10, 12, 0).setThornSpawn(0.6, "Thorn.projectile", 14)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, -3, 0).addAction("stroke", "#91775a", .2, 0).addAction("dipPolygon", 5, .7, -3, .4).addAction("stroke", "#91775a", .2, 0).addAction("dipPolygon", 4, .5, -1.5, .3).addAction("stroke", "#91775a", .2, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("rotate", 360 / 7).addAction("moveTo", 1.05, .065).addAction("lineTo", 1.25, 0).addAction("lineTo", 1.05, -.065).addAction("stroke", "#91775a", .1, 0).addAction("closePath").addAction("rotate", 360 / 7).addAction("beginPath").addAction("dipPolygon", 3, .45, -1, 0).addAction("paint", "#3AB54A", .2, .3).addAction("dipPolygon", 5, .35, -1.5, 0).addAction("paint", "#FC93C5", .2, .2).addAction("beginPath").addAction("circle", 0, 0, .15).addAction("fill", "#fcebff")
         )
-        ,
+    ,
     new MobConfig("Lilypad", 40, 10, 40, 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 0, 0).addAction("arc", 0, 0, 1, Math.PI * 1 / 4, Math.PI * 2).addAction("lineTo", 0, 0).addAction("paint", "#3AB54A", .2, .2)
         ),
     new MobConfig("Lilypad (Summon)", 40, 10, 40, 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 0, 0).addAction("arc", 0, 0, 1, Math.PI * 1 / 4, Math.PI * 2).addAction("lineTo", 0, 0).addAction("paint", "#ffe763", .2, .2)
         )
-        ,
+    ,
     new MobConfig("Puddle", 40, 10, 50, 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("opacity", .45).addAction("moveTo", 1, 0).addAction("quadraticCurveTo", 1.0321587991342152, 0.5417187271752805, 0.5680647467311558, 0.8229838658936565).addAction("quadraticCurveTo", 0.13152049608924002, 1.0831687359981133, -0.3546048870425357, 0.9350162426854148).addAction("quadraticCurveTo", -0.8601230017445436, 0.7620024865701919, -0.970941817426052, 0.23931566428755768).addAction("quadraticCurveTo", -1.0352882573974829, -0.2551756373054311, -0.748510748171101, -0.6631226582407953).addAction("quadraticCurveTo", -0.4074808820334939, -1.0744387830148376, 0.1205366802553232, -0.992708874098054).addAction("quadraticCurveTo", 0.6433585356470011, -0.9320657510771945, 0.88545602565321, -0.4647231720437684).addAction("quadraticCurveTo", 1, -0.2, 1, 0).addAction("fill", "#fffde6").addAction("opacity", .9).addAction("stroke", "#fffde6", .2, 0).addAction("opacity", 1).addAction("beginPath").addAction("moveTo", 0, 0).addAction("arc", 0, 0, .3, Math.PI * 1 / 4, Math.PI * 2).addAction("lineTo", 0, 0).addAction("paint", "#3AB54A", .1, .2)
         ),
@@ -1501,119 +1596,119 @@ export const mobConfigs = [
     new MobConfig("Evil Desert Centipede", 25, 10, 16, 5.5).setAggressive(1).setCentipedeMovement(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, -0.875, 0.375).addAction("circle", 0, 0.875, 0.375).addAction("closePath").addAction("paint", "#222222", .2, 0).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#e86d48", .2, .2).addAction("beginPath").addAction("moveTo", 0.75, -0.2).addAction("quadraticCurveTo", 1.2, -0.3, 1.3, -0.5).addAction("moveTo", 0.75, 0.2).addAction("quadraticCurveTo", 1.2, 0.3, 1.3, 0.5).addAction("paint", "#222222", .2, 0).addAction("closePath")
         )
-        ,
+    ,
     new MobConfig("Evil Desert Centipede", 25, 10, 16, 5.5).setSystem(1).setAggressive(1).setCentipedeMovement(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, -0.875, 0.375).addAction("circle", 0, 0.875, 0.375).addAction("closePath").addAction("paint", "#222222", .2, 0).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#e86d48", .2, .2)
         ),
     new MobConfig("Jelly (Summon)", 0.00001, 0.00001, 15, 0)
         .setDensity(150)
         .setDrawing(
-        new Drawing()
-        .addAction("beginPath")
-        .addAction("arc", 0, 0, 1, 0, Math.PI * 2)
-        .addAction("closePath")
-        .addAction("opacity", 0.6)
-        .addAction("fill", "#FBBAFF")
-        .addAction("stroke", "#d4b4d3", 0.2, 0)
-        .addAction("opacity", 1)
-        .addAction("beginPath")
-        .addAction("arc", 0.25, 0.45, 0.35, 0, Math.PI * 2)
-        .addAction("closePath")
-        .addAction("fill", "#d4b4d3")
-        .addAction("beginPath")
-        .addAction("arc", -0.55, 0.3, 0.2, 0, Math.PI * 2)
-        .addAction("closePath")
-        .addAction("fill", "#d4b4d3")
-        .addAction("beginPath")
-        .addAction("arc", 0.3, -0.25, 0.2, 0, Math.PI * 2)
-        .addAction("closePath")
-        .addAction("fill", "#d4b4d3")
-        .addAction("beginPath")
-        .addAction("arc", -0.4, -0.25, 0.25, 0, Math.PI * 2)
-        .addAction("closePath")
-        .addAction("fill", "#d4b4d3")
-        .addAction("beginPath")
-        .addAction("arc", 0, -0.9, 0.35, 0, Math.PI)
-        .addAction("closePath")
-        .addAction("fill", "#d4b4d3")
+            new Drawing()
+                .addAction("beginPath")
+                .addAction("arc", 0, 0, 1, 0, Math.PI * 2)
+                .addAction("closePath")
+                .addAction("opacity", 0.6)
+                .addAction("fill", "#FBBAFF")
+                .addAction("stroke", "#d4b4d3", 0.2, 0)
+                .addAction("opacity", 1)
+                .addAction("beginPath")
+                .addAction("arc", 0.25, 0.45, 0.35, 0, Math.PI * 2)
+                .addAction("closePath")
+                .addAction("fill", "#d4b4d3")
+                .addAction("beginPath")
+                .addAction("arc", -0.55, 0.3, 0.2, 0, Math.PI * 2)
+                .addAction("closePath")
+                .addAction("fill", "#d4b4d3")
+                .addAction("beginPath")
+                .addAction("arc", 0.3, -0.25, 0.2, 0, Math.PI * 2)
+                .addAction("closePath")
+                .addAction("fill", "#d4b4d3")
+                .addAction("beginPath")
+                .addAction("arc", -0.4, -0.25, 0.25, 0, Math.PI * 2)
+                .addAction("closePath")
+                .addAction("fill", "#d4b4d3")
+                .addAction("beginPath")
+                .addAction("arc", 0, -0.9, 0.35, 0, Math.PI)
+                .addAction("closePath")
+                .addAction("fill", "#d4b4d3")
         ),
     new MobConfig("Sunlit Frog", 25, 10, 18, 30).setMovesInBursts(1).setNeutral(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", -.50, .75).addAction("lineTo", .23, 1.09).addAction("moveTo", .23, 1.09).addAction("lineTo", .36, 1.26).addAction("moveTo", .23, 1.09).addAction("lineTo", .45, 1.08).addAction("stroke", "#ada259", .12, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -.50, -.75).addAction("lineTo", .23, -1.09).addAction("moveTo", .23, -1.09).addAction("lineTo", .45, -1.08).addAction("moveTo", .23, -1.09).addAction("lineTo", .36, -1.26).addAction("stroke", "#ada259", .12, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", .60, .30).addAction("lineTo", 1.16, .51).addAction("moveTo", 1.16, .51).addAction("lineTo", 1.28, .63).addAction("moveTo", 1.16, .51).addAction("lineTo", 1.33, .49).addAction("stroke", "#ada259", .11, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", .60, -.30).addAction("lineTo", 1.16, -.51).addAction("moveTo", 1.16, -.51).addAction("lineTo", 1.33, -.49).addAction("moveTo", 1.16, -.51).addAction("lineTo", 1.28, -.63).addAction("stroke", "#ada259", .11, 0).addAction("closePath")
-        .addAction("beginPath")
-        .addAction("moveTo", .12, .92)
-        .addAction("bezierCurveTo",
-        -.55, 1.22,
-        -1.32, .86,
-        -1.18, .34)
-        .addAction("quadraticCurveTo",
-        -.82, .08,
-        .10, .70)
-        .addAction("closePath")
-        .addAction("fill", "#d3c66d")
-        .addAction("stroke", "#ada259", .12, 0)
-        .addAction("beginPath")
-        .addAction("moveTo", .12, -.92)
-        .addAction("bezierCurveTo",
-        -.55, -1.22,
-        -1.32, -.86,
-        -1.18, -.34)
-        .addAction("quadraticCurveTo",
-        -.82, -.08,
-        .10, -.70)
-        .addAction("closePath")
-        .addAction("fill", "#d3c66d")
-        .addAction("stroke", "#ada259", .12, 0)
-        .addAction("beginPath")
-        .addAction("ellipse", 0, 0, 1.10, .86, 0)
-        .addAction("fill", "#d3c66d")
-        .addAction("stroke", "#ada259", .15, 0)
-        .addAction("beginPath")
-        .addAction("ellipse", -.08, 0, .63, .46, .18)
-        .addAction("fill", "#dbd087")
-        .addAction("stroke", "#dbd087", .15, 0)
-        .addAction("beginPath")
-        .addAction("circle", .55, .50, .20)
-        .addAction("fill", "#000000")
-        .addAction("beginPath")
-        .addAction("circle", .55, -.50, .20)
-        .addAction("fill", "#000000")
-        .addAction("beginPath").addAction("circle", .55, .50, .20).addAction("fill", "#000000").addAction("beginPath").addAction("circle", .55, -.50, .20).addAction("fill", "#000000")
+            .addAction("beginPath")
+            .addAction("moveTo", .12, .92)
+            .addAction("bezierCurveTo",
+                -.55, 1.22,
+                -1.32, .86,
+                -1.18, .34)
+            .addAction("quadraticCurveTo",
+                -.82, .08,
+                .10, .70)
+            .addAction("closePath")
+            .addAction("fill", "#d3c66d")
+            .addAction("stroke", "#ada259", .12, 0)
+            .addAction("beginPath")
+            .addAction("moveTo", .12, -.92)
+            .addAction("bezierCurveTo",
+                -.55, -1.22,
+                -1.32, -.86,
+                -1.18, -.34)
+            .addAction("quadraticCurveTo",
+                -.82, -.08,
+                .10, -.70)
+            .addAction("closePath")
+            .addAction("fill", "#d3c66d")
+            .addAction("stroke", "#ada259", .12, 0)
+            .addAction("beginPath")
+            .addAction("ellipse", 0, 0, 1.10, .86, 0)
+            .addAction("fill", "#d3c66d")
+            .addAction("stroke", "#ada259", .15, 0)
+            .addAction("beginPath")
+            .addAction("ellipse", -.08, 0, .63, .46, .18)
+            .addAction("fill", "#dbd087")
+            .addAction("stroke", "#dbd087", .15, 0)
+            .addAction("beginPath")
+            .addAction("circle", .55, .50, .20)
+            .addAction("fill", "#000000")
+            .addAction("beginPath")
+            .addAction("circle", .55, -.50, .20)
+            .addAction("fill", "#000000")
+            .addAction("beginPath").addAction("circle", .55, .50, .20).addAction("fill", "#000000").addAction("beginPath").addAction("circle", .55, -.50, .20).addAction("fill", "#000000")
         ),
     new MobConfig("Moonlit Frog", 25, 10, 18, 32).setMovesInBursts(1).setNeutral(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", -.50, .75).addAction("lineTo", .23, 1.09).addAction("moveTo", .23, 1.09).addAction("lineTo", .36, 1.26).addAction("moveTo", .23, 1.09).addAction("lineTo", .45, 1.08).addAction("stroke", "#3d178e", .12, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", -.50, -.75).addAction("lineTo", .23, -1.09).addAction("moveTo", .23, -1.09).addAction("lineTo", .45, -1.08).addAction("moveTo", .23, -1.09).addAction("lineTo", .36, -1.26).addAction("stroke", "#3d178e", .12, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", .60, .30).addAction("lineTo", 1.16, .51).addAction("moveTo", 1.16, .51).addAction("lineTo", 1.28, .63).addAction("moveTo", 1.16, .51).addAction("lineTo", 1.33, .49).addAction("stroke", "#3d178e", .11, 0).addAction("closePath").addAction("beginPath").addAction("moveTo", .60, -.30).addAction("lineTo", 1.16, -.51).addAction("moveTo", 1.16, -.51).addAction("lineTo", 1.33, -.49).addAction("moveTo", 1.16, -.51).addAction("lineTo", 1.28, -.63).addAction("stroke", "#3d178e", .11, 0).addAction("closePath")
-        .addAction("beginPath")
-        .addAction("moveTo", .12, .92)
-        .addAction("bezierCurveTo",
-        -.55, 1.22,
-        -1.32, .86,
-        -1.18, .34)
-        .addAction("quadraticCurveTo",
-        -.82, .08,
-        .10, .70)
-        .addAction("closePath")
-        .addAction("fill", "#4a1cad")
-        .addAction("stroke", "#3d178e", .12, 0)
-        .addAction("beginPath")
-        .addAction("moveTo", .12, -.92)
-        .addAction("bezierCurveTo",
-        -.55, -1.22,
-        -1.32, -.86,
-        -1.18, -.34)
-        .addAction("quadraticCurveTo",
-        -.82, -.08,
-        .10, -.70)
-        .addAction("closePath")
-        .addAction("fill", "#4a1cad")
-        .addAction("stroke", "#3d178e", .12, 0)
-        .addAction("beginPath")
-        .addAction("ellipse", 0, 0, 1.10, 0.86, 0)
-        .addAction("fill", "#4a1cad")
-        .addAction("stroke", "#3d178e", .15, 0)
-        .addAction("beginPath")
-        .addAction("ellipse", -.08, 0, .63, .46, .18)
-        .addAction("fill", "#6b45bc")
-        .addAction("stroke", "#6b45bc", .15, 0)
-        .addAction("beginPath").addAction("circle", .55, .50, .20).addAction("fill", "#000000").addAction("beginPath").addAction("circle", .55, -.50, .20).addAction("fill", "#000000")
+            .addAction("beginPath")
+            .addAction("moveTo", .12, .92)
+            .addAction("bezierCurveTo",
+                -.55, 1.22,
+                -1.32, .86,
+                -1.18, .34)
+            .addAction("quadraticCurveTo",
+                -.82, .08,
+                .10, .70)
+            .addAction("closePath")
+            .addAction("fill", "#4a1cad")
+            .addAction("stroke", "#3d178e", .12, 0)
+            .addAction("beginPath")
+            .addAction("moveTo", .12, -.92)
+            .addAction("bezierCurveTo",
+                -.55, -1.22,
+                -1.32, -.86,
+                -1.18, -.34)
+            .addAction("quadraticCurveTo",
+                -.82, -.08,
+                .10, -.70)
+            .addAction("closePath")
+            .addAction("fill", "#4a1cad")
+            .addAction("stroke", "#3d178e", .12, 0)
+            .addAction("beginPath")
+            .addAction("ellipse", 0, 0, 1.10, 0.86, 0)
+            .addAction("fill", "#4a1cad")
+            .addAction("stroke", "#3d178e", .15, 0)
+            .addAction("beginPath")
+            .addAction("ellipse", -.08, 0, .63, .46, .18)
+            .addAction("fill", "#6b45bc")
+            .addAction("stroke", "#6b45bc", .15, 0)
+            .addAction("beginPath").addAction("circle", .55, .50, .20).addAction("fill", "#000000").addAction("beginPath").addAction("circle", .55, -.50, .20).addAction("fill", "#000000")
         ),
 ];
 
@@ -2071,6 +2166,7 @@ globalThis.DIAMOND_TABLE = {
     16: 0.33,
     17: 0.36,
 };
+
 globalThis.PETAL_RARITY_SIZES = [
     30, 50, 100, 130, 140, 150, 160, 170, 180, 190,
     200, 230, 240, 250, 260, 270, 280, 300,
