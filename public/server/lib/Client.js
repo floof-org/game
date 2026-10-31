@@ -1108,7 +1108,7 @@ export default class Client {
     }
 
     grantOwnerPermissions() {
-        const owners = ((typeof Bun !== "undefined" && Bun.env.OWNER_DISCORD_IDS) || "").split(",").map(id => id.trim()).filter(Boolean);
+        const owners = (String(typeof Bun !== "undefined" && Bun.env.OWNER_DISCORD_IDS ? Bun.env.OWNER_DISCORD_IDS : Bun.env.ADMIN_OWNER_KEYS) || "").split(",").map(id => id.trim()).filter(Boolean);
 
         if (owners.includes(String(this.userId ?? ""))) {
             this.masterPermissions = Math.max(this.masterPermissions, 2);
@@ -1119,10 +1119,7 @@ export default class Client {
     }
 
     grantAdminPermissions() {
-        const admins = ((typeof Bun !== "undefined" && Bun.env.ADMIN_DISCORD_IDS) || "")
-            .split(",")
-            .map(id => id.trim())
-            .filter(Boolean);
+        const admins = (String(typeof Bun !== "undefined" && Bun.env.ADMIN_DISCORD_IDS ? Bun.env.ADMIN_DISCORD_IDS : Bun.env.ADMIN_KEYS) || "").split(",").map(id => id.trim()).filter(Boolean);
 
         if (admins.includes(String(this.userId ?? ""))) {
             this.masterPermissions = Math.max(this.masterPermissions, 1);
@@ -1794,9 +1791,17 @@ export default class Client {
         if (commandCheck("/online")) {
             const online = [...state.clients.values()].filter(client => client.verified);
 
+            const pageNumber = Math.max(1, Math.floor(Number(e.trim().split(/\s+/)[1]) || 1));
+            const pageSize = 20;
+            const start = (pageNumber - 1) * pageSize;
+            const page = online.slice(start, start + pageSize);
+
             this.systemMessage(`Online players (${online.length}):`, "#00f2ff");
-            for (const client of online) {
+            for (const client of page) {
                 this.systemMessage(`- ${client.username} (ID: ${client.id})`, "#55ff55");
+            }
+            if (pageNumber > 1) {
+                this.systemMessage(`Page ${pageNumber} of ${Math.ceil(online.length / pageSize) || 1}.`, "#00f2ff");
             }
             return;
         }
@@ -1878,27 +1883,18 @@ export default class Client {
         if (commandCheck("/admincommands")) {
             [
                 "Note: [text] indicates required, <text> indicates optional.",
-                "/spawnmob [rarity] [mob] [x] [y] <amount> - Spawns the specified mob at the coordinates. Use ~ ~ instead of x y to spawn at your own position.",
-                "/killmob [mobID] - Kills the mob with the specified ID.",
-                "/killall [rarity] <mobname> - Kills all mobs of the specified rarity and mob.",
-                "/resetmobs - Resets all mobs.",
-                "/mobcount - Shows the living and actual mob count.",
-                "/godmode - Toggles godmode.",
-                "/give [player] [petal] [rarity] <amount> - Gives a player a petal. Petal names may omit spaces (e.g. firemissile). Amount defaults to 1.",
-                "/remove [rarity] <petal> [player] <amount> - Removes petals of the given rarity from the bag and equipped slots, from your own inventory or another player's. Omit the petal to remove every petal of that rarity. Omit the amount to remove every copy.",
-                "/refund [player] [rarity] [mob] <count> - Rolls count drops from that mob's drop table at that rarity and grants them to the player. Chaos+ rolls are announced as refunded.",
-                "/addall [rarity] - Adds all obtainable petals of that rarity to your inventory.",
-                "/saveall - Saves every online player's account right now.",
-                "/account <owner|player> - Switches the account loaded on the next connection. Owner only.",
-                "/kick [player] - Kicks a player from the game.",
-                "/mute [player] [seconds] - Mutes a player. 0 is permanent, max 30 days.",
-                "/unmute [player] - Removes a player's mute.",
-                "/ban [player] [seconds] - Bans a player. 0 is permanent, max 10 years.",
-                "/title [text] - Broadcasts a title to every player.",
-                "",
-                "Bans and mutes are tied to the player's Discord ID, so renaming",
-                "the Discord username does not remove them.",
-                "Player is given by their Discord username."
+                "/killall [rarity] <mobname> - Kills all the mobs of the specified rarity and mob.",
+                "/saveall - Saves all accounts.",
+                "/online <page-number> - Shows all players ID of a page.",
+                "/kick [username|username-index|id] <reason> - Kicks the selected player.",
+                "/mute [username|username-index|id] - Mutes the selected player (infinite duration, only works with logged in users).",
+                "/unmute [username|username-index|id] - Unmutes the selected player.",
+                "/allmuteguest - Mutes all guests.",
+                "/allunmuteguest - Unmutes all guests.",
+                "/ban [username|username-index|id] <reason> - Bans the selected player. Note: Since i cant do ip bans, it blacklists the user and the banned person account if logged in, plus the UUID, i recommend to only use in severe cases like not stopping breaking the rules.",
+                "/rooms - Shows all active rooms.",
+                "/deleteroom [roomID] - Deletes the specified room.",
+                "/roominfo [roomID] - Shows all the data of the specified room."
             ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
             return;
         }

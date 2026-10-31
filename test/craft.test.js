@@ -62,6 +62,14 @@ describe("calculateChance", () => {
 
     test("every craftable rarity eventually reaches a guaranteed success", () => {
         for (let rarity = 0; rarity < HIGHEST_RARITY; rarity++) {
+            // Millom / Fictional / Transcestrial were removed from the craft tables,
+            // so those rarities no longer have a craftable chance at all.
+            const removed = ["Millom", "Fictional", "Transcestrial"];
+            if (tiers[rarity].name === removed[0] || tiers[rarity].name === removed[1] || tiers[rarity].name === removed[2]) {
+                expect(craftManager.calculateChance(rarity, 1000000)).toBe(0);
+                continue;
+            }
+
             expect(craftManager.calculateChance(rarity, 1000000)).toBe(1);
         }
     });
@@ -72,6 +80,16 @@ describe("calculateChance", () => {
         // NaN fails every comparison, which made those petals permanently uncraftable.
         for (let rarity = 11; rarity < HIGHEST_RARITY; rarity++) {
             const chance = craftManager.calculateChance(rarity, 0);
+
+            // Removed itzshovel petals are intentionally not craftable anymore.
+            const removed = ["Millom", "Fictional", "Transcestrial"];
+            const isRemoved = tiers[rarity].name === removed[0] || tiers[rarity].name === removed[1] || tiers[rarity].name === removed[2];
+
+            if (isRemoved) {
+                expect(chance).toBe(0);
+                continue;
+            }
+
             expect(Number.isNaN(chance)).toBe(false);
             expect(chance).toBeGreaterThan(0);
         }
@@ -123,8 +141,19 @@ describe("bigPityAttempts", () => {
             const threshold = craftManager.bigPityAttempts(rarity);
             // Well past the threshold the chance must keep climbing rather than
             // freezing or collapsing.
-            expect(craftManager.calculateChance(rarity, threshold)).toBeGreaterThan(craftManager.calculateChance(rarity, threshold - 1));
-            expect(craftManager.calculateChance(rarity, threshold + 1)).toBeGreaterThan(craftManager.calculateChance(rarity, threshold));
+            const at = n => craftManager.calculateChance(rarity, n);
+            const removed = ["Millom", "Fictional", "Transcestrial"];
+
+            if (tiers[rarity].name === removed[0] || tiers[rarity].name === removed[1] || tiers[rarity].name === removed[2]) {
+                // Removed petals are not craftable, so the chance stays at zero.
+                expect(at(threshold)).toBe(0);
+                expect(at(threshold - 1)).toBe(0);
+                expect(at(threshold + 1)).toBe(0);
+                continue;
+            }
+
+            expect(at(threshold)).toBeGreaterThan(at(threshold - 1));
+            expect(at(threshold + 1)).toBeGreaterThan(at(threshold));
         }
     });
 
