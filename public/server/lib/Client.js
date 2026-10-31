@@ -2351,6 +2351,43 @@ export default class Client {
             return;
         }
 
+        // /unmute all
+        if (commandCheck("/unmuteall")) {
+            (async () => {
+                if (!requireOwner()) return;
+
+                const result = await accounts.unmuteAll();
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                this.systemMessage("All players have been unmuted.", "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /mute all
+        if (commandCheck("/muteall")) {
+            (async () => {
+                if (!requireOwner()) return;
+
+                const ownerUserId = getUserId(this);
+                const result = await accounts.muteAll(ownerUserId);
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                this.systemMessage("All players have been muted.", "#ff5555");
+            })();
+
+            return;
+        }
+
         // /unmute
         if (commandCheck("/unmute")) {
             (async () => {
@@ -2380,6 +2417,46 @@ export default class Client {
 
                 target.client?.systemMessage("You have been unmuted.", "#55ff55");
                 this.systemMessage(`Unmuted ${target.playerName}.`, "#55ff55");
+            })();
+
+            return;
+        }
+
+        // /mute
+        if (commandCheck("/mute")) {
+            (async () => {
+                if (!requireAdmin()) return;
+
+                const args = e.slice(5).trim().split(/\s+/).filter(Boolean);
+
+                if (args.length < 2) {
+                    this.systemMessage("Usage: /mute [player] [seconds]", "#ffaa00");
+                    return;
+                }
+
+                const [playerName, durationArg] = args;
+                const target = resolveModerationTarget(playerName);
+
+                if (!target) {
+                    this.systemMessage(`Player "${playerName}" is not online and has no ban/mute on record.`, "#ff5555");
+                    return;
+                }
+
+                if (target.client && target.client.masterPermissions >= this.masterPermissions) {
+                    this.systemMessage(`You cannot mute ${target.client.username}.`, "#ff5555");
+                    return;
+                }
+
+                const result = await accounts.mute(target.discordId, durationArg, target.playerName);
+
+                if (!result.ok) {
+                    this.systemMessage(result.error, "#ff5555");
+                    return;
+                }
+
+                const when = result.duration === Infinity ? "permanently" : `for ${formatDuration(result.duration * 1000)}`;
+                target.client?.systemMessage(`You have been muted ${when}.`, "#ff5555");
+                this.systemMessage(`Muted ${target.playerName} ${when}.`, "#55ff55");
             })();
 
             return;

@@ -414,6 +414,33 @@ class Accounts {
         return { ok: true, entry };
     }
 
+    /** Mutes all players (except the owner) permanently. */
+    async muteAll(ownerDiscordId) {
+        const entries = Array.from(this.moderation.entries());
+
+        for (const [discordId, entry] of entries) {
+            if (discordId === ownerDiscordId) continue;
+            entry.mutedUntil = Accounts.toStored(PERMANENT);
+        }
+
+        await this.persist();
+
+        return { ok: true };
+    }
+
+    /** Unmutes all players. */
+    async unmuteAll() {
+        const entries = Array.from(this.moderation.entries());
+
+        for (const [discordId, entry] of entries) {
+            entry.mutedUntil = 0;
+        }
+
+        await this.persist();
+
+        return { ok: true };
+    }
+
     async unban(discordId) {
         const entry = this.moderation.get(String(discordId ?? ""));
         if (!entry) return { ok: false, error: "That player has no ban on record." };
