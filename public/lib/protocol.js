@@ -847,7 +847,7 @@ export class PetalConfig {
 
     setExtraSize(extraSize) {
         for (let i = 0; i < this.tiers.length; i++) {
-            this.tiers[i].extraSize = extraSize + Math.pow(1.15, i);
+            this.tiers[i].extraSize = extraSize + Math.pow(1.3, i);
         }
 
         return this;
