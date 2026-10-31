@@ -138,6 +138,45 @@ const state = {
         return state.mapCellLookup?.get(gridY * state.terrainGridWidth + gridX) ?? null;
     },
 
+    /**
+     * Rarity of the zone a world position sits in (0 .. map.maxRarity), or null
+     * when the cell has no score or the room was started without a zoned map.
+     */
+    mapRarityAt: (x, y) => {
+        const cell = state.mapDataAt(x, y);
+        const maxRarity = state.mapData?.maxRarity;
+
+        if (!cell || cell.score === undefined || !Number.isFinite(maxRarity)) {
+            return null;
+        }
+
+        return Math.max(0, Math.min(tiers.length - 1, Math.round(cell.score * maxRarity)));
+    },
+
+    /**
+     * A mob may only appear on a cell whose zone rarity is within one tier of its
+     * own rarity. Unscored cells are let through, since there is no zone to
+     * compare against.
+     */
+    isSpawnRarityAllowed: (position, rarity) => {
+        const zoneRarity = state.mapRarityAt(position.x, position.y);
+
+        return zoneRarity === null || Math.abs(zoneRarity - rarity) <= 1;
+    },
+
+    /** Pulls a rarity into the band its position allows: zoneRarity - 1 .. zoneRarity + 1. */
+    clampRarityToZone: (position, rarity) => {
+        const zoneRarity = state.mapRarityAt(position.x, position.y);
+
+        if (zoneRarity === null) {
+            return rarity;
+        }
+
+        const clamped = Math.max(zoneRarity - 1, Math.min(zoneRarity + 1, rarity));
+
+        return Math.max(0, Math.min(tiers.length - 1, clamped));
+    },
+
     mapSpawnClosestTo: (x, y) => {
         if (state.mapData.length === 0) {
             return state.random();
@@ -194,9 +233,15 @@ const state = {
         });
 
         if (bodies.length === 0) {
+            const spawn = state.mapBasedSpawn(ENTITY_TYPES.MOB);
+            const zoneRarity = Number.isFinite(spawn.rarity)
+                ? Math.max(0, Math.min(tiers.length - 1, spawn.rarity))
+                : 0;
+
             return {
-                position: state.mapBasedSpawn(ENTITY_TYPES.MOB),
-                rarity: Math.random() * 3 | 0
+                position: { x: spawn.x, y: spawn.y },
+                rarity: Math.max(0, zoneRarity - (Math.random() < .5 ? 1 : 0)),
+                tile: state.mapDataAt(spawn.x, spawn.y)
             };
         }
 
@@ -219,49 +264,60 @@ const state = {
             const dx = body.x - position.x;
             const dy = body.y - position.y;
 
-            if (dx * dx + dy * dy > minDist * minDist && state.isValidMapSpawn(position.x, position.y)) {
-                const cell = state.mapDataAt(body.x, body.y);
+            if (dx * dx + dy * dy <= minDist * minDist || !state.isValidMapSpawn(position.x, position.y)) {
+                continue;
+            }
 
-                // Rarity follows the target PLAYER's own cell (their zone), never the exact
-                // spawn position: a spawn point inside the player's view can sit on an
-                // unscored cell or just across a zone boundary, which previously let
-                // higher-rarity mobs materialize in front of players camping a low area.
-                const playerRarity = cell?.score !== undefined
-                    ? Math.round(cell.score * state.mapData.maxRarity)
-                    : (state.mapSpawnClosestTo(body.x, body.y)?.rarity ?? 0);
+            // Rarity follows the target PLAYER's own cell (their zone), never the exact
+            // spawn position: a spawn point inside the player's view can sit on an
+            // unscored cell or just across a zone boundary, which previously let
+            // higher-rarity mobs materialize in front of players camping a low area.
+            const playerRarity = state.mapRarityAt(body.x, body.y)
+                ?? (state.mapSpawnClosestTo(body.x, body.y)?.rarity ?? 0);
 
-                // The position is rolled anywhere in the view, so it can land far outside
-                // the player's zone. Taking the lower of the two stops high rarity mobs
-                // from appearing in a low rarity area.
-                const spawnCell = state.mapDataAt(position.x, position.y);
-                const spawnRarity = spawnCell?.score !== undefined
-                    ? Math.round(spawnCell.score * state.mapData.maxRarity)
-                    : playerRarity;
+            // The position is rolled anywhere in the view, so it can land far outside
+            // the player's zone. Taking the lower of the two stops high rarity mobs
+            // from appearing in a low rarity area.
+            const spawnRarity = state.mapRarityAt(position.x, position.y) ?? playerRarity;
 
-                const baseRarity = Math.min(playerRarity, spawnRarity);
+            const baseRarity = Math.min(playerRarity, spawnRarity);
 
-                const clamped = Math.max(0, Math.min(tiers.length - 1, Number.isFinite(baseRarity) ? baseRarity : 0));
-                const low = Math.max(0, clamped - 1);
-                rarity = low + Math.floor(Math.random() * (clamped - low + 1));
+            const clamped = Math.max(0, Math.min(tiers.length - 1, Number.isFinite(baseRarity) ? baseRarity : 0));
+            const low = Math.max(0, clamped - 1);
+            rarity = low + Math.floor(Math.random() * (clamped - low + 1));
 
-                const retrieved = state.spatialHash.retrieve({
-                    _AABB: {
-                        x1: position.x - config.tiers[rarity].size,
-                        y1: position.y - config.tiers[rarity].size,
-                        x2: position.x + config.tiers[rarity].size,
-                        y2: position.y + config.tiers[rarity].size
-                    }
-                }).size;
+            // A roll that does not fit the zone it landed in is thrown away and the
+            // loop picks another spot, so no mob ever appears more than one tier away
+            // from the rarity of the area it spawns in.
+            if (!state.isSpawnRarityAllowed(position, rarity)) {
+                continue;
+            }
 
-                if (retrieved === 0) {
-                    isGood = true;
-                    break;
+            const retrieved = state.spatialHash.retrieve({
+                _AABB: {
+                    x1: position.x - config.tiers[rarity].size,
+                    y1: position.y - config.tiers[rarity].size,
+                    x2: position.x + config.tiers[rarity].size,
+                    y2: position.y + config.tiers[rarity].size
                 }
+            }).size;
+
+            if (retrieved === 0) {
+                isGood = true;
+                break;
             }
         } while (++k < 100);
 
         if (!isGood) {
-            position = state.mapBasedSpawn(ENTITY_TYPES.MOB);
+            // Last resort: fall back to a map spawn point and adopt that cell's own
+            // rarity, so the fallback cannot drop a mob into an area it does not fit.
+            const fallback = state.mapBasedSpawn(ENTITY_TYPES.MOB);
+
+            position = { x: fallback.x, y: fallback.y };
+
+            rarity = Number.isFinite(fallback.rarity)
+                ? Math.max(0, Math.min(tiers.length - 1, fallback.rarity))
+                : state.clampRarityToZone(position, rarity);
         }
 
         return {

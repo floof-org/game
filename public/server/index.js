@@ -197,8 +197,18 @@ setInterval(() => {
                 if (spawner && spawner.availableMobs.length) {
                     const spawn = spawner.availableMobs[spawner.availableMobs.length * Math.random() | 0]
                     cfg = mobConfigs[spawn[0]]
-                    if (spawn[1] !== true) {
-                        info.rarity = Math.min(spawn[1], spawner.maxRarity);
+                    // availableMobs holds either `true` (let the zone pick) or a list of
+                    // rarities this spawner may use.
+                    const pinned = Array.isArray(spawn[1])
+                        ? Math.max(...spawn[1].filter(Number.isFinite))
+                        : spawn[1];
+
+                    if (pinned !== true && Number.isFinite(pinned)) {
+                        const cap = Number.isFinite(spawner.maxRarity) ? spawner.maxRarity : tiers.length - 1;
+
+                        // A spawner pins which mob appears, not how far the rarity may
+                        // drift from the zone the tile sits in.
+                        info.rarity = state.clampRarityToZone(info.position, Math.max(0, Math.min(pinned, cap)));
                     }
                 }
             }
