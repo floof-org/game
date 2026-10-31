@@ -302,7 +302,7 @@ export const petalConfigs = [
     new PetalConfig("Air", 0, 0, 0)
         .setMulti(0, false)
         .setWearable(WEARABLES.AIR)
-        .setExtraSize(3)
+        .setExtraSize(1.25)
         .setDescription("Literally nothing at all, but it puffs you up."),
     new PetalConfig("Starfish", 22.5 * 1.5, 9, 11)
         .setSize(1.4)

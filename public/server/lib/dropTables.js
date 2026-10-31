@@ -59495,6 +59495,17 @@ export const DROP_TABLES = {
                             "amount": 1
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 12.8,
+                            "rarity": 0,
+                            "amount": 1
+                        }
+                    ]
                 }
             ],
             "1": [
@@ -59509,6 +59520,23 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 6.79,
+                            "rarity": 1,
+                            "amount": 1
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 42.6,
+                            "rarity": 0,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 6.79,
                             "rarity": 1,
                             "amount": 1
@@ -59534,6 +59562,29 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 4.01,
+                            "rarity": 2,
+                            "amount": 1
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 59.7,
+                            "rarity": 0,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 35.5,
+                            "rarity": 1,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 4.01,
                             "rarity": 2,
                             "amount": 1
@@ -59570,6 +59621,35 @@ export const DROP_TABLES = {
                             "amount": 1
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 0.5,
+                            "rarity": 0,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 64.4,
+                            "rarity": 1,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 33.2,
+                            "rarity": 2,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.74,
+                            "rarity": 3,
+                            "amount": 1
+                        }
+                    ]
                 }
             ],
             "4": [
@@ -59601,6 +59681,35 @@ export const DROP_TABLES = {
                             "amount": 1
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 6.51,
+                            "rarity": 1,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 82.9,
+                            "rarity": 2,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 9.61,
+                            "rarity": 3,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.9,
+                            "rarity": 4,
+                            "amount": 1
+                        }
+                    ]
                 }
             ],
             "5": [
@@ -59621,6 +59730,29 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 17.7,
+                            "rarity": 4,
+                            "amount": 1
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 9.22,
+                            "rarity": 2,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 73,
+                            "rarity": 3,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 17.7,
                             "rarity": 4,
                             "amount": 1
@@ -59651,6 +59783,29 @@ export const DROP_TABLES = {
                             "amount": 2
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 14.1,
+                            "rarity": 3,
+                            "amount": 2
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 82.3,
+                            "rarity": 4,
+                            "amount": 2
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 3.52,
+                            "rarity": 5,
+                            "amount": 2
+                        }
+                    ]
                 }
             ],
             "7": [
@@ -59671,6 +59826,29 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 1.25,
+                            "rarity": 6,
+                            "amount": 1
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 31.9,
+                            "rarity": 4,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 66.7,
+                            "rarity": 5,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 1.25,
                             "rarity": 6,
                             "amount": 1
@@ -59701,6 +59879,29 @@ export const DROP_TABLES = {
                             "amount": 2
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 12.36,
+                            "rarity": 4,
+                            "amount": 5
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 80.66,
+                            "rarity": 5,
+                            "amount": 5
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 6.98,
+                            "rarity": 6,
+                            "amount": 2
+                        }
+                    ]
                 }
             ],
             "9": [
@@ -59726,6 +59927,29 @@ export const DROP_TABLES = {
                             "amount": 1
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 38.2,
+                            "rarity": 5,
+                            "amount": 10
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 61.2,
+                            "rarity": 6,
+                            "amount": 5
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.52,
+                            "rarity": 7,
+                            "amount": 1
+                        }
+                    ]
                 }
             ],
             "10": [
@@ -59740,6 +59964,23 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 53.6,
+                            "rarity": 6,
+                            "amount": 40
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 46.3,
+                            "rarity": 6,
+                            "amount": 20
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 53.6,
                             "rarity": 6,
                             "amount": 40
@@ -59765,6 +60006,29 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 0.52,
+                            "rarity": 8,
+                            "amount": 1
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 38.2,
+                            "rarity": 6,
+                            "amount": 50
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 61.2,
+                            "rarity": 7,
+                            "amount": 5
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 0.52,
                             "rarity": 8,
                             "amount": 1
@@ -59801,6 +60065,35 @@ export const DROP_TABLES = {
                             "amount": 1
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 0.05,
+                            "rarity": 6,
+                            "amount": 50
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 53.6,
+                            "rarity": 7,
+                            "amount": 100
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 45.8,
+                            "rarity": 7,
+                            "amount": 900
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.41,
+                            "rarity": 8,
+                            "amount": 1
+                        }
+                    ]
                 }
             ],
             "13": [
@@ -59821,6 +60114,29 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 1.12,
+                            "rarity": 8,
+                            "amount": 60
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 18.6,
+                            "rarity": 7,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 80.1,
+                            "rarity": 8,
+                            "amount": 24
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 1.12,
                             "rarity": 8,
                             "amount": 60
@@ -59857,6 +60173,35 @@ export const DROP_TABLES = {
                             "amount": 1
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 6.6,
+                            "rarity": 7,
+                            "amount": 2000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 92.1,
+                            "rarity": 8,
+                            "amount": 86
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.29,
+                            "rarity": 9,
+                            "amount": 2
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.01,
+                            "rarity": 10,
+                            "amount": 1
+                        }
+                    ]
                 }
             ],
             "15": [
@@ -59888,6 +60233,35 @@ export const DROP_TABLES = {
                             "amount": 2
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 90.2,
+                            "rarity": 8,
+                            "amount": 278
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 7.89,
+                            "rarity": 9,
+                            "amount": 10
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.84,
+                            "rarity": 10,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.07,
+                            "rarity": 10,
+                            "amount": 2
+                        }
+                    ]
                 }
             ],
             "16": [
@@ -59914,6 +60288,35 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 1.2,
+                            "rarity": 10,
+                            "amount": 20
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 87.19,
+                            "rarity": 9,
+                            "amount": 600
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 7.89,
+                            "rarity": 9,
+                            "amount": 1200
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 3.72,
+                            "rarity": 10,
+                            "amount": 10
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 1.2,
                             "rarity": 10,
                             "amount": 20
@@ -59956,6 +60359,41 @@ export const DROP_TABLES = {
                             "amount": 31000
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 69.01,
+                            "rarity": 9,
+                            "amount": 5000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 21.86,
+                            "rarity": 9,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 7,
+                            "rarity": 10,
+                            "amount": 75
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 2.04,
+                            "rarity": 11,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.09,
+                            "rarity": 9,
+                            "amount": 31000
+                        }
+                    ]
                 }
             ],
             "18": [
@@ -59988,6 +60426,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 0.12,
+                            "rarity": 10,
+                            "amount": 12000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 64.31,
+                            "rarity": 10,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 24.89,
+                            "rarity": 11,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 8.72,
+                            "rarity": 10,
+                            "amount": 2600
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.96,
+                            "rarity": 11,
+                            "amount": 24
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 0.12,
                             "rarity": 10,
                             "amount": 12000
@@ -60036,6 +60509,47 @@ export const DROP_TABLES = {
                             "amount": 300
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 74.39,
+                            "rarity": 10,
+                            "amount": 4500
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 19.75,
+                            "rarity": 10,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 3.522,
+                            "rarity": 11,
+                            "amount": 48
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.462,
+                            "rarity": 11,
+                            "amount": 100
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.872,
+                            "rarity": 11,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.004,
+                            "rarity": 11,
+                            "amount": 300
+                        }
+                    ]
                 }
             ],
             "20": [
@@ -60079,6 +60593,47 @@ export const DROP_TABLES = {
                             "amount": 9100
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 78.39,
+                            "rarity": 11,
+                            "amount": 456
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 14.85,
+                            "rarity": 10,
+                            "amount": 250000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 3.985,
+                            "rarity": 12,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.866,
+                            "rarity": 12,
+                            "amount": 6
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.901,
+                            "rarity": 11,
+                            "amount": 4000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.008,
+                            "rarity": 11,
+                            "amount": 9100
+                        }
+                    ]
                 }
             ],
             "21": [
@@ -60110,6 +60665,35 @@ export const DROP_TABLES = {
                             "amount": 135
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 6.6,
+                            "rarity": 11,
+                            "amount": 9100
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 92.1,
+                            "rarity": 12,
+                            "amount": 51
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.29,
+                            "rarity": 11,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.01,
+                            "rarity": 12,
+                            "amount": 135
+                        }
+                    ]
                 }
             ],
             "22": [
@@ -60136,6 +60720,35 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 12
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 71.11,
+                            "rarity": 12,
+                            "amount": 1080
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 22.13,
+                            "rarity": 13,
+                            "amount": 5
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 6.75,
+                            "rarity": 13,
+                            "amount": 8
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 12
@@ -60178,6 +60791,41 @@ export const DROP_TABLES = {
                             "amount": 600
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 84.21,
+                            "rarity": 13,
+                            "amount": 25
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 12.16,
+                            "rarity": 12,
+                            "amount": 20000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 2.45,
+                            "rarity": 13,
+                            "amount": 100
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.16,
+                            "rarity": 12,
+                            "amount": 94000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.02,
+                            "rarity": 13,
+                            "amount": 600
+                        }
+                    ]
                 }
             ],
             "24": [
@@ -60210,6 +60858,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 0.04,
+                            "rarity": 13,
+                            "amount": 13000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 83.94,
+                            "rarity": 13,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 11.04,
+                            "rarity": 12,
+                            "amount": 450000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 3.97,
+                            "rarity": 14,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.01,
+                            "rarity": 11,
+                            "amount": 1000000000
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 0.04,
                             "rarity": 13,
                             "amount": 13000
@@ -60252,6 +60935,41 @@ export const DROP_TABLES = {
                             "amount": 487500
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 88.53,
+                            "rarity": 14,
+                            "amount": 50
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 8.65,
+                            "rarity": 13,
+                            "amount": 37500
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.94,
+                            "rarity": 14,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.85,
+                            "rarity": 12,
+                            "amount": 56250000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.03,
+                            "rarity": 13,
+                            "amount": 487500
+                        }
+                    ]
                 }
             ],
             "26": [
@@ -60284,6 +61002,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Bubble",
+                            "chance": 0.03,
+                            "rarity": 13,
+                            "amount": 4125000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 89.52,
+                            "rarity": 14,
+                            "amount": 800
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 8.64,
+                            "rarity": 14,
+                            "amount": 2600
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 1.23,
+                            "rarity": 15,
+                            "amount": 12
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.58,
+                            "rarity": 15,
+                            "amount": 24
+                        },
+                        {
+                            "petal": "Air",
                             "chance": 0.03,
                             "rarity": 13,
                             "amount": 4125000
