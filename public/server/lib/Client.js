@@ -1,6 +1,6 @@
 import state from "./state.js";
 import { Entity, Mob, Player } from "./Entity.js";
-import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, petalTierMultiplier } from "../../lib/protocol.js";
+import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, WEARABLES, RARITY_TABLE, petalTierMultiplier } from "../../lib/protocol.js";
 import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
 import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
@@ -65,8 +65,8 @@ function craftAttemptsToArray(data) {
 const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
     "/mobinfo", "/petalinfo", "/info", "/rarities", "/drops",
-    "/godmode", "/die", "/killmob", "/killall", "/resetmobs", "/mobcount", "/spawnmob",
-    "/give", "/addall", "/remove", "/refund", "/craft", "/pity", "/online", "/saveall", "/account",
+    "/die", "/killall",
+    "/give", "/addall", "/remove", "/refund", "/craft", "/pity", "/online", "/saveall",
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
     "/mute", "/kick", "/ban", "/unban", "/unmute", "/coords",
@@ -1489,164 +1489,6 @@ export default class Client {
                 }
             }
                 break;
-            case SERVER_BOUND.DEV_CHEAT: {
-                if (!this.verified) {
-                    this.kick("Not verified");
-                    return;
-                }
-
-                if (this.masterPermissions < 1 || !this.body || this.body.health.isDead) {
-                    return;
-                }
-
-                switch (reader.getUint8()) {
-                    case DEV_CHEAT_IDS.TELEPORT: {
-                        this.body.x += reader.getFloat32();
-                        this.body.y += reader.getFloat32();
-                    } break;
-                    case DEV_CHEAT_IDS.GODMODE: {
-                        this.body.setGodmode(!this.body._godmode);
-                        console.log(`[gm] ${this.username} godmode ${this.body._godmode ? "on" : "off"} via dev-cheat`);
-                    } break;
-                    case DEV_CHEAT_IDS.CHANGE_TEAM: {
-                        console.log(`[change-team] ${this.username} blocked CHANGE_TEAM`);
-                    } break;
-                    case DEV_CHEAT_IDS.SPAWN_MOB: {
-                        const promiseID = reader.getUint32();
-                        const index = reader.getUint8();
-                        const rarity = reader.getUint8();
-
-                        if (index < 0 || index >= petalConfigs.length) {
-                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                                promiseID: promiseID,
-                                ok: false,
-                                message: "Index out of range"
-                            });
-                        }
-
-                        if (rarity < 0 || rarity >= tiers.length) {
-                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                                promiseID: promiseID,
-                                ok: false,
-                                message: "Rarity out of range"
-                            });
-                        }
-
-                        const mob = new Mob(state.random());
-                        mob.define(mobConfigs[index], rarity);
-                        this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                            promiseID: promiseID,
-                            ok: true,
-                            mob: {
-                                id: mob.id,
-                                index: index,
-                                rarity: rarity,
-                                position: {
-                                    x: mob.x,
-                                    y: mob.y
-                                }
-                            }
-                        });
-                    } break;
-                    case DEV_CHEAT_IDS.SET_PETAL: {
-                        const promiseID = reader.getUint32();
-                        const clientID = reader.getUint32();
-                        const slotID = reader.getUint8();
-                        const index = reader.getUint8();
-                        const rarity = reader.getUint8();
-
-                        const client = state.clients.get(clientID);
-                        if (!client) {
-                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                                promiseID: promiseID,
-                                ok: false,
-                                message: "Client not found"
-                            });
-                        }
-
-                        if (slotID < 0 || slotID >= client.slots.length) {
-                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                                promiseID: promiseID,
-                                ok: false,
-                                message: "Slot not found"
-                            });
-                        }
-
-                        if (index < 0 || index >= petalConfigs.length) {
-                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                                promiseID: promiseID,
-                                ok: false,
-                                message: "Index out of range"
-                            });
-                        }
-
-                        if (rarity < 0 || rarity >= tiers.length) {
-                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                                promiseID: promiseID,
-                                ok: false,
-                                message: "Rarity out of range"
-                            });
-                        }
-
-                        client.slots[slotID] = { id: index, rarity };
-
-                        if (client.body) {
-                            client.body.setSlot(slotID, index, rarity);
-                        }
-
-                        this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                            promiseID: promiseID,
-                            ok: true,
-                            message: "Petal set"
-                        });
-                    } break;
-                    case DEV_CHEAT_IDS.SET_XP: {
-                        const promiseID = reader.getUint32();
-                        const clientID = reader.getUint32();
-                        const xp = reader.getUint32();
-
-                        const client = state.clients.get(clientID);
-                        if (!client) {
-                            return this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                                promiseID: promiseID,
-                                ok: false,
-                                message: "Client not found"
-                            });
-                        }
-
-                        client.addXP(xp - client.xp);
-                        this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                            promiseID: promiseID,
-                            ok: true,
-                            message: "XP set"
-                        });
-                    } break;
-                    case DEV_CHEAT_IDS.INFO_DUMP: {
-                        this.talk(CLIENT_BOUND.JSON_MESSAGE, {
-                            promiseID: reader.getUint32(),
-                            ok: true,
-                            entitiesSize: state.entities.size,
-                            clients: Array.from(state.clients.values()).map(client => ({
-                                id: client.id,
-                                username: client.username,
-                                verified: client.verified,
-                                masterPermissions: client.masterPermissions,
-                                team: client.team,
-                                level: client.level,
-                                xp: client.xp
-                            })),
-                            key: state.secretKey
-                        });
-                    } break;
-                    case DEV_CHEAT_IDS.TITLE: {
-                        const text = reader.getStringUTF8();
-                        const color = reader.getStringUTF8();
-                        const duration = reader.getFloat32();
-
-                        Client.broadcastTitle(text, color, duration);
-                    } break;
-                }
-            } break;
             case SERVER_BOUND.CHAT_MESSAGE: {
                 if (!this.verified) {
                     this.kick("Not verified");
@@ -1806,49 +1648,6 @@ export default class Client {
             return;
         }
 
-        // /account
-        if (commandCheck("/account")) {
-            (async () => {
-                if (!requireOwner()) return;
-
-                if (!this.userId) {
-                    this.systemMessage("Guests cannot use this command.", "#ff5555");
-                    return;
-                }
-
-                const arg = e.trim().split(/\s+/)[1]?.toLowerCase();
-                const current = this.accountProfile === "player" ? "player" : "owner";
-
-                if (!arg) {
-                    this.systemMessage(`Current account: ${current}. Next login: ${accounts.activeProfile(this.userId)}.`, "#00f2ff");
-                    this.systemMessage("Usage: /account owner|player - switches the account loaded on the next connection. Progress is not shared.", "#00f2ff");
-                    return;
-                }
-
-                if (arg !== "owner" && arg !== "player") {
-                    this.systemMessage("Usage: /account owner|player", "#ff5555");
-                    return;
-                }
-
-                // store the session that is ending before the selection changes
-                accounts.saveClient(this);
-
-                if (!accounts.setActiveProfile(this.userId, arg)) {
-                    this.systemMessage("Failed to switch account.", "#ff5555");
-                    return;
-                }
-
-                await accounts.persist();
-
-                if (arg === current) {
-                    this.systemMessage(`The ${arg} account is already loaded.`, "#00f2ff");
-                    return;
-                }
-
-                this.systemMessage(`Account switched to ${arg}. Reconnect to load it.`, "#55ff55");
-            })();
-            return;
-        }
 
         // info help
         if (commandCheck("/infocommands")) {
@@ -5171,145 +4970,6 @@ export default class Client {
             return;
         }
 
-        // /mobcount
-        if (commandCheck("/mobcount")) {
-            if (!requireAdmin()) return;
-
-            const actual = Array.from(state.entities.values()).filter(e =>
-                e.type === ENTITY_TYPES.MOB &&
-                !e.friendly &&
-                e.countsTowardsMobCount &&
-                !e.health?.isDead
-            ).length;
-
-            this.systemMessage(
-                `livingMobCount: ${state.livingMobCount} | Actual mobs: ${actual} | maxMobs: ${state.maxMobs} | Difference: ${state.livingMobCount - actual}`,
-                actual === state.livingMobCount ? "#55ff55" : "#ff5555"
-            );
-
-            return;
-        }
-
-        // /spawnmob
-        if (commandCheck("/spawnmob")) {
-            if (!requireAdmin()) return;
-
-            const args = e.substring(9).trim().split(/\s+/).filter(Boolean);
-
-            if (args.length < 4) {
-                this.systemMessage("Usage: /spawnmob [rarity] [mob] [x] [y] <amount>", "#ffaa00");
-                return;
-            }
-
-            const rawRarity = args.shift();
-
-            let rarityIndex = null;
-
-            if (!isNaN(rawRarity)) {
-                rarityIndex = parseInt(rawRarity, 10);
-            } else {
-                const lower = rawRarity.toLowerCase();
-
-                for (let i = 0; i < tiers.length; i++) {
-                    if (tiers[i].name.toLowerCase() === lower) {
-                        rarityIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            if (rarityIndex == null || rarityIndex < 0 || rarityIndex >= tiers.length) {
-                this.systemMessage("Invalid rarity.", "#ff5555");
-                return;
-            }
-
-            let amount = 1;
-            let x;
-            let y;
-
-            // "~ ~" spawns at the feet of whoever typed the command, so the coords
-            // are pulled out before the numeric branches below look at them
-            const tildes = args.filter(arg => arg === "~").length;
-
-            if (tildes >= 2) {
-                // strip every tilde, not just trailing ones, then take the amount
-                // from the end. Popping from the end alone would read the amount off
-                // the mob name side of "/spawnmob 5 beetle ~ ~ 10".
-                for (let i = args.length - 1; i >= 0; i--) {
-                    if (args[i] === "~") args.splice(i, 1);
-                }
-
-                if (args.length && !isNaN(args.at(-1))) amount = Math.max(1, parseInt(args.pop(), 10));
-
-                if (!this.body) {
-                    this.systemMessage("You need to be alive to use ~ ~.", "#ff5555");
-                    return;
-                }
-
-                x = this.body.x;
-                y = this.body.y;
-            } else if (args.length >= 4 && !isNaN(args.at(-1)) && !isNaN(args.at(-2)) && !isNaN(args.at(-3))) {
-                amount = Math.max(1, parseInt(args.pop(), 10));
-                y = Number(args.pop());
-                x = Number(args.pop());
-            } else if (args.length >= 3 && !isNaN(args.at(-1)) && !isNaN(args.at(-2))) {
-                y = Number(args.pop());
-                x = Number(args.pop());
-            } else {
-                this.systemMessage("Coordinates required. Usage: /spawnmob [rarity] [mob] [x] [y] <amount>, or ~ ~ for your position", "#ff5555");
-                return;
-            }
-
-            const mobName = args.join(" ");
-            const typeIndex = mobConfigs.findIndex(m => m?.name?.toLowerCase() === mobName.toLowerCase());
-
-            if (typeIndex === -1) {
-                this.systemMessage(`Mob "${mobName}" not found.`, "#ff5555");
-                return;
-            }
-
-            const config = mobConfigs[typeIndex];
-            let spawned = 0;
-
-            for (let i = 0; i < amount; i++) {
-                try {
-                    const mob = new Mob({ x, y });
-                    mob.define(config, rarityIndex);
-                    mob.x = x;
-                    mob.y = y;
-                    spawned++;
-                } catch (err) {
-                    console.error("[spawnmob]", mobName, rarityIndex, err);
-                }
-            }
-
-            this.systemMessage(
-                `Spawned ${spawned} ${tiers[rarityIndex].name} ${config.name}${spawned !== 1 ? "s" : ""}.`,
-                "#55ff55"
-            );
-
-            return;
-        }
-
-        // /godmode
-        if (commandCheck("/godmode")) {
-            if (!requireAdmin()) return;
-
-            if (!this.body) {
-                this.systemMessage("You need to be alive to use this command.", "#ff5555");
-                return;
-            }
-
-            this.body.setGodmode(!this.body._godmode);
-            console.log(`[gm] ${this.username} godmode ${this.body._godmode ? "on" : "off"} via chat`);
-            this.systemMessage(
-                `Godmode ${this.body._godmode ? "enabled" : "disabled"}.`,
-                "#55ff55"
-            );
-
-            return;
-        }
-
         // /die
         if (commandCheck("/die")) {
             if (this.body) {
@@ -5321,47 +4981,6 @@ export default class Client {
             return;
         }
 
-        // /killmob
-        if (commandCheck("/killmob")) {
-            if (!requireAdmin()) return;
-
-            const raw = e.substring(8).trim();
-
-            if (!raw) {
-                this.systemMessage("Usage: /killmob <mobID>", "#ffaa00");
-                return;
-            }
-
-            const mobID = parseInt(raw);
-
-            if (isNaN(mobID)) {
-                this.systemMessage("Invalid mob ID.", "#ff5555");
-                return;
-            }
-
-            let target = null;
-
-            for (const ent of state.entities.values()) {
-                if (ent.type === ENTITY_TYPES.MOB && ent.id === mobID) {
-                    target = ent;
-                    break;
-                }
-            }
-
-            if (!target) {
-                this.systemMessage(`Mob with ID ${mobID} not found.`, "#ff5555");
-                return;
-            }
-
-            if (target.health && !target.health.isDead) {
-                target.health.set(0);
-                this.systemMessage(`Mob ${mobID} killed successfully.`, "#55ff55");
-            } else {
-                this.systemMessage(`Mob ${mobID} is already dead.`, "#ffaa00");
-            }
-
-            return;
-        }
 
         // /killall
         if (commandCheck("/killall")) {
@@ -5429,40 +5048,6 @@ export default class Client {
             return;
         }
 
-        // /resetmobs
-        if (commandCheck("/resetmobs")) {
-            if (!requireAdmin()) return;
-
-            const mobs = [];
-
-            for (const ent of state.entities.values()) {
-                if (ent.type === ENTITY_TYPES.MOB && ent.health && !ent.health.isDead) {
-                    mobs.push(ent);
-                }
-            }
-
-            const total = mobs.length;
-
-            this.systemMessage(`Resetting ${total} mobs in batches...`, "#ffaa00");
-
-            let index = 0;
-
-            const interval = setInterval(() => {
-                let killed = 0;
-
-                while (index < mobs.length && killed < 50) {
-                    mobs[index++].health?.set?.(0);
-                    killed++;
-                }
-
-                if (index >= mobs.length) {
-                    clearInterval(interval);
-                    this.systemMessage(`Finished. Removed ${total} mobs.`, "#55ff55");
-                }
-            }, 50);
-
-            return;
-        }
     }
 
     chatMessage(username, message, color) {
