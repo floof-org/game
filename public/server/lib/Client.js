@@ -1118,6 +1118,22 @@ export default class Client {
         }
     }
 
+    grantAdminPermissions() {
+        const admins = ((typeof Bun !== "undefined" && Bun.env.ADMIN_DISCORD_IDS) || "")
+            .split(",")
+            .map(id => id.trim())
+            .filter(Boolean);
+
+        if (admins.includes(String(this.userId ?? ""))) {
+            this.masterPermissions = Math.max(this.masterPermissions, 1);
+
+            this.nameColor = "#a2d1ff";
+            if (this.body) this.body.nameColor = "#a2d1ff";
+
+            console.log(`Client ${this.id} (${this.username}) granted admin permissions.`);
+        }
+    }
+
     get healthAdjustement() {
         return 40 + 5 * Math.pow(this.level, 1.5);
     }
@@ -1219,6 +1235,7 @@ export default class Client {
 
                 // restores the save behind this Discord id, must run after the inventory tiers are initialized
                 accounts.attach(this);
+                this.grantAdminPermissions();
                 this.grantOwnerPermissions();
 
                 const onlineCount = state.clients.size;
@@ -1741,8 +1758,8 @@ export default class Client {
 
     handleCommand(e) {
         const commandCheck = cmd => e.toLowerCase().startsWith(cmd);
-        const requireAdmin = () => {
-            if (this.masterPermissions < 1) {
+        const requirePermission = (level) => {
+            if (this.masterPermissions < level) {
                 this.systemMessage("You are not allowed to run this command.", "#ff5555");
                 return false;
             }
@@ -1750,14 +1767,8 @@ export default class Client {
             return true;
         };
 
-        const requireOwner = () => {
-            if (this.masterPermissions < 2) {
-                this.systemMessage("You are not allowed to run this command.", "#ff5555");
-                return false;
-            }
-
-            return true;
-        };
+        const requireAdmin = () => requirePermission(1);
+        const requireOwner = () => requirePermission(2);
 
         // help
         if (commandCheck("/help") || commandCheck("/cmd") || commandCheck("/commands")) {
