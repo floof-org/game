@@ -1011,10 +1011,8 @@ export default class Client {
                                 this.slots[moveeIndex] = this.slots[moverIndex];
                                 this.slots[moverIndex] = temp;
 
-                                if (this.slots[moveeIndex]) {
-                                    this.body.setSlot(moveeIndex, this.slots[moveeIndex].id, this.slots[moveeIndex].rarity);
-                                }
-                                this.body.setSlot(moverIndex, this.slots[moverIndex].id, this.slots[moverIndex].rarity);
+                                this.syncBodySlot(moveeIndex);
+                                this.syncBodySlot(moverIndex);
                                 break;
                             case 1: // Secondary slots
                                 if (moverIndex < 0 || moverIndex >= this.secondarySlots.length) {
@@ -1025,9 +1023,7 @@ export default class Client {
                                 this.slots[moveeIndex] = this.secondarySlots[moverIndex];
                                 this.secondarySlots[moverIndex] = temp2;
 
-                                if (this.slots[moveeIndex]) {
-                                    this.body.setSlot(moveeIndex, this.slots[moveeIndex].id, this.slots[moveeIndex].rarity);
-                                }
+                                this.syncBodySlot(moveeIndex);
                                 break;
                         }
                         break;
@@ -1046,10 +1042,10 @@ export default class Client {
                                 this.slots[moverIndex] = this.secondarySlots[moveeIndex];
                                 this.secondarySlots[moveeIndex] = temp;
 
-                                this.body.setSlot(moverIndex, this.slots[moverIndex].id, this.slots[moverIndex].rarity);
+                                this.syncBodySlot(moverIndex);
                                 break;
                             case 1: // Secondary slots
-                                if (moverIndex < 0 || moverIndex >= this.secondarySlots.length || this.secondarySlots[moverIndex] === null) {
+                                if (moverIndex < 0 || moverIndex >= this.secondarySlots.length) {
                                     return;
                                 }
 
@@ -1091,7 +1087,18 @@ export default class Client {
 
                 switch (moverType) {
                     case 0: // Slots
-                        if (!this.inventory[tiers[moveeRarity].name][moveeIndex] || this.slots[moverIndex].id !== moverPetalIndex || this.slots[moverIndex].rarity !== moverRarity) return;
+                        if (moverIndex >= this.slots.length || !tiers[moveeRarity] || !this.inventory[tiers[moveeRarity].name][moveeIndex]) return;
+                        if (!this.slots[moverIndex]) {
+                            if (moverPetalIndex !== 255) return;
+                            this.slots[moverIndex] = {
+                                id: moveeIndex,
+                                rarity: moveeRarity
+                            };
+                            this.inventory[tiers[moveeRarity].name][moveeIndex]--;
+                            this.syncBodySlot(moverIndex);
+                            break;
+                        }
+                        if (this.slots[moverIndex].id !== moverPetalIndex || this.slots[moverIndex].rarity !== moverRarity) return;
                         if (!this.inventory[inventoryRarity][moverPetalIndex]) {
                             this.inventory[inventoryRarity][moverPetalIndex] = 0;
                         }
@@ -1104,7 +1111,8 @@ export default class Client {
                         this.inventory[tiers[moveeRarity].name][moveeIndex]--;
                         break;
                     case 1: // Secondary slots
-                        if (!this.inventory[tiers[moveeRarity].name][moveeIndex] || (moverPetalIndex !== 255 && this.secondarySlots[moverIndex]?.id !== moverPetalIndex || this.secondarySlots[moverIndex]?.rarity !== moverRarity)) return;
+                        if (moverIndex >= this.secondarySlots.length || !tiers[moveeRarity] || !this.inventory[tiers[moveeRarity].name][moveeIndex]) return;
+                        if (moverPetalIndex === 255 ? this.secondarySlots[moverIndex] : (this.secondarySlots[moverIndex]?.id !== moverPetalIndex || this.secondarySlots[moverIndex]?.rarity !== moverRarity)) return;
                         if (moverPetalIndex === 255) {
                             this.secondarySlots[moverIndex] = {
                                 id: moveeIndex,
@@ -1124,6 +1132,7 @@ export default class Client {
                         this.inventory[tiers[moveeRarity].name][moveeIndex]--;
                         break;
                     case 2: // Secondary slot into inventory
+                        if (!this.secondarySlots[moverIndex]) return;
                         moverPetalIndex = this.secondarySlots[moverIndex]?.id;
                         inventoryRarity = tiers[this.secondarySlots[moverIndex]?.rarity]?.name
 
@@ -1133,6 +1142,20 @@ export default class Client {
                         this.inventory[inventoryRarity][moverPetalIndex] += 1;
 
                         this.secondarySlots[moverIndex] = null;
+                        break;
+                    case 3:
+                        if (moverIndex >= this.slots.length || !this.slots[moverIndex]) return;
+                        moverPetalIndex = this.slots[moverIndex].id;
+                        inventoryRarity = tiers[this.slots[moverIndex].rarity]?.name;
+                        if (!inventoryRarity) return;
+
+                        if (!this.inventory[inventoryRarity][moverPetalIndex]) {
+                            this.inventory[inventoryRarity][moverPetalIndex] = 0;
+                        }
+                        this.inventory[inventoryRarity][moverPetalIndex] += 1;
+
+                        this.slots[moverIndex] = null;
+                        this.syncBodySlot(moverIndex);
                         break;
                 }
             }
@@ -1456,6 +1479,20 @@ export default class Client {
 
     terminate() {
         state.router.postMessage(new Uint8Array([ROUTER_PACKET_TYPES.CLOSE_CLIENT, this.id]));
+    }
+
+    syncBodySlot(i) {
+        if (!this.body) {
+            return;
+        }
+
+        const slot = this.slots[i];
+
+        if (slot) {
+            this.body.setSlot(i, slot.id, slot.rarity);
+        } else {
+            this.body.clearSlot(i);
+        }
     }
 
     kick(reason = "Unknown Reason") {

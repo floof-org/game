@@ -4,6 +4,13 @@ import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, randomPoss
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
+const EMPTY_PETAL_CONFIG = new PetalConfig("Empty", 0, 0, 0);
+PetalConfig.idAccumulator--;
+EMPTY_PETAL_CONFIG.id = 255;
+EMPTY_PETAL_CONFIG.tiers.forEach(tier => {
+    tier.count = 0;
+});
+
 export class HealthComponent {
     constructor(x) {
         this.health = x;
@@ -1461,6 +1468,10 @@ export class Player extends Entity {
                     const slot = new PetalSlot(this, i);
                     slot.define(petalConfigs[0], 0);
                     this.petalSlots.push(slot);
+                } else if (this.client) {
+                    const slot = new PetalSlot(this, i);
+                    slot.define(EMPTY_PETAL_CONFIG, 0);
+                    this.petalSlots.push(slot);
                 }
             }
         } else {
@@ -1475,6 +1486,13 @@ export class Player extends Entity {
         if (this.petalSlots[slotIndex]) {
             this.petalSlots[slotIndex].destroy();
             this.petalSlots[slotIndex].define(petalConfigs[petalIndex], rarity);
+        }
+    }
+
+    clearSlot(slotIndex) {
+        if (this.petalSlots[slotIndex]) {
+            this.petalSlots[slotIndex].destroy();
+            this.petalSlots[slotIndex].define(EMPTY_PETAL_CONFIG, 0);
         }
     }
 
@@ -1565,7 +1583,7 @@ export class Player extends Entity {
             const playerKillers = [];
             const mobKillers = {};
 
-            const xpToGift = this.petalSlots.reduce((acc, slot) => acc + Math.pow(slot.rarity + 1, 3), 0);
+            const xpToGift = this.petalSlots.reduce((acc, slot) => slot.config === EMPTY_PETAL_CONFIG ? acc : acc + Math.pow(slot.rarity + 1, 3), 0);
             this.client.addXP(-Math.random() * .1 * this.client.xp);
 
             topDamagers.forEach(damager => {

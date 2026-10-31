@@ -9,6 +9,7 @@ import {
     dragConfig,
     DRAG_TYPE_MAINDOCKER,
     DRAG_TYPE_SECONDARYDOCKER,
+    settleOnSlot,
 } from "./dragAndDrop.js";
 
 const SLOT_SIZE = 45;
@@ -550,12 +551,20 @@ function sendEquip(drag, drop) {
     net.state.socket.talk(SERVER_BOUND.INVENTORY_CHANGE_LOADOUT, { drag, drop });
 }
 
-function pointInIcon(icon, mX, mY) {
-    return !!icon && icon.x < mX && icon.x + icon.size > mX && icon.y < mY && icon.y + icon.size > mY;
+function pointInRect(rect, mX, mY) {
+    return !!rect && mX >= rect.x && mX <= rect.x + rect.size && mY >= rect.y && mY <= rect.y + rect.size;
 }
 
 function mainDrop(slot, i) {
-    return { type: DRAG_TYPE_MAINDOCKER, index: i, rarity: slot.rarity, petalIndex: slot.index };
+    // Empty slots have index -1. Writer.setUint8 silently skips values outside 0-255,
+    // which would shorten the packet and make the server reject it, so send 255 instead.
+    const empty = slot.index === -1 || slot.index === undefined;
+    return {
+        type: DRAG_TYPE_MAINDOCKER,
+        index: i,
+        rarity: empty ? 255 : slot.rarity,
+        petalIndex: empty ? 255 : slot.index,
+    };
 }
 
 function secondaryDrop(slot, i) {
@@ -581,16 +590,18 @@ function processInventoryDrop() {
 
     for (let i = 0; i < net.state.slots.length; i++) {
         const slot = net.state.slots[i];
-        if (pointInIcon(slot.icon, mX, mY)) {
+        if (pointInRect(slot.rect, mX, mY)) {
             sendEquip(drag, mainDrop(slot, i));
+            settleOnSlot(inventoryDragConfig, DRAG_TYPE_MAINDOCKER, i);
             return true;
         }
     }
 
     for (let i = 0; i < net.state.secondarySlots.length; i++) {
         const slot = net.state.secondarySlots[i];
-        if (pointInIcon(slot.icon, mX, mY)) {
+        if (pointInRect(slot.rect, mX, mY)) {
             sendEquip(drag, secondaryDrop(slot, i));
+            settleOnSlot(inventoryDragConfig, DRAG_TYPE_SECONDARYDOCKER, i);
             return true;
         }
     }
