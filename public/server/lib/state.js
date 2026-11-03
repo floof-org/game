@@ -333,6 +333,48 @@ const state = {
      * still spawns in the selected player's view and rejects walls/occupied
      * space using the boss's much larger body.
      */
+    /**
+     * Spawns a boss in the zone whose rarity matches the boss's rarity exactly.
+     * Returns null when the map has no matching zone (the boss cannot spawn
+     * off-zone). When the room has no zoned map at all, falls back to the old
+     * spawn helper.
+     */
+    spawnBossInZone: (config, rarity) => {
+        if (!state.mapData?.cells?.length) {
+            return state.spawnBossNearPlayer(config, rarity);
+        }
+
+        const bossSize = (config.tiers?.[rarity]?.size ?? config.size ?? 20) * BOSS_SIZE_MULTIPLIER;
+        const matching = (state.mapSpawns?.[ENTITY_TYPES.MOB] ?? [])
+            .filter(spawn => spawn?.rarity === rarity);
+
+        if (matching.length === 0) {
+            return null;
+        }
+
+        for (let k = 0; k < 100; k++) {
+            const cell = matching[Math.floor(Math.random() * matching.length)];
+            const position = { x: cell.x * state.width, y: cell.y * state.height };
+
+            if (!state.isValidMapSpawn(position.x, position.y)) continue;
+
+            const occupied = state.spatialHash.retrieve({
+                _AABB: {
+                    x1: position.x - bossSize,
+                    y1: position.y - bossSize,
+                    x2: position.x + bossSize,
+                    y2: position.y + bossSize
+                }
+            });
+
+            if (occupied.size === 0) {
+                return position;
+            }
+        }
+
+        return null;
+    },
+
     spawnBossNearPlayer: (config, rarity) => {
         const bossSize = (config.tiers?.[rarity]?.size ?? config.size ?? 20) * BOSS_SIZE_MULTIPLIER;
         const bodies = [];

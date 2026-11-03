@@ -326,7 +326,12 @@ function spawnBossEvent() {
     }
 
     const rarity = Math.floor(Math.random() * tiers.length);
-    const position = state.spawnBossNearPlayer(config, rarity);
+    const position = state.spawnBossInZone(config, rarity);
+
+    if (!position) {
+        console.warn(`[Boss] No ${tiers[rarity].name} (r${rarity}) zone available; boss skipped.`);
+        return;
+    }
     const boss = createBoss(position, config, rarity);
 
     console.log(`[Boss] Spawned ${tiers[rarity].name} ${name} (id ${boss.id}) at ${position.x.toFixed(0)}, ${position.y.toFixed(0)}`);
