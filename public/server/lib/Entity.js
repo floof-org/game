@@ -2520,6 +2520,17 @@ export class Player extends Entity {
         this.velocity.x += Math.cos(this.moveAngle) * this.moveStrength;
         this.velocity.y += Math.sin(this.moveAngle) * this.moveStrength;
 
+        // Players who are pushed or teleported outside the map die immediately
+        // instead of being clamped back inside. Checked before bindToRoom so the
+        // offending position is still visible.
+        const outOfBounds = state.isRadial
+            ? this.x * this.x + this.y * this.y > (state.width / 2) * (state.width / 2)
+            : Math.abs(this.x) > state.width / 2 || Math.abs(this.y) > state.height / 2;
+
+        if (outOfBounds && !this.health.isDead) {
+            this.health.set(0);
+        }
+
         this.bindToRoom();
         this.facing = this.moveAngle;
 
