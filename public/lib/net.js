@@ -1397,9 +1397,9 @@ export class ClientSocket extends WebSocket {
                         mob.realY = reader.getFloat32();
                         mob.realSize = reader.getFloat32();
                         mob.realFacing = reader.getFloat32();
-                        mob.isBoss = reader.getUint8() === 1;
 
                         const eFlags = reader.getUint8();
+                        mob.isBoss = (eFlags & ENTITY_MODIFIER_FLAGS.BOSS) === ENTITY_MODIFIER_FLAGS.BOSS;
                         mob.hit = (eFlags & ENTITY_MODIFIER_FLAGS.HIT) === ENTITY_MODIFIER_FLAGS.HIT;
                         mob.attack = (eFlags & ENTITY_MODIFIER_FLAGS.ATTACK) === ENTITY_MODIFIER_FLAGS.ATTACK;
                         mob.poisoned = (eFlags & ENTITY_MODIFIER_FLAGS.POISON) === ENTITY_MODIFIER_FLAGS.POISON;
@@ -1455,6 +1455,7 @@ export class ClientSocket extends WebSocket {
                         mob.attack = (eFlags & ENTITY_MODIFIER_FLAGS.ATTACK) === ENTITY_MODIFIER_FLAGS.ATTACK;
                         mob.poisoned = (eFlags & ENTITY_MODIFIER_FLAGS.POISON) === ENTITY_MODIFIER_FLAGS.POISON;
                         mob.friendly = (eFlags & ENTITY_MODIFIER_FLAGS.FRIEND) === ENTITY_MODIFIER_FLAGS.FRIEND;
+                        mob.isBoss = (eFlags & ENTITY_MODIFIER_FLAGS.BOSS) === ENTITY_MODIFIER_FLAGS.BOSS;
                     }
 
                     if (flags & ENTITY_FLAGS.HEALTH) {

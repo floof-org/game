@@ -1901,7 +1901,8 @@ export const ENTITY_MODIFIER_FLAGS = {
     DEFEND: 0x08,
     TDM: 0x10,
     FRIEND: 0x20,
-    WEARABLES: 0x40
+    WEARABLES: 0x40,
+    BOSS: 0x80
 };
 
 export const WEARABLES = {

@@ -651,6 +651,10 @@ export class MobClientCache {
             flags |= ENTITY_MODIFIER_FLAGS.FRIEND;
         }
 
+        if (real.isBoss) {
+            flags |= ENTITY_MODIFIER_FLAGS.BOSS;
+        }
+
         if (flags !== this.flags) {
             this.flags = flags;
             this.updateFlags = true;
@@ -659,11 +663,6 @@ export class MobClientCache {
         if (this.healthRatio !== real.health.ratio) {
             this.healthRatio = real.health.ratio;
             this.updateHealth = true;
-        }
-
-        if (!!real.isBoss !== this.isBoss) {
-            this.isBoss = !!real.isBoss;
-            this.isNew = true;
         }
     }
 
@@ -688,7 +687,6 @@ export class MobClientCache {
             writer.setFloat32(this.y);
             writer.setFloat32(this.size);
             writer.setFloat32(this.facing);
-            writer.setUint8(this.isBoss ? 1 : 0);
             writer.setUint8(this.flags);
             writer.setUint8(this.healthRatio * 255 + .5 | 0);
             return;
