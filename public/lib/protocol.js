@@ -1851,7 +1851,7 @@ export const CLIENT_BOUND = {
     CUSTOM_GRADIENTS: 111,
     TERRAIN_SCORES: 113,
     DROPS_AMOUNT_UPDATE: 250,
-    DROP_TABLES: 251,
+    DROP_TABLES: 253,
     MOBS_KILLED: 252,
 
     // Section: Options that seem to be unused by server.
