@@ -170,6 +170,8 @@ export function createBoss(position, config, rarity = 0) {
 // capped per Emerald petal entity and expires with the clone. Migrated from
 // WhiteHole.js.
 function spawnEmeraldClone(originalMob, forcedRarity) {
+    // Bosses are immune to Emerald duplication.
+    if (originalMob?.isBoss) return null;
     const x = originalMob.x + (Math.random() - 0.5) * 20;
     const y = originalMob.y + (Math.random() - 0.5) * 20;
     const mob = new Mob({ x, y });
@@ -261,6 +263,8 @@ const POMEGRANATE_PROJECTILE_INDEX = petalIDOf("projectile.pomegranate");
 function spawnRubySummon(deadMob, client, rarity) {
     if (!client || !client.body || client.body.health?.isDead) return;
     if (BLOCKED_RUBY_SUMMONS.has(deadMob.config?.name)) return;
+    // Bosses are immune to Ruby conversion: killing a boss never produces a Ruby summon copy.
+    if (deadMob?.isBoss) return;
 
     const rubySlot = client.slots?.find(slot => slot?.id === RUBY_INDEX);
     const lifetime = RUBY_INDEX >= 0
@@ -1601,7 +1605,7 @@ export class Entity {
                             const emerald = emeraldSource.emerald;
                             const now = Date.now();
                             const source = emeraldSource === this ? other : this;
-                            const valid = source && source.type === ENTITY_TYPES.MOB && !source.isEmeraldClone && !source.isEmeraldCloned && !this.isEmeraldClone && !other.isEmeraldClone && !this.isEmeraldCloned && !other.isEmeraldCloned && source.config;
+                            const valid = source && source.type === ENTITY_TYPES.MOB && !source.isEmeraldClone && !source.isEmeraldCloned && !this.isEmeraldClone && !other.isEmeraldClone && !this.isEmeraldCloned && !other.isEmeraldCloned && !source.isBoss && source.config;
                             if (valid) {
                                 const cooldownReady = (now - emerald.lastProc) >= emerald.cooldown;
                                 const underLimit = emerald.activeClones < emerald.maxClones;
@@ -1684,7 +1688,7 @@ export class Entity {
                         else if (hasUranium(other)) uraniumSource = other;
                         if (uraniumSource?.uranium || uraniumSource?.uraniumTiers) {
                             const target = uraniumSource === this ? other : this;
-                            if (target.type === ENTITY_TYPES.MOB && uraniumSource.config) {
+                            if (target.type === ENTITY_TYPES.MOB && !target.isBoss && uraniumSource.config) {
                                 const now = Date.now();
                                 let duration = 0;
                                 let cooldown = 2500;
@@ -3968,7 +3972,7 @@ export class Mob extends Entity {
             // Ruby on-kill summon migrated from WhiteHole.js.
             const rubyIndex = RUBY_INDEX;
             const rubySlot = rubyIndex >= 0 ? client.slots?.find(slot => slot?.id === rubyIndex) : null;
-            if (rubySlot) {
+            if (rubySlot && !this.isBoss) {
                 const summonRarity = getRubySummonRarity(rubySlot.rarity, this.rarity, petalConfigs[rubyIndex]);
                 if (summonRarity !== null && !client.body?.health?.isDead) {
                     if (client.rubySummonCount == null) client.rubySummonCount = 0;
