@@ -2178,9 +2178,9 @@ globalThis.PETAL_RARITY_SIZES = [
 // multiplier instead of porting those old absolute numbers.
 export const BOSS_STAT_MULTIPLIER = 4;
 export const BOSS_DROP_MULTIPLIER = 5;
-// Boss size is 1.5x the normal mob's size. Health/damage stay at the flat
-// stat multiplier; only the body is scaled separately.
-export const BOSS_SIZE_MULTIPLIER = 1.5;
+// Boss size is the normal mob's size plus 0.75 of it (1.75x).
+// Health/damage stay at the flat stat multiplier; only the body is scaled separately.
+export const BOSS_SIZE_MULTIPLIER = 1.75;
 
 export const BOSS_NAMES = [
     "Beetle",
