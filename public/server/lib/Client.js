@@ -5837,7 +5837,7 @@ export default class Client {
 
         state.router.postMessage(worldPacket);
 
-        if (state.gamemode === GAMEMODES.MAZE) {
+        if (this.camera.dropAmounts.size > 0) {
             const dropAmountsWriter = new Writer(true);
             dropAmountsWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
             dropAmountsWriter.setUint16(this.id);
