@@ -66546,3 +66546,5 @@ export const DROP_TABLES = {
         }
     }
 };
+
+globalThis.DROP_TABLES = DROP_TABLES;

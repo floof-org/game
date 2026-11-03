@@ -1851,6 +1851,7 @@ export const CLIENT_BOUND = {
     CUSTOM_GRADIENTS: 111,
     TERRAIN_SCORES: 113,
     DROPS_AMOUNT_UPDATE: 250,
+    DROP_TABLES: 251,
 
     // Section: Options that seem to be unused by server.
     // This info is sent via `CLIENT_BOUND.WORLD_UPDATE` instead.

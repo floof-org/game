@@ -17,6 +17,15 @@ const ignoreFiles = [
     "moddingAPI/highlight.min.js"
 ];
 
+const dropTablesPath = path.resolve(
+    path.dirname(URL.fileURLToPath(import.meta.url)),
+    "./public/server/lib/dropTables.js"
+);
+
+const workerEntry = fs.existsSync(dropTablesPath)
+    ? ["./public/server/lib/dropTables.js", "./public/server/index.js"]
+    : "./public/server/index.js";
+
 const config = {
     devtool: dev ? "eval-cheap-module-source-map" : false,
     optimization: {
@@ -33,7 +42,7 @@ const config = {
     },
     entry: {
         bundle: "./public/index.js",  // Main bundle entry point
-        worker: "./public/server/index.js",  // Worker entry point
+        worker: workerEntry,  // Worker entry point
         mapEditor: "./public/mapGenerator/index.js"  // Map editor entry point
     },
     output: {
@@ -42,7 +51,7 @@ const config = {
     },
     plugins: [
         new webpack.DefinePlugin({ 
-            "process.env.ROUTING_SERVER": JSON.stringify(process.env.ROUTING_SERVER ?? "https://routing.supercord.dev"),
+            "process.env.ROUTING_SERVER": JSON.stringify(process.env.ROUTING_SERVER),
             "process.env.AUTH_SERVER": JSON.stringify(process.env.AUTH_SERVER),
             "process.env.DISCORD_OAUTH2_REDIRECT_URL": JSON.stringify(process.env.DISCORD_OAUTH2_REDIRECT_URL),            
          }),
