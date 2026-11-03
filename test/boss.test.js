@@ -339,3 +339,56 @@ describe("boss mass", () => {
         expect(boss.pushability).toBeCloseTo(normal.pushability / 3, 8);
     });
 });
+
+describe("boss resin and pincer immunity", () => {
+    function place(entity) {
+        entity._AABB = state.spatialHash.getAABB(entity);
+        state.spatialHash.insert(entity);
+    }
+
+    function makeEnemy() {
+        const enemy = new Player({ x: 0, y: 0 });
+        enemy.team = 0;
+        return enemy;
+    }
+
+    function makeProjectile(name, parent) {
+        const petal = new Petal(parent, -1, -1);
+        petal.define(petalConfigs.find(p => p.name === name), 5);
+        petal.launched = true;
+        petal.x = 10;
+        petal.y = 0;
+        return petal;
+    }
+
+    test("enemy Resin does not slow boss and cannot pacify it", () => {
+        Math.random = () => 0;
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 5);
+        boss.spawnInvincibility = false;
+        const enemy = makeEnemy();
+        const resin = makeProjectile("Resin.projectile", enemy);
+
+        place(boss);
+        place(resin);
+        resin.collide();
+
+        expect(boss.speedDebuff.timer).toBe(0);
+        expect(boss.speedDebuff.multiplier).toBe(1);
+        expect(boss.pacifiedUntil).toBeFalsy();
+    });
+
+    test("enemy Pincer does not slow boss, but its poison still applies", () => {
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 5);
+        boss.spawnInvincibility = false;
+        const enemy = makeEnemy();
+        const pincer = makeProjectile("Pincer", enemy);
+
+        place(boss);
+        place(pincer);
+        pincer.collide();
+
+        expect(boss.speedDebuff.timer).toBe(0);
+        expect(boss.speedDebuff.multiplier).toBe(1);
+        expect(boss.poison.timer).toBeGreaterThan(0);
+    });
+});

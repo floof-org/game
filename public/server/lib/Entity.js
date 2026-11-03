@@ -257,6 +257,10 @@ const RUBY_INDEX = petalConfigs.findIndex(p => p?.name === "Ruby");
 const CLOVER_INDEX = petalConfigs.findIndex(p => p?.name === "Clover");
 const POMEGRANATE_PROJECTILE_INDEX = petalIDOf("projectile.pomegranate");
 
+// Boss is immune to Resin (slow + pacify) and Pincer (poison + slow).
+const RESIN_PINCER_SOURCES = new Set(["Resin", "Resin.projectile", "Pincer"]);
+const isResinOrPincerSource = ent => RESIN_PINCER_SOURCES.has(ent?.config?.name);
+
 // Spawns a friendly copy of the dead mob for the killer. At most 20 live Ruby
 // summons per client; each expires after its Ruby tier lifetime. Migrated from
 // WhiteHole.js.
@@ -1332,7 +1336,7 @@ export class Entity {
             // Resin pacify migrated from WhiteHole.js: a pacifying projectile
             // has a small chance per collision to calm a mob for 5 minutes.
             const tryPacify = (mob, source) => {
-                if (mob?.type !== ENTITY_TYPES.MOB || mob.health?.isDead || !source?.pacify) return;
+                if (mob?.type !== ENTITY_TYPES.MOB || mob.health?.isDead || !source?.pacify || mob.isBoss) return;
                 const now = Date.now();
                 if (mob.pacifiedUntil && mob.pacifiedUntil > now) return;
                 if (Math.random() < source.pacify.chance) {
@@ -1821,12 +1825,12 @@ export class Entity {
                     }
                 }
 
-                if (this.speedDebuff.toApply.timer > 0) {
+                if (this.speedDebuff.toApply.timer > 0 && !(other.isBoss && isResinOrPincerSource(this))) {
                     other.speedDebuff.multiplier = this.speedDebuff.toApply.multiplier;
                     other.speedDebuff.timer = this.speedDebuff.toApply.timer;
                 }
 
-                if (other.speedDebuff.toApply.timer > 0) {
+                if (other.speedDebuff.toApply.timer > 0 && !(this.isBoss && isResinOrPincerSource(other))) {
                     this.speedDebuff.multiplier = other.speedDebuff.toApply.multiplier;
                     this.speedDebuff.timer = other.speedDebuff.toApply.timer;
                 }
