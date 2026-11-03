@@ -576,6 +576,7 @@ export class MobClientCache {
     id = 0;
     index = 0;
     rarity = 0;
+    isBoss = false;
     isNew = true;
 
     x = 0;
@@ -659,6 +660,11 @@ export class MobClientCache {
             this.healthRatio = real.health.ratio;
             this.updateHealth = true;
         }
+
+        if (!!real.isBoss !== this.isBoss) {
+            this.isBoss = !!real.isBoss;
+            this.isNew = true;
+        }
     }
 
     /** @param {Writer} writer */
@@ -682,6 +688,7 @@ export class MobClientCache {
             writer.setFloat32(this.y);
             writer.setFloat32(this.size);
             writer.setFloat32(this.facing);
+            writer.setUint8(this.isBoss ? 1 : 0);
             writer.setUint8(this.flags);
             writer.setUint8(this.healthRatio * 255 + .5 | 0);
             return;
@@ -834,6 +841,7 @@ export class Camera {
                         cache.id = entity.id;
                         cache.index = entity.index;
                         cache.rarity = entity.rarity;;
+                        cache.isBoss = entity.isBoss;
                         cache.isNew = true;
                         this.mobCache.set(entity.id, cache);
                     }
