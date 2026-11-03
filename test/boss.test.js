@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import state from "../public/server/lib/state.js";
 import SpatialHashGrid from "../public/server/lib/SpatialHashGrid.js";
 import { Mob, Petal, Player, createBoss } from "../public/server/lib/Entity.js";
-import { BOSS_ABILITIES, BOSS_NAMES, DROP_LOOKUP, mobConfigs, petalConfigs } from "../public/server/lib/config.js";
+import { BOSS_ABILITIES, BOSS_NAMES, BOSS_SIZE_MULTIPLIER, DROP_LOOKUP, mobConfigs, petalConfigs } from "../public/server/lib/config.js";
 import { ENTITY_TYPES } from "../public/lib/protocol.js";
 
 const WORLD = 1000;
@@ -83,7 +83,7 @@ describe("boss stats", () => {
 
             expect(boss.health.maxHealth).toBeCloseTo(normal.health.maxHealth * 4, 6);
             expect(boss.damage).toBeCloseTo(normal.damage * 4, 6);
-            expect(boss.size).toBeCloseTo(normal.size * 4, 6);
+            expect(boss.size).toBeCloseTo(normal.size * BOSS_SIZE_MULTIPLIER, 6);
             expect(boss.armor).toBe(normal.armor);
         }
     });

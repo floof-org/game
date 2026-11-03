@@ -331,7 +331,8 @@ function spawnBossEvent() {
 
     console.log(`[Boss] Spawned ${tiers[rarity].name} ${name} (id ${boss.id}) at ${position.x.toFixed(0)}, ${position.y.toFixed(0)}`);
 
-    if (state.announceRarity > -1 && rarity >= state.announceRarity) {
+    // Boss spawns always announce, no matter the rarity roll.
+    if (boss.isBoss || (state.announceRarity > -1 && rarity >= state.announceRarity)) {
         state.clients.forEach(client => client.systemMessage(
             `A Boss ${tiers[rarity].name} ${name} has spawned!`,
             tiers[rarity].color

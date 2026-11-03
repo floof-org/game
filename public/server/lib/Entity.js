@@ -1,6 +1,6 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, SUMMON_STATS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_DROP_MULTIPLIER } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER } from "./config.js";
 import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
@@ -3020,12 +3020,12 @@ export class Mob extends Entity {
             ? {
                 health: (tier.baseHealth ?? tier.health) * (SUMMON_STATS[rarity]?.health ?? 1) * bossMultiplier,
                 damage: (tier.baseDamage ?? tier.damage) * (SUMMON_STATS[rarity]?.damage ?? 1) * bossMultiplier,
-                size: (tier.baseSize ?? tier.size) * (SUMMON_STATS[rarity]?.size ?? 1) * bossMultiplier
+                size: (tier.baseSize ?? tier.size) * (SUMMON_STATS[rarity]?.size ?? 1) * (this.isBoss ? BOSS_SIZE_MULTIPLIER : 1)
             }
             : {
                 health: tier.health * bossMultiplier,
                 damage: tier.damage * bossMultiplier,
-                size: tier.size * bossMultiplier
+                size: tier.size * (this.isBoss ? BOSS_SIZE_MULTIPLIER : 1)
             };
 
         this.health.set(stats.health);
@@ -4076,7 +4076,7 @@ export class Mob extends Entity {
             this.config.isSystem === false &&
             !this.friendly &&
             !["Queen Ant Egg", "Termite Overmind Egg", "Queen Fire Ant Egg"].includes(this.config.name) &&
-            this.rarity >= state.announceRarity
+            (this.isBoss || this.rarity >= state.announceRarity)
         ) {
             const winnersMap = new Map();
             for (const group of eligibleGroups) {

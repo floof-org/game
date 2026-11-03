@@ -2178,6 +2178,9 @@ globalThis.PETAL_RARITY_SIZES = [
 // multiplier instead of porting those old absolute numbers.
 export const BOSS_STAT_MULTIPLIER = 4;
 export const BOSS_DROP_MULTIPLIER = 5;
+// Boss bodies are 40% smaller than the base mob stats call for, so the
+// bosses feel proportionate to the current (shrunk) mob size scale.
+export const BOSS_SIZE_MULTIPLIER = BOSS_STAT_MULTIPLIER * 0.6;
 
 export const BOSS_NAMES = [
     "Beetle",
@@ -2427,7 +2430,7 @@ for (let i = 0; i < _tiers.length; i++) {
     RARITY_BOSSES[i] = {
         health: normal.health * BOSS_STAT_MULTIPLIER,
         damage: normal.damage * BOSS_STAT_MULTIPLIER,
-        size: normal.size * BOSS_STAT_MULTIPLIER,
+        size: normal.size * BOSS_SIZE_MULTIPLIER,
         armor: normal.armor ?? 0
     };
 }

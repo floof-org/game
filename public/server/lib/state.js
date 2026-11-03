@@ -1,6 +1,6 @@
 import { CLIENT_BOUND, ENTITY_TYPES, GAMEMODES, ROUTER_PACKET_TYPES, Writer, tiers } from "../../lib/protocol.js";
 import { quickDiff } from "../../lib/util.js";
-import { BOSS_STAT_MULTIPLIER } from "./config.js";
+import { BOSS_SIZE_MULTIPLIER } from "./config.js";
 import SpatialHashGrid from "./SpatialHashGrid.js";
 
 /**
@@ -334,7 +334,7 @@ const state = {
      * space using the boss's much larger body.
      */
     spawnBossNearPlayer: (config, rarity) => {
-        const bossSize = (config.tiers?.[rarity]?.size ?? config.size ?? 20) * BOSS_STAT_MULTIPLIER;
+        const bossSize = (config.tiers?.[rarity]?.size ?? config.size ?? 20) * BOSS_SIZE_MULTIPLIER;
         const bodies = [];
 
         state.clients.forEach(c => {
