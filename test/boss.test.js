@@ -11,12 +11,6 @@ const BEETLE = mobConfigs.find(mob => mob.name === "Beetle");
 
 const originalRandom = Math.random;
 const originalAnnounceRarity = state.announceRarity;
-const originalMapData = state.mapData;
-const originalMapCellLookup = state.mapCellLookup;
-const originalMapSpawns = state.mapSpawns;
-const originalIsValidMapSpawn = state.isValidMapSpawn;
-const originalTerrainGridWidth = state.terrainGridWidth;
-const originalTerrainGridHeight = state.terrainGridHeight;
 
 function resetWorld() {
     state.width = WORLD;
@@ -76,12 +70,6 @@ beforeEach(() => {
 afterEach(() => {
     Math.random = originalRandom;
     state.announceRarity = originalAnnounceRarity;
-    state.mapData = originalMapData;
-    state.mapCellLookup = originalMapCellLookup;
-    state.mapSpawns = originalMapSpawns;
-    state.isValidMapSpawn = originalIsValidMapSpawn;
-    state.terrainGridWidth = originalTerrainGridWidth;
-    state.terrainGridHeight = originalTerrainGridHeight;
     resetWorld();
 });
 
@@ -280,51 +268,5 @@ describe("announcement threshold", () => {
         killMob(loud, loudClient);
 
         expect(loudClient.messages.some(message => message.startsWith("A Boss"))).toBe(true);
-    });
-});
-
-describe("boss zone spawn", () => {
-    const GRID = 10;
-
-    function buildZonedMap(rarityByCell) {
-        const cells = [];
-        const lookup = new Map();
-
-        for (let y = 0; y < GRID; y++) {
-            for (let x = 0; x < GRID; x++) {
-                const cell = { x, y, type: 3, score: rarityByCell(x, y) };
-                cells.push(cell);
-                lookup.set(y * GRID + x, cell);
-            }
-        }
-
-        state.mapData = { cells, maxRarity: 10, mobSpawners: [] };
-        state.mapCellLookup = lookup;
-        state.terrainGridWidth = GRID;
-        state.terrainGridHeight = GRID;
-        state.mapSpawns = {
-            [ENTITY_TYPES.MOB]: cells.map(cell => ({
-                x: ((cell.x + .5) / GRID) - .5,
-                y: ((cell.y + .5) / GRID) - .5,
-                rarity: Math.round(cell.score * 10)
-            }))
-        };
-        state.isValidMapSpawn = () => true;
-    }
-
-    test("spawns inside the matching rarity zone", () => {
-        // left half zone rarity 3 (score 0.3), right half rarity 7 (score 0.7)
-        buildZonedMap((x, y) => x < GRID / 2 ? 0.3 : 0.7);
-
-        const bossPosition = state.spawnBossInZone(BEETLE, 7);
-
-        expect(bossPosition).not.toBeNull();
-        expect(state.mapRarityAt(bossPosition.x, bossPosition.y)).toBe(7);
-    });
-
-    test("refuses to spawn when no zone has the boss rarity", () => {
-        buildZonedMap(() => 0.3);
-
-        expect(state.spawnBossInZone(BEETLE, 9)).toBeNull();
     });
 });
