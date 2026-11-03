@@ -1,7 +1,7 @@
 import state from "./lib/state.js";
 import { BIOME_TYPES, CLIENT_BOUND, Drawing, encodeEverything, ENTITY_TYPES, GAMEMODES, PetalTier, ROUTER_PACKET_TYPES } from "../lib/protocol.js";
-import { DEFAULT_PETAL_COUNT, mobConfigs, PetalConfig, petalConfigs, tiers } from "./lib/config.js";
-import { AIPlayer, Mob, Player } from "./lib/Entity.js";
+import { DEFAULT_PETAL_COUNT, mobConfigs, PetalConfig, petalConfigs, tiers, BOSS_NAMES } from "./lib/config.js";
+import { AIPlayer, createBoss, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
 import { applyArticle, getWaveMobRarity, isHalloween } from "../lib/util.js";
@@ -304,7 +304,44 @@ setInterval(async () => {
     }
 }, 30 * 60 * 1000);
 
-// Save everyone before the process goes down (pm2 restart sends SIGTERM).
+// Boss event: one boss every 30 minutes, in any non-wave mode, at a random
+// rarity from r0 to r29. Boss stats/drop handling lives in Entity.js.
+function spawnBossEvent() {
+    if (state.isWaves || state.gamemode === GAMEMODES.WAVES) return;
+
+    let hasPlayer = false;
+
+    state.clients.forEach(client => {
+        if (client.body) hasPlayer = true;
+    });
+
+    if (!hasPlayer) return;
+
+    const name = BOSS_NAMES[Math.floor(Math.random() * BOSS_NAMES.length)];
+    const config = mobConfigs.find(mob => mob.name === name);
+
+    if (!config) {
+        console.warn(`[Boss] Config not found: ${name}`);
+        return;
+    }
+
+    const rarity = Math.floor(Math.random() * tiers.length);
+    const position = state.spawnBossNearPlayer(config, rarity);
+    const boss = createBoss(position, config, rarity);
+
+    console.log(`[Boss] Spawned ${tiers[rarity].name} ${name} (id ${boss.id}) at ${position.x.toFixed(0)}, ${position.y.toFixed(0)}`);
+
+    if (state.announceRarity > -1 && rarity >= state.announceRarity) {
+        state.clients.forEach(client => client.systemMessage(
+            `A Boss ${tiers[rarity].name} ${name} has spawned!`,
+            tiers[rarity].color
+        ));
+    }
+}
+
+setInterval(spawnBossEvent, 30 * 60 * 1000);
+
+
 // Without this, up to 30 minutes of progress dies with the process.
 let shuttingDown = false;
 async function saveAllAndExit(signal) {

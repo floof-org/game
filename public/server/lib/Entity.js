@@ -1,9 +1,170 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, SUMMON_STATS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_DROP_MULTIPLIER } from "./config.js";
 import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
+
+// Boss abilities and the factory that arms them live next to Mob because they
+// need the Petal and Lightning classes. The data itself is in config.js.
+function bossFireProjectiles(mob, ability) {
+    const projectileIndex = petalIDOf(ability.projectile);
+
+    if (projectileIndex < 0) return;
+
+    const projectileConfig = petalConfigs[projectileIndex];
+    const count = Math.max(1, ability.count ?? 1);
+    const aimAngle = mob.target && !mob.target.health.isDead
+        ? Math.atan2(mob.target.y - mob.y, mob.target.x - mob.x)
+        : mob.facing;
+    const baseAngle = ability.aimAtTarget
+        ? aimAngle
+        : (ability.randomAngles ? Math.random() * Math.PI * 2 : mob.facing);
+
+    for (let i = 0; i < count; i++) {
+        const petal = new Petal(mob, -1, -1);
+
+        petal.define(projectileConfig, mob.rarity);
+        petal.index = projectileIndex;
+        petal.size = Math.max(1, mob.size / 8) * (ability.sizeMultiplier ?? 1);
+        petal.health.set(petal.health.maxHealth * (ability.healthMultiplier ?? 1));
+        petal.damage *= ability.damageMultiplier ?? 1;
+        petal.speed = ability.speed ?? 12;
+        petal.launched = true;
+        petal.range = ability.range ?? 45;
+        petal.spinSpeed = 0;
+        petal.nullCollision = Boolean(ability.nullCollision);
+
+        const angle = ability.aimAtTarget
+            ? baseAngle + (Math.PI * 2 * i) / count
+            : (ability.randomAngles ? Math.random() * Math.PI * 2 : baseAngle + (Math.PI * 2 * i) / count);
+
+        petal.x = mob.x + Math.cos(angle) * mob.size * .55;
+        petal.y = mob.y + Math.sin(angle) * mob.size * .55;
+        petal.facing = petal.moveAngle = angle;
+    }
+}
+
+function triggerBossAbility(mob, ability) {
+    if (ability.kind === "lightning") {
+        const range = mob.size * (ability.rangeMultiplier ?? 10);
+        new Lightning(mob).define(mob.damage * (ability.damageMultiplier ?? 1), range, ability.bounces ?? 1).bounce();
+        return;
+    }
+
+    if (ability.kind === "heal") {
+        mob.health.health = Math.min(
+            mob.health.maxHealth,
+            mob.health.health + mob.health.maxHealth * (ability.healRatio ?? .1)
+        );
+        return;
+    }
+
+    bossFireProjectiles(mob, ability);
+}
+
+function applyBossSpeedAbility(mob, ability) {
+    if (mob.bossSpeedOriginalSize === undefined) mob.bossSpeedOriginalSize = mob.size;
+    if (mob.bossSpeedOriginalSpeed === undefined) mob.bossSpeedOriginalSpeed = mob.speed;
+
+    mob.size = mob.bossSpeedOriginalSize / (ability.sizeDivisor ?? 1);
+    mob.speed = mob.bossSpeedOriginalSpeed * (ability.speedMultiplier ?? 1);
+}
+
+function restoreBossSpeedAbility(mob) {
+    if (mob.bossSpeedOriginalSize !== undefined) {
+        mob.size = mob.bossSpeedOriginalSize;
+        mob.bossSpeedOriginalSize = undefined;
+    }
+
+    if (mob.bossSpeedOriginalSpeed !== undefined) {
+        mob.speed = mob.bossSpeedOriginalSpeed;
+        mob.bossSpeedOriginalSpeed = undefined;
+    }
+}
+
+function updateBossAbilities(mob, now) {
+    const abilities = BOSS_ABILITIES[mob.config?.name];
+
+    if (!abilities || !mob.bossAbilities) return false;
+
+    let abilityActive = false;
+
+    for (const [name, ability] of Object.entries(abilities)) {
+        const state = mob.bossAbilities[name];
+
+        if (!state) continue;
+
+        if (state.until) {
+            if (now < state.until) {
+                if (ability.freeze) abilityActive = true;
+
+                if (ability.shotInterval && now >= state.nextShot) {
+                    triggerBossAbility(mob, ability);
+                    state.nextShot += ability.shotInterval;
+                }
+
+                continue;
+            }
+
+            state.until = 0;
+            state.nextShot = 0;
+
+            if (ability.sizeDivisor !== undefined) restoreBossSpeedAbility(mob);
+        }
+
+        if (now < state.nextAbility) continue;
+
+        state.nextAbility = now + (ability.interval ?? 0);
+
+        if (!ability.duration) {
+            triggerBossAbility(mob, ability);
+            continue;
+        }
+
+        state.until = now + ability.duration;
+        state.nextShot = now;
+
+        if (ability.freeze) abilityActive = true;
+        if (ability.sizeDivisor !== undefined) applyBossSpeedAbility(mob, ability);
+        if (ability.kind && ability.kind !== "projectile") triggerBossAbility(mob, ability);
+
+        if (ability.shotInterval) triggerBossAbility(mob, ability);
+    }
+
+    return abilityActive;
+}
+
+/** Creates a Mob flagged and armed as a boss. */
+export function createBoss(position, config, rarity = 0) {
+    const boss = new Mob(position);
+
+    boss.isBoss = true;
+    boss.define(config, rarity);
+
+    // Neutral mobs (worker fire ant, shiny ladybug, desert centipede...)
+    // still have to fight back when they become bosses.
+    boss.aggressive = true;
+    boss.neutral = false;
+
+    const abilities = BOSS_ABILITIES[config.name];
+    boss.bossAbilities = {};
+
+    if (abilities) {
+        const now = Date.now();
+
+        for (const [name, ability] of Object.entries(abilities)) {
+            boss.bossAbilities[name] = {
+                until: 0,
+                nextShot: 0,
+                nextAbility: now + (ability.interval ?? 0)
+            };
+        }
+    }
+
+    return boss;
+}
+
 
 // Spawns a hostile copy of a mob the Emerald petal touches. Clone count is
 // capped per Emerald petal entity and expires with the clone. Migrated from
@@ -986,13 +1147,14 @@ export class Entity {
             _AABB: { x1: this.x - range, y1: this.y - range, x2: this.x + range, y2: this.y + range }
         });
 
-        const valid = retrieved.values().filter(entity => !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || (entity.type === ENTITY_TYPES.PETAL && !(entity.aggroLevel > 0))));
+        const valid = retrieved.values().filter(entity => !(entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || (entity.type === ENTITY_TYPES.PETAL && (!(entity.aggroLevel > 0) || (this.isBoss && entity.config?.petalAttractsAggro)))));
         if (valid.length === 0) return null;
         if (random) return valid[Math.floor(Math.random() * valid.length)];
 
         // Highest aggro, tie-break nearest. Petals carry their own aggro
         // (e.g. a placed-down Lens), everyone else uses their parent's.
-        const getAggro = e => (e.aggroLevel ?? 0) > 0 ? e.aggroLevel : (e.parent?.aggroLevel ?? 0);
+        // Bosses ignore both Lens petals and Lightbulb aggro entirely.
+        const getAggro = e => this.isBoss ? 0 : ((e.aggroLevel ?? 0) > 0 ? e.aggroLevel : (e.parent?.aggroLevel ?? 0));
         let best = null, bestD = 0;
         for (const e of valid) {
             const d = quickDiff(this, e);
@@ -2841,16 +3003,18 @@ export class Mob extends Entity {
 
         const isSummon = this.team !== -69 || this.friendly;
 
+        const bossMultiplier = this.isBoss ? BOSS_STAT_MULTIPLIER : 1;
+
         const stats = isSummon
             ? {
-                health: (tier.baseHealth ?? tier.health) * (SUMMON_STATS[rarity]?.health ?? 1),
-                damage: (tier.baseDamage ?? tier.damage) * (SUMMON_STATS[rarity]?.damage ?? 1),
-                size: (tier.baseSize ?? tier.size) * (SUMMON_STATS[rarity]?.size ?? 1)
+                health: (tier.baseHealth ?? tier.health) * (SUMMON_STATS[rarity]?.health ?? 1) * bossMultiplier,
+                damage: (tier.baseDamage ?? tier.damage) * (SUMMON_STATS[rarity]?.damage ?? 1) * bossMultiplier,
+                size: (tier.baseSize ?? tier.size) * (SUMMON_STATS[rarity]?.size ?? 1) * bossMultiplier
             }
             : {
-                health: tier.health,
-                damage: tier.damage,
-                size: tier.size
+                health: tier.health * bossMultiplier,
+                damage: tier.damage * bossMultiplier,
+                size: tier.size * bossMultiplier
             };
 
         this.health.set(stats.health);
@@ -3231,7 +3395,14 @@ export class Mob extends Entity {
         // mobs regain their config aggression once the timer lapses.
         // Migrated from WhiteHole.js.
         const now = Date.now();
-        const frozen = this.freezeUntil > now;
+
+        let bossAbilityActive = false;
+
+        if (this.isBoss) {
+            bossAbilityActive = updateBossAbilities(this, now);
+        }
+
+        const frozen = this.freezeUntil > now || bossAbilityActive;
         if (this.pacifiedUntil && now >= this.pacifiedUntil) {
             this.pacifiedUntil = 0;
             this.aggressive = this.config?.aggressive ?? false;
@@ -3249,7 +3420,7 @@ export class Mob extends Entity {
             delete this.zincReduction;
         }
 
-        if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.health.ratio <= .8 ? 180_000 : 90_000)) < performance.now()) {
+        if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.isBoss ? 60 * 60 * 1000 : (this.health.ratio <= .8 ? 180_000 : 90_000))) < performance.now()) {
             // A mob that players are actively fighting holds on instead of
             // despawning with everyone's credit, as in WhiteHole.js.
             const hasEligiblePlayer = this.health.ratio <= 0.6 && Object.keys(this.damagedBy).length > 0;
@@ -3812,7 +3983,10 @@ export class Mob extends Entity {
                         for (const row of rows) {
                             if (Math.random() > row.chance) continue;
                             const entry = pickWeighted(row.entries);
-                            if (entry) results.push({ ...entry });
+                            if (entry) results.push({
+                                ...entry,
+                                amount: (entry.amount ?? 1) * (this.isBoss ? BOSS_DROP_MULTIPLIER : 1)
+                            });
                         }
                     }
                     const count = results.length;
@@ -3839,7 +4013,11 @@ export class Mob extends Entity {
                             if (Math.random() > drop.chance) continue;
                             const rarity = getDropRarity(this.rarity, memberClient.highestRarity + 5);
                             if (rarity < drop.minRarity) continue;
-                            rewards.push({ index: drop.index, rarity });
+                            rewards.push({
+                                index: drop.index,
+                                rarity,
+                                amount: this.isBoss ? BOSS_DROP_MULTIPLIER : 1
+                            });
                         }
                         const total = rewards.length;
                         for (let i = 0; i < total; i++) {
@@ -3849,8 +4027,8 @@ export class Mob extends Entity {
                             new Drop({
                                 x: this.x + Math.cos(angle) * radius,
                                 y: this.y + Math.sin(angle) * radius
-                            }, memberClient, reward.index, reward.rarity, 1);
-                            collectDropAnnouncement(memberClient, reward.index, reward.rarity, 1);
+                            }, memberClient, reward.index, reward.rarity, reward.amount);
+                            collectDropAnnouncement(memberClient, reward.index, reward.rarity, reward.amount);
                         }
                     }
                 }
@@ -3897,6 +4075,9 @@ export class Mob extends Entity {
                 }
             }
             const killerNames = [...winnersMap.values()].map(client => client.lootName());
+            const subject = this.isBoss
+                ? `A Boss ${tiers[this.rarity].name} ${this.config.name}`
+                : applyArticle(tiers[this.rarity].name, true) + " " + this.config.name;
 
             if (killerNames.length > 0) {
                 // Loot is granted to every qualifier, but the kill message only names the top few so a
@@ -3907,13 +4088,13 @@ export class Mob extends Entity {
                 const last = shown[shown.length - 1];
                 const rest = shown.slice(0, -1);
 
-                announceText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " was killed by "
+                announceText = subject + " was killed by "
                     + (rest.length > 0 ? rest.join(", ") + (rest.length > 1 ? ", and " : " and ") : "") + last
                     + (hidden > 0 ? " and " + hidden + " more" : "");
             } else if (!diedInCombat && !hatched) {
                 // Left the map on its own (expiry or owner death). Uses the same
                 // announcement gate as the kill message.
-                announceText = applyArticle(tiers[this.rarity].name, true) + " " + this.config.name + " has despawned";
+                announceText = subject + " has despawned";
             }
 
             if (announceText) {

@@ -1,7 +1,7 @@
 import state from "./state.js";
-import { Entity, Mob, Player } from "./Entity.js";
+import { Entity, createBoss, Mob, Player } from "./Entity.js";
 import { Reader, Writer, CLIENT_BOUND, ENTITY_FLAGS, ENTITY_MODIFIER_FLAGS, GAMEMODES, ROUTER_PACKET_TYPES, SERVER_BOUND, ENTITY_TYPES, DEV_CHEAT_IDS, WEARABLES, RARITY_TABLE, petalTierMultiplier } from "../../lib/protocol.js";
-import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals } from "./config.js";
+import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetals, BOSS_ABILITY_DESCRIPTIONS } from "./config.js";
 import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY, CRAFT_FAIL_ANNOUNCE_RARITY } from "./CraftManager.js";
@@ -64,7 +64,7 @@ function craftAttemptsToArray(data) {
 
 const VALID_COMMANDS = new Set([
     "/help", "/cmd", "/commands", "/infocommands", "/admincommands",
-    "/mobinfo", "/petalinfo", "/info", "/rarities", "/drops",
+    "/mobinfo", "/bossinfo", "/petalinfo", "/info", "/rarities", "/drops",
     "/die", "/killall",
     "/give", "/addall", "/remove", "/refund", "/craft", "/pity", "/online", "/saveall", "/account",
     "/mobcount", "/spawnmob", "/godmode", "/killmob", "/resetmobs",
@@ -3749,20 +3749,17 @@ export default class Client {
             const armor = rarityData.armor ?? 0;
 
             this.systemMessage(
-                `${rarityName} ${mob.name}: Health: ${formatNumber(finalHealth)}, Damage: ${formatNumber(finalDamage)}`,
+                `${rarityName} ${mob.name}: Health: ${formatNumber(finalHealth)}, Damage: ${formatNumber(finalDamage)}, Armor: ${formatNumber(armor)}`,
                 tiers[rarityIndex]?.color || "#ffffff"
             );
 
-            if (mob.name === "Beetle") {
+            const abilityLines = BOSS_ABILITY_DESCRIPTIONS[mob.name];
 
+            if (abilityLines) {
                 this.systemMessage("Special abilities:", "#55ffff");
-                this.systemMessage("Shrinks and shoots projectiles at high speed.", "#ffe65d");
-
-            } else if (mob.name === "Scorpion") {
-
-                this.systemMessage("Special abilities:", "#55ffff");
-                this.systemMessage("Shoots rapid poisonous missiles at 8 angles and a Pincer projectile.", "#ffe65d");
-
+                abilityLines.forEach(line => this.systemMessage(line, "#ffe65d"));
+            } else {
+                this.systemMessage("This mob has no special boss abilities.", "#ffe65d");
             }
         }
 
@@ -5202,7 +5199,7 @@ export default class Client {
             const args = e.substring(9).trim().split(/\s+/).filter(Boolean);
 
             if (args.length < 4) {
-                this.systemMessage("Usage: /spawnmob [rarity] [mob] [x] [y] <amount>", "#ffaa00");
+                this.systemMessage("Usage: /spawnmob [rarity] [mob] [boss] [x] [y] <amount>, or ~ ~ for your position", "#ffaa00");
                 return;
             }
 
@@ -5226,6 +5223,16 @@ export default class Client {
             if (rarityIndex == null || rarityIndex < 0 || rarityIndex >= tiers.length) {
                 this.systemMessage("Invalid rarity.", "#ff5555");
                 return;
+            }
+
+            // Optional "boss" marker, anywhere between the mob name and the
+            // coordinates. It is removed before the name/coordinate parser runs.
+            let isBossSpawn = false;
+            const bossArgIndex = args.findIndex(arg => arg.toLowerCase() === "boss");
+
+            if (bossArgIndex !== -1) {
+                args.splice(bossArgIndex, 1);
+                isBossSpawn = true;
             }
 
             let amount = 1;
@@ -5278,10 +5285,14 @@ export default class Client {
 
             for (let i = 0; i < amount; i++) {
                 try {
-                    const mob = new Mob({ x, y });
-                    mob.define(config, rarityIndex);
-                    mob.x = x;
-                    mob.y = y;
+                    if (isBossSpawn) {
+                        createBoss({ x, y }, config, rarityIndex);
+                    } else {
+                        const mob = new Mob({ x, y });
+                        mob.define(config, rarityIndex);
+                        mob.x = x;
+                        mob.y = y;
+                    }
                     spawned++;
                 } catch (err) {
                     console.error("[spawnmob]", mobName, rarityIndex, err);
@@ -5289,7 +5300,7 @@ export default class Client {
             }
 
             this.systemMessage(
-                `Spawned ${spawned} ${tiers[rarityIndex].name} ${config.name}${spawned !== 1 ? "s" : ""}.`,
+                `Spawned ${spawned} ${tiers[rarityIndex].name} ${config.name}${spawned !== 1 ? "s" : ""}${isBossSpawn ? " (boss)" : ""}.`,
                 "#55ff55"
             );
 

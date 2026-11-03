@@ -2171,3 +2171,267 @@ globalThis.PETAL_RARITY_SIZES = [
     30, 50, 100, 130, 140, 150, 160, 170, 180, 190,
     200, 230, 240, 250, 260, 270, 280, 300,
 ];
+
+// Bosses are the same mob with every non-armor stat multiplied. WhiteHole.js
+// used a hand-written RARITY_BOSSES table with much larger values and equally
+// large sizes; the DesertMaze size scale was reduced, so bosses use a flat
+// multiplier instead of porting those old absolute numbers.
+export const BOSS_STAT_MULTIPLIER = 4;
+export const BOSS_DROP_MULTIPLIER = 5;
+
+export const BOSS_NAMES = [
+    "Beetle",
+    "Scorpion",
+    "Worker Fire Ant",
+    "Soldier Fire Ant",
+    "Baby Fire Ant",
+    "Sandstorm",
+    "Jellyfish",
+    "Evil Desert Centipede",
+    "Shiny Ladybug",
+    "Desert Centipede"
+];
+
+// Ability data ported from WhiteHole.js Beetle/Scorpion and extended for the
+// DesertMaze bosses. `kind` defaults to "projectile"; "lightning" and "heal"
+// are handled directly by updateBossAbilities.
+export const BOSS_ABILITIES = {
+    Beetle: {
+        missile: {
+            projectile: "Missile",
+            count: 8,
+            duration: 7.5 * 1000,
+            interval: 60 * 1000,
+            shotInterval: 300,
+            speed: 12,
+            healthMultiplier: 150,
+            damageMultiplier: 150,
+            randomAngles: true,
+            freeze: true
+        },
+        speed: {
+            duration: 10 * 1000,
+            interval: 90 * 1000,
+            sizeDivisor: 5,
+            speedMultiplier: 1.5
+        }
+    },
+    Scorpion: {
+        missile: {
+            projectile: "Scorpion Missile.projectile",
+            count: 8,
+            duration: 10 * 1000,
+            interval: 60 * 1000,
+            shotInterval: 500,
+            speed: 12,
+            healthMultiplier: 150,
+            damageMultiplier: 150,
+            sizeMultiplier: 1.25,
+            randomAngles: false,
+            aimAtTarget: true,
+            freeze: true
+        },
+        debuffMissile: {
+            projectile: "Pincer",
+            count: 1,
+            duration: 0,
+            interval: 10 * 1000,
+            speed: 14,
+            healthMultiplier: 300,
+            damageMultiplier: 300,
+            sizeMultiplier: 2,
+            randomAngles: true
+        }
+    },
+    "Worker Fire Ant": {
+        fireSpray: {
+            projectile: "fire.projectile",
+            count: 5,
+            duration: 3 * 1000,
+            interval: 20 * 1000,
+            shotInterval: 300,
+            speed: 10,
+            healthMultiplier: 80,
+            damageMultiplier: 120,
+            sizeMultiplier: 1.5,
+            randomAngles: true
+        },
+        haste: {
+            duration: 6 * 1000,
+            interval: 30 * 1000,
+            sizeDivisor: 1.8,
+            speedMultiplier: 1.8
+        }
+    },
+    "Soldier Fire Ant": {
+        fireLance: {
+            projectile: "fire.projectile",
+            count: 1,
+            duration: 0,
+            interval: 12 * 1000,
+            speed: 14,
+            healthMultiplier: 200,
+            damageMultiplier: 250,
+            sizeMultiplier: 2,
+            aimAtTarget: true
+        },
+        charge: {
+            duration: 8 * 1000,
+            interval: 25 * 1000,
+            sizeDivisor: 1.6,
+            speedMultiplier: 2.2
+        }
+    },
+    "Baby Fire Ant": {
+        sparkRing: {
+            projectile: "fire.projectile",
+            count: 12,
+            duration: 5 * 1000,
+            interval: 30 * 1000,
+            shotInterval: 120,
+            speed: 9,
+            healthMultiplier: 50,
+            damageMultiplier: 100,
+            sizeMultiplier: 1.2,
+            randomAngles: true,
+            freeze: true
+        }
+    },
+    Sandstorm: {
+        sandRing: {
+            projectile: "Thorn.projectile",
+            count: 12,
+            duration: 8 * 1000,
+            interval: 45 * 1000,
+            shotInterval: 250,
+            speed: 8,
+            healthMultiplier: 100,
+            damageMultiplier: 120,
+            sizeMultiplier: 1.5,
+            randomAngles: true,
+            freeze: true
+        },
+        sandSpeed: {
+            duration: 10 * 1000,
+            interval: 60 * 1000,
+            sizeDivisor: 2,
+            speedMultiplier: 2
+        }
+    },
+    Jellyfish: {
+        chainLightning: {
+            kind: "lightning",
+            duration: 0,
+            interval: 15 * 1000,
+            damageMultiplier: 2.5,
+            rangeMultiplier: 10,
+            bounces: 4
+        },
+        shockRing: {
+            projectile: "Missile",
+            count: 6,
+            duration: 4 * 1000,
+            interval: 30 * 1000,
+            shotInterval: 200,
+            speed: 8,
+            healthMultiplier: 80,
+            damageMultiplier: 120,
+            sizeMultiplier: 1.5,
+            randomAngles: true,
+            freeze: true
+        }
+    },
+    "Evil Desert Centipede": {
+        venomSpray: {
+            projectile: "Pincer",
+            count: 10,
+            duration: 6 * 1000,
+            interval: 25 * 1000,
+            shotInterval: 200,
+            speed: 11,
+            healthMultiplier: 120,
+            damageMultiplier: 150,
+            sizeMultiplier: 1.25,
+            randomAngles: true,
+            freeze: true
+        },
+        burrow: {
+            duration: 6 * 1000,
+            interval: 40 * 1000,
+            sizeDivisor: 1.5,
+            speedMultiplier: 2.5
+        }
+    },
+    "Shiny Ladybug": {
+        radiantBurst: {
+            projectile: "Thorn.projectile",
+            count: 8,
+            duration: 6 * 1000,
+            interval: 25 * 1000,
+            shotInterval: 200,
+            speed: 10,
+            healthMultiplier: 100,
+            damageMultiplier: 150,
+            sizeMultiplier: 1.5,
+            randomAngles: true,
+            freeze: true
+        },
+        regen: {
+            kind: "heal",
+            duration: 0,
+            interval: 20 * 1000,
+            healRatio: 0.15
+        }
+    },
+    "Desert Centipede": {
+        sandSpiral: {
+            projectile: "Thorn.projectile",
+            count: 12,
+            duration: 6 * 1000,
+            interval: 30 * 1000,
+            shotInterval: 200,
+            speed: 9,
+            healthMultiplier: 100,
+            damageMultiplier: 120,
+            sizeMultiplier: 1.5,
+            randomAngles: true,
+            freeze: true
+        },
+        burrow: {
+            duration: 6 * 1000,
+            interval: 45 * 1000,
+            sizeDivisor: 2,
+            speedMultiplier: 2.5
+        }
+    }
+};
+
+export const BOSS_ABILITY_DESCRIPTIONS = {
+    Beetle: ["Shrinks and fires a ring of high-speed missiles.", "Also speeds up after shrinking."],
+    Scorpion: ["Fires rapid poisonous missiles at 8 angles and a Pincer projectile.", "Missiles are aimed around the target."],
+    "Worker Fire Ant": ["Sprays fire projectiles while darting forward.", "Fires in random directions."],
+    "Soldier Fire Ant": ["Charges at high speed.", "Launches a powerful aimed fire lance."],
+    "Baby Fire Ant": ["Erupts into a ring of fire projectiles.", "Freezes in place while firing."],
+    Sandstorm: ["Summons a ring of sand thorns.", "Speeds up after shrunk."],
+    Jellyfish: ["Calls chain lightning down on nearby targets.", "Also fires a ring of electric missiles."],
+    "Evil Desert Centipede": ["Sprays poisonous Pincer projectiles.", "Burrows to move much faster."],
+    "Shiny Ladybug": ["Fires a radiant ring of thorns.", "Heals itself over time."],
+    "Desert Centipede": ["Spins a spiral of sand thorns.", "Burrows to move much faster."]
+};
+
+export const RARITY_BOSSES = {};
+
+for (let i = 0; i < _tiers.length; i++) {
+    const normal = RARITY_TABLE[i] ?? { health: 1, damage: 1, size: 1, armor: 0 };
+
+    RARITY_BOSSES[i] = {
+        health: normal.health * BOSS_STAT_MULTIPLIER,
+        damage: normal.damage * BOSS_STAT_MULTIPLIER,
+        size: normal.size * BOSS_STAT_MULTIPLIER,
+        armor: normal.armor ?? 0
+    };
+}
+
+globalThis.RARITY_BOSSES = RARITY_BOSSES;
+globalThis.BOSS_ABILITIES = BOSS_ABILITIES;
+globalThis.BOSS_NAMES = BOSS_NAMES;

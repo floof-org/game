@@ -328,6 +328,76 @@ const state = {
         };
     },
 
+    /**
+     * Bosses ignore zone rarity, so they need their own placement helper. It
+     * still spawns in the selected player's view and rejects walls/occupied
+     * space using the boss's much larger body.
+     */
+    spawnBossNearPlayer: (config, rarity) => {
+        const bossSize = (config.tiers?.[rarity]?.size ?? config.size ?? 20) * BOSS_STAT_MULTIPLIER;
+        const bodies = [];
+
+        state.clients.forEach(c => {
+            if (c.body) {
+                bodies.push({
+                    x: c.body.x,
+                    y: c.body.y,
+                    size: c.body.size,
+                    fov: c.camera?.fov ?? 1256
+                });
+            }
+        });
+
+        if (bodies.length === 0) {
+            const spawn = state.mapBasedSpawn(ENTITY_TYPES.MOB);
+            return { x: spawn.x, y: spawn.y };
+        }
+
+        const body = bodies[Math.floor(Math.random() * bodies.length)];
+        const halfView = body.fov / 1.85;
+        const minDist = body.size * 2 + bossSize + 48;
+        // A boss larger than the room cannot fit; keep at least its center inside
+        // so it never ends up in the void where no player can reach it.
+        const maxX = Math.max(0, state.width / 2 - bossSize);
+        const maxY = Math.max(0, state.height / 2 - bossSize);
+
+        for (let k = 0; k < 100; k++) {
+            const position = {
+                x: body.x + (Math.random() - .5) * 2 * halfView,
+                y: body.y + (Math.random() - .5) * 2 * halfView
+            };
+            const dx = body.x - position.x;
+            const dy = body.y - position.y;
+
+            if (
+                Math.abs(position.x) > maxX ||
+                Math.abs(position.y) > maxY ||
+                dx * dx + dy * dy <= minDist * minDist ||
+                !state.isValidMapSpawn(position.x, position.y)
+            ) {
+                continue;
+            }
+
+            const occupied = state.spatialHash.retrieve({
+                _AABB: {
+                    x1: position.x - bossSize,
+                    y1: position.y - bossSize,
+                    x2: position.x + bossSize,
+                    y2: position.y + bossSize
+                }
+            });
+
+            if (occupied.size === 0) {
+                return position;
+            }
+        }
+
+        return {
+            x: Math.max(-maxX, Math.min(maxX, body.x + (Math.random() - .5) * 2 * halfView)),
+            y: Math.max(-maxY, Math.min(maxY, body.y + (Math.random() - .5) * 2 * halfView))
+        };
+    },
+
     lineMapMobSpawn: config => {
         const bodies = [];
 
