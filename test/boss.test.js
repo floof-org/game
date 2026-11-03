@@ -392,3 +392,92 @@ describe("boss resin and pincer immunity", () => {
         expect(boss.poison.timer).toBeGreaterThan(0);
     });
 });
+
+describe("boss ability rate", () => {
+    test("boss abilities are scheduled at double the normal rate", () => {
+        const before = Date.now();
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 5);
+        // Beetle's missile ability normally schedules 60s out; at double rate it is 30s.
+        const missile = boss.bossAbilities.missile;
+        expect(missile.nextAbility - before).toBeLessThan(30_000 + 1000);
+    });
+});
+
+describe("poison loot damage", () => {
+    test("poison that clears armor counts as loot damage", () => {
+        Math.random = () => 0;
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 5);
+        boss.spawnInvincibility = false;
+        boss.armor = 0;
+        boss.health.armor = 0;
+
+        const enemy = new Player({ x: -500, y: 0 });
+        enemy.team = 0;
+        enemy.client = { id: 99001, username: "Tester" };
+
+        const pincer = (() => {
+            const petal = new Petal(enemy, -1, -1);
+            petal.define(petalConfigs.find(p => p.name === "Pincer"), 5);
+            petal.launched = true;
+            petal.x = 10;
+            petal.y = 0;
+            return petal;
+        })();
+
+        const _place = entity => {
+            entity._AABB = state.spatialHash.getAABB(entity);
+            state.spatialHash.insert(entity);
+        };
+
+        _place(boss);
+        _place(enemy);
+        _place(pincer);
+        pincer.collide();
+
+        expect(boss.poison.timer).toBeGreaterThan(0);
+
+        // Baseline right after the hit, then poison ticks add more.
+        const damageBefore = boss.damagedBy[enemy.id]?.[0] ?? 0;
+        for (let i = 0; i < 3; i++) boss.update();
+
+        expect(boss.damagedBy[enemy.id]?.[0]).toBeGreaterThan(damageBefore);
+    });
+
+    test("poison fully blocked by armor deals no damage and counts nothing", () => {
+        Math.random = () => 0;
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 5);
+        boss.spawnInvincibility = false;
+        boss.armor = 51; // everything blocked, poison included
+        boss.health.armor = 51;
+
+        const enemy = new Player({ x: -500, y: 0 });
+        enemy.team = 0;
+        enemy.client = { id: 99002, username: "Tester2" };
+
+        const pincer = (() => {
+            const petal = new Petal(enemy, -1, -1);
+            petal.define(petalConfigs.find(p => p.name === "Pincer"), 5);
+            petal.launched = true;
+            petal.x = 10;
+            petal.y = 0;
+            return petal;
+        })();
+
+        const _place = entity => {
+            entity._AABB = state.spatialHash.getAABB(entity);
+            state.spatialHash.insert(entity);
+        };
+
+        _place(boss);
+        _place(enemy);
+        _place(pincer);
+        pincer.collide();
+
+        expect(boss.poison.timer).toBeGreaterThan(0);
+
+        const damageBefore = boss.damagedBy[enemy.id]?.[0] ?? 0;
+        for (let i = 0; i < 3; i++) boss.update();
+
+        expect(boss.damagedBy[enemy.id]?.[0] ?? 0).toBe(damageBefore);
+    });
+});

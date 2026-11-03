@@ -1,6 +1,6 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, SUMMON_STATS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER, BOSS_ABILITY_RATE_MULTIPLIER } from "./config.js";
 import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
@@ -115,7 +115,7 @@ function updateBossAbilities(mob, now) {
 
         if (now < state.nextAbility) continue;
 
-        state.nextAbility = now + (ability.interval ?? 0);
+        state.nextAbility = now + (ability.interval ?? 0) / BOSS_ABILITY_RATE_MULTIPLIER;
 
         if (!ability.duration) {
             triggerBossAbility(mob, ability);
@@ -157,7 +157,7 @@ export function createBoss(position, config, rarity = 0) {
             boss.bossAbilities[name] = {
                 until: 0,
                 nextShot: 0,
-                nextAbility: now + (ability.interval ?? 0)
+                nextAbility: now + (ability.interval ?? 0) / BOSS_ABILITY_RATE_MULTIPLIER
             };
         }
     }
@@ -260,6 +260,18 @@ const POMEGRANATE_PROJECTILE_INDEX = petalIDOf("projectile.pomegranate");
 // Boss is immune to Resin (slow + pacify) and Pincer (poison + slow).
 const RESIN_PINCER_SOURCES = new Set(["Resin", "Resin.projectile", "Pincer"]);
 const isResinOrPincerSource = ent => RESIN_PINCER_SOURCES.has(ent?.config?.name);
+
+// Records which entity applied a poison, so poison damage ticks can be
+// attributed to the damager for loot accounting.
+function makeDamagedByEntry(ent) {
+    const source = ent?.parent ?? ent;
+    const type = source?.type ?? ENTITY_TYPES.PETAL;
+    const id = source?.id ?? ent.id;
+    const name = type === ENTITY_TYPES.PLAYER ? source.name : (source?.index ?? id);
+    const clientID = type === ENTITY_TYPES.PLAYER && source?.client ? source.client.id : null;
+
+    return { id, type, name, clientID };
+}
 
 // Spawns a friendly copy of the dead mob for the killer. At most 20 live Ruby
 // summons per client; each expires after its Ruby tier lifetime. Migrated from
@@ -1180,7 +1192,17 @@ export class Entity {
         }
 
         if (this.poison.timer > 0) {
-            this.health.damage(this.poison.damage);
+            const source = this.poison.source;
+            const dealt = this.health.damage(this.poison.damage);
+
+            // Poison damage counts as loot damage when it clears armor. Damage
+            // fully blocked by armor deals nothing and contributes nothing.
+            if (dealt > 0 && source && (this.type === ENTITY_TYPES.MOB || this.type === ENTITY_TYPES.PLAYER)) {
+                let existing = this.damagedBy[source.id] || [0, source.type, source.name, source.clientID];
+                existing[0] += dealt;
+                this.damagedBy[source.id] = existing;
+            }
+
             this.poison.timer--;
         }
 
@@ -1838,11 +1860,13 @@ export class Entity {
                 if (this.poison.toApply.timer > 0) {
                     other.poison.damage = this.poison.toApply.damage;
                     other.poison.timer = this.poison.toApply.timer;
+                    other.poison.source = makeDamagedByEntry(this);
                 }
 
                 if (other.poison.toApply.timer > 0) {
                     this.poison.damage = other.poison.toApply.damage;
                     this.poison.timer = other.poison.toApply.timer;
+                    this.poison.source = makeDamagedByEntry(other);
                 }
             }
 

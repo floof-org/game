@@ -2182,6 +2182,9 @@ export const BOSS_DROP_MULTIPLIER = 5;
 // so we scale the boss's knockback resistance: pushability is divided by 3,
 // which makes the boss 3x harder to shove aside while leaving impact strength alone.
 export const BOSS_MASS_MULTIPLIER = 3;
+// Bosses use their abilities at double the normal frequency: intervals are
+// halved when scheduling.
+export const BOSS_ABILITY_RATE_MULTIPLIER = 2;
 // Boss size is the normal mob's size plus 0.75 of it (1.75x).
 // Health/damage stay at the flat stat multiplier; only the body is scaled separately.
 export const BOSS_SIZE_MULTIPLIER = 1.75;
