@@ -2180,7 +2180,7 @@ export const BOSS_STAT_MULTIPLIER = 4;
 export const BOSS_DROP_MULTIPLIER = 5;
 // Boss bodies are 40% smaller than the base mob stats call for, so the
 // bosses feel proportionate to the current (shrunk) mob size scale.
-export const BOSS_SIZE_MULTIPLIER = 1.5;
+export const BOSS_SIZE_MULTIPLIER = BOSS_STAT_MULTIPLIER * 0.6;
 
 export const BOSS_NAMES = [
     "Beetle",
