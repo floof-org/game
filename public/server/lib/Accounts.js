@@ -45,7 +45,8 @@ function snapshot(client) {
         slots: (client.slots || []).map(slot => slot ? { id: slot.id, rarity: slot.rarity } : null),
         secondarySlots: (client.secondarySlots || []).map(slot => slot ? { id: slot.id, rarity: slot.rarity } : null),
         inventory,
-        craftAttempts: structuredClone(client.craftAttempts || {})
+        craftAttempts: structuredClone(client.craftAttempts || {}),
+        mobsKilled: structuredClone(client.mobsKilled || {})
     };
 }
 
@@ -96,7 +97,7 @@ class Accounts {
             const raw = await file.text();
 
             // keep the untouched file around: a load that migrates or drops records must never leave the old copy as the only one
-            await Bun.write(ACCOUNTS_FILE + ".load-backup", raw).catch(() => {});
+            await Bun.write(ACCOUNTS_FILE + ".load-backup", raw).catch(() => { });
 
             const data = JSON.parse(raw);
 
@@ -271,7 +272,11 @@ class Accounts {
         save.username = client.discordName || client.username || save.username;
         save.lastSeen = Date.now();
 
-        if (save.data) client.restoreFromData(save.data);
+        if (save.data) {
+            client.restoreFromData(save.data);
+        }
+
+        client.sendMobsKilled();
 
         return save;
     }
@@ -540,7 +545,7 @@ class Accounts {
         const name = `${ACCOUNTS_FILE}.auto-${stamp}`;
         await Bun.$`cp ${ACCOUNTS_FILE} ${name}`.quiet();
         const prune = `total=$(ls -1 ${ACCOUNTS_FILE}.auto-* 2>/dev/null | wc -l); if [ "$total" -gt 48 ]; then ls -1 ${ACCOUNTS_FILE}.auto-* | sort | head -n $((total - 48)) | xargs rm -f; fi`;
-        await Bun.$`sh -c ${prune}`.quiet().catch(() => {});
+        await Bun.$`sh -c ${prune}`.quiet().catch(() => { });
 
         return name;
     }

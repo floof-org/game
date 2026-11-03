@@ -978,6 +978,7 @@ export default class Client {
         this.masterPermissions = +masterPermissions;
         this.inventory = {};
         this.craftAttempts = {};
+        this.mobsKilled = {};
         this.handlingCraft = false;
         this.camera = new Camera();
 
@@ -1020,10 +1021,22 @@ export default class Client {
         this.frownyMessages = 0;
     }
 
+    sendMobsKilled() {
+        const writer = new Writer(true);
+
+        writer.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+        writer.setUint16(this.id);
+        writer.setUint8(CLIENT_BOUND.MOBS_KILLED);
+        writer.setStringUTF8(JSON.stringify(this.mobsKilled ?? {}));
+
+        state.router.postMessage(writer.build());
+    }
+
     /** @param {object} data save contents */
     restoreFromData(data) {
         this.level = Math.min(9999, Math.max(1, Math.floor(+data.level || 1)));
         this.xp = Math.min(1e21, Math.max(1, +data.xp || 1));
+        this.mobsKilled = structuredClone(data.mobsKilled || {});
 
         const slotLength = sanitizeSlotLength(data.slots?.length || this.slots.length);
         this.slots = sanitizeSlots(data.slots, slotLength);

@@ -3952,6 +3952,27 @@ export class Mob extends Entity {
             eligibleGroups.length = 0;
         }
 
+        // Track kills for every eligible player, solo or squad.
+        // Each eligible client gets one count for this mob and rarity.
+        if (paysOut) {
+            const mobIndex = String(this.index);
+            const rarity = String(this.rarity);
+
+            for (const group of eligibleGroups) {
+                for (const client of group.members) {
+                    if (!client) continue;
+
+                    client.mobsKilled ??= {};
+                    client.mobsKilled[mobIndex] ??= { tiers: {} };
+
+                    const tiers = client.mobsKilled[mobIndex].tiers;
+                    tiers[rarity] = (tiers[rarity] ?? 0) + 1;
+
+                    client.sendMobsKilled();
+                }
+            }
+        }
+
         if (damageByClient.size > 0 && eligibleGroups.length === 0) {
             const best = Math.max(...[...damageByClient.values()].map(d => d.damage));
             console.log(`[Loot] ${this.config?.name} r${this.rarity} died with ${damageByClient.size} damager(s), best ${(best / this.health.maxHealth * 100).toFixed(2)}% of max HP, nobody qualified.`);
