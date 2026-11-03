@@ -5,6 +5,7 @@ import { mobConfigs, mobIDOf, petalConfigs, tiers, DROP_LOOKUP, allPossiblePetal
 import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY, CRAFT_FAIL_ANNOUNCE_RARITY } from "./CraftManager.js";
+import { announceBossSpawn } from "./bossAnnounce.js";
 import { SQUADS, SQUAD_LEVEL_RANGE, SQUAD_MAX_MEMBERS, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
 
 const blockList = [];
@@ -5309,6 +5310,10 @@ export default class Client {
                 } catch (err) {
                     console.error("[spawnmob]", mobName, rarityIndex, err);
                 }
+            }
+
+            if (isBossSpawn && spawned > 0) {
+                announceBossSpawn(config, rarityIndex);
             }
 
             this.systemMessage(
