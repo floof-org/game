@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import state from "../public/server/lib/state.js";
 import SpatialHashGrid from "../public/server/lib/SpatialHashGrid.js";
 import { Mob, Petal, Player, createBoss } from "../public/server/lib/Entity.js";
-import { BOSS_ABILITIES, BOSS_NAMES, BOSS_SIZE_MULTIPLIER, DROP_LOOKUP, mobConfigs, petalConfigs } from "../public/server/lib/config.js";
+import { BOSS_ABILITIES, BOSS_NAMES, BOSS_SIZE_MULTIPLIER, BOSS_SPAWN_MESSAGES, DROP_LOOKUP, mobConfigs, petalConfigs } from "../public/server/lib/config.js";
 import { ENTITY_TYPES } from "../public/lib/protocol.js";
 
 const WORLD = 1000;
@@ -479,5 +479,14 @@ describe("poison loot damage", () => {
         for (let i = 0; i < 3; i++) boss.update();
 
         expect(boss.damagedBy[enemy.id]?.[0] ?? 0).toBe(damageBefore);
+    });
+});
+
+
+describe("boss spawn messages", () => {
+    test("every boss has a flavour message stored", () => {
+        for (const name of BOSS_NAMES) {
+            expect(BOSS_SPAWN_MESSAGES[name]).toBeTruthy();
+        }
     });
 });

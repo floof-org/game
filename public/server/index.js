@@ -1,6 +1,6 @@
 import state from "./lib/state.js";
 import { BIOME_TYPES, CLIENT_BOUND, Drawing, encodeEverything, ENTITY_TYPES, GAMEMODES, PetalTier, ROUTER_PACKET_TYPES } from "../lib/protocol.js";
-import { DEFAULT_PETAL_COUNT, mobConfigs, PetalConfig, petalConfigs, tiers, BOSS_NAMES } from "./lib/config.js";
+import { DEFAULT_PETAL_COUNT, mobConfigs, PetalConfig, petalConfigs, tiers, BOSS_NAMES, BOSS_SPAWN_MESSAGES } from "./lib/config.js";
 import { AIPlayer, createBoss, Mob, Player } from "./lib/Entity.js";
 import Router from "./lib/Router.js";
 import { stringToU8, u8ToString, u8ToU16 } from "../lib/lobbyProtocol.js";
@@ -336,13 +336,12 @@ function spawnBossEvent() {
 
     console.log(`[Boss] Spawned ${tiers[rarity].name} ${name} (id ${boss.id}) at ${position.x.toFixed(0)}, ${position.y.toFixed(0)}`);
 
-    // Boss spawns always announce, no matter the rarity roll.
-    if (boss.isBoss || (state.announceRarity > -1 && rarity >= state.announceRarity)) {
-        state.clients.forEach(client => client.systemMessage(
-            `A Boss ${tiers[rarity].name} ${name} has spawned!`,
-            tiers[rarity].color
-        ));
-    }
+    // Boss spawns always announce, using their flavour line when defined.
+    const message = BOSS_SPAWN_MESSAGES[name];
+    state.clients.forEach(client => client.systemMessage(
+        message ?? `A Boss ${tiers[rarity].name} ${name} has spawned!`,
+        tiers[rarity].color
+    ));
 }
 
 setInterval(spawnBossEvent, 30 * 60 * 1000);

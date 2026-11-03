@@ -2429,6 +2429,38 @@ export const BOSS_ABILITY_DESCRIPTIONS = {
     "Desert Centipede": ["Spins a spiral of sand thorns.", "Burrows to move much faster."]
 };
 
+// Boss spawn flavor text, keyed by mob name. Bosses currently in BOSS_NAMES all
+// have one; the rest of the table is stored here so it can be reused when those
+// mobs are added as bosses later.
+export const BOSS_SPAWN_MESSAGES = {
+    "Shiny Ladybug": "A perfect glint winks from the sand… something too bright for this place...",
+    "Moonlit Frog": "A soft sound drifts through the cool dark… pale eyes hold the light...",
+    "Sunlit Frog": "A soft sound rises in the warmth… bright eyes blink once and vanish...",
+    "Sandstorm": "The horizon vanishes… the desert is eating itself...",
+    "Scorpion": "A sharp gaze settles on you… something is deciding where to strike...",
+    "Beetle": "Heavy vibrations roll underfoot… something hungry is searching...",
+    "Beetle Pod": "A faint rhythmic clicking… something is growing from the inside...",
+    "Salt Flat": "The air tastes of salt… white cracks spread beneath you...",
+    "Lilypad": "A soft wet ripple… the water holds its breath...",
+    "Puddle": "The ground feels damp… the sky is staring back...",
+    "Sandstone": "The sand groans… something heavy is settling in...",
+    "Fire Ant Egg": "Warmth bleeds through thin walls… heat is building inside...",
+    "Baby Fire Ant": "A tiny spark flickers in the heat… small and newly born...",
+    "Worker Fire Ant": "Countless tiny flames crackle in the distance… work never stops...",
+    "Soldier Fire Ant": "The ground trembles with heat… something is on the move...",
+    "Pupa": "A shell ticks and cracks… change is almost here...",
+    "Moth": "Soft wings brush the air… drawn to a light that isn’t real...",
+    "Desert Centipede": "The dunes grind and shift… many legs whisper past...",
+    "Fire Ant Hole": "The sand opens like a wound… something waits below...",
+    "Desert Shrub": "The scrub shifts in the heat… green where there should be none...",
+    "Beetle Hole": "The ground collapses inward… something is waiting underneath...",
+    "Jellyfish": "The air tastes of a coming storm… static crawls over your skin...",
+    "Firestorm": "The air itself catches fire… the desert is burning from within...",
+    "ӇЄҲƛƓƠƝ": "The air tears open… something that should not exist is looking at you...",
+    "Evil Desert Centipede": "The dunes shift the wrong way… many legs whisper in the heat...",
+    "Cactus": "Something prickly moves in the scrub… better not to get too close..."
+};
+
 export const RARITY_BOSSES = {};
 
 for (let i = 0; i < _tiers.length; i++) {
