@@ -1,6 +1,6 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, SUMMON_STATS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER } from "./config.js";
 import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
@@ -3347,7 +3347,7 @@ export class Mob extends Entity {
             direction: 0
         }
 
-        this.pushability = config.pushability
+        this.pushability = config.pushability / (this.isBoss ? BOSS_MASS_MULTIPLIER : 1);
     }
 
     update() {

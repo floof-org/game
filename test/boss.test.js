@@ -328,3 +328,14 @@ describe("boss zone spawn", () => {
         expect(state.spawnBossInZone(BEETLE, 9)).toBeNull();
     });
 });
+
+describe("boss mass", () => {
+    test("bosses are three times as hard to push", () => {
+        const normal = new Mob({ x: 0, y: 0 });
+        normal.define(BEETLE, 5);
+
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 5);
+
+        expect(boss.pushability).toBeCloseTo(normal.pushability / 3, 8);
+    });
+});

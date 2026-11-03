@@ -2178,6 +2178,10 @@ globalThis.PETAL_RARITY_SIZES = [
 // multiplier instead of porting those old absolute numbers.
 export const BOSS_STAT_MULTIPLIER = 4;
 export const BOSS_DROP_MULTIPLIER = 5;
+// Boss mass is 3x a normal mob's. In this engine mass lives only in collisions,
+// so we scale the boss's knockback resistance: pushability is divided by 3,
+// which makes the boss 3x harder to shove aside while leaving impact strength alone.
+export const BOSS_MASS_MULTIPLIER = 3;
 // Boss size is the normal mob's size plus 0.75 of it (1.75x).
 // Health/damage stay at the flat stat multiplier; only the body is scaled separately.
 export const BOSS_SIZE_MULTIPLIER = 1.75;
