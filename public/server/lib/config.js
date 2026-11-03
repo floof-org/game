@@ -831,7 +831,7 @@ export const petalConfigs = [
     new PetalConfig("Lens", 112.5, 2500, 44).setSize(3.6).setDown(1).setPetalAttractsAggro(1)
         .setDrawing(new Drawing().addAction("rotate", -45).addAction("opacity", .7).addAction("beginPath").addAction("moveTo", .95, .275).addAction("lineTo", .95, -.275).addAction("lineTo", -.95, -.275).addAction("lineTo", -.95, .275).addAction("fill", "#FFFFFF").addAction("opacity", .35).addAction("beginPath").addAction("circle", 0, 0, 1).addAction("fill", "#FFFFFF").addAction("opacity", 1).addAction("stroke", "#FFFFFF", .2, 0)
         ).setDescription("Lures mobs to this petal until destroyed, can be placed down too."),
-    new PetalConfig("Salt", 32.5, 11, 0).setSize(1.2).setInvulnerable().setBodyDamageBonus(150.5 / 4)
+    new PetalConfig("Salt", 32.5, 11, 0).setSize(1.2).setInvulnerable().setPhases(1).setBodyDamageBonus(150.5 / 4)
         .setDrawing(new Drawing().addAction("beginPath").addAction("polygon", 7, 1, 0).addAction("paint", "#FFFFFF", .25, .2)
         ).setDescription("Increases your body contact damage, stacks"),
     new PetalConfig("Rubber", 15, 95, 1.1).setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5], "Rubber", 0).setSize(1.55).setAttractsLightning(1).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5], 0).setDescription("Attracts lightning. Does not stack.")
@@ -1153,7 +1153,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Fire Spellbook"), .03),
     new MobConfig("Jellyfish", 62, 74, 35, 2.5)
         .setAggressive(1)
-        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2 * .5 * .85)
+        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2 * .5 * .85 * 1.25)
         .addDrop(petalIDOf("Lightning"))
         .addDrop(petalIDOf("Jelly")),
     new MobConfig("Cactus", 50, 20, 30, 0)
@@ -1530,7 +1530,7 @@ export const mobConfigs = [
             .addAction("closePath")
         )
     ,
-    new MobConfig("Shiny Soldier Ant", 12, 22, 15, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5).setProjectile({
+    new MobConfig("Shiny Soldier Ant", 12, 22, 15, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5 * 1.25).setProjectile({
         petalIndex: petalIDOf("Missile"),
         cooldown: 45,
         health: 0.000000000002,

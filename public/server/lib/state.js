@@ -1,12 +1,13 @@
 import { CLIENT_BOUND, ENTITY_TYPES, GAMEMODES, ROUTER_PACKET_TYPES, Writer, tiers } from "../../lib/protocol.js";
 import { quickDiff } from "../../lib/util.js";
+import { BOSS_STAT_MULTIPLIER } from "./config.js";
 import SpatialHashGrid from "./SpatialHashGrid.js";
 
 /**
  * Lowest mob rarity that gets a spawn, despawn, kill or drop announcement.
  * Exported so a lobby that overrides it cannot silently drift away from the default.
  */
-export const DEFAULT_ANNOUNCE_RARITY = 24; // Finalist
+export const DEFAULT_ANNOUNCE_RARITY = 25; // Epsilation
 
 // Zone coords work on a [-1, 1] scale with [0, 0] being the center of the map
 export class Zone {
