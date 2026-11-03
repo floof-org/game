@@ -3648,14 +3648,8 @@ export class Mob extends Entity {
                 state.livingMobCount--;
             }
 
-            const rarityData = tiers[this.rarity];
-
-            if (rarityData) {
-                state.clients.forEach(c => c.systemMessage(
-                    applyArticle(rarityData.name, true) + " " + this.config.name + " has been killed",
-                    rarityData.color
-                ));
-            }
+            // /killall is a silent administrative cleanup: no lobby-wide kill
+            // message is sent for mobs removed this way.
 
             return;
         }

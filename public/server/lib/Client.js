@@ -1882,9 +1882,8 @@ export default class Client {
 
         // admin help
         if (commandCheck("/admincommands")) {
-            [
+            const commands = [
                 "Note: [text] indicates required, <text> indicates optional.",
-                "/killall [rarity] <mobname> - Kills all the mobs of the specified rarity and mob.",
                 "/saveall - Saves all accounts.",
                 "/online <page-number> - Shows all players ID of a page.",
                 "/kick [username|username-index|id] <reason> - Kicks the selected player.",
@@ -1896,7 +1895,13 @@ export default class Client {
                 "/rooms - Shows all active rooms.",
                 "/deleteroom [roomID] - Deletes the specified room.",
                 "/roominfo [roomID] - Shows all the data of the specified room."
-            ].forEach(cmd => this.systemMessage(cmd, "#b570ff"));
+            ];
+
+            if (this.masterPermissions >= 2) {
+                commands.splice(1, 0, "/killall [rarity] <mobname> - Kills all the mobs of the specified rarity and mob. Owner only.");
+            }
+
+            commands.forEach(cmd => this.systemMessage(cmd, "#b570ff"));
             return;
         }
 
@@ -5365,7 +5370,7 @@ export default class Client {
 
         // /killall
         if (commandCheck("/killall")) {
-            if (!requireAdmin()) return;
+            if (!requireOwner()) return;
 
             const args = e.substring(8).trim().split(/\s+/);
 
