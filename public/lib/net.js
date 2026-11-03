@@ -809,6 +809,7 @@ export class ClientMob extends ClientEntity {
         this.attack = false;
         this.poisoned = false;
         this.friendly = false;
+        this.isBoss = false;
         this.healthRatio = 1;
         this.realHealthRatio = 1;
 
@@ -1396,6 +1397,7 @@ export class ClientSocket extends WebSocket {
                         mob.realY = reader.getFloat32();
                         mob.realSize = reader.getFloat32();
                         mob.realFacing = reader.getFloat32();
+                        mob.isBoss = reader.getUint8() === 1;
 
                         const eFlags = reader.getUint8();
                         mob.hit = (eFlags & ENTITY_MODIFIER_FLAGS.HIT) === ENTITY_MODIFIER_FLAGS.HIT;

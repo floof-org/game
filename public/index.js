@@ -1900,7 +1900,8 @@ function draw() {
             drawBar(drawX - barSize, drawX - barSize + barSize * 2 * entity.healthRatio, drawY + barSize + 13 * scale, 0.667 * barthicc, entity.poisoned ? mixColors(colors.common, colors.irisPurple, 0.5 + Math.sin(performance.now() / 333 + entity.id * 3) * 0.5) : colors.common);
 
             ctx.textAlign = "left";
-            text(net.state.mobConfigs[entity.index].name, drawX - barSize - barthicc * 0.5, drawY + barSize + 8 * scale - barthicc * 0.5, 8.5 * scale);
+            const mobDisplayName = entity.isBoss ? `${net.state.mobConfigs[entity.index].name} (Boss)` : net.state.mobConfigs[entity.index].name;
+            text(mobDisplayName, drawX - barSize - barthicc * 0.5, drawY + barSize + 8 * scale - barthicc * 0.5, 8.5 * scale);
 
             ctx.textAlign = "right";
             text(net.state.tiers[entity.rarity].name, drawX + barSize + barthicc * 0.5, drawY + barSize + 18 * scale + barthicc * 0.5, 8.5 * scale, net.state.tiers[entity.rarity].color);
