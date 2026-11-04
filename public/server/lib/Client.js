@@ -22,6 +22,12 @@ const patterns = [
 
 const tripsFilter = message => patterns.some(p => p.test(message));
 
+const getDropTablesJSON = () => {
+    const dropTables = globalThis.DROP_TABLES;
+
+    return dropTables ? JSON.stringify(dropTables) : null;
+};
+
 export class PlayerClientCache {
     id = 0;
     name = "";
@@ -1593,6 +1599,23 @@ export default class Client {
 
                 state.router.postMessage(terrainWriter.build());
             }
+        }
+
+        if (!this.__sentDropTables) {
+            this.__sentDropTables = true;
+
+            const dropTablesJSON = getDropTablesJSON();
+
+            if (!dropTablesJSON) return;
+
+            const dropTablesWriter = new Writer(true);
+
+            dropTablesWriter.setUint8(ROUTER_PACKET_TYPES.PIPE_PACKET);
+            dropTablesWriter.setUint16(this.id);
+            dropTablesWriter.setUint8(CLIENT_BOUND.DROP_TABLES);
+            dropTablesWriter.setStringUTF8(dropTablesJSON);
+
+            state.router.postMessage(dropTablesWriter.build());
         }
     }
 

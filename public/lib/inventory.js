@@ -24,15 +24,23 @@ const HIGHEST_RARITY_FIRST = true;
 const STACK_GROUP = -1;
 
 export function formatAmount(v) {
-    if (Number.isNaN(v)) return "0";
-    if (!Number.isFinite(v)) return "∞";
+    if (!isFinite(v)) return "∞";
+    if (isNaN(v)) return "0";
 
     const f = (num, div, suffix) => {
         const val = num / div;
-        const str = val.toFixed(1);
-        return str.endsWith(".0") ? Math.floor(val) + suffix : str + suffix;
+        if (!isFinite(val)) return "∞";
+
+        const truncated = Math.floor(val * 10) / 10;
+        const str = truncated.toFixed(1);
+
+        return str.endsWith(".0") ? str.slice(0, -2) + suffix : str + suffix;
     };
 
+    if (v >= 1e30) return f(v, 1e30, "Nv");
+    if (v >= 1e27) return f(v, 1e27, "Oc");
+    if (v >= 1e24) return f(v, 1e24, "Sp");
+    if (v >= 1e21) return f(v, 1e21, "Sx");
     if (v >= 1e18) return f(v, 1e18, "Qt");
     if (v >= 1e15) return f(v, 1e15, "Qd");
     if (v >= 1e12) return f(v, 1e12, "t");

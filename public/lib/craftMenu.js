@@ -1,4 +1,5 @@
-import { getPetalIcon, petalTooltip } from "./renders.js";
+import { getPetalIcon, petalTooltip, mobTooltip } from "./renders.js";
+import { getWaveIcon } from "../index.js";
 import { state, sendChatMessage, onChatMessage, captureChatMessage } from "./net.js";
 import { formatAmount } from "./inventory.js";
 import { SERVER_BOUND } from "./protocol.js";
@@ -1054,6 +1055,466 @@ var craftRef = null;
         if (craft.injectAttempts++ < 100) setTimeout(craft.inject, 200);
         return;
       }
+
+// Mob Gallery
+var galleryBtn = document.getElementById('galleryMenuButton');
+var galleryPanel = document.getElementById('galleryMenuPanel');
+
+if (!galleryPanel) {
+    galleryPanel = document.createElement('div');
+    galleryPanel.id = 'galleryMenuPanel';
+    galleryPanel.className = 'menu';
+
+    galleryPanel.style.background = '#e8d98b';
+    galleryPanel.style.borderColor = '#c4b66e';
+
+    document.getElementById('menus2').appendChild(galleryPanel);
+}
+
+if (!galleryBtn) {
+    galleryBtn = document.createElement('button');
+    galleryBtn.id = 'galleryMenuButton';
+
+    galleryBtn.style.width = '40px';
+    galleryBtn.style.height = '40px';
+    galleryBtn.style.background = '#e8d98b';
+    galleryBtn.style.border = '4px solid #c4b66e';
+    galleryBtn.style.color = '#fff';
+    galleryBtn.style.cursor = 'pointer';
+
+galleryBtn.addEventListener('click', function () {
+    var opening = !galleryPanel.classList.contains('active');
+
+    galleryPanel.classList.toggle('active');
+
+    if (opening) {
+        renderGalleryGrid();
+    }
+});
+
+    c.appendChild(galleryBtn);
+}
+
+if (!window.galleryKeyListenerAdded) {
+    window.galleryKeyListenerAdded = true;
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key.toLowerCase() !== 'x') return;
+
+        if (
+            e.target.tagName === 'INPUT' ||
+            e.target.tagName === 'TEXTAREA' ||
+            e.target.isContentEditable
+        ) return;
+
+var opening = !galleryPanel.classList.contains('active');
+
+galleryPanel.classList.toggle('active');
+
+if (opening) {
+    renderGalleryGrid();
+}
+    });
+}
+
+var galleryTooltip = document.getElementById('galleryTooltip');
+
+if (!galleryTooltip) {
+    galleryTooltip = document.createElement('canvas');
+    galleryTooltip.id = 'galleryTooltip';
+
+    galleryTooltip.style.cssText =
+        'position:fixed;' +
+        'display:none;' +
+        'pointer-events:none;' +
+        'z-index:2000;' +
+        'image-rendering:auto;';
+
+    document.body.appendChild(galleryTooltip);
+}
+
+var galleryObserver = null;
+
+function renderGalleryGrid() {
+    var s = state;
+
+    if (!s || !Array.isArray(s.mobConfigs) || !Array.isArray(s.tiers)) {
+        console.warn('[Gallery] Game state is not ready yet.');
+        return;
+    }
+
+    if (galleryPanel.dataset.rendered === 'true') return;
+
+    var mobs = s.mobConfigs;
+    var tiers = s.tiers;
+    var iconSize = 54;
+    var cellSize = 54;
+    var mobLabelWidth = 150;
+
+    var hasKillData =
+        s.MOBS_KILLED !== undefined &&
+        s.MOBS_KILLED !== null &&
+        typeof s.MOBS_KILLED === 'object';
+
+    var oldWrapper = document.getElementById('galleryMenuGridWrapper');
+    var savedScrollTop = oldWrapper ? oldWrapper.scrollTop : 0;
+    var savedScrollLeft = oldWrapper ? oldWrapper.scrollLeft : 0;
+
+    if (galleryObserver) {
+        galleryObserver.disconnect();
+    }
+
+    galleryPanel.replaceChildren();
+
+    galleryPanel.style.display = 'flex';
+    galleryPanel.style.flexDirection = 'column';
+    galleryPanel.style.overflow = 'hidden';
+
+    var wrapper = document.createElement('div');
+    wrapper.id = 'galleryMenuGridWrapper';
+
+    wrapper.style.cssText =
+        'flex:1 1 auto;' +
+        'overflow-x:scroll;' +
+        'overflow-y:auto;' +
+        'min-width:0;' +
+        'min-height:0;';
+
+    galleryPanel.appendChild(wrapper);
+
+    var mobRows = [];
+
+    if (hasKillData) {
+        Object.keys(s.MOBS_KILLED).forEach(function (mobIndexString) {
+            var mobIndex = Number(mobIndexString);
+            var mob = mobs[mobIndex];
+            var mobKillData = s.MOBS_KILLED[mobIndexString];
+
+            if (!mob || !Array.isArray(mob.tiers) || !mobKillData?.tiers) {
+                return;
+            }
+
+            var rarityEntries = Object.keys(mobKillData.tiers)
+                .map(function (rarityString) {
+                    return {
+                        rarityIndex: Number(rarityString),
+                        killCount: Number(mobKillData.tiers[rarityString])
+                    };
+                })
+                .filter(function (entry) {
+                    return (
+                        Number.isInteger(entry.rarityIndex) &&
+                        entry.rarityIndex >= 0 &&
+                        entry.rarityIndex < tiers.length &&
+                        entry.rarityIndex < mob.tiers.length &&
+                        entry.killCount > 0
+                    );
+                })
+                .sort(function (a, b) {
+                    return a.rarityIndex - b.rarityIndex;
+                });
+
+            if (rarityEntries.length > 0) {
+                mobRows.push({
+                    mob: mob,
+                    mobIndex: mobIndex,
+                    rarityEntries: rarityEntries
+                });
+            }
+        });
+
+        mobRows.sort(function (a, b) {
+            return a.mobIndex - b.mobIndex;
+        });
+    } else {
+        mobs.forEach(function (mob, mobIndex) {
+            if (!mob || !Array.isArray(mob.tiers)) return;
+
+            mobRows.push({
+                mob: mob,
+                mobIndex: mobIndex,
+                rarityEntries: tiers.map(function (_, rarityIndex) {
+                    return {
+                        rarityIndex: rarityIndex,
+                        killCount: 0
+                    };
+                }).filter(function (entry) {
+                    return !!mob.tiers[entry.rarityIndex];
+                })
+            });
+        });
+    }
+
+    if (mobRows.length === 0) {
+        var emptyMessage = document.createElement('div');
+
+        emptyMessage.textContent = 'Mob Gallery is empty.';
+        emptyMessage.style.cssText =
+            'padding:20px;' +
+            'font-family:Ubuntu,sans-serif;' +
+            'font-size:16px;' +
+            'font-weight:bold;' +
+            'color:#fff;' +
+            'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;';
+
+        wrapper.appendChild(emptyMessage);
+        galleryPanel.dataset.rendered = 'true';
+        return;
+    }
+
+var gridColumns =
+    mobLabelWidth + 'px repeat(' + tiers.length + ',' + cellSize + 'px)';
+
+var gridStyle =
+    'display:grid;' +
+    'grid-template-columns:' + gridColumns + ';' +
+    'gap:5px;' +
+    'align-items:center;' +
+    'width:max-content;';
+
+var header = document.createElement('div');
+header.style.cssText = gridStyle;
+wrapper.appendChild(header);
+
+header.appendChild(document.createElement('div'));
+
+tiers.forEach(function (tier) {
+    var heading = document.createElement('div');
+
+    heading.textContent = tier.name || '';
+    heading.style.cssText =
+        'width:' + cellSize + 'px;' +
+        'font-family:Ubuntu,sans-serif;' +
+        'font-size:10px;' +
+        'font-weight:bold;' +
+        'text-align:center;' +
+        'color:' + (tier.color || '#fff') + ';' +
+        'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;' +
+        'overflow:hidden;' +
+        'text-overflow:ellipsis;' +
+        'white-space:nowrap;';
+
+    header.appendChild(heading);
+});
+
+galleryObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+
+        var host = entry.target;
+
+        if (host._renderIcon) {
+            host._renderIcon();
+            host._renderIcon = null;
+        }
+
+        galleryObserver.unobserve(host);
+    });
+}, {
+    root: wrapper,
+    rootMargin: '100px'
+});
+
+mobRows.forEach(function (row) {
+    var mob = row.mob;
+    var mobIndex = row.mobIndex;
+
+    var mobRow = document.createElement('div');
+    mobRow.style.cssText = gridStyle + 'margin-bottom:5px;';
+    wrapper.appendChild(mobRow);
+
+    var name = document.createElement('div');
+    name.textContent = mob.name || ('Mob ' + mobIndex);
+    name.style.cssText =
+        'width:' + mobLabelWidth + 'px;' +
+        'overflow:hidden;' +
+        'text-overflow:ellipsis;' +
+        'white-space:nowrap;' +
+        'font-family:Ubuntu,sans-serif;' +
+        'font-size:13px;' +
+        'font-weight:bold;' +
+        'color:#fff;' +
+        'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;';
+
+    mobRow.appendChild(name);
+
+    tiers.forEach(function (_, rarityIndex) {
+        var mobTier = mob.tiers[rarityIndex];
+        var host = document.createElement('div');
+
+        host.style.cssText =
+            'box-sizing:border-box;' +
+            'position:relative;' +
+            'width:' + cellSize + 'px;' +
+            'height:' + cellSize + 'px;' +
+            'display:flex;' +
+            'align-items:center;' +
+            'justify-content:center;' +
+            'padding-top:0.25px;' +
+            'background:#c4b66e;' +
+            'border-radius:6px;' +
+            'overflow:hidden;';
+
+        var mobKillData = hasKillData
+            ? s.MOBS_KILLED[String(mobIndex)]
+            : null;
+
+        var killCount = Number(
+            mobKillData?.tiers?.[String(rarityIndex)] ?? 0
+        );
+
+        if (
+            !mobTier ||
+            (hasKillData && killCount <= 0)
+        ) {
+            mobRow.appendChild(host);
+            return;
+        }
+
+        if (killCount > 1) {
+            var amountLabel = document.createElement('div');
+
+            var formattedAmount =
+                typeof formatAmount === 'function'
+                    ? formatAmount(killCount)
+                    : String(killCount);
+
+            amountLabel.textContent = 'x' + formattedAmount + '';
+            amountLabel.style.cssText =
+                'position:absolute;' +
+                'top:1px;' +
+                'right:3px;' +
+                'z-index:2;' +
+                'font-family:Ubuntu,sans-serif;' +
+                'font-size:10px;' +
+                'font-weight:bold;' +
+                'white-space:nowrap;' +
+                'color:#fff;' +
+                'text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000;' +
+                'pointer-events:none;';
+
+            host.appendChild(amountLabel);
+        }
+
+        host._renderIcon = function () {
+            try {
+                var source = getWaveIcon({
+                    index: mobIndex,
+                    rarity: rarityIndex,
+                    size: iconSize
+                });
+
+                if (!source || !source.width || !source.height) return;
+
+                var iconCanvas = document.createElement('canvas');
+                iconCanvas.width = source.width;
+                iconCanvas.height = source.height;
+
+                iconCanvas.style.cssText =
+                    'width:100%;' +
+                    'height:100%;' +
+                    'display:block;' +
+                    'pointer-events:none;';
+
+                iconCanvas.getContext('2d').drawImage(source, 0, 0);
+                host.appendChild(iconCanvas);
+            } catch (err) {
+                console.warn(
+                    '[Gallery] Failed to draw mob icon:',
+                    mobIndex,
+                    rarityIndex,
+                    err
+                );
+            }
+        };
+
+        galleryObserver.observe(host);
+
+        host.addEventListener('mouseenter', function () {
+            if (typeof mobTooltip !== 'function') return;
+
+            var tooltipSource = mobTooltip(mobIndex, rarityIndex);
+
+            if (
+                !tooltipSource ||
+                !tooltipSource.width ||
+                !tooltipSource.height
+            ) return;
+
+            var bw = 350;
+            var bh = 350 * tooltipSource.height / tooltipSource.width;
+
+            galleryTooltip.width = bw;
+            galleryTooltip.height = bh;
+
+            var tooltipCtx = galleryTooltip.getContext('2d');
+
+            tooltipCtx.clearRect(0, 0, bw, bh);
+            tooltipCtx.imageSmoothingEnabled = true;
+            tooltipCtx.imageSmoothingQuality = 'high';
+            tooltipCtx.drawImage(tooltipSource, 0, 0, bw, bh);
+
+            galleryTooltip.style.width = bw + 'px';
+            galleryTooltip.style.height = bh + 'px';
+            galleryTooltip.style.display = 'block';
+
+            var rect = host.getBoundingClientRect();
+
+            var x = rect.left + rect.width / 2 - bw / 2;
+            var y = rect.top - bh - 10;
+
+            x = Math.max(0, Math.min(x, window.innerWidth - bw));
+            y = Math.max(0, Math.min(y, window.innerHeight - bh));
+
+            galleryTooltip.style.left = x + 'px';
+            galleryTooltip.style.top = y + 'px';
+        });
+
+        host.addEventListener('mouseleave', function () {
+            galleryTooltip.style.display = 'none';
+        });
+
+        mobRow.appendChild(host);
+    });
+});
+
+    wrapper.scrollTop = savedScrollTop;
+    wrapper.scrollLeft = savedScrollLeft;
+
+    galleryPanel.dataset.rendered = 'true';
+}
+
+window.refreshMobGallery = function () {
+    if (!galleryPanel) return;
+
+    galleryPanel.dataset.rendered = 'false';
+
+    if (galleryPanel.classList.contains('active')) {
+        renderGalleryGrid();
+    }
+};
+
+if (!document.getElementById('galleryMenuStyles')) {
+    var style = document.createElement('style');
+    style.id = 'galleryMenuStyles';
+
+    style.textContent =
+        '#galleryMenuGridWrapper::-webkit-scrollbar{' +
+            'width:10px;height:10px;' +
+        '}' +
+        '#galleryMenuGridWrapper::-webkit-scrollbar-track{' +
+            'background:rgba(0,0,0,0.12);border-radius:4px;' +
+        '}' +
+        '#galleryMenuGridWrapper::-webkit-scrollbar-thumb{' +
+            'background:rgba(0,0,0,0.35);border-radius:4px;' +
+        '}' +
+        '#galleryMenuGridWrapper::-webkit-scrollbar-thumb:hover{' +
+            'background:rgba(0,0,0,0.55);' +
+        '}';
+
+    document.head.appendChild(style);
+}
+
       if (document.getElementById('craftMenuButton')) return;
 
       craft.btn = document.createElement('button');
@@ -1091,6 +1552,7 @@ var craftRef = null;
 
       craft.btn.addEventListener('click', craft.togglePanel);
       c.appendChild(craft.btn);
+      c.appendChild(galleryBtn);
 
       document.addEventListener('keydown', function (e) {
         if (e.key !== 'c' && e.key !== 'C') return;

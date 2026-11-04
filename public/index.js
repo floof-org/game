@@ -11,6 +11,7 @@ import SpatialHashGrid from "./server/lib/SpatialHashGrid.js";
 import "./lib/inventory.js";
 import "./lib/craftMenu.js";
 
+import { formatAmount } from "./lib/inventory.js";
 export { formatAmount } from "./lib/inventory.js";
 
 const mobRenderSpatialHash = new SpatialHashGrid();
@@ -870,7 +871,7 @@ function makeWaveIcon(entry, mode, key) {
       return canvas;
 }
 
-function getWaveIcon(entry) {
+export function getWaveIcon(entry) {
   const animated =
   wavesGradientOn() &&
   entry.rarity >= getGradientMinRarity();
@@ -926,6 +927,7 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
     for (let p = 0; p < count; p++) {
         const seed = t * 1000 + p * 97;
         const sideMode = rand01(seed + 10);
+        const scale = size / 128;
 
         let startX, startY;
 
@@ -940,7 +942,10 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
         const angle = -0.35 + rand01(seed + 2) * 1.2;
         const vx = Math.cos(angle);
         const vy = Math.sin(angle);
-        const travel = now * GLOW_PARTICLE_SPEED;
+
+        const particleSpeed = GLOW_PARTICLE_SPEED * scale;
+
+        const travel = now * particleSpeed;
 
         const x = ((((startX + vx * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
         const y = ((((startY + vy * travel) % span) + span) % span) - GLOW_PARTICLE_MARGIN;
@@ -977,7 +982,7 @@ function drawGlowParticles(ctx, t, size, clipX, clipY, clipW, clipH, clipR, now)
     ctx.restore();
 }
 
-function wavesSweepGradient(ctx, t, base, now) {
+function wavesSweepGradient(ctx, t, base, now, size) {
     now = Number.isFinite(now) ? now : performance.now();
 
     const custom = wavesTierVisual(t);
@@ -985,7 +990,14 @@ function wavesSweepGradient(ctx, t, base, now) {
     const time = (now * 0.07) % 512;
     const offset = time - 256;
 
-    const g = ctx.createLinearGradient(offset - 160, offset - 160, offset + 160, offset + 160);
+    const extent = size * (160 / 120);
+
+    const g = ctx.createLinearGradient(
+        offset - extent,
+        offset - extent,
+        offset + extent,
+        offset + extent
+    );
 
     const soft = custom.soft ?? mixColors(base, "#ffffff", 0.06);
     const main = custom.base ?? base;
@@ -1037,11 +1049,13 @@ function wavesDrawGradient2(ctx, t, x, y, size, clipHeight = size) {
 
     const now = performance.now();
 
+    const scale = size / 120;
+
     const band = size * sizeMul;
 
     const travelDistance = size + band * 2;
 
-    const pxPerMs = Math.max(speed, 0.001) * 0.05;
+    const pxPerMs = Math.max(speed, 0.001) * 0.05 * scale;
 
     const lineDuration = travelDistance / pxPerMs;
 
@@ -1213,9 +1227,14 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
     ctx.save();
     ctx.globalCompositeOperation = "screen";
 
-    const pxPerMs = 0.04 * speed;
 
-    const MAX_RADIUS = (Math.hypot(size * 0.5, size * 0.5) + 40) * 3;
+    const scale = size / 120;
+    const pxPerMs = 0.04 * speed * scale;
+
+    const margin = 40 * scale;
+
+    const MAX_RADIUS =
+        (Math.hypot(size * 0.5, size * 0.5) + margin) * 3;
 
     const ringCount = rings.length || 1;
 
@@ -1263,7 +1282,7 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
 
             if (elapsed < 0) continue;
 
-            const radius = 1 + elapsed * pxPerMs;
+            const radius = scale + elapsed * pxPerMs;
 
             if (radius <= 0 || radius > MAX_RADIUS) {
                 continue;
@@ -1271,7 +1290,7 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
 
             const ring = rings[infiniteLoop ? ((index % ringCount) + ringCount) % ringCount : Math.floor((linearSpawnTime % cycleLength) / delay)];
 
-            wavesDrawGradient3Ring(ctx, ring, radius, cx, cy);
+            wavesDrawGradient3Ring(ctx, ring, radius, cx, cy, size);
         }
     } else {
         const START_RADIUS = MAX_RADIUS * 0.22 * 1.15;
@@ -1326,7 +1345,7 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
         });
 
         for (const item of drawList) {
-            wavesDrawGradient3Ring(ctx, rings[item.ringId], item.radius, cx, cy);
+            wavesDrawGradient3Ring(ctx, rings[item.ringId], item.radius, cx, cy, size);
         }
     }
 
@@ -1334,15 +1353,17 @@ function wavesDrawGradient3(ctx, t, x, y, size, clipHeight = size) {
     ctx.restore();
 }
 
-function wavesDrawGradient3Ring(ctx, ring, radius, cx, cy) {
+function wavesDrawGradient3Ring(ctx, ring, radius, cx, cy, size) {
     const coreColor = ring.color;
 
     const glowColor = ring.glow;
 
-    const GLOW_WIDTH = 20;
-    const GLOW_OFFSET = -7;
+    const scale = size / 120;
 
-    const innerR = Math.max(0, radius + GLOW_OFFSET);
+    const GLOW_WIDTH = 20 * scale;
+    const GLOW_OFFSET = -7 * scale;
+
+    const innerR = Math.max(scale * 0.001, radius + GLOW_OFFSET);
 
     const outerR = innerR + GLOW_WIDTH;
 
@@ -1426,7 +1447,7 @@ function wavesFillStyle(ctx, rarity, base, ratio = null, now, x, y, size) {
 
     const safeNow = Number.isFinite(now) ? now : performance.now();
 
-    return wavesSweepGradient(ctx, rarity, base, safeNow);
+    return wavesSweepGradient(ctx, rarity, base, safeNow, size);
 }
 
 function wavesBorderStyle(rarity) {
@@ -1783,6 +1804,7 @@ function draw() {
         if (keyMap.has("g")) {
             ctx.globalAlpha = 0.3;
             ctx.beginPath();
+            
             ctx.arc(drawX, drawY, entity.size * scale * 1.4, 0, Math.PI * 2);
             ctx.fillStyle = net.state.tiers[entity.rarity].color;
             ctx.fill();
@@ -1791,14 +1813,6 @@ function draw() {
             text(net.state.tiers[entity.rarity].name, drawX, drawY, entity.size * scale * 1.15, net.state.tiers[entity.rarity].color);
         }
     });
-
-    function formatAmount(n) {
-        if (n >= 1e12) return "x" + (n / 1e12).toFixed(1) + "t";
-        if (n >= 1e9) return "x" + (n / 1e9).toFixed(1) + "b";
-        if (n >= 1e6) return "x" + (n / 1e6).toFixed(1) + "m";
-        if (n >= 1e3) return "x" + (n / 1e3).toFixed(1) + "k";
-        return "x" + n;
-    }
 
     net.state.drops.forEach((entity) => {
         const oldTransform = ctx.getTransform();
@@ -1828,7 +1842,7 @@ function draw() {
         ctx.drawImage(getPetalIcon(entity.index, entity.rarity), -0.5, -0.5, 1, 1);
 
         if ((entity.amount ?? 1) > 1) {
-            const text = formatAmount(entity.amount);
+            const text = "x" + formatAmount(entity.amount);
 
             ctx.font = "bold 0.35px Ubuntu";
             ctx.fillStyle = "#ffffff";
@@ -1898,6 +1912,28 @@ function draw() {
             drawBar(drawX - barSize, drawX + barSize, drawY + barSize + 13 * scale, barthicc, colors["???"]);
             drawBar(drawX - barSize, drawX - barSize + barSize * 2 * entity.secondaryHealthBar, drawY + barSize + 13 * scale, 0.667 * barthicc, colors.legendary);
             drawBar(drawX - barSize, drawX - barSize + barSize * 2 * entity.healthRatio, drawY + barSize + 13 * scale, 0.667 * barthicc, entity.poisoned ? mixColors(colors.common, colors.irisPurple, 0.5 + Math.sin(performance.now() / 333 + entity.id * 3) * 0.5) : colors.common);
+
+             if (options.showDebug) {
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+
+                const maxHealth =
+                    net.state.mobConfigs[entity.index]?.tiers[entity.rarity]?.health ?? 100;
+
+                const currentHealth = maxHealth * entity.healthRatio;
+                const healthPercent = Math.floor(entity.healthRatio * 1000) / 10;
+
+                const healthText = `${formatAmount(currentHealth)}/${formatAmount(maxHealth)} (${healthPercent}%)`;
+                const healthFontSize = Math.max(6, Math.min(9.25 * scale, barSize * 0.12));
+
+                text(
+                    healthText,
+                    drawX,
+                    drawY + barSize + 13 * scale - barthicc * 0.3 + 3 * scale,
+                    healthFontSize,
+                    "#FFFFFF"
+                );
+            }
 
             ctx.textAlign = "left";
             text(net.state.mobConfigs[entity.index].name, drawX - barSize - barthicc * 0.5, drawY + barSize + 8 * scale - barthicc * 0.5, 8.5 * scale);
