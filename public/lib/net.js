@@ -1829,43 +1829,61 @@ export class ClientSocket extends WebSocket {
 
                 break;
             }
-case CLIENT_BOUND.TERRAIN_SCORES: {
-    if (!state.terrain?.blocks) {
-        break;
-    }
-
-    const count = reader.getUint32();
-
-    state.terrainScores = new Map();
-
-    for (let i = 0; i < count; i++) {
-        const x = reader.getUint32();
-        const y = reader.getUint32();
-        const score = reader.getFloat32();
-
-        state.terrainScores.set(`${x},${y}`, score);
-    }
-
-    state.minimapImgWalls = renderTerrainForMap(
-        state.terrain.width,
-        state.terrain.blocks,
-        state.tiers,
-        state.terrainScores,
-        false,
-    );
-
-    state.minimapImgTerrain = renderTerrainForMap(
-        state.terrain.width,
-        state.terrain.blocks,
-        state.tiers,
-        state.terrainScores,
-        true,
-    );
-
-    state.minimapImg = state.minimapImgWalls;
-
-    break;
-}
+      case CLIENT_BOUND.TERRAIN_SCORES: {
+          if (!state.terrain?.blocks) {
+              break;
+          }
+      
+          const count = reader.getUint32();
+      
+          state.terrainScores = new Map();
+      
+          for (let i = 0; i < count; i++) {
+              const x = reader.getUint32();
+              const y = reader.getUint32();
+              const score = reader.getFloat32();
+      
+              state.terrainScores.set(`${x},${y}`, score);
+          }
+      
+          state.minimapImgWalls = renderTerrainForMap(
+              state.terrain.width,
+              state.terrain.blocks,
+              state.tiers,
+              state.terrainScores,
+              false,
+          );
+      
+          state.minimapImgTerrain = renderTerrainForMap(
+              state.terrain.width,
+              state.terrain.blocks,
+              state.tiers,
+              state.terrainScores,
+              true,
+          );
+      
+          state.minimapImg = state.minimapImgWalls;
+      
+          break;
+      }
+      case CLIENT_BOUND.DROP_TABLES: {
+          state.DROP_TABLES = JSON.parse(reader.getStringUTF8());
+      
+          console.log(
+              `Client: Received ${Object.keys(state.DROP_TABLES).length} dropTables.`
+          );
+      
+          break;
+      }
+      case CLIENT_BOUND.MOBS_KILLED: {
+          state.MOBS_KILLED = JSON.parse(reader.getStringUTF8());
+      
+          if (typeof window.refreshMobGallery === 'function') {
+              window.refreshMobGallery();
+          }
+      
+          break;
+      }
       case CLIENT_BOUND.ROOM_UPDATE:
         state.room.width = reader.getFloat32();
         state.room.height = reader.getFloat32();

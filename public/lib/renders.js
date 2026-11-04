@@ -2,6 +2,7 @@ import { state } from "./net.js";
 import { ctx as _ctx, drawWrappedText, mixColors, roundedRectangle, text } from "./canvas.js";
 import { formatLargeNumber, colors, options } from "./util.js";
 import { Drawing, PetalConfig } from "./protocol.js";
+import { formatAmount } from "./inventory.js";
 
 const TAU = Math.PI * 2;
 
@@ -5733,6 +5734,59 @@ function createPetalTooltip(index, rarityIndex) {
     return canvas;
 }
 
+function getDropTableEntries(mobName, rarityIndex) {
+    const dropTables = state.DROP_TABLES;
+
+    if (!dropTables) {
+        console.warn("[DropTables] Client data not received yet.");
+        return null;
+    }
+
+    const mobTable = dropTables[mobName];
+
+    if (!mobTable) {
+        console.warn("[DropTables] Mob not found:", mobName);
+        return [];
+    }
+
+    const tierDrops = mobTable.tiers?.[rarityIndex];
+
+    if (!Array.isArray(tierDrops)) {
+        console.warn("[DropTables] Rarity not found:", mobName, rarityIndex);
+        return [];
+    }
+
+    const rows = [];
+
+    for (const roll of tierDrops) {
+        if (!Array.isArray(roll.drops)) continue;
+
+        const row = [];
+
+        for (const drop of roll.drops) {
+            const petalIndex = state.petalConfigs.findIndex(
+                (config) => config.name === drop.petal
+            );
+
+            if (petalIndex === -1) {
+                console.warn("[DropTables] Petal not found:", drop.petal);
+                continue;
+            }
+
+            row.push({
+                index: petalIndex,
+                rarity: drop.rarity,
+                chance: drop.chance,
+                amount: drop.amount
+            });
+        }
+
+        if (row.length > 0) rows.push(row);
+    }
+
+    return rows;
+}
+
 function createMobTooltip(index, rarityIndex) {
     /** @type {MobConfig} */
     const mob = state.mobConfigs[index];
@@ -5770,12 +5824,41 @@ function createMobTooltip(index, rarityIndex) {
     let projectileConfig = state.petalConfigs[tier.projectile?.index];
     let projectileConfigTier = projectileConfig?.tiers[rarityIndex];
 
+    const dropTableEntries = getDropTableEntries(mob.name, rarityIndex);
+    const useDropTable = dropTableEntries !== null;
+
+    const dropIconSize = 40;
+    const dropEntryWidth = 50;
+    const dropEntryHeight = 65;
+    const dropGapX = 5;
+    const dropGapY = 2;
+    const dropStartX = 10;
+
+    let dropWidth = 0;
+    let dropHeight = 0;
+
+    if (useDropTable && dropTableEntries.length > 0) {
+        const maxColumns = Math.max(
+            ...dropTableEntries.map(row => row.length)
+        );
+
+        dropWidth =
+            maxColumns * dropEntryWidth +
+            (maxColumns - 1) * dropGapX;
+
+        dropHeight =
+            dropTableEntries.length * dropEntryHeight +
+            (dropTableEntries.length - 1) * dropGapY;
+
+        width = Math.max(width, dropStartX + dropWidth + 10);
+    }
+
     height +=
         17.5 *
         ((tier.health > 0) +
             (tier.damage > 0) +
             (mob.healing > 0) +
-            mob.drops.length +
+            (!useDropTable ? mob.drops.length : 0) +
             (tier.damageReduction > 0 || tier.damageReduction < 0) +
             (tier.poison !== null) +
             (tier.lightning > 0) +
@@ -5787,6 +5870,10 @@ function createMobTooltip(index, rarityIndex) {
             Number.isFinite(tier.projectile?.health) +
             (projectileConfig?.enemySpeedDebuff !== undefined) +
             (projectileConfigTier?.poison !== undefined));
+
+    if (useDropTable && dropTableEntries.length > 0) {
+        height += dropHeight;
+    }
 
     const canvas = new OffscreenCanvas(width * 2, height * 2);
     const ctx = canvas.getContext("2d");
@@ -5918,19 +6005,104 @@ function createMobTooltip(index, rarityIndex) {
         newY += 17.5;
     }
 
-    if (mob.drops.length > 0) {
-        text("Drops: ", 10, newY, 15, colors.white, ctx);
-        newY += 17.5;
+if (useDropTable) {
+    if (dropTableEntries.length > 0) {
+        dropTableEntries.forEach((row, rowIndex) => {
+            row.forEach((drop, colIndex) => {
+                const x =
+                    dropStartX +
+                    colIndex * (dropEntryWidth + dropGapX);
 
-        mob.drops.forEach((drop) => {
-            let x = 20 + text("- " + state.petalConfigs[drop.index].name + ": ", 20, newY, 15, colors.white, ctx);
-            x += text(+(drop.chance * 100) + "%", x, newY, 15, colors.white, ctx);
-            if (drop.minRarity > 0) {
-                x += text(", Minimum rarity: " + state.tiers[drop.minRarity].name, x, newY, 15, colors.white, ctx);
-            }
-            newY += 17.5;
+                const y =
+                    newY +
+                    rowIndex * (dropEntryHeight + dropGapY);
+
+                const iconX = x + (dropEntryWidth - dropIconSize) / 2;
+                const iconY = y + 10;
+
+                const icon = createPetalIcon(
+                    drop.index,
+                    drop.rarity,
+                    "oneshot"
+                );
+
+                ctx.drawImage(
+                    icon,
+                    iconX,
+                    iconY,
+                    dropIconSize,
+                    dropIconSize
+                );
+
+                if (drop.amount > 1) {
+                    ctx.font = "bold 12px Ubuntu";
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.strokeStyle = "#000000";
+                    ctx.lineWidth = 2;
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "top";
+
+                    const amountText = `x${formatAmount(drop.amount)}`;
+                    const amountX = iconX + dropIconSize;
+                    const amountY = iconY - 3;
+
+                    ctx.strokeText(amountText, amountX, amountY);
+                    ctx.fillText(amountText, amountX, amountY);
+                }
+
+                ctx.font = "bold 12px Ubuntu";
+                ctx.fillStyle = "#FFFFFF";
+                ctx.strokeStyle = "#000000";
+                ctx.lineWidth = 2;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "top";
+
+                const chanceText = `${drop.chance}%`;
+                const chanceX = x + dropEntryWidth / 2;
+                const chanceY = iconY + dropIconSize + 3;
+
+                ctx.strokeText(chanceText, chanceX, chanceY);
+                ctx.fillText(chanceText, chanceX, chanceY);
+            });
         });
     }
+} else if (mob.drops.length > 0) {
+    text("Drops: ", 10, newY, 15, colors.white, ctx);
+    newY += 17.5;
+
+    mob.drops.forEach((drop) => {
+        let x = 20 + text(
+            "- " + state.petalConfigs[drop.index].name + ": ",
+            20,
+            newY,
+            15,
+            colors.white,
+            ctx
+        );
+
+        x += text(
+            +(drop.chance * 100) + "%",
+            x,
+            newY,
+            15,
+            colors.white,
+            ctx
+        );
+
+        if (drop.minRarity > 0) {
+            x += text(
+                ", Minimum rarity: " + state.tiers[drop.minRarity].name,
+                x,
+                newY,
+                15,
+                colors.white,
+                ctx
+            );
+        }
+
+        newY += 17.5;
+    });
+}
 
     return canvas;
 }
