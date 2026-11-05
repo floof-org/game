@@ -6,6 +6,7 @@ import { colors, xpForLevel, pickWeighted } from "../../lib/util.js";
 import accounts from "./Accounts.js";
 import craftManager, { PETALS_PER_ATTEMPT, CRAFT_ANNOUNCE_RARITY, CRAFT_FAIL_ANNOUNCE_RARITY } from "./CraftManager.js";
 import { announceBossSpawn } from "./bossAnnounce.js";
+import { parseTitleCommand } from "./title.js";
 import { SQUADS, SQUAD_LEVEL_RANGE, SQUAD_MAX_MEMBERS, inSquad, getSquadKey, squadBroadcast, validateSquadMembers, handleSquadLeave, clientByUserId, getUserId, getPlayerLevel } from "./squads.js";
 
 const blockList = [];
@@ -4488,19 +4489,14 @@ export default class Client {
         if (commandCheck("/title")) {
             if (!requireOwner()) return;
 
-            const text = e.substring(6).trim();
+            const title = parseTitleCommand(e.substring(6));
 
-            if (!text) {
-                this.systemMessage("Usage: /title [text]", "#ffaa00");
+            if (title.error) {
+                this.systemMessage(title.error, "#ffaa00");
                 return;
             }
 
-            if (text.length > 128) {
-                this.systemMessage("Title is too long.", "#CACA22");
-                return;
-            }
-
-            Client.broadcastTitle(text);
+            Client.broadcastTitle(title.text, title.color, title.duration);
             return;
         }
         if (commandCheck("/craft")) {
