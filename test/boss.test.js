@@ -493,9 +493,9 @@ describe("poison loot damage", () => {
 
 
 describe("boss spawn messages", () => {
-    test("every boss has a flavour message stored", () => {
-        for (const name of BOSS_NAMES) {
-            expect(BOSS_SPAWN_MESSAGES[name]).toBeTruthy();
+    test("every mob that can be spawned as a boss has a flavour message stored", () => {
+        for (const mob of mobConfigs) {
+            expect(BOSS_SPAWN_MESSAGES[mob.name]).toBeTruthy();
         }
     });
 });
