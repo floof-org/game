@@ -1155,7 +1155,7 @@ export const mobConfigs = [
         .addDrop(petalIDOf("Fire Spellbook"), .03),
     new MobConfig("Jellyfish", 62, 74, 35, 2.5)
         .setAggressive(1)
-        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2 * .5 * .85 * 1.25)
+        .setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 125, 2 * .5 * .85 * 1.25 * 2.5)
         .addDrop(petalIDOf("Lightning"))
         .addDrop(petalIDOf("Jelly")),
     new MobConfig("Cactus", 50, 20, 30, 0)
@@ -1532,7 +1532,7 @@ export const mobConfigs = [
             .addAction("closePath")
         )
     ,
-    new MobConfig("Shiny Soldier Ant", 12, 22, 15, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5 * 1.25).setProjectile({
+    new MobConfig("Shiny Soldier Ant", 12, 22, 15, 5).setSizeStep(2).setAggressive(1).setLightning([75, 75, 75, 65, 65, 65, 55, 55, 55, 45, 35, 25], [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 8], 313, 2 * .5 * 1.25 * 2.5).setProjectile({
         petalIndex: petalIDOf("Missile"),
         cooldown: 45,
         health: 0.000000000002,
@@ -2336,7 +2336,7 @@ export const BOSS_ABILITIES = {
             kind: "lightning",
             duration: 0,
             interval: 15 * 1000,
-            damageMultiplier: 2.5,
+            damageMultiplier: 2.5 * 2.5,
             rangeMultiplier: 10,
             bounces: 4
         },
