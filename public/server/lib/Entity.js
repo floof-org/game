@@ -1,6 +1,6 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, SUMMON_STATS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER, BOSS_ABILITY_RATE_MULTIPLIER } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER, BOSS_ABILITY_RATE_MULTIPLIER, BOSS_PROJECTILE_DAMAGE_MULTIPLIER } from "./config.js";
 import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
@@ -28,7 +28,7 @@ function bossFireProjectiles(mob, ability) {
         petal.index = projectileIndex;
         petal.size = Math.max(1, mob.size / 8) * (ability.sizeMultiplier ?? 1);
         petal.health.set(petal.health.maxHealth * (ability.healthMultiplier ?? 1));
-        petal.damage *= ability.damageMultiplier ?? 1;
+        petal.damage *= (ability.damageMultiplier ?? 1) * BOSS_PROJECTILE_DAMAGE_MULTIPLIER;
         petal.speed = ability.speed ?? 12;
         petal.launched = true;
         petal.range = ability.range ?? 45;

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import state from "../public/server/lib/state.js";
 import SpatialHashGrid from "../public/server/lib/SpatialHashGrid.js";
 import { Mob, Petal, Player, createBoss } from "../public/server/lib/Entity.js";
-import { BOSS_ABILITIES, BOSS_DROP_MULTIPLIER, BOSS_NAMES, BOSS_SIZE_MULTIPLIER, BOSS_SPAWN_MESSAGES, DROP_LOOKUP, mobConfigs, petalConfigs } from "../public/server/lib/config.js";
+import { BOSS_ABILITIES, BOSS_DROP_MULTIPLIER, BOSS_NAMES, BOSS_PROJECTILE_DAMAGE_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_SPAWN_MESSAGES, DROP_LOOKUP, mobConfigs, petalConfigs } from "../public/server/lib/config.js";
 import { ENTITY_TYPES } from "../public/lib/protocol.js";
 
 const WORLD = 1000;
@@ -246,6 +246,14 @@ describe("boss abilities", () => {
 
         expect(boss.bossAbilities.missile.until).toBeGreaterThan(Date.now());
         expect(projectiles.length).toBe(BOSS_ABILITIES.Beetle.missile.count);
+
+        const reference = new Petal(boss, -1, -1);
+        reference.define(petalConfigs.find(petal => petal.name === "Missile"), 10);
+
+        expect(projectiles[0].damage).toBeCloseTo(
+            reference.damage * BOSS_ABILITIES.Beetle.missile.damageMultiplier * BOSS_PROJECTILE_DAMAGE_MULTIPLIER,
+            6
+        );
     });
 });
 

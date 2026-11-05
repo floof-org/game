@@ -2178,6 +2178,8 @@ globalThis.PETAL_RARITY_SIZES = [
 // large sizes; the DesertMaze size scale was reduced, so bosses use a flat
 // multiplier instead of porting those old absolute numbers.
 export const BOSS_STAT_MULTIPLIER = 4;
+// Boss projectiles deal 15x less damage than their ability data says.
+export const BOSS_PROJECTILE_DAMAGE_MULTIPLIER = 1 / 15;
 // Bosses drop 15x the loot of the same mob at the same rarity.
 export const BOSS_DROP_MULTIPLIER = 15;
 // Boss mass is 3x a normal mob's. In this engine mass lives only in collisions,
