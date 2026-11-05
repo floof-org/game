@@ -32,6 +32,7 @@ function fakeClient() {
         secondarySlots: [],
         inventory: {},
         craftAttempts: {},
+        sendMobsKilled() {},
         restoreFromData(data) {
             this.level = data.level;
         }

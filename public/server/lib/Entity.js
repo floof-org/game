@@ -2988,7 +2988,8 @@ export class Mob extends Entity {
         state.livingMobCount++;
 
         this.config = mobConfigs[0];
-        this.lastSeen = performance.now() + 10000;
+        // WhiteHole gives newly spawned mobs a 90s grace before they can expire.
+        this.lastSeen = performance.now() + 90000;
 
         /** @type {{index:number,time:number}|null} */
         this.hatchable = null;
@@ -3463,10 +3464,17 @@ export class Mob extends Entity {
             delete this.zincReduction;
         }
 
+        // Summons disappear with their owner, as in WhiteHole.js.
+        if (this.parent?.type === ENTITY_TYPES.PLAYER && this.parent.health?.isDead) {
+            this.destroy();
+            return;
+        }
+
         if (state.mobsExpire && (this.head === null || this.head.health.isDead) && (this.lastSeen + (this.isBoss ? 60 * 60 * 1000 : (this.health.ratio <= .8 ? 180_000 : 90_000))) < performance.now()) {
             // A mob that players are actively fighting holds on instead of
-            // despawning with everyone's credit, as in WhiteHole.js.
-            const hasEligiblePlayer = this.health.ratio <= 0.6 && Object.keys(this.damagedBy).length > 0;
+            // despawning with everyone's credit, as in WhiteHole.js. Self-damage
+            // (an egg hatching on its own) does not count as a player.
+            const hasEligiblePlayer = this.health.ratio <= 0.6 && Object.keys(this.damagedBy).some(id => id !== "_self");
             if (!hasEligiblePlayer) {
                 this.damagedBy = [];
                 this.destroy();
@@ -3482,6 +3490,9 @@ export class Mob extends Entity {
             this.hatchable.time--;
 
             if (this.hatchable.time <= 0) {
+                // Register self-damage so a hatching egg is not mistaken for one
+                // a player is still fighting, as in WhiteHole.js.
+                this.damagedBy["_self"] = [this.health.health, ENTITY_TYPES.MOB, this.config.name, null];
                 // Hatching pays out like a kill when damage qualifies.
                 this._hatching = true;
                 this.destroy();

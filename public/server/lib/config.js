@@ -2179,7 +2179,8 @@ globalThis.PETAL_RARITY_SIZES = [
 // large sizes; the DesertMaze size scale was reduced, so bosses use a flat
 // multiplier instead of porting those old absolute numbers.
 export const BOSS_STAT_MULTIPLIER = 4;
-export const BOSS_DROP_MULTIPLIER = 5;
+// Bosses drop 15x the loot of the same mob at the same rarity.
+export const BOSS_DROP_MULTIPLIER = 15;
 // Boss mass is 3x a normal mob's. In this engine mass lives only in collisions,
 // so we scale the boss's knockback resistance: pushability is divided by 3,
 // which makes the boss 3x harder to shove aside while leaving impact strength alone.

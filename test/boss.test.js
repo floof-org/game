@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import state from "../public/server/lib/state.js";
 import SpatialHashGrid from "../public/server/lib/SpatialHashGrid.js";
 import { Mob, Petal, Player, createBoss } from "../public/server/lib/Entity.js";
-import { BOSS_ABILITIES, BOSS_NAMES, BOSS_SIZE_MULTIPLIER, BOSS_SPAWN_MESSAGES, DROP_LOOKUP, mobConfigs, petalConfigs } from "../public/server/lib/config.js";
+import { BOSS_ABILITIES, BOSS_DROP_MULTIPLIER, BOSS_NAMES, BOSS_SIZE_MULTIPLIER, BOSS_SPAWN_MESSAGES, DROP_LOOKUP, mobConfigs, petalConfigs } from "../public/server/lib/config.js";
 import { ENTITY_TYPES } from "../public/lib/protocol.js";
 
 const WORLD = 1000;
@@ -50,6 +50,7 @@ function makeClient(id = 1) {
         systemMessage(message) {
             messages.push(message);
         },
+        sendMobsKilled() {},
         addXP() {},
         addDrop(drop) {
             drops.push({ index: drop.index, rarity: drop.rarity, amount: drop.amount });
@@ -120,7 +121,7 @@ describe("boss stats", () => {
 describe("boss drops", () => {
     // Math.random = 0 makes every drop row pass its chance check and pick its
     // first weighted entry, so normal and boss runs drop the same item.
-    test("drops five times the normal amount from drop tables", () => {
+    test("drops fifteen times the normal amount from drop tables", () => {
         Math.random = () => 0;
 
         const normalClient = makeClient(1);
@@ -138,11 +139,11 @@ describe("boss drops", () => {
         for (let i = 0; i < normalClient.drops.length; i++) {
             expect(bossClient.drops[i].index).toBe(normalClient.drops[i].index);
             expect(bossClient.drops[i].rarity).toBe(normalClient.drops[i].rarity);
-            expect(bossClient.drops[i].amount).toBe(normalClient.drops[i].amount * 5);
+            expect(bossClient.drops[i].amount).toBe(normalClient.drops[i].amount * BOSS_DROP_MULTIPLIER);
         }
     });
 
-    test("drops five times the normal amount from config fallback drops", () => {
+    test("drops fifteen times the normal amount from config fallback drops", () => {
         Math.random = () => 0;
 
         const table = DROP_LOOKUP.Beetle;
@@ -160,7 +161,7 @@ describe("boss drops", () => {
 
             expect(normalClient.drops.length).toBeGreaterThan(0);
             for (const drop of bossClient.drops) {
-                expect(drop.amount).toBe(5);
+                expect(drop.amount).toBe(BOSS_DROP_MULTIPLIER);
             }
         } finally {
             DROP_LOOKUP.Beetle = table;
@@ -488,5 +489,59 @@ describe("boss spawn messages", () => {
         for (const name of BOSS_NAMES) {
             expect(BOSS_SPAWN_MESSAGES[name]).toBeTruthy();
         }
+    });
+});
+
+describe("boss despawn", () => {
+    const originalMobsExpire = state.mobsExpire;
+
+    afterEach(() => {
+        state.mobsExpire = originalMobsExpire;
+    });
+
+    test("an unseen boss expires after an hour, as in WhiteHole", () => {
+        state.mobsExpire = true;
+
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 0);
+        boss.lastSeen = performance.now() - 61 * 60 * 1000;
+        boss.update();
+
+        expect(boss.health.isDead).toBe(true);
+    });
+
+    test("a boss an eligible player is fighting holds on", () => {
+        state.mobsExpire = true;
+
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 0);
+        boss.health.health = boss.health.maxHealth * 0.5;
+        boss.lastSeen = performance.now() - 61 * 60 * 1000;
+        boss.damagedBy[123] = [boss.health.maxHealth * 0.5, ENTITY_TYPES.PLAYER, "Tester", 7];
+        boss.update();
+
+        expect(boss.health.isDead).toBe(false);
+    });
+
+    test("self-damage does not count as a player fighting it", () => {
+        state.mobsExpire = true;
+
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 0);
+        boss.health.health = boss.health.maxHealth * 0.5;
+        boss.lastSeen = performance.now() - 61 * 60 * 1000;
+        boss.damagedBy["_self"] = [boss.health.maxHealth * 0.5, ENTITY_TYPES.MOB, "Beetle", null];
+        boss.update();
+
+        expect(boss.health.isDead).toBe(true);
+    });
+
+    test("a summon dies with its owner", () => {
+        const owner = new Player({ x: 0, y: 0 });
+        owner.health.health = 0;
+
+        const mob = new Mob({ x: 0, y: 0 });
+        mob.define(BEETLE, 0);
+        mob.parent = owner;
+        mob.update();
+
+        expect(mob.health.isDead).toBe(true);
     });
 });
