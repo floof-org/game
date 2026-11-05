@@ -2,15 +2,13 @@ import { tiers } from "../../lib/protocol.js";
 import { BOSS_SPAWN_MESSAGES } from "./config.js";
 import state from "./state.js";
 
-/** Boss spawn titles are always shown in yellow. */
-export const BOSS_TITLE_COLOR = "#FFFF00";
 /** Matches the default /title length. */
 export const BOSS_TITLE_DURATION = 5;
 
 /**
- * Lobby-wide boss spawn announce: the flavour line becomes a yellow title and
- * chat gets the plain "A <rarity> Boss <mob> Has Spawned!" line in the
- * rarity's colour.
+ * Lobby-wide boss spawn announce: the flavour line becomes a title in the
+ * boss's rarity colour and chat gets the plain "A <rarity> Boss <mob> Has
+ * Spawned!" line in the same colour.
  */
 export function announceBossSpawn(config, rarity) {
     const rarityData = tiers[rarity];
@@ -20,7 +18,7 @@ export function announceBossSpawn(config, rarity) {
 
     state.clients.forEach(client => {
         if (typeof client.title === "function") {
-            client.title(titleText, BOSS_TITLE_COLOR, BOSS_TITLE_DURATION);
+            client.title(titleText, rarityColor, BOSS_TITLE_DURATION);
         }
 
         client.systemMessage(chatMessage, rarityColor);

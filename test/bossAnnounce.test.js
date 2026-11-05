@@ -12,7 +12,7 @@ describe("announceBossSpawn", () => {
         state.clients.clear();
     });
 
-    test("shows a yellow title and the rarity line in chat", () => {
+    test("shows a rarity-coloured title and the rarity line in chat", () => {
         const calls = [];
         const client = {
             title(text, color, duration) {
@@ -32,7 +32,7 @@ describe("announceBossSpawn", () => {
         const chatCall = calls.find(call => call.kind === "chat");
 
         expect(titleCall.text).toBe(BOSS_SPAWN_MESSAGES.Beetle);
-        expect(titleCall.color).toBe("#FFFF00");
+        expect(titleCall.color).toBe(tiers[rarity].color);
         expect(chatCall.message).toBe(`A ${tiers[rarity].name} Boss ${BEETLE.name} Has Spawned!`);
         expect(chatCall.color).toBe(tiers[rarity].color);
     });
