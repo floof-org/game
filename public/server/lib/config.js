@@ -250,7 +250,6 @@ export const petalConfigs = [
     new PetalConfig("Magnet", 22.5 * 2, 9, 6)
         .setSize(1.55)
         .setExtraPickupRange(125)
-        .setAttractsLightning(1)
         .setHuddles(1)
         .setDescription("This petal's magnetic field will attract nearby items. Does not stack."),
     new PetalConfig("Amulet", 0, 0, 0)
