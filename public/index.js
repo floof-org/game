@@ -1,4 +1,5 @@
-import { canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, setStyle, text, uiScale } from "./lib/canvas.js";
+import { canvas, ctx, drawBackground, drawBackgroundOverlay, renderTerrainForMap, drawBar, drawFace, drawWrappedText, gameScale, mixColors, rainbowText, setStyle, text, uiScale } from "./lib/canvas.js";
+import { RAINBOW_COLOR_ID } from "./lib/rainbow.js";
 import * as net from "./lib/net.js";
 import { mouse, keyMap, releaseFloatingText } from "./lib/net.js";
 import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
@@ -2815,7 +2816,11 @@ function draw() {
             ctx.globalAlpha = alpha;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            text(title.text, width / 2, height / 3, 48, title.color);
+            if (title.color === RAINBOW_COLOR_ID) {
+                rainbowText(title.text, width / 2, height / 3, 48);
+            } else {
+                text(title.text, width / 2, height / 3, 48, title.color);
+            }
             ctx.restore();
         }
     }

@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
+import { RAINBOW_COLOR_ID, RAINBOW_COLORS, rainbowColorAt } from "../public/lib/rainbow.js";
+
+
 import { TITLE_COLORS, TITLE_DEFAULT_COLOR, TITLE_DEFAULT_DURATION, TITLE_MAX_DURATION, parseTitleCommand } from "../public/server/lib/title.js";
 
 describe("parseTitleCommand", () => {
@@ -46,10 +49,34 @@ describe("parseTitleCommand", () => {
         expect(parseTitleCommand("hello 9999").duration).toBe(TITLE_MAX_DURATION);
     });
 
+    test("accepts rainbow as a per-character colour", () => {
+        expect(parseTitleCommand("rainbow hello 3")).toEqual({
+            color: RAINBOW_COLOR_ID,
+            text: "hello",
+            duration: 3
+        });
+    });
+
     test("rejects empty text and bad durations", () => {
         expect(parseTitleCommand("").error).toBeTruthy();
         expect(parseTitleCommand("red").error).toBeTruthy();
         expect(parseTitleCommand("hello 0").error).toBeTruthy();
         expect(parseTitleCommand("hello nope").text).toBe("hello nope");
+    });
+});
+
+describe("rainbow gradient", () => {
+    test("spans red to purple across the visible characters", () => {
+        expect(rainbowColorAt(0, 5)).toBe(RAINBOW_COLORS[0]);
+        expect(rainbowColorAt(4, 5)).toBe(RAINBOW_COLORS[RAINBOW_COLORS.length - 1]);
+    });
+
+    test("interpolates between palette stops", () => {
+        expect(rainbowColorAt(1, 7)).toBe(RAINBOW_COLORS[1]);
+        expect(rainbowColorAt(2, 7)).toBe(RAINBOW_COLORS[2]);
+    });
+
+    test("a single character is red", () => {
+        expect(rainbowColorAt(0, 1)).toBe(RAINBOW_COLORS[0]);
     });
 });

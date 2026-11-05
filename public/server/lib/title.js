@@ -1,5 +1,7 @@
-// Built-in colours accepted by /title. Chinese players know them as
-// 红橙黄绿青蓝紫; the command takes the English names below or a 6-digit hex.
+import { RAINBOW_COLOR_ID } from "../../lib/rainbow.js";
+
+// Built-in colours accepted by /title: the seven rainbow stops by English
+// name, "rainbow" for a per-character gradient, or a 6-digit hex value.
 export const TITLE_COLORS = {
     red: "#FF5555",
     orange: "#FFA500",
@@ -23,6 +25,7 @@ const TITLE_USAGE = "Usage: /title [color] <text> [duration]";
  *
  *   /title red hello 3      -> red, "hello", 3s
  *   /title #00FF00 hi        -> #00FF00, "hi", default duration
+ *   /title rainbow hello     -> per-character rainbow gradient, default duration
  *   /title hello world       -> default colour, "hello world", default duration
  *   /title yellow "Wave 5" 10 -> yellow, "Wave 5", 10s
  *
@@ -39,12 +42,13 @@ export function parseTitleCommand(raw) {
     const firstSpace = rest.search(/\s/);
     const colorToken = firstSpace === -1 ? rest : rest.slice(0, firstSpace);
     const namedColor = TITLE_COLORS[colorToken.toLowerCase()];
+    const isRainbow = colorToken.toLowerCase() === RAINBOW_COLOR_ID;
     const hexColor = /^#?[0-9a-f]{6}$/i.test(colorToken)
         ? `#${colorToken.replace(/^#/, "").toUpperCase()}`
         : null;
 
-    if (namedColor || hexColor) {
-        color = namedColor ?? hexColor;
+    if (namedColor || hexColor || isRainbow) {
+        color = namedColor ?? hexColor ?? RAINBOW_COLOR_ID;
         rest = firstSpace === -1 ? "" : rest.slice(firstSpace).trim();
     }
 

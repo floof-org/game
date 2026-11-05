@@ -1,4 +1,5 @@
 import * as util from "./util.js";
+import { rainbowColorAt } from "./rainbow.js";
 
 export const canvas = document.querySelector("canvas");
 export const ctx = canvas.getContext("2d");
@@ -65,6 +66,38 @@ export function text(text, x, y, size, fill = "#FFFFFF", _ctx = ctx, lineWidth =
     _ctx.strokeText(text, x, y);
     _ctx.fillText(text, x, y);
     return _ctx.measureText(text).width;
+}
+
+export function rainbowText(text, x, y, size, _ctx = ctx, lineWidth = .2) {
+    const chars = Array.from(text);
+    const visibleCount = chars.filter(char => !/\s/.test(char)).length;
+    const font = `bold ${size}px Ubuntu`;
+
+    if (_ctx.font !== font) _ctx.font = font;
+
+    _ctx.textAlign = "left";
+    _ctx.lineWidth = size * lineWidth;
+
+    const widths = chars.map(char => _ctx.measureText(char).width);
+    let cursor = x - widths.reduce((total, width) => total + width, 0) / 2;
+    let visibleIndex = 0;
+
+    for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
+
+        if (!/\s/.test(char)) {
+            const fill = rainbowColorAt(visibleIndex, visibleCount);
+            _ctx.fillStyle = fill;
+            _ctx.strokeStyle = mixColors(fill, "#000000", .8);
+            _ctx.strokeText(char, cursor, y);
+            _ctx.fillText(char, cursor, y);
+            visibleIndex++;
+        }
+
+        cursor += widths[i];
+    }
+
+    return cursor;
 }
 
 export function setStyle(main, lineWidth = .1, strength = .2, _ctx = ctx) {
