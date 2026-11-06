@@ -2180,8 +2180,8 @@ globalThis.PETAL_RARITY_SIZES = [
 export const BOSS_STAT_MULTIPLIER = 4;
 // Boss projectiles deal 15x less damage than their ability data says.
 export const BOSS_PROJECTILE_DAMAGE_MULTIPLIER = 1 / 15;
-// Bosses drop 15x the loot of the same mob at the same rarity.
-export const BOSS_DROP_MULTIPLIER = 15;
+// Bosses drop 25x the loot of the same mob at the same rarity.
+export const BOSS_DROP_MULTIPLIER = 25;
 // Boss mass is 3x a normal mob's. In this engine mass lives only in collisions,
 // so we scale the boss's knockback resistance: pushability is divided by 3,
 // which makes the boss 3x harder to shove aside while leaving impact strength alone.
