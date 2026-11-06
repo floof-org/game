@@ -140,6 +140,90 @@ const state = {
     },
 
     /**
+     * Grid raycast between two world positions. Returns true when the segment
+     * does not cross a wall cell, or when the room has no map grid at all.
+     * Endpoints are allowed to touch a wall; only cells strictly between them
+     * are checked, so a mob standing next to a wall can still be hit.
+     */
+    hasLineOfSight: (x1, y1, x2, y2) => {
+        const solid = state.mapSolid;
+        const width = state.terrainGridWidth;
+        const height = state.terrainGridHeight;
+
+        if (!solid || !width || !height) {
+            return true;
+        }
+
+        const cellWidth = state.width / width;
+        const cellHeight = state.height / height;
+        const toGridX = x => Math.floor((x + state.width / 2) / cellWidth);
+        const toGridY = y => Math.floor((y + state.height / 2) / cellHeight);
+
+        let gridX = toGridX(x1);
+        let gridY = toGridY(y1);
+        const targetX = toGridX(x2);
+        const targetY = toGridY(y2);
+
+        if (gridX < 0 || gridX >= width || gridY < 0 || gridY >= height ||
+            targetX < 0 || targetX >= width || targetY < 0 || targetY >= height) {
+            return false;
+        }
+
+        const dirX = x2 - x1;
+        const dirY = y2 - y1;
+
+        if (dirX === 0 && dirY === 0) {
+            return true;
+        }
+
+        const stepX = dirX > 0 ? 1 : -1;
+        const stepY = dirY > 0 ? 1 : -1;
+        const edgeX = x => -state.width / 2 + x * cellWidth;
+        const edgeY = y => -state.height / 2 + y * cellHeight;
+
+        let maxX = Infinity;
+        let deltaX = Infinity;
+
+        if (dirX !== 0) {
+            maxX = (edgeX(dirX > 0 ? gridX + 1 : gridX) - x1) / dirX;
+            deltaX = cellWidth / Math.abs(dirX);
+        }
+
+        let maxY = Infinity;
+        let deltaY = Infinity;
+
+        if (dirY !== 0) {
+            maxY = (edgeY(dirY > 0 ? gridY + 1 : gridY) - y1) / dirY;
+            deltaY = cellHeight / Math.abs(dirY);
+        }
+
+        // A straight segment crosses at most width + height cells.
+        for (let guard = width + height; guard > 0 && (gridX !== targetX || gridY !== targetY); guard--) {
+            if (maxX <= maxY) {
+                gridX += stepX;
+                maxX += deltaX;
+            } else {
+                gridY += stepY;
+                maxY += deltaY;
+            }
+
+            if (gridX === targetX && gridY === targetY) {
+                return true;
+            }
+
+            if (gridX < 0 || gridX >= width || gridY < 0 || gridY >= height) {
+                return false;
+            }
+
+            if (solid[gridY * width + gridX]) {
+                return false;
+            }
+        }
+
+        return gridX === targetX && gridY === targetY;
+    },
+
+    /**
      * Rarity of the zone a world position sits in (0 .. map.maxRarity), or null
      * when the cell has no score or the room was started without a zoned map.
      */
@@ -495,6 +579,13 @@ const state = {
 
     /** @type {Map<number, {x:number,y:number,type?:number,score?:number}>|null} */
     mapCellLookup: null,
+
+    /**
+     * Flat row-major grid of wall cells (1 = solid, 0 = walkable), derived from
+     * mapCellLookup when a map loads. Used for cheap line-of-sight checks.
+     * @type {Uint8Array|null}
+     */
+    mapSolid: null,
 
     /** @type {Map<number, import("./Entity.js").Entity>} */
     entities: new Map(),

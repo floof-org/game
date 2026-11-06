@@ -5,6 +5,18 @@ import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
 
+// A petal or projectile can only damage something its owner can see. Without
+// this, a player can stand behind a one-cell wall and farm a boss that has no
+// way to reach them. Utility projectiles flagged ignoreWalls keep passing
+// through walls on purpose.
+function petalCanReachTarget(petal, target) {
+    if (petal.ignoreWalls || !petal.parent || petal.parent === target) {
+        return true;
+    }
+
+    return state.hasLineOfSight(petal.parent.x, petal.parent.y, target.x, target.y);
+}
+
 // Boss abilities and the factory that arms them live next to Mob because they
 // need the Petal and Lightning classes. The data itself is in config.js.
 function bossFireProjectiles(mob, ability) {
@@ -1376,6 +1388,14 @@ export class Entity {
             tryPacify(other, this);
 
             if (this.parent.team !== other.parent.team && !this.spawnInvincibility && !other.spawnInvincibility) {
+                // A petal or projectile cannot hurt anything on the far side of a
+                // wall. This runs before any damage math so armor, reflection and
+                // lifesteal all stay consistent with the skipped hit.
+                if ((this.type === ENTITY_TYPES.PETAL && !petalCanReachTarget(this, other)) ||
+                    (other.type === ENTITY_TYPES.PETAL && !petalCanReachTarget(other, this))) {
+                    return;
+                }
+
                 // Fire auras damage through nullCollision, as in WhiteHole.js.
                 const isFireAura = ent => ent.type === ENTITY_TYPES.PETAL && ent.config?.name === "fire.aura";
                 if ((!this.nullCollision && !other.nullCollision) || isFireAura(this) || isFireAura(other)) {
@@ -4353,6 +4373,11 @@ export class Lightning {
 
             retrieved.forEach(entity => {
                 if (entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || this.points.some(p => p.id === entity.id) || (entity.type === ENTITY_TYPES.PETAL && !entity.attractsLightning)) {
+                    return;
+                }
+
+                // Lightning does not jump through walls either.
+                if (!state.hasLineOfSight(last.x, last.y, entity.x, entity.y)) {
                     return;
                 }
 

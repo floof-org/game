@@ -98,6 +98,21 @@ export default async function initTerrain(type) {
 
     state.mapCellLookup = cellLookup;
 
+    // Flat solid grid used by line-of-sight checks. type 0 is a wall, every
+    // other cell is walkable. Building it once keeps hasLineOfSight O(cells
+    // crossed) instead of a Map lookup per step.
+    const solid = new Uint8Array(map.width * map.height);
+
+    for (let i = 0; i < map.cells.length; i++) {
+        const c = map.cells[i];
+
+        if (c.type === 0) {
+            solid[c.y * map.width + c.x] = 1;
+        }
+    }
+
+    state.mapSolid = solid;
+
     const generator = {
         width: map.width,
         height: map.height,
