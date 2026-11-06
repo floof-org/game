@@ -1073,7 +1073,7 @@ export class PetalConfig {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].lightning = {
                 bounces: bounces instanceof Array ? (bounces[i] ?? bounces[bounces.length - 1]) : bounces,
-                range: range * Math.pow(1.15, i),
+                range: range * Math.pow(1.005, i),
                 damage: damage * petalTierMultiplier(i),
                 charges: charges instanceof Array ? (charges[i] ?? charges[charges.length - 1]) : charges,
                 lightningOnParentHit: lightningOnParentHit

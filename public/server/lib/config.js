@@ -148,7 +148,7 @@ export const petalConfigs = [
         .setSize(1.1)
         .setEnemySpeedMultiplier(.45, 5)
         .setDescription("It's sticky and will slow your enemies down."),
-    new PetalConfig("Iris", 22.5, 10, [29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 49, 59, 69])
+    new PetalConfig("Iris", 22.5, 30, [29, 29, 29, 29, 29, 29, 29, 29, 39, 39, 39, 39, 59, 59, 79, 79])
         .setSize([0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
         .setPoison(38.5, 5)
         .setDescription("Packs an unexpected punch in its secret weapon: poison."),
@@ -230,7 +230,7 @@ export const petalConfigs = [
         .setLightning([5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10], 32 * 16, 128)
         .setDescription("A petal that channels the power of all that came before."),
     new PetalConfig("Lightning", 22.5, 1e-15, [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 17])
-        .setLightning([3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9], 256, 22)
+        .setLightning([3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 9], 16, 22)
         .setDescription("Shockingly shocking!"),
     new PetalConfig("Powder", 22.5 * .75, 3, 5)
         .setSize(1.65)
@@ -334,7 +334,7 @@ export const petalConfigs = [
     new PetalConfig("Battery", 22.5 * 2.25, 1e-15, 0)
         .setPhases(1)
         .setSize(1.34)
-        .setLightning(4, 32 * 8, 5, [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7], true)
+        .setLightning(4, 8 * 8, 5, [2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7], true)
         .setDescription("A battery that can release electric charges when its parent is hit."),
     new PetalConfig("Dust", 22.5 * .75, 32, 42)
         .setMulti(3, true)
