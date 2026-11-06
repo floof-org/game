@@ -4396,7 +4396,9 @@ export class Lightning {
             });
 
             let closest = null,
-                closestDist = Infinity;
+                closestDist = Infinity,
+                closestRubber = null,
+                closestRubberDist = Infinity;
 
             retrieved.forEach(entity => {
                 if (entity.parent.id === this.parent.id || entity.parent.team === this.parent.team || this.points.some(p => p.id === entity.id) || (entity.type === ENTITY_TYPES.PETAL && !entity.attractsLightning)) {
@@ -4408,21 +4410,31 @@ export class Lightning {
                     return;
                 }
 
-                if (entity.type === ENTITY_TYPES.PETAL) {
-                    closest = entity;
-                    closestDist = 0;
-                    return;
-                }
-
                 const dx = last.x - entity.x;
                 const dy = last.y - entity.y;
                 const distSqr = dx * dx + dy * dy;
+
+                // Rubber is the lightning attractor, so lock onto the nearest one
+                // before considering mobs or players, even when something else is
+                // closer to the current point.
+                if (entity.type === ENTITY_TYPES.PETAL) {
+                    if (distSqr < closestRubberDist) {
+                        closestRubber = entity;
+                        closestRubberDist = distSqr;
+                    }
+
+                    return;
+                }
 
                 if (distSqr < closestDist) {
                     closest = entity;
                     closestDist = distSqr;
                 }
             });
+
+            if (closestRubber !== null) {
+                closest = closestRubber;
+            }
 
             if (closest === null) {
                 break;

@@ -11,6 +11,7 @@ const WALL_COLUMN = 20;
 
 const BEETLE = mobConfigs.find(mob => mob.name === "Beetle");
 const STINGER = petalConfigs.find(petal => petal.name === "Stinger");
+const RUBBER = petalConfigs.find(petal => petal.name === "Rubber");
 
 const original = {
     width: state.width,
@@ -129,6 +130,54 @@ describe("attacks through walls", () => {
         petal.collide();
 
         expect(mob.health.health).toBeLessThan(before);
+    });
+});
+
+describe("lightning targeting", () => {
+    function makeRubber(owner, x, y) {
+        const petal = new Petal(owner, -1, -1);
+
+        petal.define(RUBBER, 0);
+        petal.x = x;
+        petal.y = y;
+        place(petal);
+
+        return petal;
+    }
+
+    test("locks onto rubber before a closer mob", () => {
+        buildGrid(false);
+
+        const source = new Player({ x: -100, y: 0 });
+        const enemy = new Player({ x: 100, y: 0 });
+        const mob = new Mob({ x: 0, y: 0 });
+
+        mob.define(BEETLE, 0);
+        mob.spawnInvincibility = false;
+        place(mob);
+
+        const rubber = makeRubber(enemy, 40, 0);
+        const lightning = new Lightning(source).define(10, 500, 3);
+
+        lightning.bounce();
+
+        expect(lightning.points[1].id).toBe(rubber.id);
+    });
+
+    test("picks the nearest rubber when several are in range", () => {
+        buildGrid(false);
+
+        const source = new Player({ x: -100, y: 0 });
+        const enemy = new Player({ x: 100, y: 0 });
+        const near = makeRubber(enemy, 20, 0);
+        const far = makeRubber(enemy, 80, 0);
+
+        const lightning = new Lightning(source).define(10, 500, 3);
+
+        lightning.bounce();
+
+        expect(lightning.points[1].id).toBe(near.id);
+        expect(lightning.points[1].id).not.toBe(far.id);
     });
 });
 
