@@ -1194,34 +1194,63 @@ export default class Client {
 
     /** @param {Drop} drop */
     pickupDrop(drop) {
+        let amount = drop.amount ?? 1;
+        const originalAmount = amount;
+
+        const cloverIndex = petalConfigs.findIndex(petal => petal?.name === "Clover");
+
+        let chance = 0;
+
+        for (const slot of this.slots ?? []) {
+            if (!slot || slot.id !== cloverIndex) continue;
+
+            chance += petalConfigs[cloverIndex]
+                ?.cloverTiers?.[slot.rarity]?.chance ?? 0;
+        }
+
+        if (chance > 0 && Math.random() < chance) {
+            amount *= 2;
+
+            const rarityName = tiers[drop.rarity]?.name ?? `Tier ${drop.rarity}`;
+            const petalName = petalConfigs[drop.index]?.name ?? `Item ${drop.index}`;
+
+            this.systemMessage(
+                `Duped ${originalAmount} ${rarityName} ${petalName}.`,
+                "#7CFC00"
+            );
+        }
+
+        if (amount > 1) {
+            const rarity = tiers[drop.rarity].name;
+
+            if (!this.inventory[rarity][drop.index]) {
+                this.inventory[rarity][drop.index] = 0;
+            }
+
+            this.inventory[rarity][drop.index] += amount;
+
+            return true;
+        }
+
         for (let i = 0; i < this.secondarySlots.length; i++) {
             if (!this.secondarySlots[i]) {
                 this.secondarySlots[i] = {
                     id: drop.index,
                     rarity: drop.rarity
                 };
+
                 return true;
             }
         }
-        // Clover doubling migrated from WhiteHole.js: a Clover on the main
-        // slots can double a collected drop. Does not stack.
-        let amount = drop.amount ?? 1;
-        const cloverIndex = petalConfigs.findIndex(petal => petal?.name === "Clover");
-        const clover = cloverIndex >= 0 ? this.slots?.find(slot => slot?.id === cloverIndex) : null;
-        if (clover) {
-            const chance = petalConfigs[cloverIndex]?.cloverTiers?.[clover.rarity]?.chance ?? 0;
-            if (chance > 0 && Math.random() < chance) {
-                amount *= 2;
-                const rarityName = tiers[drop.rarity]?.name ?? `Tier ${drop.rarity}`;
-                const petalName = petalConfigs[drop.index]?.name ?? `Item ${drop.index}`;
-                this.systemMessage(`Duped ${drop.amount ?? 1} ${rarityName} ${petalName}.`, "#7CFC00");
-            }
-        }
+
         const rarity = tiers[drop.rarity].name;
+
         if (!this.inventory[rarity][drop.index]) {
             this.inventory[rarity][drop.index] = 0;
         }
-        this.inventory[rarity][drop.index] += amount;
+
+        this.inventory[rarity][drop.index] += 1;
+
         return true;
     }
 

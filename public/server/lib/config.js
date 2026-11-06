@@ -150,7 +150,7 @@ export const petalConfigs = [
         .setDescription("It's sticky and will slow your enemies down."),
     new PetalConfig("Iris", 22.5, 10, [29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 49, 59, 69])
         .setSize([0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3])
-        .setPoison(28.5, 5)
+        .setPoison(38.5, 5)
         .setDescription("Packs an unexpected punch in its secret weapon: poison."),
     new PetalConfig("Web", 22.5 * 2, 7, 7)
         .setDescription("Sticky!"),
@@ -166,7 +166,7 @@ export const petalConfigs = [
         .setDescription("Through the eye of the beholder comes extra range."),
     new PetalConfig("Pincer", 28.5, 34.5, 64)
         .setSize(1.2)
-        .setPoison(12, 5)
+        .setPoison(50, 5)
         .setEnemySpeedMultiplier(.6, 15)
         .setDescription("Poisonous, and it slows down your enemies. A perfect double whammy."),
     new PetalConfig("Beetle Egg", 45, 25, 1)
@@ -186,8 +186,9 @@ export const petalConfigs = [
         .setHuddles(1)
         .setPullBurst(750, [12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99])
         .setDescription("A bundle of sticks... I wonder what'll happen if you spin them around in the desert..."),
-    new PetalConfig("Scorpion Missile.projectile", 2250, 0.00001, 0.0000005)
+    new PetalConfig("Scorpion Missile.projectile", 2250, 0.000001, 0.00000005)
         .setPoison(0.0001, 5)
+        .setIsProjectile()
         .setDescription("[object null object]"),
     new PetalConfig("Dahlia", 22.5 * .75, 5, 5)
         .setHealing(3)
@@ -347,8 +348,9 @@ export const petalConfigs = [
         .setExtraHealth(-10)
         .setDamageReduction(.25)
         .setDescription("This petal greatly protects you, but at a cost..."),
-    new PetalConfig("Wasp Missile.projectile", 22.5 * 100, 4, 4)
+    new PetalConfig("Wasp Missile.projectile", 22.5 * 100, 0.000004, 0.0000001)
         .setPoison(2, 8)
+        .setIsProjectile()
         .setDescription("[object null object]"),
     new PetalConfig("Shrub", 22.5 * 1.5, 15, 6)
         .setSize(1.2)
@@ -392,7 +394,8 @@ export const petalConfigs = [
     new PetalConfig("Claw", 22.5 * 2, .25, 8)
         .setExtraDamage(.75, 1, 7.5)
         .setDescription("Sharp against the strong, weak against the weak."),
-    new PetalConfig("Bullet.projectile", 1000, 12, 2)
+    new PetalConfig("Bullet.projectile", 1000, 0.00005, 0.000001)
+        .setIsProjectile()
         .setDescription("[object null object]"),
     new PetalConfig("Square Egg", 45, 50, 1)
         .setSize(1.2)
@@ -594,7 +597,7 @@ export const petalConfigs = [
     new PetalConfig("Blood Light", 22.5 * .3, 20, 82).setIcon(.6, [1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], "Light", 0).setBloodLight(0.01).setMulti([1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 15], 0, true)
         .setDrawing(new Drawing().addAction("beginPath").addAction("circle", 0, 0, 1).addAction("closePath").addAction("paint", "#a82f2f", .4, .2)
         ).setDescription(["Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 0.05", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 0.31", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.04", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 3.33", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 8.32", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 33.28", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 249.6", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.25k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 10.48k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 53.91k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 431.31k", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 2.59m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 38.82m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 139.74m", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 1.4b", "Deals high damage but with the cost of dealing damage to the player. Check /petalinfo [rarity] bloodlight\nSelf Damage: 8.38b"]),
-    new PetalConfig("Fire Missile", 15.5, 6, 150.5).setIcon(1, 1, "Missile", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setPoison(41.5, 5).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 0)
+    new PetalConfig("Fire Missile", 15.5, 6, 150.5).setIcon(1, 1, "Missile", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize([1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.4, 1.6, 1.8, 2, 2.2, 2.4, 2.6, 2.8, 3]).setPoison(54.5, 5).setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8], 0)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#862100", .6, 0)
         ).setDescription("You can actually shoot this one and now with an extra ingredient: poison!"),
     new PetalConfig("Shovel", 30, 1, 1).setIcon(.8, 1, "Shovel", -45)
@@ -766,6 +769,7 @@ export const petalConfigs = [
         .setDrawing(new Drawing().addAction("rotate", 15).addAction("beginPath").addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("moveTo", 0, 0).addAction("quadraticCurveTo", .825, -.56, 1, -.225).addAction("quadraticCurveTo", 1.105, 0, 1, .225).addAction("quadraticCurveTo", .825, .56, 0, 0).addAction("rotate", 360 / 6).addAction("paint", "#3AB54A", .225, .2).addAction("closePath")
         ).setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 0.1%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 0.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 1.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 2.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 3.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 4.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.25%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.5%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 5.75%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 6%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 8%", "Has a chance of duping when collecting drops if this petal is on main slots. Does not stack. Check /petalinfo [rarity] clover\nDupe chance: 10%"]),
     new PetalConfig("Rock.projectile", 2250, 0.0000001, 0.00000005)
+        .setIsProjectile()
         .setDrawing(new Drawing()
             .addAction("beginPath")
             .addAction("polygon", 5, 1, 3.2)
@@ -804,7 +808,7 @@ export const petalConfigs = [
         ).setDescription("ƬƦƠƤӇƳ ƤЄƬƛԼ."),
     new PetalConfig("Fiberglass", 25, 6, 58).setPhases(1)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, -1, 0).addAction("paint", "#a7b9d1", .225, .2).addAction("beginPath").addAction("dipPolygon", 7, .5, -1, 180 * Math.PI / 180).addAction("fill", "#bdcadc").addAction("rotate", 20).addAction("beginPath").addAction("circle", 0.4, 0, .275).addAction("fill", "#bdcadc").addAction("rotate", 125).addAction("beginPath").addAction("circle", 0.4, 0, .25).addAction("fill", "#bdcadc").addAction("rotate", 125).addAction("beginPath").addAction("circle", 0.4, 0, .3).addAction("fill", "#bdcadc").addAction("beginPath").addAction("dipPolygon", 12, .6, 7, 0).addAction("fill", "#bdcadc")
-        ).setDescription("Fiber?"),
+        ).setDescription("Glass + Peas = Fiber?"),
     new PetalConfig("Fiberglass.projectile", 25, 6, 58)
         .setDrawing(new Drawing().addAction("beginPath").addAction("dipPolygon", 7, 1, .8, 0).addAction("paint", "#a7b9d1", .225, .2).addAction("beginPath").addAction("dipPolygon", 10, .6, 5, 0).addAction("fill", "#bdcadc").addAction("beginPath").addAction("dipPolygon", 10, .25, -5, 0).addAction("fill", "#a7b9d1")
         ).setDescription("[object null object]"),
@@ -817,7 +821,8 @@ export const petalConfigs = [
     new PetalConfig("Thorn", 25, 88, [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 74.275, 60, 60, 60, 114]).setSize(1.1).setIcon(1, 1, "Thorn", -45).setLaunchable(.7, 45).setAutoLock(Math.PI * .15).setSize(1.35)
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("Spiky."),
-    new PetalConfig("Thorn.projectile", 25, 0.00000000055, 74.275).setSize(1.35)
+    new PetalConfig("Thorn.projectile", 25, 0.000000055, 0.000000055).setSize(1.35)
+        .setIsProjectile()
         .setDrawing(new Drawing().addAction("beginPath").addAction("moveTo", 1 * .8, 0).addAction("lineTo", -.9 * .8, -.667 * .8).addAction("lineTo", -.9 * .8, .667 * .8).addAction("closePath").addAction("paint", "#91775a", .6, 0)
         ).setDescription("[object null object]"),
     new PetalConfig("Lilypad", 225, 6, 44)
@@ -875,7 +880,7 @@ export const petalConfigs = [
             .addAction("circle", 0, 0, 0.12)
             .addAction("fill", "#bcbcbc")
         ),
-    new PetalConfig("fire.projectile", 15, 0.00000005, 0.00000005).setSize(0.25).setDescription("[object null object]")
+    new PetalConfig("fire.projectile", 15, 0.0000005, 0.0000005).setSize(0.25).setIsProjectile().setDescription("[object null object]")
         .setDrawing(new Drawing().addAction("beginPath").addAction("opacity", 0.3).addAction("circle", 0, 0, 1).addAction("paint", "#fc4503", .1, .2).addAction("opacity", 1).addAction("closePath")
         ),
     new PetalConfig("Horn", 92, 1.1, 1.1).setSize(1.1).setDescription(["How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?", "How did you get this?",
@@ -2213,6 +2218,7 @@ export const BOSS_ABILITIES = {
     Beetle: {
         missile: {
             projectile: "Missile",
+            pattern: "random",
             count: 8,
             duration: 7.5 * 1000,
             interval: 60 * 1000,
@@ -2220,7 +2226,6 @@ export const BOSS_ABILITIES = {
             speed: 12,
             healthMultiplier: 150,
             damageMultiplier: 150,
-            randomAngles: true,
             freeze: true
         },
         speed: {
@@ -2233,6 +2238,7 @@ export const BOSS_ABILITIES = {
     Scorpion: {
         missile: {
             projectile: "Scorpion Missile.projectile",
+            pattern: "eightWay",
             count: 8,
             duration: 10 * 1000,
             interval: 60 * 1000,
@@ -2241,12 +2247,11 @@ export const BOSS_ABILITIES = {
             healthMultiplier: 150,
             damageMultiplier: 150,
             sizeMultiplier: 1.25,
-            randomAngles: false,
-            aimAtTarget: true,
             freeze: true
         },
         debuffMissile: {
             projectile: "Pincer",
+            pattern: "aimed",
             count: 1,
             duration: 0,
             interval: 10 * 1000,
@@ -2260,6 +2265,8 @@ export const BOSS_ABILITIES = {
     "Worker Fire Ant": {
         fireSpray: {
             projectile: "fire.projectile",
+            pattern: "spray",
+            spreadDegrees: 110,
             count: 5,
             duration: 3 * 1000,
             interval: 20 * 1000,
@@ -2267,8 +2274,7 @@ export const BOSS_ABILITIES = {
             speed: 10,
             healthMultiplier: 80,
             damageMultiplier: 120,
-            sizeMultiplier: 1.5,
-            randomAngles: true
+            sizeMultiplier: 1.5
         },
         haste: {
             duration: 6 * 1000,
@@ -2280,6 +2286,7 @@ export const BOSS_ABILITIES = {
     "Soldier Fire Ant": {
         fireLance: {
             projectile: "fire.projectile",
+            pattern: "aimed",
             count: 1,
             duration: 0,
             interval: 12 * 1000,
@@ -2299,6 +2306,7 @@ export const BOSS_ABILITIES = {
     "Baby Fire Ant": {
         sparkRing: {
             projectile: "fire.projectile",
+            pattern: "ring",
             count: 12,
             duration: 5 * 1000,
             interval: 30 * 1000,
@@ -2307,13 +2315,13 @@ export const BOSS_ABILITIES = {
             healthMultiplier: 50,
             damageMultiplier: 100,
             sizeMultiplier: 1.2,
-            randomAngles: true,
             freeze: true
         }
     },
     Sandstorm: {
         sandRing: {
             projectile: "Thorn.projectile",
+            pattern: "ring",
             count: 12,
             duration: 8 * 1000,
             interval: 45 * 1000,
@@ -2322,7 +2330,6 @@ export const BOSS_ABILITIES = {
             healthMultiplier: 100,
             damageMultiplier: 120,
             sizeMultiplier: 1.5,
-            randomAngles: true,
             freeze: true
         },
         sandSpeed: {
@@ -2343,6 +2350,7 @@ export const BOSS_ABILITIES = {
         },
         shockRing: {
             projectile: "Missile",
+            pattern: "ring",
             count: 6,
             duration: 4 * 1000,
             interval: 30 * 1000,
@@ -2351,22 +2359,22 @@ export const BOSS_ABILITIES = {
             healthMultiplier: 80,
             damageMultiplier: 120,
             sizeMultiplier: 1.5,
-            randomAngles: true,
             freeze: true
         }
     },
     "Evil Desert Centipede": {
         venomSpray: {
             projectile: "Pincer",
+            pattern: "spray",
+            spreadDegrees: 140,
             count: 10,
             duration: 6 * 1000,
             interval: 25 * 1000,
             shotInterval: 200,
             speed: 11,
-            healthMultiplier: 120,
-            damageMultiplier: 150,
+            healthMultiplier: 0.0000005,
+            damageMultiplier: 0.0000005,
             sizeMultiplier: 1.25,
-            randomAngles: true,
             freeze: true
         },
         burrow: {
@@ -2379,6 +2387,7 @@ export const BOSS_ABILITIES = {
     "Shiny Ladybug": {
         radiantBurst: {
             projectile: "Thorn.projectile",
+            pattern: "ring",
             count: 8,
             duration: 6 * 1000,
             interval: 25 * 1000,
@@ -2387,7 +2396,6 @@ export const BOSS_ABILITIES = {
             healthMultiplier: 100,
             damageMultiplier: 150,
             sizeMultiplier: 1.5,
-            randomAngles: true,
             freeze: true
         },
         regen: {
@@ -2400,7 +2408,9 @@ export const BOSS_ABILITIES = {
     "Desert Centipede": {
         sandSpiral: {
             projectile: "Thorn.projectile",
-            count: 12,
+            pattern: "spiral",
+            rotationStep: Math.PI / 12,
+            count: 2,
             duration: 6 * 1000,
             interval: 30 * 1000,
             shotInterval: 200,
@@ -2408,7 +2418,6 @@ export const BOSS_ABILITIES = {
             healthMultiplier: 100,
             damageMultiplier: 120,
             sizeMultiplier: 1.5,
-            randomAngles: true,
             freeze: true
         },
         burrow: {

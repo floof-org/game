@@ -19,21 +19,77 @@ function petalCanReachTarget(petal, target) {
 
 // Boss abilities and the factory that arms them live next to Mob because they
 // need the Petal and Lightning classes. The data itself is in config.js.
-function bossFireProjectiles(mob, ability) {
+function bossFireProjectiles(mob, ability, state) {
     const projectileIndex = petalIDOf(ability.projectile);
 
     if (projectileIndex < 0) return;
 
     const projectileConfig = petalConfigs[projectileIndex];
     const count = Math.max(1, ability.count ?? 1);
-    const aimAngle = mob.target && !mob.target.health.isDead
-        ? Math.atan2(mob.target.y - mob.y, mob.target.x - mob.x)
+
+    const target = mob.target && !mob.target.health.isDead
+        ? mob.target
+        : null;
+
+    const aimAngle = target
+        ? Math.atan2(target.y - mob.y, target.x - mob.x)
         : mob.facing;
-    const baseAngle = ability.aimAtTarget
+
+    const baseAngle = ability.aimAtTarget || ability.pattern === "aimed" ||
+        ability.pattern === "arc" || ability.pattern === "spray"
         ? aimAngle
-        : (ability.randomAngles ? Math.random() * Math.PI * 2 : mob.facing);
+        : mob.facing;
+
+    const pattern = ability.pattern ?? "ring";
+
+    // Each new volley can rotate a spiral or rotating ring.
+    const volley = state?.volleyIndex ?? 0;
+    const rotation = volley * (ability.rotationStep ?? 0);
 
     for (let i = 0; i < count; i++) {
+        let angle = baseAngle + rotation;
+
+        switch (pattern) {
+            case "ring":
+            case "eightWay": {
+                angle += (Math.PI * 2 * i) / count;
+                break;
+            }
+
+            case "arc": {
+                const spread = (ability.spreadDegrees ?? 90) * Math.PI / 180;
+
+                angle += count === 1
+                    ? 0
+                    : -spread / 2 + spread * (i / (count - 1));
+
+                break;
+            }
+
+            case "spray": {
+                const spread = (ability.spreadDegrees ?? 90) * Math.PI / 180;
+
+                angle += (Math.random() - 0.5) * spread;
+                break;
+            }
+
+            case "random": {
+                angle = Math.random() * Math.PI * 2;
+                break;
+            }
+
+            case "aimed": {
+                // Every projectile follows the same target direction.
+                break;
+            }
+
+            case "spiral": {
+                // A rotating ring. Each subsequent volley changes its orientation by rotationStep.
+                angle += (Math.PI * 2 * i) / count;
+                break;
+            }
+        }
+
         const petal = new Petal(mob, -1, -1);
 
         petal.define(projectileConfig, mob.rarity);
@@ -47,13 +103,15 @@ function bossFireProjectiles(mob, ability) {
         petal.spinSpeed = 0;
         petal.nullCollision = Boolean(ability.nullCollision);
 
-        const angle = ability.aimAtTarget
-            ? baseAngle + (Math.PI * 2 * i) / count
-            : (ability.randomAngles ? Math.random() * Math.PI * 2 : baseAngle + (Math.PI * 2 * i) / count);
+        petal.x = mob.x + Math.cos(angle) * mob.size * 0.55;
+        petal.y = mob.y + Math.sin(angle) * mob.size * 0.55;
 
-        petal.x = mob.x + Math.cos(angle) * mob.size * .55;
-        petal.y = mob.y + Math.sin(angle) * mob.size * .55;
-        petal.facing = petal.moveAngle = angle;
+        petal.facing = angle;
+        petal.moveAngle = angle;
+    }
+
+    if (state) {
+        state.volleyIndex = volley + 1;
     }
 }
 
@@ -72,7 +130,7 @@ function nonBossLightningRange(mob) {
     return Math.min(lightning.range, size * 12 + 50);
 }
 
-function triggerBossAbility(mob, ability) {
+function triggerBossAbility(mob, ability, state) {
     if (ability.kind === "lightning") {
         const range = nonBossLightningRange(mob) ?? mob.size * (ability.rangeMultiplier ?? 10);
         new Lightning(mob).define(mob.damage * (ability.damageMultiplier ?? 1), range, ability.bounces ?? 1).bounce();
@@ -87,7 +145,7 @@ function triggerBossAbility(mob, ability) {
         return;
     }
 
-    bossFireProjectiles(mob, ability);
+    bossFireProjectiles(mob, ability, state);
 }
 
 function applyBossSpeedAbility(mob, ability) {
@@ -127,8 +185,8 @@ function updateBossAbilities(mob, now) {
                 if (ability.freeze) abilityActive = true;
 
                 if (ability.shotInterval && now >= state.nextShot) {
-                    triggerBossAbility(mob, ability);
-                    state.nextShot += ability.shotInterval;
+                    triggerBossAbility(mob, ability, state);
+                    state.nextShot = now + ability.shotInterval;
                 }
 
                 continue;
@@ -137,7 +195,9 @@ function updateBossAbilities(mob, now) {
             state.until = 0;
             state.nextShot = 0;
 
-            if (ability.sizeDivisor !== undefined) restoreBossSpeedAbility(mob);
+            if (ability.sizeDivisor !== undefined) {
+                restoreBossSpeedAbility(mob);
+            }
         }
 
         if (now < state.nextAbility) continue;
@@ -145,18 +205,24 @@ function updateBossAbilities(mob, now) {
         state.nextAbility = now + (ability.interval ?? 0) / BOSS_ABILITY_RATE_MULTIPLIER;
 
         if (!ability.duration) {
-            triggerBossAbility(mob, ability);
+            triggerBossAbility(mob, ability, state);
             continue;
         }
 
         state.until = now + ability.duration;
-        state.nextShot = now;
+        state.nextShot = now + (ability.shotInterval ?? 0);
 
         if (ability.freeze) abilityActive = true;
         if (ability.sizeDivisor !== undefined) applyBossSpeedAbility(mob, ability);
-        if (ability.kind && ability.kind !== "projectile") triggerBossAbility(mob, ability);
 
-        if (ability.shotInterval) triggerBossAbility(mob, ability);
+        if (ability.kind && ability.kind !== "projectile") {
+            triggerBossAbility(mob, ability, state);
+        }
+
+        // Fire the first volley immediately.
+        if (ability.shotInterval) {
+            triggerBossAbility(mob, ability, state);
+        }
     }
 
     return abilityActive;
@@ -184,7 +250,8 @@ export function createBoss(position, config, rarity = 0) {
             boss.bossAbilities[name] = {
                 until: 0,
                 nextShot: 0,
-                nextAbility: now + (ability.interval ?? 0) / BOSS_ABILITY_RATE_MULTIPLIER
+                nextAbility: now + (ability.interval ?? 0) / BOSS_ABILITY_RATE_MULTIPLIER,
+                volleyIndex: 0
             };
         }
     }

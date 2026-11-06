@@ -1,6 +1,43 @@
 globalThis._mobList ??= [];
 globalThis._itemList ??= [];
 
+globalThis.POISON_TIER_TABLE = {
+    0: 1,
+    1: 2,
+    2: 4,
+    3: 8,
+    4: 16,
+    5: 32,
+    6: 160,
+    7: 80,
+    8: 2880,
+    9: 17280,
+    10: 103680,
+    11: 1244160,
+    12: 14929920,
+    13: 89579520,
+    14: 1074954240,
+    15: 6449725440,
+    16: 154793410560,
+    17: 193491763200,
+    18: 161243136000,
+    19: 161243136000,
+    20: 161243136000,
+    21: 1612431360000,
+    22: 4837294080000,
+    23: 14511882240000,
+    24: 43535646720000,
+    25: 130606940160000,
+    26: 391820820480000,
+    27: 1175462461440000,
+    28: 3526387384320000,
+    29: 10579162152960000,
+};
+
+function getPoisonTierMultiplier(tier) {
+    return POISON_TIER_TABLE[tier] ?? 1;
+}
+
 globalThis.BLOOD_LIGHT_TABLE = [
     0.01, 0.03, 0.05, 0.08, 0.1, 0.2, 0.3, 0.5,
     0.7, 0.6, 0.8, 0.4, 0.5, 0.6, 1, 1
@@ -488,14 +525,26 @@ export function petalTierMultiplier(tier) {
     return Math.pow(PetalTier.DAMAGE_SCALE, tier);
 }
 
+export function mobTierMultiplier(tier, stat = "damage") {
+    return RARITY_TABLE[Math.min(tier, 29)]?.[stat] ?? 1;
+}
+
 export class PetalTier {
     static HEALTH_SCALE = 2;
     static DAMAGE_SCALE = 2;
 
-    constructor(tier, health, damage) {
+    constructor(tier, health, damage, isProjectile = false) {
+        const healthMultiplier = isProjectile
+            ? mobTierMultiplier(tier, "health")
+            : petalTierMultiplier(tier);
+
+        const damageMultiplier = isProjectile
+            ? mobTierMultiplier(tier, "damage")
+            : petalTierMultiplier(tier);
+
         // arrays are only the per-rarity baseline values, they still get the rarity multiplier
-        this.health = (Array.isArray(health) ? health[Math.min(tier, health.length - 1)] : health) * petalTierMultiplier(tier);
-        this.damage = (Array.isArray(damage) ? damage[Math.min(tier, damage.length - 1)] : damage) * petalTierMultiplier(tier);
+        this.health = (Array.isArray(health) ? health[Math.min(tier, health.length - 1)] : health) * healthMultiplier;
+        this.damage = (Array.isArray(damage) ? damage[Math.min(tier, damage.length - 1)] : damage) * damageMultiplier;
 
         this.extraHealth = 0;
         this.constantHeal = 0;
@@ -666,7 +715,7 @@ export class PetalConfig {
         const output = [];
 
         for (let i = 0; i < tiers.length; i++) {
-            output.push(new PetalTier(i, this.health, this.damage));
+            output.push(new PetalTier(i, this.health, this.damage, this.projectile));
         }
 
         return output;
@@ -693,6 +742,7 @@ export class PetalConfig {
         this.wingMovement = false;
         this.yinYangMovement = false;
         this.wearable = false;
+        this.projectile = false;
 
         /** @type {{speedMultiplier: number, duration: number}|null} */
         this.enemySpeedDebuff = null;
@@ -931,7 +981,7 @@ export class PetalConfig {
     setPoison(poisonDamage, duration) {
         for (let i = 0; i < this.tiers.length; i++) {
             this.tiers[i].poison = {
-                damage: poisonDamage * petalTierMultiplier(i) / 22.5,
+                damage: poisonDamage * getPoisonTierMultiplier(i),
                 duration: duration * 22.5
             };
         }
@@ -1366,6 +1416,11 @@ export class PetalConfig {
 
     setZincAbility() {
         this.zinc = {};
+        return this;
+    }
+
+    setIsProjectile(value = true) {
+        this.projectile = value;
         return this;
     }
 
