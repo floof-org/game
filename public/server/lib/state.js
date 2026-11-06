@@ -114,7 +114,7 @@ const state = {
     },
 
     isValidMapSpawn: (x, y) => {
-        if (state.mapData.cells.length === 0) {
+        if (!state.mapData?.cells?.length) {
             return true;
         }
 
@@ -126,6 +126,72 @@ const state = {
         }
 
         return state.mapDataAt(x, y).type !== 0;
+    },
+
+    /**
+     * True when a circular body of `radius` at (x, y) fits inside the room and
+     * does not overlap any wall. Rooms without terrain always pass.
+     */
+    isClearOfTerrain: (x, y, radius) => {
+        if (!state.mapData?.cells?.length || !radius) {
+            return true;
+        }
+
+        if (x - radius < -state.width / 2 || x + radius > state.width / 2 ||
+            y - radius < -state.height / 2 || y + radius > state.height / 2) {
+            return false;
+        }
+
+        const terrains = state.terrainSpatialHash.retrieve({
+            _AABB: {
+                x1: x - radius,
+                y1: y - radius,
+                x2: x + radius,
+                y2: y + radius
+            }
+        });
+
+        for (const terrain of terrains.values()) {
+            if (terrain.polygon.circleIntersects(x, y, radius)) {
+                return false;
+            }
+        }
+
+        return true;
+    },
+
+    /**
+     * Nearest position around (x, y) where a body of `radius` is clear of
+     * walls. Used as a last resort for entities placed inside terrain.
+     * Returns null when nothing clear is found within the search distance.
+     */
+    findClearPosition: (x, y, radius) => {
+        if (state.isClearOfTerrain(x, y, radius)) {
+            return { x, y };
+        }
+
+        const cellSize = state.terrainGridWidth
+            ? state.width / state.terrainGridWidth
+            : radius;
+        const step = Math.max(cellSize, radius * .5);
+        const rings = 8;
+        const directions = 16;
+
+        for (let ring = 1; ring <= rings; ring++) {
+            const distance = ring * step;
+
+            for (let i = 0; i < directions; i++) {
+                const angle = i / directions * Math.PI * 2;
+                const candidateX = x + Math.cos(angle) * distance;
+                const candidateY = y + Math.sin(angle) * distance;
+
+                if (state.isClearOfTerrain(candidateX, candidateY, radius)) {
+                    return { x: candidateX, y: candidateY };
+                }
+            }
+        }
+
+        return null;
     },
 
     mapDataAt: (x, y) => {
@@ -318,15 +384,39 @@ const state = {
         });
 
         if (bodies.length === 0) {
-            const spawn = state.mapBasedSpawn(ENTITY_TYPES.MOB);
-            const zoneRarity = Number.isFinite(spawn.rarity)
+            let spawn = state.mapBasedSpawn(ENTITY_TYPES.MOB);
+            let zoneRarity = Number.isFinite(spawn.rarity)
                 ? Math.max(0, Math.min(tiers.length - 1, spawn.rarity))
                 : 0;
+            let rarity = Math.max(0, zoneRarity - (Math.random() < .5 ? 1 : 0));
+            let size = config.tiers?.[rarity]?.size ?? config.size ?? 20;
+            let position = { x: spawn.x, y: spawn.y };
+
+            // Try a few map points before relocating, so the spawn keeps its
+            // original zone as often as possible.
+            for (let k = 0; k < 20 && !state.isClearOfTerrain(position.x, position.y, size); k++) {
+                spawn = state.mapBasedSpawn(ENTITY_TYPES.MOB);
+                zoneRarity = Number.isFinite(spawn.rarity)
+                    ? Math.max(0, Math.min(tiers.length - 1, spawn.rarity))
+                    : 0;
+                rarity = Math.max(0, zoneRarity - (Math.random() < .5 ? 1 : 0));
+                size = config.tiers?.[rarity]?.size ?? config.size ?? 20;
+                position = { x: spawn.x, y: spawn.y };
+            }
+
+            if (!state.isClearOfTerrain(position.x, position.y, size)) {
+                const clear = state.findClearPosition(position.x, position.y, size);
+
+                if (clear) {
+                    position = clear;
+                    rarity = state.clampRarityToZone(position, rarity);
+                }
+            }
 
             return {
-                position: { x: spawn.x, y: spawn.y },
-                rarity: Math.max(0, zoneRarity - (Math.random() < .5 ? 1 : 0)),
-                tile: state.mapDataAt(spawn.x, spawn.y)
+                position: position,
+                rarity: rarity,
+                tile: state.mapDataAt(position.x, position.y)
             };
         }
 
@@ -378,6 +468,12 @@ const state = {
                 continue;
             }
 
+            // Checking only the center cell is not enough: a large body can spawn
+            // with half of it inside a wall and then never move.
+            if (!state.isClearOfTerrain(position.x, position.y, config.tiers[rarity].size)) {
+                continue;
+            }
+
             const retrieved = state.spatialHash.retrieve({
                 _AABB: {
                     x1: position.x - config.tiers[rarity].size,
@@ -403,6 +499,13 @@ const state = {
             rarity = Number.isFinite(fallback.rarity)
                 ? Math.max(0, Math.min(tiers.length - 1, fallback.rarity))
                 : state.clampRarityToZone(position, rarity);
+
+            const clear = state.findClearPosition(position.x, position.y, config.tiers?.[rarity]?.size ?? config.size ?? 20);
+
+            if (clear) {
+                position = clear;
+                rarity = state.clampRarityToZone(position, rarity);
+            }
         }
 
         return {
@@ -442,6 +545,35 @@ const state = {
 
             if (!state.isValidMapSpawn(position.x, position.y)) continue;
 
+            if (!state.isClearOfTerrain(position.x, position.y, bossSize)) continue;
+
+            const occupied = state.spatialHash.retrieve({
+                _AABB: {
+                    x1: position.x - bossSize,
+                    y1: position.y - bossSize,
+                    x2: position.x + bossSize,
+                    y2: position.y + bossSize
+                }
+            });
+
+            if (occupied.size === 0) {
+                return position;
+            }
+        }
+
+        // Low-rarity edge zones can be too narrow for a boss at every spawn
+        // point. Move a zone point to the nearest clear spot instead of losing
+        // the boss event, as long as it stays in a compatible zone.
+        for (let k = 0; k < 20; k++) {
+            const cell = matching[Math.floor(Math.random() * matching.length)];
+            const position = state.findClearPosition(cell.x * state.width, cell.y * state.height, bossSize);
+
+            if (!position ||
+                !state.isSpawnRarityAllowed(position, rarity) ||
+                !state.isValidMapSpawn(position.x, position.y)) {
+                continue;
+            }
+
             const occupied = state.spatialHash.retrieve({
                 _AABB: {
                     x1: position.x - bossSize,
@@ -476,7 +608,7 @@ const state = {
 
         if (bodies.length === 0) {
             const spawn = state.mapBasedSpawn(ENTITY_TYPES.MOB);
-            return { x: spawn.x, y: spawn.y };
+            return state.findClearPosition(spawn.x, spawn.y, bossSize) ?? { x: spawn.x, y: spawn.y };
         }
 
         const body = bodies[Math.floor(Math.random() * bodies.length)];
@@ -499,7 +631,8 @@ const state = {
                 Math.abs(position.x) > maxX ||
                 Math.abs(position.y) > maxY ||
                 dx * dx + dy * dy <= minDist * minDist ||
-                !state.isValidMapSpawn(position.x, position.y)
+                !state.isValidMapSpawn(position.x, position.y) ||
+                !state.isClearOfTerrain(position.x, position.y, bossSize)
             ) {
                 continue;
             }
@@ -518,10 +651,12 @@ const state = {
             }
         }
 
-        return {
+        const fallback = {
             x: Math.max(-maxX, Math.min(maxX, body.x + (Math.random() - .5) * 2 * halfView)),
             y: Math.max(-maxY, Math.min(maxY, body.y + (Math.random() - .5) * 2 * halfView))
         };
+
+        return state.findClearPosition(fallback.x, fallback.y, bossSize) ?? fallback;
     },
 
     lineMapMobSpawn: config => {
@@ -567,8 +702,11 @@ const state = {
             }
         } while (bodies.some(b => quickDiff(b, { x, y }) < 128) && k++ < 100);
 
+        const size = config.tiers?.[rarity]?.size ?? config.size ?? 20;
+        const clear = state.findClearPosition(x, y, size);
+
         return {
-            position: { x, y },
+            position: clear ?? { x, y },
             rarity: rarity
         };
     },

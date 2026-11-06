@@ -1149,6 +1149,10 @@ export class Entity {
             y: this.y
         };
 
+        // Throttles the expensive search for a clear position when an entity is
+        // stuck inside terrain, for example because it spawned inside a wall.
+        this.terrainRescueAt = 0;
+
         /** @type {Gun[]} */
         this.guns = [];
 
@@ -1986,6 +1990,29 @@ export class Entity {
         if (!good) {
             this.x = this.lastGoodPosition.x;
             this.y = this.lastGoodPosition.y;
+
+            // The last good position can itself be inside terrain, for example when
+            // a large body was created on a narrow spawn cell and never had a valid
+            // position to fall back to. In that case search for a nearby clear spot
+            // so the entity does not stay stuck forever. Throttled because this runs
+            // every terrain tick.
+            const now = Date.now();
+
+            if (now - this.terrainRescueAt >= 1000 && !state.isClearOfTerrain(this.x, this.y, this.size)) {
+                this.terrainRescueAt = now;
+
+                const clear = state.findClearPosition(this.x, this.y, this.size);
+
+                if (clear) {
+                    this.x = clear.x;
+                    this.y = clear.y;
+                    this.lastGoodPosition = {
+                        x: clear.x,
+                        y: clear.y
+                    };
+                    this._AABB = state.spatialHash.getAABB(this);
+                }
+            }
         }
     }
 
