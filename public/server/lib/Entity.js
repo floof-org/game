@@ -57,9 +57,24 @@ function bossFireProjectiles(mob, ability) {
     }
 }
 
+// The lightning range a non-boss version of this mob would cast at. Bosses use
+// the same range so their enlarged body does not extend lightning reach.
+function nonBossLightningRange(mob) {
+    const tier = mob.config?.tiers?.[mob.rarity];
+    const lightning = tier?.lightning;
+
+    if (!lightning) {
+        return null;
+    }
+
+    const size = tier.size ?? mob.size;
+
+    return Math.min(lightning.range, size * 12 + 50);
+}
+
 function triggerBossAbility(mob, ability) {
     if (ability.kind === "lightning") {
-        const range = mob.size * (ability.rangeMultiplier ?? 10);
+        const range = nonBossLightningRange(mob) ?? mob.size * (ability.rangeMultiplier ?? 10);
         new Lightning(mob).define(mob.damage * (ability.damageMultiplier ?? 1), range, ability.bounces ?? 1).bounce();
         return;
     }
@@ -3875,7 +3890,7 @@ export class Mob extends Entity {
 
         this.targetTick--;
         if (this.aggressive) {
-            const aggroRange = this.size * 12 + 50;
+            const aggroRange = (this.size * 12 + 50) * (this.isBoss ? .75 : 1);
 
             if (this.targetTick <= 0 || this.target === null || this.target.health.isDead) {
                 this.targetTick = 25 + Math.random() * 100 | 0;
@@ -3889,8 +3904,11 @@ export class Mob extends Entity {
                     this.extraTicker--;
 
                     if (this.extraTicker <= 0) {
-                        // keep the lightning range within the mob aggro sense distance so it cannot zap the player from across the map
-                        new Lightning(this).define(lightning.damage, Math.min(lightning.range, aggroRange), lightning.bounces).bounce();
+                        // Keep the lightning range within the mob aggro sense distance so it cannot zap the player from across the map.
+                        // Bosses cast with the non-boss range so their larger body does not extend it.
+                        const range = nonBossLightningRange(this) ?? Math.min(lightning.range, aggroRange);
+
+                        new Lightning(this).define(lightning.damage, range, lightning.bounces).bounce();
                         this.extraTicker = lightning.cooldown * (.95 + Math.random() * .1);
                     }
                 }
@@ -4158,7 +4176,7 @@ export class Mob extends Entity {
         }
 
         for (const group of eligibleGroups) {
-            const xp = (Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1);
+            const xp = (Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1) * (this.isBoss ? 3 : 1);
             for (const client of group.members) {
                 client.addXP(xp);
             }

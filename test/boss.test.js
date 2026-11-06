@@ -8,6 +8,15 @@ import { ENTITY_TYPES } from "../public/lib/protocol.js";
 
 const WORLD = 1000;
 const BEETLE = mobConfigs.find(mob => mob.name === "Beetle");
+const JELLYFISH = mobConfigs.find(mob => mob.name === "Jellyfish");
+const SHINY_SOLDIER_ANT = mobConfigs.find(mob => mob.name === "Shiny Soldier Ant");
+
+// What the non-boss version of a mob can actually reach with lightning.
+function nonBossLightningRange(config, rarity) {
+    const tier = config.tiers[rarity];
+
+    return Math.min(tier.lightning.range, tier.size * 12 + 50);
+}
 
 const originalRandom = Math.random;
 const originalAnnounceRarity = state.announceRarity;
@@ -36,6 +45,7 @@ function resetWorld() {
 function makeClient(id = 1) {
     const messages = [];
     const drops = [];
+    const xp = [];
 
     const client = {
         id,
@@ -47,11 +57,14 @@ function makeClient(id = 1) {
         body: null,
         messages,
         drops,
+        xp,
         systemMessage(message) {
             messages.push(message);
         },
         sendMobsKilled() {},
-        addXP() {},
+        addXP(amount) {
+            xp.push(amount);
+        },
         addDrop(drop) {
             drops.push({ index: drop.index, rarity: drop.rarity, amount: drop.amount });
         },
@@ -118,6 +131,78 @@ describe("boss stats", () => {
     });
 });
 
+describe("boss aggro", () => {
+    test("is 25% shorter than the boss body alone would give", () => {
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 0);
+        const reduced = (boss.size * 12 + 50) * .75;
+        const player = new Player({ x: reduced + 50, y: 0 });
+
+        player.team = 0;
+
+        for (const entity of [player, boss]) {
+            entity._AABB = state.spatialHash.getAABB(entity);
+            state.spatialHash.insert(entity);
+        }
+
+        boss.collide();
+
+        expect(boss.target).toBeNull();
+    });
+
+    test("still sees targets inside the reduced range", () => {
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 0);
+        const reduced = (boss.size * 12 + 50) * .75;
+        const player = new Player({ x: reduced - 100, y: 0 });
+
+        player.team = 0;
+
+        for (const entity of [player, boss]) {
+            entity._AABB = state.spatialHash.getAABB(entity);
+            state.spatialHash.insert(entity);
+        }
+
+        boss.collide();
+
+        expect(boss.target?.id).toBe(player.id);
+    });
+});
+
+describe("boss lightning range", () => {
+    test("jellyfish boss chain lightning matches the non-boss range", () => {
+        const boss = createBoss({ x: 0, y: 0 }, JELLYFISH, 0);
+
+        boss.bossAbilities.chainLightning.nextAbility = 0;
+        boss.update();
+
+        const strikes = [...state.lightning.values()];
+
+        expect(strikes).toHaveLength(1);
+        expect(strikes[0].range).toBeCloseTo(nonBossLightningRange(JELLYFISH, 0), 6);
+    });
+
+    test("shiny soldier ant boss lightning matches the non-boss range", () => {
+        const boss = createBoss({ x: 0, y: 0 }, SHINY_SOLDIER_ANT, 0);
+        const player = new Player({ x: 200, y: 0 });
+
+        player.team = 0;
+
+        for (const entity of [player, boss]) {
+            entity._AABB = state.spatialHash.getAABB(entity);
+            state.spatialHash.insert(entity);
+        }
+
+        boss.target = player;
+        boss.targetTick = 100;
+        boss.extraTicker = 0;
+        boss.collide();
+
+        const strikes = [...state.lightning.values()];
+
+        expect(strikes).toHaveLength(1);
+        expect(strikes[0].range).toBeCloseTo(nonBossLightningRange(SHINY_SOLDIER_ANT, 0), 6);
+    });
+});
+
 describe("boss drops", () => {
     // Math.random = 0 makes every drop row pass its chance check and pick its
     // first weighted entry, so normal and boss runs drop the same item.
@@ -166,6 +251,25 @@ describe("boss drops", () => {
         } finally {
             DROP_LOOKUP.Beetle = table;
         }
+    });
+
+    test("gives three times the normal xp", () => {
+        Math.random = () => 0;
+
+        const normalClient = makeClient(1);
+        const normal = new Mob({ x: 0, y: 0 });
+
+        normal.define(BEETLE, 0);
+        killMob(normal, normalClient);
+
+        const bossClient = makeClient(2);
+        const boss = createBoss({ x: 0, y: 0 }, BEETLE, 0);
+
+        killMob(boss, bossClient);
+
+        expect(normalClient.xp).toHaveLength(1);
+        expect(bossClient.xp).toHaveLength(1);
+        expect(bossClient.xp[0]).toBeCloseTo(normalClient.xp[0] * 3, 6);
     });
 });
 
