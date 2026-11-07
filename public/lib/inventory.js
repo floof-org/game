@@ -584,6 +584,17 @@ function processInventoryDrop() {
         rarity: inventoryDragConfig.rarity,
     };
 
+    const snap = inventoryDragConfig.dropSnap;
+    if (snap) {
+        const isMain = snap.type === DRAG_TYPE_MAINDOCKER;
+        const slot = (isMain ? net.state.slots : net.state.secondarySlots)[snap.index];
+        if (slot) {
+            sendEquip(drag, isMain ? mainDrop(slot, snap.index) : secondaryDrop(slot, snap.index));
+            settleOnSlot(inventoryDragConfig, snap.type, snap.index);
+            return true;
+        }
+    }
+
     const sc = uiScale();
     const mX = mouse.x / sc;
     const mY = mouse.y / sc;
@@ -644,7 +655,7 @@ function beginDragFromSlot(rec, onDrop) {
     inventoryDragConfig.item.stableSize = size;
     inventoryDragConfig.onDrop = onDrop;
 
-    setInventoryOpen(false);
+    // The panel stays open until the pointer actually moves (see onMove), so a plain click doesn't close it.
 
     return true;
 }
@@ -687,7 +698,10 @@ function attachSlotEvents(rec) {
                 mouse.x = ev.clientX * (window.devicePixelRatio || 1);
                 mouse.y = ev.clientY * (window.devicePixelRatio || 1);
             }
-            if (!moved && Math.hypot(ev.clientX - startX, ev.clientY - startY) >= DRAG_THRESHOLD) moved = true;
+            if (!moved && Math.hypot(ev.clientX - startX, ev.clientY - startY) >= DRAG_THRESHOLD) {
+                moved = true;
+                setInventoryOpen(false);
+            }
         };
 
         const onUp = () => {

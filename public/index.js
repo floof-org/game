@@ -4,7 +4,7 @@ import { mouse, keyMap, releaseFloatingText } from "./lib/net.js";
 import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
-import { activeSnapTarget, beginDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, handleSlotDrop, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
+import { activeSnapTarget, applyPendingSwaps, beginDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, handleSlotDrop, inventoryDragConfig, sendRowSwap, slotPreview, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
 import { updateAccountMenu } from './lib/auth.js';
 import SpatialHashGrid from "./server/lib/SpatialHashGrid.js";
@@ -402,16 +402,19 @@ window.addEventListener("keydown", (e) => {
                 net.state.socket.talk(SERVER_BOUND.DEV_CHEAT, DEV_CHEAT_IDS.CHANGE_TEAM);
                 break;
             case "r":
-                if (net.state.socket?.readyState === WebSocket.OPEN) {
+                if (net.state.socket?.readyState === WebSocket.OPEN && !dragConfig.enabled && !inventoryDragConfig.enabled) {
                     for (let i = 0; i < net.state.slots.length; i++) {
-                        if (net.state.slots[i].index > -1 && net.state.secondarySlots[i]?.index > -1) {
+                        if (!net.state.isInDestroy) {
+                            // Swap main <-> secondary, even if one side is empty
+                            sendRowSwap(i);
+                        } else if (net.state.slots[i].index > -1 && net.state.secondarySlots[i]?.index > -1) {
                             net.state.socket.talk(SERVER_BOUND.CHANGE_LOADOUT, {
                                 drag: {
-                                    type: net.state.isInDestroy ? DRAG_TYPE_SECONDARYDOCKER : DRAG_TYPE_MAINDOCKER,
+                                    type: DRAG_TYPE_SECONDARYDOCKER,
                                     index: i,
                                 },
                                 drop: {
-                                    type: net.state.isInDestroy ? DRAG_TYPE_DESTROY : DRAG_TYPE_SECONDARYDOCKER,
+                                    type: DRAG_TYPE_DESTROY,
                                     index: i,
                                 },
                             });
@@ -428,17 +431,22 @@ window.addEventListener("keydown", (e) => {
         if (e.key >= "0" && e.key <= "9") {
             const index = e.key === "0" ? 9 : parseInt(e.key) - 1;
 
-            if (net.state.socket?.readyState === WebSocket.OPEN && index < net.state.slots.length && net.state.slots[index].index > -1 && net.state.secondarySlots[index]?.index > -1) {
-                net.state.socket.talk(SERVER_BOUND.CHANGE_LOADOUT, {
-                    drag: {
-                        type: net.state.isInDestroy ? DRAG_TYPE_SECONDARYDOCKER : DRAG_TYPE_MAINDOCKER,
-                        index,
-                    },
-                    drop: {
-                        type: net.state.isInDestroy ? DRAG_TYPE_DESTROY : DRAG_TYPE_SECONDARYDOCKER,
-                        index,
-                    },
-                });
+            if (net.state.socket?.readyState === WebSocket.OPEN && !dragConfig.enabled && !inventoryDragConfig.enabled && index < net.state.slots.length) {
+                if (!net.state.isInDestroy) {
+                    // Swap main <-> secondary, even if one side is empty
+                    sendRowSwap(index);
+                } else if (net.state.slots[index].index > -1 && net.state.secondarySlots[index]?.index > -1) {
+                    net.state.socket.talk(SERVER_BOUND.CHANGE_LOADOUT, {
+                        drag: {
+                            type: DRAG_TYPE_SECONDARYDOCKER,
+                            index,
+                        },
+                        drop: {
+                            type: DRAG_TYPE_DESTROY,
+                            index,
+                        },
+                    });
+                }
             }
         }
 
@@ -510,6 +518,8 @@ dragConfig.removeTarget = () => {
         y: (rect.top + rect.height / 2) / scale,
     };
 };
+
+inventoryDragConfig.removeTarget = dragConfig.removeTarget;
 
 function processDrop() {
     let drag = {
@@ -2164,6 +2174,7 @@ function draw() {
 
         let secondaryBoxSize = net.state.isInDestroy ? 65 : boxSize * 0.75;
         const snapTarget = activeSnapTarget();
+        applyPendingSwaps();
 
         if (dragConfig.enabled) {
             dragConfig.item.realSize = boxSize;
@@ -2220,6 +2231,14 @@ function draw() {
                 slot.icon.realY = y;
                 slot.icon.realSize = boxSize;
 
+                // If a held petal would replace this one, preview it flying to where it would end up
+                const preview = slotPreview(DRAG_TYPE_MAINDOCKER, i);
+                if (preview) {
+                    slot.icon.realX = preview.x;
+                    slot.icon.realY = preview.y;
+                    slot.icon.realSize = preview.size;
+                }
+
                 if (slot.index > -1) {
                     if (slot.ratio > slot.realRatio) {
                         slot.ratio = slot.realRatio;
@@ -2228,7 +2247,9 @@ function draw() {
                     }
 
                     if (slot.ratio < 0.995) {
-                        drawPetalIconWithRatio(slot.index, slot.rarity, x, y, boxSize, slot.ratio, ctx);
+                        if (slot.icon.size > 0.5) {
+                            drawPetalIconWithRatio(slot.index, slot.rarity, slot.icon.x, slot.icon.y, slot.icon.size, slot.ratio, ctx);
+                        }
                     } else {
                         ctx.save();
                         ctx.translate(slot.icon.x, slot.icon.y);
@@ -2317,6 +2338,13 @@ function draw() {
                 slot.icon.realX = x;
                 slot.icon.realY = y;
                 slot.icon.realSize = secondaryBoxSize;
+
+                const preview = slotPreview(DRAG_TYPE_SECONDARYDOCKER, i);
+                if (preview) {
+                    slot.icon.realX = preview.x;
+                    slot.icon.realY = preview.y;
+                    slot.icon.realSize = preview.size;
+                }
 
                 if (slot.index > -1 && (!dragConfig.enabled || dragConfig.type !== DRAG_TYPE_SECONDARYDOCKER || dragConfig.index !== i)) {
                     ctx.save();
