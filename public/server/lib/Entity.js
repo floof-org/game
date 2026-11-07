@@ -574,6 +574,7 @@ export class PetalSlot {
                 aura.team = this.player.team;
                 aura.friendly = true;
                 aura.nullCollision = true;
+                aura._invencibility = true;
                 aura.pushability = 0;
                 aura.launched = false;
                 aura.range = 999999;
@@ -1291,7 +1292,9 @@ export class Entity {
 
         if (this.poison.timer > 0) {
             const source = this.poison.source;
-            const dealt = this.health.damage(this.poison.damage);
+            const dealt = this._invencibility
+                ? 0
+                : this.health.damage(this.poison.damage);
 
             // Poison damage counts as loot damage when it clears armor. Damage
             // fully blocked by armor deals nothing and contributes nothing.
@@ -1482,6 +1485,8 @@ export class Entity {
                     return;
                 }
 
+                const isInvincible = ent => !!ent?._invencibility;
+
                 // Fire auras damage through nullCollision, as in WhiteHole.js.
                 const isFireAura = ent => ent.type === ENTITY_TYPES.PETAL && ent.config?.name === "fire.aura";
                 if ((!this.nullCollision && !other.nullCollision) || isFireAura(this) || isFireAura(other)) {
@@ -1569,10 +1574,9 @@ export class Entity {
                     if (thisWingBonus > 0) thisDamageDone *= (1 + thisWingBonus);
                     if (otherWingBonus > 0) otherDamageDone *= (1 + otherWingBonus);
 
-                    // Fire auras cannot be damaged, as in WhiteHole.js. Their
-                    // own outgoing damage is unaffected.
-                    if (isFireAura(this)) otherDamageDone = 0;
-                    if (isFireAura(other)) thisDamageDone = 0;
+                    // If invincible then deal no damage.
+                    if (isInvincible(this)) otherDamageDone = 0;
+                    if (isInvincible(other)) thisDamageDone = 0;
 
                     // track the damage actually dealt; damage fully blocked by armor / damageReduction must not count toward loot
                     let thisDealt = 0,
@@ -4550,7 +4554,7 @@ export class Lightning {
                     }
                 }
 
-                const dealt = ent.health.damage(this.damage);
+                const dealt = ent._invencibility ? 0 : ent.health.damage(this.damage);
 
                 if (dealt > 0) {
                     if (ent.parent && ent.config?.name === "Leech") {
