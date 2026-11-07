@@ -83,12 +83,15 @@ class CraftInventoryGrid {
   prime() { this.prev = null; this.pop.clear(); }
 
   diffInventory(keys) {
-    this.els = new Map();
     if (this.prev) {
       for (const key of keys) if (!this.prev.has(key)) this.pop.set(key, 0);
     }
     this.prev = keys;
   }
+
+  resetCells() { this.els = new Map(); }
+
+  release(key) { this.els.delete(key); }
 
   cellCanvas(petalIdx, rarIdx, count, size) {
     const c = document.createElement('canvas');
@@ -190,7 +193,7 @@ class CraftBoardView {
       el.addEventListener('click', () => {
         if (!slot.sig || this.craft.craftResult) return;
         this.craft.clearCraft();
-        this.craft.render();
+        this.craft.refresh();
       });
       el.addEventListener('mouseenter', () => { if (slot.sig) this._hover(slot.petalIdx, slot.rarity, el); });
       el.addEventListener('mouseleave', () => { if (slot.sig) this._unhover(slot.petalIdx, slot.rarity); });
@@ -206,7 +209,7 @@ class CraftBoardView {
       this.craft.craftResult = null;
       this.craft.craftResultToken++;
       this.craft.clearCraft();
-      this.craft.render();
+      this.craft.refresh();
     });
     this.resultEl.addEventListener('mouseenter', () => {
       if (this.resultInfo) this._hover(this.resultInfo.petalIdx, this.resultInfo.rarity, this.resultEl);
@@ -1280,13 +1283,13 @@ var craftRef = null;
     craft.craftResult = result;
     if (result && result.type === 'pending' && craft.board) craft.board.beginCraft();
     craft.startLoop();
-    if (craft.panel && craft.panel.style.display !== 'none') craft.render();
+    craft.refresh();
 
     if (result && result.type === 'success') return;
     setTimeout(function () {
       if (craft.craftResultToken === t) {
         craft.craftResult = null;
-        if (craft.panel && craft.panel.style.display !== 'none') craft.render();
+        craft.refresh();
       }
     }, craft.CRAFT_RESULT_TTL_MS);
   };
@@ -1299,48 +1302,147 @@ var craftRef = null;
     clearInterval(craft.poll);
     craft.clearCraft();
     if (craft.board) craft.board.abort();
-    if (craft.panel && craft.panel.style.display !== 'none') craft.render();
+    craft.refresh();
   }
 
-  craft.loadCraft = function (petalIdx, rarity, owned, shift) {
+  craft._streak = 0;
+  craft._streakKey = null;
+  craft._streakUntil = 0;
 
-    if (craft.craftResult && craft.craftResult.type !== 'pending') {
+  craft.stagedTotal = function () {
+    var t = 0;
+    for (var i = 0; i < 5; i++) t += craft.craftSlots[i];
+    return t;
+  };
+
+  craft.isPending = function () {
+    return !!craft.craftResult && craft.craftResult.type === 'pending';
+  };
+
+  craft.canUseCell = function (petalIdx, rarIdx, displayed) {
+    if (craft.isPending() || displayed <= 0) return false;
+    if (!(state.tiers && state.tiers[rarIdx + 1])) return false;
+    var selected = craft.craftPetalIdx === petalIdx && craft.craftRarity === rarIdx;
+    return displayed >= 5 || (selected && craft.stagedTotal() >= 5);
+  };
+
+  craft.loadCraft = function (petalIdx, rarity, owned, shift) {
+    if (craft.isPending()) return false;
+    if (!(state.tiers && state.tiers[rarity + 1])) return false;
+
+    var same = craft.craftPetalIdx === petalIdx && craft.craftRarity === rarity;
+    var staged = same ? craft.stagedTotal() : 0;
+    var available = owned - staged;
+    if (available <= 0) return false;
+
+    var key = petalIdx + '|' + rarity;
+    var now = performance.now();
+    craft._streak = (craft._streakKey === key && now < craft._streakUntil) ? craft._streak + 1 : 1;
+    craft._streakKey = key;
+    craft._streakUntil = now + 500;
+
+    var amount = Math.min(shift ? available : 5 * craft._streak, available);
+
+    if (craft.craftResult) {
       craft.craftResult = null;
       craft.craftResultToken++;
     }
-
     if (craft._simNextOutcome != null) {
       craft.dlog('re-stage cleared pending SimCraft outcome:', craft._simNextOutcome);
       craft._simNextOutcome = null;
     }
-    if (shift) {
-      craft.craftPetalIdx = petalIdx;
-      craft.craftRarity = rarity;
-      var per = Math.floor(owned / 5);
-      var rem = owned - per * 5;
-      var counts = [per, per, per, per, per];
-      var idxs = [0, 1, 2, 3, 4];
-      for (var i = idxs.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var t = idxs[i]; idxs[i] = idxs[j]; idxs[j] = t;
+
+    craft.craftPetalIdx = petalIdx;
+    craft.craftRarity = rarity;
+    var total = staged + amount;
+    var extra = total % 5;
+    var per = (total - extra) / 5;
+    var counts = [];
+    for (var i = 0; i < 5; i++) counts.push(per + (i < extra ? 1 : 0));
+    craft.craftSlots = counts;
+    return true;
+  };
+
+  craft.computeRows = function (s) {
+    var petalIdxSet = new Set();
+    Object.keys(s.inventory).forEach(function (tn) {
+      var petals = s.inventory[tn] || {};
+      Object.keys(petals).forEach(function (pid) {
+        if (petals[pid] > 0) petalIdxSet.add(Number(pid));
+      });
+    });
+    var rows = Array.from(petalIdxSet);
+    rows.sort(function (a, b) {
+      var an = (s.petalConfigs[a] || {}).name || '';
+      var bn = (s.petalConfigs[b] || {}).name || '';
+      return an.localeCompare(bn);
+    });
+    var emptyInventory = !rows.length;
+    if (craft.searchQuery) {
+      var q = craft.searchQuery.toLowerCase();
+      rows = rows.filter(function (idx) {
+        var name = ((s.petalConfigs[idx] || {}).name || '').toLowerCase();
+        return name.indexOf(q) !== -1;
+      });
+    }
+    return { rows: rows, emptyInventory: emptyInventory };
+  };
+
+  craft.rowSignature = function (rows, nRarities, size) {
+    return rows.join(',') + '|' + nRarities + '|' + size + '|' + craft.searchQuery;
+  };
+
+  craft.paintCell = function (cell) {
+    var tier = state.tiers[cell.rarIdx];
+    var owned = (state.inventory[tier.name] || {})[cell.petalIdx] || 0;
+    var selected = cell.petalIdx === craft.craftPetalIdx && cell.rarIdx === craft.craftRarity;
+    var displayed = owned - (selected ? craft.stagedTotal() : 0);
+    var usable = craft.canUseCell(cell.petalIdx, cell.rarIdx, displayed);
+    var el = cell.el;
+    cell.owned = owned;
+    cell.displayed = displayed;
+    cell.usable = usable;
+    if (displayed > 0) {
+      if (cell.shownCount !== displayed) {
+        el.replaceChildren(craft.invGrid.cellCanvas(cell.petalIdx, cell.rarIdx, displayed, cell.size));
+        cell.shownCount = displayed;
       }
-      for (var k = 0; k < rem; k++) counts[idxs[k]]++;
-      craft.craftSlots = counts;
+      el.style.cursor = usable ? 'pointer' : 'default';
+      el.style.filter = usable ? '' : 'grayscale(1)';
+      el.style.opacity = usable ? '' : '0.55';
+    } else {
+      if (cell.shownCount) {
+        el.replaceChildren();
+        craft.invGrid.release(cellKey(cell.petalIdx, cell.rarIdx));
+        cell.shownCount = 0;
+        var h = craft.hoverEntry;
+        if (h && h.index === cell.petalIdx && h.rarity === cell.rarIdx) {
+          craft.hoverEntry = null;
+          craft.tip.style.display = 'none';
+        }
+      }
+      el.style.cursor = 'default';
+      el.style.filter = '';
+      el.style.opacity = '';
+    }
+  };
+
+  craft.refresh = function () {
+    if (!craft.panel || craft.panel.style.display === 'none') return;
+    var s = state;
+    var intact = !!(craft._grid && craft._grid.isConnected && s && s.inventory && s.tiers && s.petalConfigs);
+    if (intact) {
+      var info = craft.computeRows(s);
+      intact = info.rows.length > 0 &&
+        craft.rowSignature(info.rows, s.tiers.length, craft.computeIconSize(s.tiers.length)) === craft._rowSig;
+    }
+    if (!intact) {
+      craft.render();
       return;
     }
-
-    var sameTarget = craft.craftPetalIdx === petalIdx && craft.craftRarity === rarity && craft.craftPetalIdx != null;
-    if (sameTarget) {
-      var staged = 0;
-      for (var s = 0; s < 5; s++) staged += craft.craftSlots[s];
-      if (owned - staged >= 5) {
-        for (var ii = 0; ii < 5; ii++) craft.craftSlots[ii]++;
-      }
-    } else {
-      craft.craftPetalIdx = petalIdx;
-      craft.craftRarity = rarity;
-      craft.craftSlots = [1, 1, 1, 1, 1];
-    }
+    craft.diffInventoryForPops(s);
+    for (var i = 0; i < craft._cells.length; i++) craft.paintCell(craft._cells[i]);
+    craft.board.sync();
   };
 
   craft.doCraft = function () {
@@ -1389,9 +1491,7 @@ var craftRef = null;
         clearInterval(craft.poll);
         craft.clearCraft();
 
-        if (craft.panel && craft.panel.style.display !== 'none' && !craft.craftResult) {
-          craft.render();
-        }
+        if (!craft.craftResult) craft.refresh();
       }
     }, 100);
   };
@@ -1519,6 +1619,8 @@ var craftRef = null;
       var savedScrollLeft = oldWrap ? oldWrap.scrollLeft : 0;
 
       craft.panel.innerHTML = '';
+      craft._grid = null;
+      craft._cells = [];
 
       var headerBar = document.createElement('div');
       headerBar.style.cssText =
@@ -1593,31 +1695,11 @@ var craftRef = null;
       craft.panel.appendChild(craft.board.el);
       craft.startLoop();
 
-      var petalIdxSet = new Set();
-      Object.keys(s.inventory).forEach(function (tn) {
-        var petals = s.inventory[tn] || {};
-        Object.keys(petals).forEach(function (pid) {
-          if (petals[pid] > 0) petalIdxSet.add(Number(pid));
-        });
-      });
-      var petalIndices = Array.from(petalIdxSet);
-      petalIndices.sort(function (a, b) {
-        var an = (s.petalConfigs[a] || {}).name || '';
-        var bn = (s.petalConfigs[b] || {}).name || '';
-        return an.localeCompare(bn);
-      });
-
-      var emptyInventory = !petalIndices.length;
+      var rowInfo = craft.computeRows(s);
+      var petalIndices = rowInfo.rows;
+      var emptyInventory = rowInfo.emptyInventory;
 
       craft.diffInventoryForPops(s);
-
-      if (craft.searchQuery) {
-        var q = craft.searchQuery.toLowerCase();
-        petalIndices = petalIndices.filter(function (idx) {
-          var name = ((s.petalConfigs[idx] || {}).name || '').toLowerCase();
-          return name.indexOf(q) !== -1;
-        });
-      }
 
       if (!petalIndices.length) {
         var emp = document.createElement('div');
@@ -1655,51 +1737,36 @@ var craftRef = null;
         grid.appendChild(th);
       });
 
-      var stagedTotal = 0;
-      for (var st = 0; st < 5; st++) stagedTotal += craft.craftSlots[st];
+      craft.invGrid.resetCells();
+      craft._grid = grid;
+      craft._rowSig = craft.rowSignature(petalIndices, nRarities, SIZE);
 
       petalIndices.forEach(function (petalIdx) {
         s.tiers.forEach(function (tier, rarIdx) {
-          var owned = (s.inventory[tier.name] || {})[petalIdx] || 0;
-          var staged = (petalIdx === craft.craftPetalIdx && rarIdx === craft.craftRarity) ? stagedTotal : 0;
-          var displayed = owned - staged;
-          if (displayed > 0) {
-            var canCraft = displayed >= 5;
-            var host = document.createElement('div');
-            host.style.cssText =
-              'box-sizing:border-box;' +
-              'width:' + SIZE + 'px;height:' + SIZE + 'px;' +
-              'background:#a87545;border-radius:6px;' +
-              'cursor:' + (canCraft ? 'pointer' : 'default') + ';' +
-              (canCraft ? '' : 'filter:grayscale(1);opacity:0.55;');
-            host.appendChild(craft.invGrid.cellCanvas(petalIdx, rarIdx, displayed, SIZE));
-            (function (pi, ri, ownedCount, canClick, el) {
-              el.addEventListener('mouseenter', function () {
-                craft.hoverEntry = { index: pi, rarity: ri };
-                craft.showTooltip(el);
-              });
-              el.addEventListener('mouseleave', function () {
-                if (craft.hoverEntry && craft.hoverEntry.index === pi && craft.hoverEntry.rarity === ri) {
-                  craft.hoverEntry = null;
-                  craft.tip.style.display = 'none';
-                }
-              });
-              if (canClick) {
-                el.addEventListener('click', function (ev) {
-                  craft.loadCraft(pi, ri, ownedCount, !!ev.shiftKey);
-                  craft.render();
-                });
-              }
-            })(petalIdx, rarIdx, owned, canCraft, host);
-            grid.appendChild(host);
-          } else {
-            var ph = document.createElement('div');
-            ph.style.cssText =
-              'box-sizing:border-box;' +
-              'width:' + SIZE + 'px;height:' + SIZE + 'px;' +
-              'background:#a87545;border-radius:6px;';
-            grid.appendChild(ph);
-          }
+          var host = document.createElement('div');
+          host.style.cssText =
+            'box-sizing:border-box;' +
+            'width:' + SIZE + 'px;height:' + SIZE + 'px;' +
+            'background:#a87545;border-radius:6px;';
+          var cell = { el: host, petalIdx: petalIdx, rarIdx: rarIdx, size: SIZE, owned: 0, displayed: 0, usable: false, shownCount: 0 };
+          host.addEventListener('mouseenter', function () {
+            if (cell.displayed <= 0) return;
+            craft.hoverEntry = { index: cell.petalIdx, rarity: cell.rarIdx };
+            craft.showTooltip(host);
+          });
+          host.addEventListener('mouseleave', function () {
+            if (craft.hoverEntry && craft.hoverEntry.index === cell.petalIdx && craft.hoverEntry.rarity === cell.rarIdx) {
+              craft.hoverEntry = null;
+              craft.tip.style.display = 'none';
+            }
+          });
+          host.addEventListener('click', function (ev) {
+            if (!cell.usable) return;
+            if (craft.loadCraft(cell.petalIdx, cell.rarIdx, cell.owned, !!ev.shiftKey)) craft.refresh();
+          });
+          craft._cells.push(cell);
+          craft.paintCell(cell);
+          grid.appendChild(host);
         });
       });
 
