@@ -206,10 +206,10 @@ describe("boss lightning range", () => {
 describe("boss drops", () => {
     // Math.random = 0 makes every drop row pass its chance check and pick its
     // first weighted entry, so normal and boss runs drop the same item.
-    test("drops twenty-five times the normal amount from drop tables", () => {
+    test("drops fifty times the normal amount from drop tables", () => {
         Math.random = () => 0;
 
-        expect(BOSS_DROP_MULTIPLIER).toBe(25);
+        expect(BOSS_DROP_MULTIPLIER).toBe(50);
 
         const normalClient = makeClient(1);
         const normal = new Mob({ x: 0, y: 0 });
@@ -230,7 +230,7 @@ describe("boss drops", () => {
         }
     });
 
-    test("drops twenty-five times the normal amount from config fallback drops", () => {
+    test("drops fifty times the normal amount from config fallback drops", () => {
         Math.random = () => 0;
 
         const table = DROP_LOOKUP.Beetle;
