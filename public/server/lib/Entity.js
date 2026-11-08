@@ -2030,9 +2030,13 @@ export class Entity {
         // Florr-style wall collision: a mob's body center carries a 1x1 pixel
         // collision box, so its body may overlap a wall by almost its whole
         // radius. Players and petals still collide with their full body.
-        const centerOnly = this.type === ENTITY_TYPES.MOB;
-        const radius = centerOnly ? MOB_CENTER_RADIUS : this.size;
-        const padding = centerOnly ? .01 : 3;
+        if (this.type === ENTITY_TYPES.MOB) {
+            this.collideTerrainCenter();
+            return;
+        }
+
+        const radius = this.size;
+        const padding = 3;
         const retrieved = state.terrainSpatialHash.retrieve(this);
 
         /** @type {Terrain[]} */
@@ -2061,7 +2065,7 @@ export class Entity {
             };
         }
 
-        if (!centerOnly && collisionResponses.length === 2) {
+        if (collisionResponses.length === 2) {
             const xDiff = Math.abs(collisionResponses[0].gridX - collisionResponses[1].gridX);
             const yDiff = Math.abs(collisionResponses[0].gridY - collisionResponses[1].gridY);
 
@@ -2131,6 +2135,97 @@ export class Entity {
                     this.lastGoodPosition = {
                         x: clear.x,
                         y: clear.y
+                    };
+                    this._AABB = state.spatialHash.getAABB(this);
+                }
+            }
+        }
+    }
+
+    /**
+     * Smooth florr-style collision for mobs. Only the 1x1 pixel center box
+     * touches walls, and the velocity slides along the wall instead of being
+     * stopped or snapped back to an old position.
+     */
+    collideTerrainCenter() {
+        const radius = MOB_CENTER_RADIUS;
+        const padding = .01;
+        let collided = false;
+
+        // Resolve a few times so a corner settles in place. The old code
+        // teleported the mob back to lastGoodPosition when the corner check
+        // failed, which read as a small stutter.
+        for (let pass = 0; pass < 3; pass++) {
+            this._AABB = state.spatialHash.getAABB(this);
+
+            let hit = false;
+
+            state.terrainSpatialHash.retrieve(this).forEach(/** @param {Terrain} terrain */ terrain => {
+                if (!terrain.polygon.circleIntersects(this.x, this.y, radius)) {
+                    return;
+                }
+
+                const resolution = terrain.polygon.resolve(this.x, this.y, radius, padding);
+
+                this.x = resolution.x;
+                this.y = resolution.y;
+
+                // Drop the velocity component pointing into the wall and keep
+                // the tangential component so the mob slides smoothly.
+                const normalX = Math.cos(resolution.angle);
+                const normalY = Math.sin(resolution.angle);
+                const intoWall = this.velocity.x * normalX + this.velocity.y * normalY;
+
+                if (intoWall < 0) {
+                    this.velocity.x -= intoWall * normalX;
+                    this.velocity.y -= intoWall * normalY;
+                }
+
+                hit = true;
+                collided = true;
+            });
+
+            if (!hit) {
+                break;
+            }
+        }
+
+        if (collided && this.config?.bumblebeeMovement) {
+            this.movementAngle = Math.random() * Math.PI * 2;
+        }
+
+        // Keep the mob inside the room. This is the only snap that remains,
+        // since the outside of the map has no smooth alternative.
+        this.x = Math.max(-state.width / 2, Math.min(state.width / 2, this.x));
+        this.y = Math.max(-state.height / 2, Math.min(state.height / 2, this.y));
+        this._AABB = state.spatialHash.getAABB(this);
+
+        const clear = state.isClearOfTerrain(this.x, this.y, radius);
+
+        if (clear && !collided) {
+            this.lastGoodPosition = {
+                x: this.x,
+                y: this.y
+            };
+        }
+
+        // A mob that spawned inside a wall, or got pushed deep into one, still
+        // needs a way out, but only when settling failed. Throttled because
+        // this runs every terrain tick.
+        if (!clear) {
+            const now = Date.now();
+
+            if (now - this.terrainRescueAt >= 1000) {
+                this.terrainRescueAt = now;
+
+                const rescue = state.findClearPosition(this.x, this.y, radius);
+
+                if (rescue) {
+                    this.x = rescue.x;
+                    this.y = rescue.y;
+                    this.lastGoodPosition = {
+                        x: rescue.x,
+                        y: rescue.y
                     };
                     this._AABB = state.spatialHash.getAABB(this);
                 }

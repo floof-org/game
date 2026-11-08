@@ -115,6 +115,27 @@ describe("mob wall collision", () => {
         expect(clear.x).toBe(WALL_SIZE + .6);
     });
 
+    test("a mob slides along a wall instead of snapping back", () => {
+        const mob = new Mob({ x: WALL_SIZE + .2, y: 0 });
+
+        mob.define(BEETLE, 0);
+        mob.size = 17;
+        // Moving diagonally into the wall: -x is into it, +y is along it.
+        mob.velocity.x = -2;
+        mob.velocity.y = 3;
+        mob.lastGoodPosition = { x: WALL_SIZE + 30, y: 0 };
+        place(mob);
+
+        mob.collideTerrain();
+
+        // The center is pushed out, the along-wall speed is kept, and the mob
+        // is not teleported back to the recorded last good position.
+        expect(mob.x).toBeCloseTo(WALL_SIZE + .51, 5);
+        expect(mob.y).toBeCloseTo(0, 10);
+        expect(mob.velocity.x).toBeCloseTo(0, 10);
+        expect(mob.velocity.y).toBeCloseTo(3, 10);
+    });
+
     test("bosses use the same center point collision", () => {
         const boss = createBoss({ x: WALL_SIZE + 1, y: 0 }, BEETLE, 0);
 
