@@ -8,7 +8,9 @@ import { terrains } from "../public/lib/protocol.js";
 
 const GRID = 40;
 const WORLD = 400;
+const TILE = WORLD / GRID;
 const WALL_SIZE = 20;
+const MOB_RADIUS = TILE * .49;
 const BEETLE = mobConfigs.find(mob => mob.name === "Beetle");
 
 const original = {
@@ -65,7 +67,7 @@ afterEach(() => {
 });
 
 describe("mob wall collision", () => {
-    test("mob centers can overlap a wall by half the body", () => {
+    test("mob circles keep one tile of clearance from walls", () => {
         const mob = new Mob({ x: WALL_SIZE + 1, y: 0 });
 
         mob.define(BEETLE, 0);
@@ -74,11 +76,11 @@ describe("mob wall collision", () => {
 
         mob.collideTerrain();
 
-        expect(mob.x).toBe(WALL_SIZE + 1);
-        expect(mob.y).toBe(0);
+        expect(mob.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS, 5);
+        expect(mob.y).toBeCloseTo(0, 10);
     });
 
-    test("a mob center inside the wall is pushed just outside", () => {
+    test("a mob circle inside the wall is pushed just outside", () => {
         const mob = new Mob({ x: WALL_SIZE - 5, y: 0 });
 
         mob.define(BEETLE, 0);
@@ -87,11 +89,11 @@ describe("mob wall collision", () => {
 
         mob.collideTerrain();
 
-        expect(mob.x).toBeCloseTo(WALL_SIZE + .51, 5);
+        expect(mob.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS, 5);
     });
 
-    test("the collision box is exactly one pixel wide", () => {
-        const overlapping = new Mob({ x: WALL_SIZE + .4, y: 0 });
+    test("the collision circle is one tile wide", () => {
+        const overlapping = new Mob({ x: WALL_SIZE + MOB_RADIUS - .1, y: 0 });
 
         overlapping.define(BEETLE, 0);
         overlapping.size = 17;
@@ -99,11 +101,9 @@ describe("mob wall collision", () => {
 
         overlapping.collideTerrain();
 
-        // 0.4px from the wall is inside the 1x1 center box, so it is pushed
-        // to half a pixel plus the separation padding.
-        expect(overlapping.x).toBeCloseTo(WALL_SIZE + .51, 5);
+        expect(overlapping.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS, 5);
 
-        const clear = new Mob({ x: WALL_SIZE + .6, y: 0 });
+        const clear = new Mob({ x: WALL_SIZE + MOB_RADIUS + .1, y: 0 });
 
         clear.define(BEETLE, 0);
         clear.size = 17;
@@ -111,8 +111,7 @@ describe("mob wall collision", () => {
 
         clear.collideTerrain();
 
-        // 0.6px leaves the 1x1 center box clear of the wall.
-        expect(clear.x).toBe(WALL_SIZE + .6);
+        expect(clear.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS + .1, 5);
     });
 
     test("a mob slides along a wall instead of snapping back", () => {
@@ -128,22 +127,40 @@ describe("mob wall collision", () => {
 
         mob.collideTerrain();
 
-        // The center is pushed out, the along-wall speed is kept, and the mob
+        // The circle is pushed out, the along-wall speed is kept, and the mob
         // is not teleported back to the recorded last good position.
-        expect(mob.x).toBeCloseTo(WALL_SIZE + .51, 5);
+        expect(mob.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS, 5);
         expect(mob.y).toBeCloseTo(0, 10);
         expect(mob.velocity.x).toBeCloseTo(0, 10);
         expect(mob.velocity.y).toBeCloseTo(3, 10);
     });
 
-    test("bosses use the same center point collision", () => {
+    test("a fast mob cannot tunnel through a wall in one tick", () => {
+        const mob = new Mob({ x: WALL_SIZE + MOB_RADIUS, y: 0 });
+
+        mob.define(BEETLE, 0);
+        mob.size = 17;
+        // Simulate a large step that starts clear on the right and ends clear
+        // on the far side of the 40 unit thick wall.
+        mob._terrainStartX = WALL_SIZE + MOB_RADIUS;
+        mob._terrainStartY = 0;
+        mob.x = -WALL_SIZE - MOB_RADIUS;
+        mob.velocity.x = -400;
+        place(mob);
+
+        mob.collideTerrain();
+
+        expect(mob.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS, 5);
+    });
+
+    test("bosses use the same circular collision", () => {
         const boss = createBoss({ x: WALL_SIZE + 1, y: 0 }, BEETLE, 0);
 
         place(boss);
 
         boss.collideTerrain();
 
-        expect(boss.x).toBe(WALL_SIZE + 1);
+        expect(boss.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS, 5);
     });
 
     test("players still collide with their full body", () => {

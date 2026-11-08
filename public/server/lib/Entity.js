@@ -1,6 +1,6 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, SUMMON_STATS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER, BOSS_ABILITY_RATE_MULTIPLIER, BOSS_PROJECTILE_DAMAGE_MULTIPLIER, MOB_CENTER_RADIUS } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER, BOSS_ABILITY_RATE_MULTIPLIER, BOSS_PROJECTILE_DAMAGE_MULTIPLIER } from "./config.js";
 import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
@@ -1366,6 +1366,11 @@ export class Entity {
             this.speedDebuff.timer--;
         }
 
+        // Movement start, used to sweep mob collision so a fast mob cannot
+        // tunnel through a thin wall between two ticks.
+        this._terrainStartX = this.x;
+        this._terrainStartY = this.y;
+
         this.x += this.velocity.x;
         this.y += this.velocity.y;
 
@@ -2027,9 +2032,8 @@ export class Entity {
     }
 
     collideTerrain() {
-        // Florr-style wall collision: a mob's body center carries a 1x1 pixel
-        // collision box, so its body may overlap a wall by almost its whole
-        // radius. Players and petals still collide with their full body.
+        // Mobs use a circular one-tile collision handled separately. Players
+        // and petals still collide with their full body.
         if (this.type === ENTITY_TYPES.MOB) {
             this.collideTerrainCenter();
             return;
@@ -2143,52 +2147,80 @@ export class Entity {
     }
 
     /**
-     * Smooth florr-style collision for mobs. Only the 1x1 pixel center box
-     * touches walls, and the velocity slides along the wall instead of being
+     * Circular wall collision for mobs. The collision circle spans one terrain
+     * tile, and movement is swept in small steps so a fast mob cannot tunnel
+     * through a thin wall. Velocity slides along the wall instead of being
      * stopped or snapped back to an old position.
      */
     collideTerrainCenter() {
-        const radius = MOB_CENTER_RADIUS;
-        const padding = .01;
+        const radius = state.mobCollisionRadius();
+        const startX = this._terrainStartX ?? this.x;
+        const startY = this._terrainStartY ?? this.y;
+        const deltaX = this.x - startX;
+        const deltaY = this.y - startY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // One step per collision radius is short enough that the circle cannot
+        // jump over a one-tile wall between samples. The cap bounds the work.
+        const stepLength = Math.max(radius, .01);
+        const steps = Math.min(128, Math.max(1, Math.ceil(distance / stepLength)));
+        const stepX = deltaX / steps;
+        const stepY = deltaY / steps;
+
+        let x = startX;
+        let y = startY;
         let collided = false;
 
-        // Resolve a few times so a corner settles in place. The old code
-        // teleported the mob back to lastGoodPosition when the corner check
-        // failed, which read as a small stutter.
-        for (let pass = 0; pass < 3; pass++) {
-            this._AABB = state.spatialHash.getAABB(this);
+        for (let step = 0; step < steps; step++) {
+            x += stepX;
+            y += stepY;
 
-            let hit = false;
+            // Resolve a few times so a corner settles in place.
+            for (let pass = 0; pass < 3; pass++) {
+                this.x = x;
+                this.y = y;
+                this._AABB = state.spatialHash.getAABB(this);
 
-            state.terrainSpatialHash.retrieve(this).forEach(/** @param {Terrain} terrain */ terrain => {
-                if (!terrain.polygon.circleIntersects(this.x, this.y, radius)) {
-                    return;
+                let moved = false;
+
+                state.terrainSpatialHash.retrieve(this).forEach(/** @param {Terrain} terrain */ terrain => {
+                    if (!terrain.polygon.circleIntersects(x, y, radius)) {
+                        return;
+                    }
+
+                    const resolution = terrain.polygon.resolve(x, y, radius, 0);
+                    const beforeX = x;
+                    const beforeY = y;
+
+                    x = resolution.x;
+                    y = resolution.y;
+
+                    // Drop the velocity component pointing into the wall and
+                    // keep the tangential component so the mob slides smoothly.
+                    const normalX = Math.cos(resolution.angle);
+                    const normalY = Math.sin(resolution.angle);
+                    const intoWall = this.velocity.x * normalX + this.velocity.y * normalY;
+
+                    if (intoWall < 0) {
+                        this.velocity.x -= intoWall * normalX;
+                        this.velocity.y -= intoWall * normalY;
+                    }
+
+                    if (Math.abs(x - beforeX) > 1e-9 || Math.abs(y - beforeY) > 1e-9) {
+                        moved = true;
+                    }
+
+                    collided = true;
+                });
+
+                if (!moved) {
+                    break;
                 }
-
-                const resolution = terrain.polygon.resolve(this.x, this.y, radius, padding);
-
-                this.x = resolution.x;
-                this.y = resolution.y;
-
-                // Drop the velocity component pointing into the wall and keep
-                // the tangential component so the mob slides smoothly.
-                const normalX = Math.cos(resolution.angle);
-                const normalY = Math.sin(resolution.angle);
-                const intoWall = this.velocity.x * normalX + this.velocity.y * normalY;
-
-                if (intoWall < 0) {
-                    this.velocity.x -= intoWall * normalX;
-                    this.velocity.y -= intoWall * normalY;
-                }
-
-                hit = true;
-                collided = true;
-            });
-
-            if (!hit) {
-                break;
             }
         }
+
+        this.x = x;
+        this.y = y;
 
         if (collided && this.config?.bumblebeeMovement) {
             this.movementAngle = Math.random() * Math.PI * 2;
@@ -2200,7 +2232,10 @@ export class Entity {
         this.y = Math.max(-state.height / 2, Math.min(state.height / 2, this.y));
         this._AABB = state.spatialHash.getAABB(this);
 
-        const clear = state.isClearOfTerrain(this.x, this.y, radius);
+        // A circle that exactly fills a one-tile corridor touches both walls,
+        // so allow a tiny tolerance before treating it as stuck inside terrain.
+        const clearRadius = Math.max(radius - .01, 0);
+        const clear = state.isClearOfTerrain(this.x, this.y, clearRadius);
 
         if (clear && !collided) {
             this.lastGoodPosition = {

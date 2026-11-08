@@ -129,6 +129,20 @@ const state = {
     },
 
     /**
+     * Collision radius mobs use against walls, sized to roughly one terrain
+     * tile. The small margin keeps irregular wall tiles from pinching a
+     * one-tile corridor shut. Falls back to the pixel center before a map is
+     * loaded.
+     */
+    mobCollisionRadius: () => {
+        const tileWidth = state.terrainGridWidth ? state.width / state.terrainGridWidth : 0;
+        const tileHeight = state.terrainGridHeight ? state.height / state.terrainGridHeight : 0;
+        const tile = tileWidth && tileHeight ? Math.min(tileWidth, tileHeight) : 0;
+
+        return tile ? tile * .49 : MOB_CENTER_RADIUS;
+    },
+
+    /**
      * True when a circular body of `radius` at (x, y) fits inside the room and
      * does not overlap any wall. Rooms without terrain always pass.
      */
