@@ -133,7 +133,7 @@ const state = {
      * does not overlap any wall. Rooms without terrain always pass.
      */
     isClearOfTerrain: (x, y, radius) => {
-        if (!state.mapData?.cells?.length || !radius) {
+        if (!state.mapData?.cells?.length || radius == null) {
             return true;
         }
 

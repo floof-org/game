@@ -167,21 +167,21 @@ describe("spawn clearance", () => {
 });
 
 describe("terrain rescue", () => {
-    test("a body created inside a wall moves to a clear position", () => {
-        // Ring of walls around an open cell. The mob is too large for the cell,
-        // so none of the nearby positions are valid and the resolver cannot
-        // push it out on its own.
+    test("a mob created inside a wall moves its center to a clear position", () => {
+        // Ring of walls around an open cell. The mob starts with its center
+        // inside one of the wall cells, so the rescue has to move it out.
         buildMap((x, y) => x >= 4 && x <= 6 && y >= 4 && y <= 6 && !(x === 5 && y === 5));
 
-        const mob = new Mob(cellCentre(5, 5));
+        const mob = new Mob(cellCentre(4, 4));
         mob.define(fakeConfig, 0);
         mob._AABB = state.spatialHash.getAABB(mob);
 
-        expect(state.isClearOfTerrain(mob.x, mob.y, mob.size)).toBe(false);
+        // Mobs only need their center to be clear of walls.
+        expect(state.isClearOfTerrain(mob.x, mob.y, 0)).toBe(false);
 
         mob.collideTerrain();
 
-        expect(state.isClearOfTerrain(mob.x, mob.y, mob.size)).toBe(true);
+        expect(state.isClearOfTerrain(mob.x, mob.y, 0)).toBe(true);
     });
 
     test("findClearPosition returns the nearest wall-free spot", () => {

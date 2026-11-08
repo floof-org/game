@@ -2027,14 +2027,20 @@ export class Entity {
     }
 
     collideTerrain() {
+        // Florr-style wall collision: a mob's center is its only collision
+        // point, so half of its body may overlap a wall before it gets pushed
+        // out. Players and petals still collide with their full body radius.
+        const centerOnly = this.type === ENTITY_TYPES.MOB;
+        const radius = centerOnly ? 0 : this.size;
+        const padding = centerOnly ? .01 : 3;
         const retrieved = state.terrainSpatialHash.retrieve(this);
 
         /** @type {Terrain[]} */
         const collisionResponses = [];
 
         retrieved.forEach(/** @param {Terrain} terrain */ terrain => {
-            if (terrain.polygon.circleIntersects(this.x, this.y, this.size)) {
-                const resolution = terrain.polygon.resolve(this.x, this.y, this.size);
+            if (terrain.polygon.circleIntersects(this.x, this.y, radius)) {
+                const resolution = terrain.polygon.resolve(this.x, this.y, radius, padding);
                 this.x = resolution.x;
                 this.y = resolution.y;
 
@@ -2055,7 +2061,7 @@ export class Entity {
             };
         }
 
-        if (collisionResponses.length === 2) {
+        if (!centerOnly && collisionResponses.length === 2) {
             const xDiff = Math.abs(collisionResponses[0].gridX - collisionResponses[1].gridX);
             const yDiff = Math.abs(collisionResponses[0].gridY - collisionResponses[1].gridY);
 
@@ -2097,7 +2103,7 @@ export class Entity {
         if (good) {
             this._AABB = state.spatialHash.getAABB(this);
             state.terrainSpatialHash.retrieve(this).forEach(/** @param {Terrain} terrain */ terrain => {
-                if (good && terrain.polygon.circleIntersects(this.x, this.y, this.size)) {
+                if (good && terrain.polygon.circleIntersects(this.x, this.y, radius)) {
                     good = false;
                 }
             });
@@ -2114,10 +2120,10 @@ export class Entity {
             // every terrain tick.
             const now = Date.now();
 
-            if (now - this.terrainRescueAt >= 1000 && !state.isClearOfTerrain(this.x, this.y, this.size)) {
+            if (now - this.terrainRescueAt >= 1000 && !state.isClearOfTerrain(this.x, this.y, radius)) {
                 this.terrainRescueAt = now;
 
-                const clear = state.findClearPosition(this.x, this.y, this.size);
+                const clear = state.findClearPosition(this.x, this.y, radius);
 
                 if (clear) {
                     this.x = clear.x;
@@ -4756,8 +4762,8 @@ class Polygon {
         };
     }
 
-    resolve(x, y, radius) {
-        radius += 3;
+    resolve(x, y, radius, padding = 3) {
+        radius += padding;
 
         let closestDistance = Infinity,
             closestPoint = null;
