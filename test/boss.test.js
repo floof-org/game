@@ -562,8 +562,6 @@ describe("poison loot damage", () => {
         Math.random = () => 0;
         const boss = createBoss({ x: 0, y: 0 }, BEETLE, 5);
         boss.spawnInvincibility = false;
-        boss.armor = 51; // everything blocked, poison included
-        boss.health.armor = 51;
 
         const enemy = new Player({ x: -500, y: 0 });
         enemy.team = 0;
@@ -589,6 +587,10 @@ describe("poison loot damage", () => {
         pincer.collide();
 
         expect(boss.poison.timer).toBeGreaterThan(0);
+
+        // Poison tier scaling changes independently of this test, so block
+        // exactly the value this Pincer applied instead of a hard-coded armor.
+        boss.armor = boss.health.armor = boss.poison.damage + 1;
 
         const damageBefore = boss.damagedBy[enemy.id]?.[0] ?? 0;
         for (let i = 0; i < 3; i++) boss.update();
