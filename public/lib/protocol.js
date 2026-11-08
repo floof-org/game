@@ -624,7 +624,10 @@ export const RARITY_TABLE = {
     24: { health: 340000000000000, damage: 4900000000, size: 7, armor: 132100000000 },
     25: { health: 1274000000000000, damage: 6000000000, size: 7.2, armor: 331200000000 },
     26: { health: 2590000000000000, damage: 14000000000, size: 7.4, armor: 967630000000 },
-    27: { health: 140704000000000000, damage: 71000000000, size: 7.6, armor: 13100000000000 },
+    // Rarity 27 armor is tuned around a r16 Fire Missile and a r16 Zinc:
+    // the missile alone cannot break it, but the same missile with the
+    // r16 Zinc armor debuff can.
+    27: { health: 140704000000000000, damage: 71000000000, size: 7.6, armor: 28000000000000 },
     28: { health: 906800000000000000, damage: 222000000000, size: 8, armor: 22300000000000 },
     29: { health: 6700000000000000000, damage: 3700000000000, size: 10, armor: 260500000000000 }
 };
