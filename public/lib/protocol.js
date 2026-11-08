@@ -628,8 +628,8 @@ export const RARITY_TABLE = {
     // the missile alone cannot break it, but the same missile with the
     // r16 Zinc armor debuff can.
     27: { health: 140704000000000000, damage: 71000000000, size: 7.6, armor: 28000000000000 },
-    28: { health: 906800000000000000, damage: 222000000000, size: 8, armor: 22300000000000 },
-    29: { health: 6700000000000000000, damage: 3700000000000, size: 10, armor: 260500000000000 }
+    28: { health: 906800000000000000, damage: 222000000000, size: 8, armor: 30000000000000 },
+    29: { health: 6700000000000000000, damage: 3700000000000, size: 10, armor: 300000000000000 }
 };
 
 export const SUMMON_STATS = {

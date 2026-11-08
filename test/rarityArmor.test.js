@@ -36,6 +36,11 @@ describe("rarity 27 armor", () => {
         expect(CINDERBRICK).toBeLessThan(ARMOR * (1 - ZINC_16));
     });
 
+    test("keeps armor increasing through rarity 29", () => {
+        expect(RARITY_TABLE[28].armor).toBeGreaterThan(ARMOR);
+        expect(RARITY_TABLE[29].armor).toBeGreaterThan(RARITY_TABLE[28].armor);
+    });
+
     test("the armor gate follows the debuffed value", () => {
         const damager = { client: { id: 1, userId: "user-a" } };
 
