@@ -2770,7 +2770,7 @@ export default class Client {
 
                 if (args.length < 3) {
                     this.systemMessage(
-                        "Usage: /refund [clientID,username,...] [rarity] [mob] <amount>",
+                        "Usage: /refund [clientID,username,...] [rarity] [mob] <refunds>",
                         "#ffaa00"
                     );
                     return;
@@ -2884,12 +2884,12 @@ export default class Client {
 
                 const rarity = tiers[rarityIndex];
 
-                let multiplier = 1;
+                let refunds = 1;
 
                 if (args.length > 1 && /^\d+$/.test(args.at(-1))) {
-                    multiplier = Number(args.pop());
+                    refunds = Number(args.pop());
 
-                    if (!Number.isSafeInteger(multiplier) || multiplier < 1) {
+                    if (!Number.isSafeInteger(refunds) || refunds < 1) {
                         this.systemMessage("Invalid amount.", "#ff5555");
                         return;
                     }
@@ -2913,9 +2913,9 @@ export default class Client {
                     return;
                 }
 
-                // Roll rewards once; the multiplier scales each reward afterward.
+                // Each refund is a separate roll of the drop table.
                 const rolled = [];
-                const rollCount = globalThis.LUCKY_DROPS_EVENT ? 2 : 1;
+                const rollCount = refunds * (globalThis.LUCKY_DROPS_EVENT ? 2 : 1);
 
                 for (let roll = 0; roll < rollCount; roll++) {
                     for (const row of rows) {
@@ -2931,7 +2931,7 @@ export default class Client {
                             rolled.push({
                                 rarity: entry.rarity,
                                 index: entry.index,
-                                amount: (entry.amount || 1) * multiplier
+                                amount: entry.amount || 1
                             });
                         }
                     }
@@ -2968,7 +2968,7 @@ export default class Client {
                         target.syncInventoryExact();
 
                         target.systemMessage(
-                            `You received ${rolled.length} ${rarity.name} ${mob.name} drop${rolled.length === 1 ? "" : "s"} (x${multiplier} rewards)!`,
+                            `You received ${rolled.length} ${rarity.name} ${mob.name} drop${rolled.length === 1 ? "" : "s"} from ${refunds} refund${refunds === 1 ? "" : "s"}!`,
                             "#55ff55"
                         );
                     } else {
@@ -3035,7 +3035,7 @@ export default class Client {
                 const targetNames = targets.map(target => target.username).join(", ");
 
                 this.systemMessage(
-                    `Rolled ${rarity.name} ${mob.name} x${multiplier}:`,
+                    `Rolled ${rarity.name} ${mob.name} ${refunds} time${refunds === 1 ? "" : "s"}:`,
                     rarity.color || "#55ff55"
                 );
 
