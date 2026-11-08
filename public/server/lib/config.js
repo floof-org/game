@@ -2136,7 +2136,7 @@ globalThis.BLOOD_LEAF_TABLE = {
     13: { perKill: 0.0108, cap: 0.648 },
     14: { perKill: 0.012, cap: 0.72 },
     15: { perKill: 0.0132, cap: 0.792 },
-    16: { perKill: 0.0332, cap: 1.964 },
+    16: { perKill: 0.0332, cap: 0.82 },
     17: { perKill: 0.0372, cap: 2.392 },
 };
 globalThis.SHINY_WING_TABLE = {
