@@ -3,6 +3,11 @@ import { DROP_TABLES } from "./dropTables.js";
 export const tiers = structuredClone(_tiers);
 export { Drawing, WEARABLES, PetalTier, MobTier, PetalConfig, MobDrop, MobConfig };
 
+// Florr-style mob wall collision: only a 1x1 world-unit square at the body
+// center touches walls, so the effective collision radius is half a pixel.
+// Line of sight uses the same center point so hits and visibility agree.
+export const MOB_CENTER_RADIUS = .5;
+
 // Armor reduction per Zinc rarity, in percent. Nerfed by 20% across the board
 // from the previous values.
 globalThis.ZINC_TABLE = {

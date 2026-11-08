@@ -1,6 +1,6 @@
 import { BIOME_TYPES, CLIENT_BOUND, ENTITY_TYPES, getTerrain, GAMEMODES, petalTierMultiplier, RARITY_SIZE_MULTIPLIERS, RARITY_TABLE, SUMMON_STATS, tiers, WEARABLES } from "../../lib/protocol.js";
 import { angleDiff, applyArticle, applyPlural, getDropRarity, lerpAngle, pickWeighted, quickDiff, xpForLevel } from "../../lib/util.js";
-import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER, BOSS_ABILITY_RATE_MULTIPLIER, BOSS_PROJECTILE_DAMAGE_MULTIPLIER } from "./config.js";
+import { MobConfig, mobConfigs, PetalConfig, petalConfigs, petalIDOf, mobIDOf, randomPossiblePetal, DROP_LOOKUP, BOSS_ABILITIES, BOSS_STAT_MULTIPLIER, BOSS_SIZE_MULTIPLIER, BOSS_DROP_MULTIPLIER, BOSS_MASS_MULTIPLIER, BOSS_ABILITY_RATE_MULTIPLIER, BOSS_PROJECTILE_DAMAGE_MULTIPLIER, MOB_CENTER_RADIUS } from "./config.js";
 import { inSquad, getSquadKey, clientByUserId } from "./squads.js";
 import state from "./state.js";
 import Vector2D from "./Vector2D.js";
@@ -2027,11 +2027,11 @@ export class Entity {
     }
 
     collideTerrain() {
-        // Florr-style wall collision: a mob's center is its only collision
-        // point, so half of its body may overlap a wall before it gets pushed
-        // out. Players and petals still collide with their full body radius.
+        // Florr-style wall collision: a mob's body center carries a 1x1 pixel
+        // collision box, so its body may overlap a wall by almost its whole
+        // radius. Players and petals still collide with their full body.
         const centerOnly = this.type === ENTITY_TYPES.MOB;
-        const radius = centerOnly ? 0 : this.size;
+        const radius = centerOnly ? MOB_CENTER_RADIUS : this.size;
         const padding = centerOnly ? .01 : 3;
         const retrieved = state.terrainSpatialHash.retrieve(this);
 
@@ -4739,6 +4739,44 @@ class Polygon {
 
         for (let i = 0; i < this.numPoints; i += 2) {
             if (this.circleIntersectsEdge(this.points[i], this.points[i + 1], this.points[(i + 2) % this.numPoints], this.points[(i + 3) % this.numPoints], x, y, radius)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * True when the segment (x1, y1) - (x2, y2) crosses any polygon edge.
+     * Used by line of sight so walls are the exact same polygons mobs collide
+     * with, instead of an over-approximated cell grid.
+     */
+    segmentIntersects(x1, y1, x2, y2) {
+        const dirX = x2 - x1;
+        const dirY = y2 - y1;
+
+        for (let i = 0; i < this.numPoints; i += 2) {
+            const px1 = this.points[i];
+            const py1 = this.points[i + 1];
+            const px2 = this.points[(i + 2) % this.numPoints];
+            const py2 = this.points[(i + 3) % this.numPoints];
+
+            const edgeX = px2 - px1;
+            const edgeY = py2 - py1;
+            const cross = dirX * edgeY - dirY * edgeX;
+
+            // Parallel edges cannot cross, and collinear overlaps are rare
+            // enough that treating them as clear keeps the check cheap.
+            if (Math.abs(cross) < 1e-9) {
+                continue;
+            }
+
+            const deltaX = px1 - x1;
+            const deltaY = py1 - y1;
+            const t = (deltaX * edgeY - deltaY * edgeX) / cross;
+            const u = (deltaX * dirY - deltaY * dirX) / cross;
+
+            if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
                 return true;
             }
         }

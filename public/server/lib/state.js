@@ -1,6 +1,6 @@
 import { CLIENT_BOUND, ENTITY_TYPES, GAMEMODES, ROUTER_PACKET_TYPES, Writer, tiers } from "../../lib/protocol.js";
 import { quickDiff } from "../../lib/util.js";
-import { BOSS_SIZE_MULTIPLIER } from "./config.js";
+import { BOSS_SIZE_MULTIPLIER, MOB_CENTER_RADIUS } from "./config.js";
 import SpatialHashGrid from "./SpatialHashGrid.js";
 
 /**
@@ -206,12 +206,64 @@ const state = {
     },
 
     /**
-     * Grid raycast between two world positions. Returns true when the segment
-     * does not cross a wall cell, or when the room has no map grid at all.
-     * Endpoints are allowed to touch a wall; only cells strictly between them
-     * are checked, so a mob standing next to a wall can still be hit.
+     * Exact wall raycast against the terrain polygons mobs collide with.
+     * Both endpoints are inset by the 1x1 center collision radius, so an
+     * entity whose center touches a wall stays visible from its own side.
+     * Returns null when no terrain is loaded, letting callers fall back to
+     * the lightweight cell grid.
+     */
+    hasClearWallLine: (x1, y1, x2, y2) => {
+        if (state.terrain.size === 0) {
+            return null;
+        }
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const length = Math.sqrt(dx * dx + dy * dy);
+
+        if (length <= MOB_CENTER_RADIUS * 2) {
+            return true;
+        }
+
+        const insetX = dx / length * MOB_CENTER_RADIUS;
+        const insetY = dy / length * MOB_CENTER_RADIUS;
+        const sx = x1 + insetX;
+        const sy = y1 + insetY;
+        const ex = x2 - insetX;
+        const ey = y2 - insetY;
+
+        const terrains = state.terrainSpatialHash.retrieve({
+            _AABB: {
+                x1: Math.min(sx, ex) - 1,
+                y1: Math.min(sy, ey) - 1,
+                x2: Math.max(sx, ex) + 1,
+                y2: Math.max(sy, ey) + 1
+            }
+        });
+
+        for (const terrain of terrains.values()) {
+            if (terrain.polygon.segmentIntersects(sx, sy, ex, ey)) {
+                return false;
+            }
+        }
+
+        return true;
+    },
+
+    /**
+     * Fallback grid raycast between two world positions, used by lightweight
+     * rooms without terrain polygons. Returns true when the segment does not
+     * cross a wall cell, or when the room has no map grid at all. Endpoints
+     * are allowed to touch a wall; only cells strictly between them are
+     * checked, so a mob standing next to a wall can still be hit.
      */
     hasLineOfSight: (x1, y1, x2, y2) => {
+        const wallLine = state.hasClearWallLine(x1, y1, x2, y2);
+
+        if (wallLine !== null) {
+            return wallLine;
+        }
+
         const solid = state.mapSolid;
         const width = state.terrainGridWidth;
         const height = state.terrainGridHeight;

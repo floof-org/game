@@ -87,8 +87,32 @@ describe("mob wall collision", () => {
 
         mob.collideTerrain();
 
-        expect(mob.x).toBeGreaterThan(WALL_SIZE);
-        expect(mob.x).toBeLessThan(WALL_SIZE + .1);
+        expect(mob.x).toBeCloseTo(WALL_SIZE + .51, 5);
+    });
+
+    test("the collision box is exactly one pixel wide", () => {
+        const overlapping = new Mob({ x: WALL_SIZE + .4, y: 0 });
+
+        overlapping.define(BEETLE, 0);
+        overlapping.size = 17;
+        place(overlapping);
+
+        overlapping.collideTerrain();
+
+        // 0.4px from the wall is inside the 1x1 center box, so it is pushed
+        // to half a pixel plus the separation padding.
+        expect(overlapping.x).toBeCloseTo(WALL_SIZE + .51, 5);
+
+        const clear = new Mob({ x: WALL_SIZE + .6, y: 0 });
+
+        clear.define(BEETLE, 0);
+        clear.size = 17;
+        place(clear);
+
+        clear.collideTerrain();
+
+        // 0.6px leaves the 1x1 center box clear of the wall.
+        expect(clear.x).toBe(WALL_SIZE + .6);
     });
 
     test("bosses use the same center point collision", () => {
