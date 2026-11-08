@@ -153,6 +153,34 @@ describe("mob wall collision", () => {
         expect(mob.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS, 5);
     });
 
+    test("player summons use the same circular collision", () => {
+        const owner = new Player({ x: 0, y: 0 });
+
+        owner.size = 17;
+
+        const summon = new Mob({ x: WALL_SIZE + MOB_RADIUS - .1, y: 0 });
+
+        // Ruby and petal summons are friendly mobs owned by a player.
+        summon.parent = owner;
+        summon.owner = { body: owner };
+        summon.isSummon = true;
+        summon.friendly = true;
+        summon.team = owner.team;
+        summon.define(BEETLE, 0);
+        summon.size = 17;
+
+        // A large step starts clear on the right and ends clear on the far side.
+        summon._terrainStartX = WALL_SIZE + MOB_RADIUS;
+        summon._terrainStartY = 0;
+        summon.x = -WALL_SIZE - MOB_RADIUS;
+        summon.velocity.x = -400;
+        place(summon);
+
+        summon.collideTerrain();
+
+        expect(summon.x).toBeCloseTo(WALL_SIZE + MOB_RADIUS, 5);
+    });
+
     test("bosses use the same circular collision", () => {
         const boss = createBoss({ x: WALL_SIZE + 1, y: 0 }, BEETLE, 0);
 

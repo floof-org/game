@@ -2032,8 +2032,9 @@ export class Entity {
     }
 
     collideTerrain() {
-        // Mobs use a circular one-tile collision handled separately. Players
-        // and petals still collide with their full body.
+        // Mobs use a circular one-tile collision handled separately. Player
+        // summons are MOB entities too, so they follow the same branch.
+        // Players and petals still collide with their full body.
         if (this.type === ENTITY_TYPES.MOB) {
             this.collideTerrainCenter();
             return;
