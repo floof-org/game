@@ -40,7 +40,7 @@ globalThis.ZINC_TABLE = {
 
 const ZINC_DESCRIPTIONS = Object.entries(globalThis.ZINC_TABLE).map(
     ([rarity, reduction]) =>
-        `Decreases armor of affected mob by ${reduction}%. Effect lasts 60s. Does not stack with itself.`
+        `Decreases armor of affected mob by ${reduction}% for your squad. Effect lasts 60s. Does not stack with itself.`
 );
 
 const formatScaledNumber = value => {

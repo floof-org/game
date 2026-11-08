@@ -414,6 +414,48 @@ export class HealthComponent {
         this.onDamage = null;
         this.shield = 0;
         this.armor = 0;
+        // Zinc reduction is stored per attacker squad so only that squad's
+        // hits use the lowered armor gate.
+        this.zincDebuffs = new Map();
+    }
+
+    applyZincDebuff(squadKey, reduction) {
+        if (!squadKey || reduction <= 0) return;
+
+        const now = Date.now();
+        const current = this.zincDebuffs.get(squadKey);
+        const active = current && current.until > now ? current.reduction : 0;
+
+        this.zincDebuffs.set(squadKey, {
+            reduction: Math.max(active, reduction),
+            until: now + 60000
+        });
+    }
+
+    effectiveArmor(damager) {
+        if (!this.armor || this.zincDebuffs.size === 0) {
+            return this.armor;
+        }
+
+        const client = damager?.player?.client ?? damager?.parent?.client ?? damager?.client ?? null;
+        const squadKey = client ? getSquadKey(client) : null;
+
+        if (!squadKey) {
+            return this.armor;
+        }
+
+        const debuff = this.zincDebuffs.get(squadKey);
+
+        if (!debuff) {
+            return this.armor;
+        }
+
+        if (debuff.until <= Date.now()) {
+            this.zincDebuffs.delete(squadKey);
+            return this.armor;
+        }
+
+        return this.armor * (1 - debuff.reduction / 100);
     }
 
     set(x, preserve = true) {
@@ -429,7 +471,9 @@ export class HealthComponent {
         }
         let x = y;
 
-        if (this.armor && x < this.armor) {
+        const armor = this.effectiveArmor(damager);
+
+        if (armor && x < armor) {
             return 0;
         }
         // const dmg = Math.max(0, Math.min(this.health, x - x * Math.min(.75, this.damageReduction)));
@@ -1774,7 +1818,9 @@ export class Entity {
                         }
                     }
 
-                    // Zinc armor reduction
+                    // Zinc armor reduction is tracked per attacker squad. The
+                    // target's armor is never mutated, so a squad without Zinc
+                    // still has to break the original armor gate.
                     {
                         let zincSource = null;
 
@@ -1786,26 +1832,10 @@ export class Entity {
 
                             if (target?.type === ENTITY_TYPES.MOB && target.config) {
                                 const reduction = globalThis.ZINC_TABLE?.[zincSource.rarity] ?? 0;
+                                const client = ownerClientOf(zincSource);
 
-                                if (reduction > 0 && target.armor > 0) {
-                                    const now = Date.now();
-                                    const alreadyAffected = target.zincArmorOriginal !== undefined;
-
-                                    if (!alreadyAffected) {
-                                        target.zincArmorOriginal = target.health.armor;
-                                    }
-
-                                    const originalArmor = target.zincArmorOriginal;
-
-                                    target.zincReduction = Math.max(
-                                        target.zincReduction ?? 0,
-                                        reduction
-                                    );
-
-                                    target.armor = originalArmor * (1 - target.zincReduction / 100);
-                                    target.health.armor = target.armor;
-
-                                    target.zincArmorUntil = now + 60000;
+                                if (reduction > 0 && target.armor > 0 && client) {
+                                    target.health.applyZincDebuff(getSquadKey(client), reduction);
                                 }
                             }
                         }
@@ -3586,15 +3616,13 @@ export class Mob extends Entity {
             this.neutral = this.config?.neutral ?? false;
         }
 
-        // Restore original armor
-        if (this.zincArmorUntil && now >= this.zincArmorUntil) {
-
-            this.armor = this.zincArmorOriginal;
-            this.health.armor = this.zincArmorOriginal;
-
-            delete this.zincArmorOriginal;
-            delete this.zincArmorUntil;
-            delete this.zincReduction;
+        // Zinc armor debuffs expire per squad without ever mutating armor.
+        if (this.health.zincDebuffs.size > 0) {
+            for (const [squadKey, debuff] of this.health.zincDebuffs) {
+                if (now >= debuff.until) {
+                    this.health.zincDebuffs.delete(squadKey);
+                }
+            }
         }
 
         // Summons disappear with their owner, as in WhiteHole.js.
