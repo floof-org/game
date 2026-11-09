@@ -1613,6 +1613,21 @@ export class Entity {
                     otherDamageDone *= (1 - getDiamondReduction(this));
                     thisDamageDone *= (1 - getDiamondReduction(other));
 
+                    const getCopperBonus = (entity, target) => {
+                        if (!entity.copper) return 1;
+                        if (!target?.health) return 1;
+                    
+                        const health = target.health.health;
+                        const maxHealth = target.health.maxHealth;
+                    
+                        if (maxHealth <= 0 || health / maxHealth >= 0.5) return 1;
+
+                        return 25;
+                    };
+                    
+                    thisDamageDone *= getCopperBonus(this, other);
+                    otherDamageDone *= getCopperBonus(other, this);
+
                     const thisLeafBonus = getBloodLeafBonus(this);
                     const otherLeafBonus = getBloodLeafBonus(other);
                     if (thisLeafBonus > 0) thisDamageDone *= (1 + thisLeafBonus);
@@ -1841,6 +1856,30 @@ export class Entity {
 
                                 if (reduction > 0 && target.armor > 0 && client) {
                                     target.health.applyZincDebuff(getSquadKey(client), reduction);
+                                }
+                            }
+                        }
+                    }
+
+                    // Dark Spine instantly kills bosses below a certain health requirement.
+                    {
+                        let spineSource = null;
+
+                        if (this.darkSpine) spineSource = this;
+                        else if (other.darkSpine) spineSource = other;
+
+                        if (spineSource) {
+                            const target = spineSource === this ? other : this;
+
+                            if (target?.type === ENTITY_TYPES.MOB && target.isBoss) {
+                                const threshold = globalThis.DARK_SPINE_TABLE?.[spineSource.rarity] ?? 0;
+
+                                if (threshold > 0 && target.health?.maxHealth > 0) {
+                                    const healthRatio = target.health.health / target.health.maxHealth;
+
+                                    if (healthRatio <= threshold) {
+                                        target.health.health = 0;
+                                    }
                                 }
                             }
                         }
@@ -2408,6 +2447,14 @@ export class Petal extends Entity {
 
         if (config.zinc) {
             this.zinc = {};
+        }
+
+        if (config.darkSpine) {
+            this.darkSpine = {};
+        }
+
+        if (config.copper) {
+            this.copper = {};
         }
 
         this.size *= (config.tiers?.[rarity]?.sizeRatio ?? config.sizeRatio) * (RARITY_SIZE_MULTIPLIERS[rarity] ?? 1);

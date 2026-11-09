@@ -1422,6 +1422,16 @@ export class PetalConfig {
         return this;
     }
 
+    setDarkSpineAbility() {
+        this.darkSpine = {};
+        return this;
+    }
+
+    setCopperAbility() {
+        this.copper = {};
+        return this;
+    }
+
     setIsProjectile(value = true) {
         this.projectile = value;
         return this;

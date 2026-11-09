@@ -48,6 +48,44 @@ const ZINC_DESCRIPTIONS = Object.entries(globalThis.ZINC_TABLE).map(
         `Decreases armor of affected mob by ${reduction}% for your squad. Effect lasts 60s. Does not stack with itself.`
 );
 
+globalThis.DARK_SPINE_TABLE = {
+    0: 0.01,
+    1: 0.02,
+    2: 0.03,
+    3: 0.04,
+    4: 0.05,
+    5: 0.06,
+    6: 0.07,
+    7: 0.08,
+    8: 0.09,
+    9: 0.1,
+    10: 0.12,
+    11: 0.14,
+    12: 0.16,
+    13: 0.18,
+    14: 0.2,
+    15: 0.22,
+    16: 0.24,
+    17: 0.26,
+    18: 0.28,
+    19: 0.3,
+    20: 0.32,
+    21: 0.34,
+    22: 0.36,
+    23: 0.38,
+    24: 0.4,
+    25: 0.42,
+    26: 0.44,
+    27: 0.46,
+    28: 0.48,
+    29: 0.5
+};
+
+const DARK_SPINE_DESCRIPTIONS = Object.entries(globalThis.DARK_SPINE_TABLE).map(
+    ([rarity, threshold]) =>
+        `With centuries of evolution, this petal carries a deadly omen. Instantly kills bosses at or below ${threshold * 100}% health.`
+);
+
 const formatScaledNumber = value => {
     const units = [
         [1e15, "qd"], [1e12, "t"], [1e9, "b"], [1e6, "m"], [1e3, "k"]
@@ -990,7 +1028,83 @@ export const petalConfigs = [
             .addAction("lineTo", -1.14, 0.47)
             .addAction("closePath")
             .addAction("stroke", "#728ca1", 0.085, 0))
-        .setDescription(ZINC_DESCRIPTIONS)
+        .setDescription(ZINC_DESCRIPTIONS),
+
+    new PetalConfig("Dark Spine", 22.5 * 100, 1, 3)
+        .setSize(1.2)
+        .setDarkSpineAbility()
+        .setDrawing(new Drawing()
+            .addAction("beginPath")
+            .addAction("moveTo", 0, -1.32)
+            .addAction("bezierCurveTo", -0.12, -0.85, -0.75, -0.35, -0.85, 0.20)
+            .addAction("bezierCurveTo", -0.95, 0.70, -0.35, 1.15, 0, 1.32)
+            .addAction("bezierCurveTo", 0.35, 1.15, 0.95, 0.70, 0.85, 0.20)
+            .addAction("bezierCurveTo", 0.75, -0.35, 0.12, -0.85, 0, -1.32)
+            .addAction("closePath")
+            .addAction("fill", "#292631")
+            .addAction("stroke", "#17151e", 0.085, 0)
+
+            .addAction("beginPath")
+            .addAction("moveTo", -0.08, -1.12)
+            .addAction("bezierCurveTo", -0.28, -0.55, -0.68, -0.10, -0.62, 0.40)
+            .addAction("lineTo", -0.35, 0.85)
+            .addAction("bezierCurveTo", -0.45, 0.30, -0.16, -0.40, -0.08, -1.12)
+            .addAction("closePath")
+            .addAction("fill", "#484250")
+
+            .addAction("beginPath")
+            .addAction("moveTo", 0.08, -1.12)
+            .addAction("bezierCurveTo", 0.28, -0.55, 0.68, -0.10, 0.62, 0.40)
+            .addAction("lineTo", 0.35, 0.85)
+            .addAction("bezierCurveTo", 0.45, 0.30, 0.16, -0.40, 0.08, -1.12)
+            .addAction("closePath")
+            .addAction("fill", "#393441")
+
+            .addAction("beginPath")
+            .addAction("moveTo", 0, -1.18)
+            .addAction("bezierCurveTo", 0.10, -0.55, 0.20, 0.10, 0, 0.95)
+            .addAction("bezierCurveTo", -0.20, 0.10, -0.10, -0.55, 0, -1.18)
+            .addAction("closePath")
+            .addAction("fill", "#625969"))
+        .setDescription(DARK_SPINE_DESCRIPTIONS),
+
+    new PetalConfig("Copper", 22.5 * 1.24, 54, 46)
+        .setSize(1.2)
+        .setCopperAbility()
+        .setDrawing(new Drawing()
+            .addAction("beginPath")
+            .addAction("moveTo", 1.29, 0.10)
+            .addAction("lineTo", -0.04, 1.32)
+            .addAction("lineTo", -1.10, 0.33)
+            .addAction("lineTo", -1.29, -1.12)
+            .addAction("lineTo", 0.40, -1.32)
+            .addAction("closePath")
+            .addAction("fill", "#c88350")
+            .addAction("stroke", "#a26739", 0.21, 0)
+
+            .addAction("beginPath")
+            .addAction("moveTo", -1.03, 0.29)
+            .addAction("lineTo", -0.97, -1.08)
+            .addAction("lineTo", -0.83, -1.09)
+            .addAction("lineTo", -0.84, 0.46)
+            .addAction("closePath")
+            .addAction("fill", "#d9a985")
+
+            .addAction("beginPath")
+            .addAction("moveTo", 0.86, 0.13)
+            .addAction("lineTo", -0.04, 1.21)
+            .addAction("lineTo", 1.19, 0.09)
+            .addAction("lineTo", 0.79, -0.56)
+            .addAction("closePath")
+            .addAction("fill", "#bb6e3b")
+
+            .addAction("beginPath")
+            .addAction("moveTo", -0.41, -0.36)
+            .addAction("lineTo", -0.37, -0.76)
+            .addAction("lineTo", -0.04, -0.53)
+            .addAction("closePath")
+            .addAction("fill", "#d39667"))
+        .setDescription("Sharp. Deals x25 more damage to mobs below 50% health.")
 ];
 
 // Salt shows its per-tier body damage bonus in the petal description.
