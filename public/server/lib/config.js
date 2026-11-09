@@ -83,7 +83,7 @@ globalThis.DARK_SPINE_TABLE = {
 
 const DARK_SPINE_DESCRIPTIONS = Object.entries(globalThis.DARK_SPINE_TABLE).map(
     ([rarity, threshold]) =>
-        `With centuries of evolution, this petal carries a deadly omen. Instantly kills bosses at or below ${threshold * 100}% health.`
+        `With centuries of evolution, this petal carries a deadly omen. Instantly kills bosses at or below ${(threshold * 100).toFixed(2).replace(/\.?0+$/, "")}% health.`
 );
 
 const formatScaledNumber = value => {
