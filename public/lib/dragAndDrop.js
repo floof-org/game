@@ -15,6 +15,8 @@ const MOVE_PX = 5;
 const LAND_PX = 1.5;
 const MAX_LAND_MS = 700;
 const SETTLE_MS = 500;
+const SWAP_TIMEOUT_MS = 1500;
+const pendingSwaps = new Map();
 const HELD_SCALE = 0.2;
 const HELD_WOBBLE = (10 * Math.PI) / 180;
 const UNEQUIP_PX = 60;
@@ -47,6 +49,7 @@ export class DragAndDropItem {
     realSize = 0;
     stableSize = 0;
 
+
     startTime = 0;
     mouseX0 = null;
     mouseY0 = null;
@@ -68,6 +71,7 @@ function createConfig() {
         dropSnap: null,
         settle: null,
         unequip: false,
+        holdPreview: false,
         removeTarget: null,
         type: -1,
         index: -1,
@@ -76,7 +80,6 @@ function createConfig() {
 }
 
 export const dragConfig = createConfig();
-
 export const inventoryDragConfig = createConfig();
 
 function begin(cfg, ItemClass, x, y, size, index, rarity) {
@@ -104,6 +107,7 @@ function begin(cfg, ItemClass, x, y, size, index, rarity) {
     cfg.dropSnap = null;
     cfg.settle = null;
     cfg.unequip = false;
+    cfg.holdPreview = false;
 }
 
 export function beginDragDrop(x, y, size, index, rarity) {
@@ -159,6 +163,38 @@ export function activeSnapTarget() {
     return null;
 }
 
+function previewDest(cfg, type, index) {
+    const occupant = slotObj(type, index);
+    if (!occupant || !(occupant.index > -1)) return null;
+
+    if (cfg === dragConfig) {
+        const r = slotObj(cfg.type, cfg.index)?.rect;
+        return r ? { x: r.x, y: r.y, size: r.size } : null;
+    }
+
+    const t = cfg.removeTarget?.();
+    return t ? { x: t.x, y: t.y, size: 0 } : null;
+}
+
+export function slotPreview(type, index) {
+    for (const cfg of [dragConfig, inventoryDragConfig]) {
+        if (!cfg.enabled || (cfg.dropped && !cfg.holdPreview)) continue;
+        const s = cfg.isReleasing ? cfg.dropSnap : cfg.snap;
+        if (!s || s.type !== type || s.index !== index) continue;
+        const dest = previewDest(cfg, type, index);
+        if (dest) return dest;
+    }
+    return null;
+}
+
+function landOnSlot(to, ghost) {
+    const icon = ensureIcon(slotObj(to.type, to.index));
+    if (!icon) return;
+    icon.x = ghost.x - ghost.size / 2;
+    icon.y = ghost.y - ghost.size / 2;
+    icon.size = ghost.size;
+}
+
 function ensureIcon(slot) {
     if (!slot) return null;
     if (!slot.icon) {
@@ -204,7 +240,7 @@ function flyPetals(from, to, ghost) {
     a.size = bs;
 }
 
-function sendRowSwap(i) {
+export function sendRowSwap(i) {
     if (state.socket?.readyState !== WebSocket.OPEN || state.isInDestroy) return false;
 
     const main = state.slots[i];
@@ -216,13 +252,55 @@ function sendRowSwap(i) {
         drop: { type: DRAG_TYPE_SECONDARYDOCKER, index: i },
     });
 
-    const a = ensureIcon(main);
-    const b = ensureIcon(secondary);
-    const ax = a.x, ay = a.y, as = a.size;
-    a.x = b.x; a.y = b.y; a.size = b.size;
-    b.x = ax; b.y = ay; b.size = as;
+    const pending = pendingSwaps.get(i);
+    if (pending) {
+        pending.n++;
+        pending.until = performance.now() + SWAP_TIMEOUT_MS;
+    } else {
+        pendingSwaps.set(i, {
+            n: 1,
+            m: slotKey(main),
+            s: slotKey(secondary),
+            until: performance.now() + SWAP_TIMEOUT_MS,
+        });
+    }
 
     return true;
+}
+
+function slotKey(slot) {
+    return slot && slot.index > -1 ? `${slot.index}:${slot.rarity}` : "-";
+}
+
+export function applyPendingSwaps() {
+    if (!pendingSwaps.size) return;
+    const now = performance.now();
+
+    for (const [i, p] of pendingSwaps) {
+        const main = state.slots[i];
+        const secondary = state.secondarySlots[i];
+        if (!main || !secondary) {
+            pendingSwaps.delete(i);
+            continue;
+        }
+
+        const m = slotKey(main);
+        const s = slotKey(secondary);
+
+        if (m !== p.m || s !== p.s) {
+            const a = ensureIcon(main);
+            const b = ensureIcon(secondary);
+            const ax = a.x, ay = a.y, as = a.size;
+            a.x = b.x; a.y = b.y; a.size = b.size;
+            b.x = ax; b.y = ay; b.size = as;
+
+            p.m = m;
+            p.s = s;
+            if (--p.n <= 0) pendingSwaps.delete(i);
+        } else if (now > p.until) {
+            pendingSwaps.delete(i);
+        }
+    }
 }
 
 export function handleSlotDrop(item, tap, processDrop) {
@@ -235,7 +313,7 @@ export function handleSlotDrop(item, tap, processDrop) {
     }
 
     if (tap && TAP_TO_SWAP && !cfg.unequip) {
-        if (sendRowSwap(origin.index)) settleOnSlot(cfg, origin.type, origin.index);
+        sendRowSwap(origin.index);
         return;
     }
 
@@ -243,7 +321,7 @@ export function handleSlotDrop(item, tap, processDrop) {
 
     if (!cfg.unequip && processDrop()) {
         if (target) {
-            flyPetals(origin, target, item);
+            if (!cfg.holdPreview) flyPetals(origin, target, item);
             settleOnSlot(cfg, target.type, target.index);
         }
         return;
@@ -275,6 +353,7 @@ function finish(cfg) {
     cfg.dropSnap = null;
     cfg.settle = null;
     cfg.unequip = false;
+    cfg.holdPreview = false;
 }
 
 function step(cfg, inventory, mouseX, mouseY) {
@@ -340,12 +419,13 @@ function step(cfg, inventory, mouseX, mouseY) {
     const snapped = cfg.isReleasing ? !!cfg.dropSnap : !!cfg.snap;
     const dist = Math.hypot(item.x - item.realX, item.y - item.realY);
     const onTarget = dist < LAND_PX && Math.abs(item.size - item.realSize) < LAND_PX;
-    item.held = lerp(item.held, !cfg.isReleasing && !(snapped && onTarget) ? 1 : 0, .2);
+    item.held = lerp(item.held, !cfg.isReleasing && item.moved && !(snapped && onTarget) ? 1 : 0, .2);
 
     if (cfg.isReleasing && !cfg.dropped) {
         const closeEnough = snapped || cfg.unequip ? onTarget : dist < item.size;
         if (closeEnough || now - cfg.releasedAt > MAX_LAND_MS) {
             cfg.dropped = true;
+            cfg.holdPreview = !!cfg.dropSnap && !!previewDest(cfg, cfg.dropSnap.type, cfg.dropSnap.index);
             try {
                 cfg.onDrop(item, cfg.tap);
             } catch (e) {
@@ -356,7 +436,13 @@ function step(cfg, inventory, mouseX, mouseY) {
 
     if (cfg.dropped) {
         const settle = cfg.settle;
-        if (!settle || now > settle.until || settle.done()) {
+        const changed = !!settle && settle.done();
+        if (changed && cfg.holdPreview && cfg.dropSnap) {
+            const to = { type: cfg.dropSnap.type, index: cfg.dropSnap.index };
+            if (inventory) landOnSlot(to, item);
+            else flyPetals({ type: cfg.type, index: cfg.index }, to, item);
+        }
+        if (!settle || changed || now > settle.until) {
             finish(cfg);
             return;
         }
