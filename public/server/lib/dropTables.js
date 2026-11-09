@@ -8508,6 +8508,41 @@ export const DROP_TABLES = {
                             "amount": 31000
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 81.07,
+                            "rarity": 9,
+                            "amount": 5000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 10.89,
+                            "rarity": 9,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 6.72,
+                            "rarity": 10,
+                            "amount": 75
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.27,
+                            "rarity": 11,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.05,
+                            "rarity": 9,
+                            "amount": 31000
+                        }
+                    ]
                 }
             ],
             "18": [
@@ -8575,6 +8610,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Dune",
+                            "chance": 0.12,
+                            "rarity": 10,
+                            "amount": 12000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 64.31,
+                            "rarity": 10,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 24.89,
+                            "rarity": 11,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 8.72,
+                            "rarity": 10,
+                            "amount": 2600
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.96,
+                            "rarity": 11,
+                            "amount": 24
+                        },
+                        {
+                            "petal": "Copper",
                             "chance": 0.12,
                             "rarity": 10,
                             "amount": 12000
@@ -8664,6 +8734,47 @@ export const DROP_TABLES = {
                             "amount": 300
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 74.39,
+                            "rarity": 10,
+                            "amount": 4500
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 19.75,
+                            "rarity": 10,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 3.522,
+                            "rarity": 11,
+                            "amount": 48
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.462,
+                            "rarity": 11,
+                            "amount": 100
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.872,
+                            "rarity": 11,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.004,
+                            "rarity": 11,
+                            "amount": 300
+                        }
+                    ]
                 }
             ],
             "20": [
@@ -8748,6 +8859,47 @@ export const DROP_TABLES = {
                             "amount": 9100
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 78.39,
+                            "rarity": 11,
+                            "amount": 456
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 14.85,
+                            "rarity": 10,
+                            "amount": 250000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 3.985,
+                            "rarity": 12,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.866,
+                            "rarity": 12,
+                            "amount": 6
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.901,
+                            "rarity": 11,
+                            "amount": 4000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.008,
+                            "rarity": 11,
+                            "amount": 9100
+                        }
+                    ]
                 }
             ],
             "21": [
@@ -8808,6 +8960,35 @@ export const DROP_TABLES = {
                             "amount": 135
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 6.6,
+                            "rarity": 11,
+                            "amount": 9100
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 92.1,
+                            "rarity": 12,
+                            "amount": 51
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.29,
+                            "rarity": 11,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.01,
+                            "rarity": 12,
+                            "amount": 135
+                        }
+                    ]
                 }
             ],
             "22": [
@@ -8863,6 +9044,35 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Dune",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 12
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 71.11,
+                            "rarity": 12,
+                            "amount": 1080
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 22.13,
+                            "rarity": 13,
+                            "amount": 5
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 6.75,
+                            "rarity": 13,
+                            "amount": 8
+                        },
+                        {
+                            "petal": "Copper",
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 12
@@ -8940,6 +9150,41 @@ export const DROP_TABLES = {
                             "amount": 600
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 84.21,
+                            "rarity": 13,
+                            "amount": 25
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 12.16,
+                            "rarity": 12,
+                            "amount": 20000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 2.45,
+                            "rarity": 13,
+                            "amount": 100
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.16,
+                            "rarity": 12,
+                            "amount": 94000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.02,
+                            "rarity": 13,
+                            "amount": 600
+                        }
+                    ]
                 }
             ],
             "24": [
@@ -9007,6 +9252,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Dune",
+                            "chance": 0.04,
+                            "rarity": 13,
+                            "amount": 13000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 83.94,
+                            "rarity": 13,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 11.04,
+                            "rarity": 12,
+                            "amount": 450000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 3.97,
+                            "rarity": 14,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.01,
+                            "rarity": 11,
+                            "amount": 1000000000
+                        },
+                        {
+                            "petal": "Copper",
                             "chance": 0.04,
                             "rarity": 13,
                             "amount": 13000
@@ -9084,6 +9364,41 @@ export const DROP_TABLES = {
                             "amount": 487500
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 88.53,
+                            "rarity": 14,
+                            "amount": 50
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 8.65,
+                            "rarity": 13,
+                            "amount": 37500
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.94,
+                            "rarity": 14,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.85,
+                            "rarity": 12,
+                            "amount": 56250000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.03,
+                            "rarity": 13,
+                            "amount": 487500
+                        }
+                    ]
                 }
             ],
             "26": [
@@ -9151,6 +9466,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Dune",
+                            "chance": 0.03,
+                            "rarity": 13,
+                            "amount": 6187500
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 89.52,
+                            "rarity": 14,
+                            "amount": 1200
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 8.64,
+                            "rarity": 14,
+                            "amount": 3900
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.23,
+                            "rarity": 15,
+                            "amount": 18
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.58,
+                            "rarity": 15,
+                            "amount": 36
+                        },
+                        {
+                            "petal": "Copper",
                             "chance": 0.03,
                             "rarity": 13,
                             "amount": 6187500
@@ -62390,6 +62740,41 @@ export const DROP_TABLES = {
                             "amount": 31000
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 81.07,
+                            "rarity": 9,
+                            "amount": 5000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 10.89,
+                            "rarity": 9,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 6.72,
+                            "rarity": 10,
+                            "amount": 75
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.27,
+                            "rarity": 11,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.05,
+                            "rarity": 9,
+                            "amount": 31000
+                        }
+                    ]
                 }
             ],
             "18": [
@@ -62492,6 +62877,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Rubber",
+                            "chance": 0.12,
+                            "rarity": 10,
+                            "amount": 12000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 64.31,
+                            "rarity": 10,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 24.89,
+                            "rarity": 11,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 8.72,
+                            "rarity": 10,
+                            "amount": 2600
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.96,
+                            "rarity": 11,
+                            "amount": 24
+                        },
+                        {
+                            "petal": "Dark Spine",
                             "chance": 0.12,
                             "rarity": 10,
                             "amount": 12000
@@ -62622,6 +63042,47 @@ export const DROP_TABLES = {
                             "amount": 300
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 74.39,
+                            "rarity": 10,
+                            "amount": 4500
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 19.75,
+                            "rarity": 10,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 3.522,
+                            "rarity": 11,
+                            "amount": 48
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.462,
+                            "rarity": 11,
+                            "amount": 100
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.872,
+                            "rarity": 11,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.004,
+                            "rarity": 11,
+                            "amount": 300
+                        }
+                    ]
                 }
             ],
             "20": [
@@ -62747,6 +63208,47 @@ export const DROP_TABLES = {
                             "amount": 9100
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 78.39,
+                            "rarity": 11,
+                            "amount": 456
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 14.85,
+                            "rarity": 10,
+                            "amount": 250000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 3.985,
+                            "rarity": 12,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.866,
+                            "rarity": 12,
+                            "amount": 6
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.901,
+                            "rarity": 11,
+                            "amount": 4000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.008,
+                            "rarity": 11,
+                            "amount": 9100
+                        }
+                    ]
                 }
             ],
             "21": [
@@ -62836,6 +63338,35 @@ export const DROP_TABLES = {
                             "amount": 135
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 6.6,
+                            "rarity": 11,
+                            "amount": 9100
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 92.1,
+                            "rarity": 12,
+                            "amount": 51
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.29,
+                            "rarity": 11,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.01,
+                            "rarity": 12,
+                            "amount": 135
+                        }
+                    ]
                 }
             ],
             "22": [
@@ -62920,6 +63451,35 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Rubber",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 12
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 71.11,
+                            "rarity": 12,
+                            "amount": 1080
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 22.13,
+                            "rarity": 13,
+                            "amount": 5
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 6.75,
+                            "rarity": 13,
+                            "amount": 8
+                        },
+                        {
+                            "petal": "Dark Spine",
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 12
@@ -63032,6 +63592,41 @@ export const DROP_TABLES = {
                             "amount": 600
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 84.21,
+                            "rarity": 13,
+                            "amount": 25
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 12.16,
+                            "rarity": 12,
+                            "amount": 20000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 2.45,
+                            "rarity": 13,
+                            "amount": 100
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.16,
+                            "rarity": 12,
+                            "amount": 94000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.02,
+                            "rarity": 13,
+                            "amount": 600
+                        }
+                    ]
                 }
             ],
             "24": [
@@ -63134,6 +63729,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Rubber",
+                            "chance": 0.04,
+                            "rarity": 13,
+                            "amount": 13000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 83.94,
+                            "rarity": 13,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 11.04,
+                            "rarity": 12,
+                            "amount": 450000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 3.97,
+                            "rarity": 14,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.01,
+                            "rarity": 11,
+                            "amount": 1000000000
+                        },
+                        {
+                            "petal": "Dark Spine",
                             "chance": 0.04,
                             "rarity": 13,
                             "amount": 13000
@@ -63246,6 +63876,41 @@ export const DROP_TABLES = {
                             "amount": 487500
                         }
                     ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 88.53,
+                            "rarity": 14,
+                            "amount": 50
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 8.65,
+                            "rarity": 13,
+                            "amount": 37500
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.94,
+                            "rarity": 14,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.85,
+                            "rarity": 12,
+                            "amount": 56250000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.03,
+                            "rarity": 13,
+                            "amount": 487500
+                        }
+                    ]
                 }
             ],
             "26": [
@@ -63348,6 +64013,41 @@ export const DROP_TABLES = {
                         },
                         {
                             "petal": "Rubber",
+                            "chance": 0.03,
+                            "rarity": 13,
+                            "amount": 6187500
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 89.52,
+                            "rarity": 14,
+                            "amount": 1200
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 8.64,
+                            "rarity": 14,
+                            "amount": 3900
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.23,
+                            "rarity": 15,
+                            "amount": 18
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.58,
+                            "rarity": 15,
+                            "amount": 36
+                        },
+                        {
+                            "petal": "Dark Spine",
                             "chance": 0.03,
                             "rarity": 13,
                             "amount": 6187500
