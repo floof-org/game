@@ -106,13 +106,13 @@ const MAX_PETALS_PER_REQUEST = 1000000;
 
 // Announced lobby wide once the craft produces this rarity or above.
 // Crafting rarity N produces rarity N + 1, so 14 announces Millom petals.
-export const CRAFT_ANNOUNCE_RARITY = 14;
+export const CRAFT_ANNOUNCE_RARITY = 16;
 
 /**
  * Failures announce one rarity higher than successes: a failed Millom craft,
  * which would have produced Fictional.
  */
-export const CRAFT_FAIL_ANNOUNCE_RARITY = 15;
+export const CRAFT_FAIL_ANNOUNCE_RARITY = 16;
 
 function rarityKey(name) {
     return name.toLowerCase().replace(/\s+/g, "");
