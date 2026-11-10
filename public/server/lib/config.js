@@ -1068,7 +1068,7 @@ export const petalConfigs = [
             .addAction("fill", "#625969"))
         .setDescription(DARK_SPINE_DESCRIPTIONS),
 
-    new PetalConfig("Copper", 22.5 * 1.24, 54, 46)
+    new PetalConfig("Copper", 22.5 * 3, 54, 48)
         .setSize(1.2)
         .setCopperAbility()
         .setDrawing(new Drawing()
@@ -1104,7 +1104,7 @@ export const petalConfigs = [
             .addAction("lineTo", -0.04, -0.53)
             .addAction("closePath")
             .addAction("fill", "#d39667"))
-        .setDescription("Sharp. Deals x25 more damage to mobs below 50% health.")
+        .setDescription("Sharp. Deals x15 more damage to mobs below 50% health.")
 ];
 
 // Salt shows its per-tier body damage bonus in the petal description.

@@ -1622,7 +1622,7 @@ export class Entity {
                     
                         if (maxHealth <= 0 || health / maxHealth >= 0.5) return 1;
 
-                        return 25;
+                        return 15;
                     };
                     
                     thisDamageDone *= getCopperBonus(this, other);
