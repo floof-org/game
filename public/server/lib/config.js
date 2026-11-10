@@ -144,7 +144,7 @@ export const petalConfigs = [
         .setIcon(1, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 6, 6, 6, 6], "Bone", 0)
         .setMulti([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 6, 6, 6, 6], 1, !0)
         .setSize(1.6)
-        .setArmor(8)
+        .setArmor(14)
         .setDescription("A petal that reduces incoming damage."),
     new PetalConfig("Dirt", 22.5 * 1.5, 15, 15)
         .setSize(1.3)
