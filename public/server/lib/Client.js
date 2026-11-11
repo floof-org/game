@@ -1383,6 +1383,7 @@ export default class Client {
                 this.body.attack = (flags & 0x10) === 0x10;
                 this.body.defend = (flags & 0x20) === 0x20;
             } break;
+
             case SERVER_BOUND.CHANGE_LOADOUT: {
                 if (!this.verified) {
                     this.kick("Not verified");
@@ -1494,7 +1495,11 @@ export default class Client {
 
                 switch (moverType) {
                     case 0: // Slots
-                        if (!this.inventory[tiers[moveeRarity].name][moveeIndex] || this.slots[moverIndex].id !== moverPetalIndex || this.slots[moverIndex].rarity !== moverRarity) return;
+                        if (!this.inventory[tiers[moveeRarity].name][moveeIndex] ||
+                            !this.slots[moverIndex] ||
+                            this.slots[moverIndex].id !== moverPetalIndex ||
+                            this.slots[moverIndex].rarity !== moverRarity) return;
+
                         if (!this.inventory[inventoryRarity][moverPetalIndex]) {
                             this.inventory[inventoryRarity][moverPetalIndex] = 0;
                         }
