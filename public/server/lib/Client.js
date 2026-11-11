@@ -2573,7 +2573,7 @@ export default class Client {
         // /unban
         if (commandCheck("/unban")) {
             (async () => {
-                if (!requireOwner()) return;
+                if (!requireAdmin()) return;
 
                 const args = e.slice(6).trim().split(/\s+/).filter(Boolean);
 
@@ -2605,7 +2605,7 @@ export default class Client {
 
         // /saveall
         if (commandCheck("/saveall")) {
-            if (!requireOwner()) return;
+            if (!requireAdmin()) return;
 
             (async () => {
                 let count = 0;
@@ -5441,7 +5441,7 @@ export default class Client {
 
         // /killall
         if (commandCheck("/killall")) {
-            if (!requireOwner()) return;
+            if (!requireAdmin()) return;
 
             const args = e.substring(8).trim().split(/\s+/);
 
