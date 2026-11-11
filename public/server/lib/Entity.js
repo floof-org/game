@@ -1616,15 +1616,15 @@ export class Entity {
                     const getCopperBonus = (entity, target) => {
                         if (!entity.copper) return 1;
                         if (!target?.health) return 1;
-                    
+
                         const health = target.health.health;
                         const maxHealth = target.health.maxHealth;
-                    
+
                         if (maxHealth <= 0 || health / maxHealth >= 0.5) return 1;
 
                         return 15;
                     };
-                    
+
                     thisDamageDone *= getCopperBonus(this, other);
                     otherDamageDone *= getCopperBonus(other, this);
 
@@ -2747,7 +2747,11 @@ export class Petal extends Entity {
 
     destroy() {
         if (this.slotIndex > -1) {
-            this.parent.petalSlots[this.slotIndex].petals[this.petalIndex] = null;
+            const slot = this.parent?.petalSlots?.[this.slotIndex];
+
+            if (slot?.petals) {
+                slot.petals[this.petalIndex] = null;
+            }
         }
 
         if (this.config?.petalAttractsAggro) {
