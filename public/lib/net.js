@@ -2001,6 +2001,17 @@ export class ClientSocket extends WebSocket {
                     state.craftMenu.abortCraft();
                 }
                 break;
+            case CLIENT_BOUND.TITLE: {
+                const text = reader.getStringUTF8();
+                const color = reader.getStringUTF8();
+                const duration = reader.getFloat32();
+                state.title = {
+                    text: text,
+                    color: color,
+                    duration: duration,
+                    start: performance.now()
+                };
+            } break;
         }
     }
 

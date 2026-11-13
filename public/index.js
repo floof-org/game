@@ -4,7 +4,7 @@ import { mouse, keyMap, releaseFloatingText } from "./lib/net.js";
 import { colors, chatGradient, isHalloween, lerp, options, SERVER_URL, shakeElement, formatLargeNumber } from "./lib/util.js";
 import { BIOME_BACKGROUNDS, BIOME_TYPES, DEV_CHEAT_IDS, SERVER_BOUND, terrains, WEARABLES } from "./lib/protocol.js";
 import { drawMob, drawUIMob, drawPetal, getPetalIcon, drawUIPetal, petalTooltip, mobTooltip, drawThirdEye, drawAntennae, pentagram, drawAmulet, drawPetalIconWithRatio, drawArmor } from "./lib/renders.js";
-import { beginDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
+import { activeSnapTarget, beginDragDrop, DRAG_TYPE_DESTROY, DRAG_TYPE_MAINDOCKER, DRAG_TYPE_SECONDARYDOCKER, dragConfig, handleSlotDrop, inventoryDragConfig, updateAndDrawDragDrop, updateAndDrawInventoryDragDrop } from "./lib/dragAndDrop.js";
 import { loadAndRenderChangelogs, showMenu, showMenus } from "./lib/menus.js";
 import { updateAccountMenu } from './lib/auth.js';
 import SpatialHashGrid from "./server/lib/SpatialHashGrid.js";
@@ -500,6 +500,18 @@ window.addEventListener("mouseup", (e) => {
     }
 });
 
+dragConfig.removeTarget = () => {
+    const button = document.querySelector("#bottomButtons #inventory");
+    if (!button) return null;
+
+    const rect = button.getBoundingClientRect();
+    const scale = uiScale() / window.devicePixelRatio;
+    return {
+        x: (rect.left + rect.width / 2) / scale,
+        y: (rect.top + rect.height / 2) / scale,
+    };
+};
+
 function processDrop() {
     let drag = {
         type: dragConfig.type,
@@ -514,7 +526,7 @@ function processDrop() {
     for (let i = 0; i < net.state.slots.length; i++) {
         const slot = net.state.slots[i];
 
-        if (slot.icon && slot.icon.x < mX && slot.icon.x + slot.icon.size > mX && slot.icon.y < mY && slot.icon.y + slot.icon.size > mY) {
+        if (slot.rect && mX >= slot.rect.x && mX <= slot.rect.x + slot.rect.size && mY >= slot.rect.y && mY <= slot.rect.y + slot.rect.size) {
             drop = {
                 type: DRAG_TYPE_MAINDOCKER,
                 index: i,
@@ -527,7 +539,7 @@ function processDrop() {
         for (let i = 0; i < net.state.secondarySlots.length; i++) {
             const slot = net.state.secondarySlots[i];
 
-            if (slot.icon && slot.icon.x < mX && slot.icon.x + slot.icon.size > mX && slot.icon.y < mY && slot.icon.y + slot.icon.size > mY) {
+            if (slot.rect && mX >= slot.rect.x && mX <= slot.rect.x + slot.rect.size && mY >= slot.rect.y && mY <= slot.rect.y + slot.rect.size) {
                 drop = {
                     type: DRAG_TYPE_SECONDARYDOCKER,
                     index: i,
@@ -550,29 +562,27 @@ function processDrop() {
     }
     */
 
-    if (drop === null && drag.type === DRAG_TYPE_SECONDARYDOCKER) {
-        drag = {
-            index: 0,
-            rarity: 0,
-        };
-        drop = {
-            type: 2,
-            index: dragConfig.index,
-            rarity: 0,
-            petalIndex: 0,
-        };
+    if (dragConfig.unequip) {
+        if (net.state.socket?.readyState !== WebSocket.OPEN) {
+            return false;
+        }
+
         net.state.socket.talk(SERVER_BOUND.INVENTORY_CHANGE_LOADOUT, {
-            drag,
-            drop,
+            drag: {
+                index: 0,
+                rarity: 0,
+            },
+            drop: {
+                type: drag.type === DRAG_TYPE_MAINDOCKER ? 3 : 2,
+                index: dragConfig.index,
+                rarity: 0,
+                petalIndex: 0,
+            },
         });
         return true;
     }
 
     if (drop === null || (drop.type === drag.type && drop.index === drag.index)) {
-        return false;
-    }
-
-    if (drag.type === DRAG_TYPE_MAINDOCKER && drop.type === DRAG_TYPE_SECONDARYDOCKER) {
         return false;
     }
 
@@ -2189,6 +2199,7 @@ function draw() {
         }
 
         let secondaryBoxSize = net.state.isInDestroy ? 65 : boxSize * 0.75;
+        const snapTarget = activeSnapTarget();
 
         if (dragConfig.enabled) {
             dragConfig.item.realSize = boxSize;
@@ -2205,6 +2216,7 @@ function draw() {
             const slot = net.state.slots[i];
             const x = width / 2 - ((boxSize + padding) * net.state.slots.length) / 2 + (boxSize + padding) * i + padding / 2;
             const y = height - boxSize - secondaryBoxSize - padding * 3;
+            slot.rect = { x, y, size: boxSize };
 
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = mixColors(colors.unique, "#000000", 0.2);
@@ -2219,6 +2231,17 @@ function draw() {
             ctx.closePath();
             ctx.fill();
             ctx.globalAlpha = 1;
+
+            if (snapTarget && snapTarget.type === DRAG_TYPE_MAINDOCKER && snapTarget.index === i) {
+                ctx.save();
+                ctx.strokeStyle = "#ffffff";
+                ctx.globalAlpha = 0.55 + 0.25 * Math.sin(performance.now() / 120);
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(x - 2, y - 2, boxSize + 4, boxSize + 4, 6);
+                ctx.stroke();
+                ctx.restore();
+            }
 
             if (slot.index !== -1 && (!dragConfig.enabled || dragConfig.type !== DRAG_TYPE_MAINDOCKER || dragConfig.index !== i)) {
                 if (slot.icon === undefined) {
@@ -2259,12 +2282,7 @@ function draw() {
                             dragConfig.index = i;
                             dragConfig.item.stableSize = boxSize;
 
-                            dragConfig.onDrop = () => {
-                                if (!processDrop()) {
-                                    slot.icon.x = mouse.x / uScale - boxSize / 2;
-                                    slot.icon.y = mouse.y / uScale - boxSize / 2;
-                                }
-                            };
+                            dragConfig.onDrop = (item, tap) => handleSlotDrop(item, tap, processDrop);
                         }
                     }
                 }
@@ -2297,6 +2315,7 @@ function draw() {
             for (let i = 0; i < net.state.slots.length; i++) {
                 const slot = net.state.secondarySlots[i];
                 const x = width / 2 - ((secondaryBoxSize + padding) * net.state.slots.length) / 2 + (secondaryBoxSize + padding) * i + padding / 2;
+                slot.rect = { x, y, size: secondaryBoxSize };
 
                 ctx.globalAlpha = 0.5;
                 ctx.fillStyle = mixColors(colors.unique, "#000000", 0.2);
@@ -2311,6 +2330,17 @@ function draw() {
                 ctx.closePath();
                 ctx.fill();
                 ctx.globalAlpha = 1;
+
+                if (snapTarget && snapTarget.type === DRAG_TYPE_SECONDARYDOCKER && snapTarget.index === i) {
+                    ctx.save();
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.globalAlpha = 0.55 + 0.25 * Math.sin(performance.now() / 120);
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.roundRect(x - 2, y - 2, secondaryBoxSize + 4, secondaryBoxSize + 4, 6);
+                    ctx.stroke();
+                    ctx.restore();
+                }
 
                 if (slot.icon === undefined) {
                     slot.icon = new net.IconItem();
@@ -2340,12 +2370,7 @@ function draw() {
                             dragConfig.index = i;
                             dragConfig.item.stableSize = secondaryBoxSize;
 
-                            dragConfig.onDrop = () => {
-                                if (!processDrop()) {
-                                    slot.icon.x = mouse.x / uScale - boxSize / 2;
-                                    slot.icon.y = mouse.y / uScale - boxSize / 2;
-                                }
-                            };
+                            dragConfig.onDrop = (item, tap) => handleSlotDrop(item, tap, processDrop);
                         }
                     }
                 }
@@ -2837,6 +2862,22 @@ function draw() {
 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+    }
+
+    const title = net.state.title;
+    if (title) {
+        const elapsed = (performance.now() - title.start) / 1000;
+        if (elapsed >= title.duration) {
+            net.state.title = null;
+        } else {
+            const alpha = Math.max(0, Math.min(1, elapsed / 0.25, (title.duration - elapsed) / 0.5));
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            text(title.text, width / 2, height / 3, 48, title.color);
+            ctx.restore();
+        }
     }
 
     ctx.restore();
