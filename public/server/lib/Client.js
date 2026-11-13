@@ -706,6 +706,7 @@ class Disconnect {
         this.team = client.team;
         this.inventory = client.inventory;
         this.craftAttempts = client.craftAttempts;
+        this.mobsKilled = client.mobsKilled;
 
         Client.disconnects.set(this.userId, this);
 
@@ -740,6 +741,9 @@ export default class Client {
         this.inventory = {};
         this.craftAttempts = {};
         this.handlingCraft = false;
+        this.mobsKilled = {};
+        this.mobsKilledDirty = true;
+        this.lastMobsKilledSent = 0;
         this.camera = new Camera();
 
         /**
@@ -813,6 +817,12 @@ export default class Client {
         }
 
         this.levelProgress = this.level < 2 ? this.xp / xpForLevel(this.level) : (this.xp - xpForLevel(this.level - 1)) / (xpForLevel(this.level) - xpForLevel(this.level - 1));
+    }
+
+    recordMobKill(mobIndex, rarity) {
+        const entry = (this.mobsKilled[mobIndex] ??= { tiers: {} });
+        entry.tiers[rarity] = (entry.tiers[rarity] ?? 0) + 1;
+        this.mobsKilledDirty = true;
     }
 
     get healthAdjustement() {
@@ -894,6 +904,8 @@ export default class Client {
                     this.team = dc.team;
                     this.inventory = dc.inventory;
                     this.craftAttempts = dc.craftAttempts;
+                    this.mobsKilled = dc.mobsKilled ?? {};
+                    this.mobsKilledDirty = true;
                     this.addXP(0);
 
                     if (dc.body) {
@@ -1468,6 +1480,9 @@ export default class Client {
                 writer.setStringUTF8(data.color);
                 writer.setFloat32(data.duration);
                 break;
+            case CLIENT_BOUND.MOBS_KILLED:
+                writer.setStringUTF8(JSON.stringify(data));
+                break;
             case CLIENT_BOUND.CRAFT_INIT: // Craft init packet
                 if (!state.useCraftingProtocol) {
                     return;
@@ -1650,6 +1665,12 @@ export default class Client {
         });
 
         state.router.postMessage(writer.build());
+
+        if (this.mobsKilledDirty && performance.now() - this.lastMobsKilledSent > 750) {
+            this.mobsKilledDirty = false;
+            this.lastMobsKilledSent = performance.now();
+            this.talk(CLIENT_BOUND.MOBS_KILLED, this.mobsKilled);
+        }
 
         if (globalThis._MAP_CELLS?.length) {
             this.__sentTerrainScores ??= false;

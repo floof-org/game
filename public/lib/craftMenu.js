@@ -1151,10 +1151,10 @@ function renderGalleryGrid() {
     var cellSize = 54;
     var mobLabelWidth = 150;
 
-    var hasKillData =
-        s.MOBS_KILLED !== undefined &&
-        s.MOBS_KILLED !== null &&
-        typeof s.MOBS_KILLED === 'object';
+    var killData =
+        s.MOBS_KILLED && typeof s.MOBS_KILLED === 'object'
+            ? s.MOBS_KILLED
+            : {};
 
     var oldWrapper = document.getElementById('galleryMenuGridWrapper');
     var savedScrollTop = oldWrapper ? oldWrapper.scrollTop : 0;
@@ -1184,66 +1184,14 @@ function renderGalleryGrid() {
 
     var mobRows = [];
 
-    if (hasKillData) {
-        Object.keys(s.MOBS_KILLED).forEach(function (mobIndexString) {
-            var mobIndex = Number(mobIndexString);
-            var mob = mobs[mobIndex];
-            var mobKillData = s.MOBS_KILLED[mobIndexString];
+    mobs.forEach(function (mob, mobIndex) {
+        if (!mob || !Array.isArray(mob.tiers)) return;
 
-            if (!mob || !Array.isArray(mob.tiers) || !mobKillData?.tiers) {
-                return;
-            }
-
-            var rarityEntries = Object.keys(mobKillData.tiers)
-                .map(function (rarityString) {
-                    return {
-                        rarityIndex: Number(rarityString),
-                        killCount: Number(mobKillData.tiers[rarityString])
-                    };
-                })
-                .filter(function (entry) {
-                    return (
-                        Number.isInteger(entry.rarityIndex) &&
-                        entry.rarityIndex >= 0 &&
-                        entry.rarityIndex < tiers.length &&
-                        entry.rarityIndex < mob.tiers.length &&
-                        entry.killCount > 0
-                    );
-                })
-                .sort(function (a, b) {
-                    return a.rarityIndex - b.rarityIndex;
-                });
-
-            if (rarityEntries.length > 0) {
-                mobRows.push({
-                    mob: mob,
-                    mobIndex: mobIndex,
-                    rarityEntries: rarityEntries
-                });
-            }
+        mobRows.push({
+            mob: mob,
+            mobIndex: mobIndex
         });
-
-        mobRows.sort(function (a, b) {
-            return a.mobIndex - b.mobIndex;
-        });
-    } else {
-        mobs.forEach(function (mob, mobIndex) {
-            if (!mob || !Array.isArray(mob.tiers)) return;
-
-            mobRows.push({
-                mob: mob,
-                mobIndex: mobIndex,
-                rarityEntries: tiers.map(function (_, rarityIndex) {
-                    return {
-                        rarityIndex: rarityIndex,
-                        killCount: 0
-                    };
-                }).filter(function (entry) {
-                    return !!mob.tiers[entry.rarityIndex];
-                })
-            });
-        });
-    }
+    });
 
     if (mobRows.length === 0) {
         var emptyMessage = document.createElement('div');
@@ -1355,18 +1303,13 @@ mobRows.forEach(function (row) {
             'border-radius:6px;' +
             'overflow:hidden;';
 
-        var mobKillData = hasKillData
-            ? s.MOBS_KILLED[String(mobIndex)]
-            : null;
+        var mobKillData = killData[String(mobIndex)];
 
         var killCount = Number(
             mobKillData?.tiers?.[String(rarityIndex)] ?? 0
         );
 
-        if (
-            !mobTier ||
-            (hasKillData && killCount <= 0)
-        ) {
+        if (!mobTier || !(killCount > 0)) {
             mobRow.appendChild(host);
             return;
         }
