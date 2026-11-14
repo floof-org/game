@@ -500,8 +500,8 @@ globalThis.PETAL_TIER_TABLE = {
     14: { health: 1074954240, damage: 1074954240 },
     15: { health: 6449725440, damage: 6449725440 },
     16: { health: 154793410560, damage: 154793410560 },
-    17: { health: 193491763200, damage: 193491763200 },
-    18: { health: 161243136000, damage: 161243136000 },
+    17: { health: 2476694568960, damage: 2476694568960 },
+    18: { health: 59440669655040, damage: 59440669655040 },
     19: { health: 161243136000, damage: 161243136000 },
     20: { health: 161243136000, damage: 161243136000 },
     21: { health: 1612431360000, damage: 1612431360000 },
@@ -628,8 +628,8 @@ export const RARITY_TABLE = {
     // the missile alone cannot break it, but the same missile with the
     // r16 Zinc armor debuff can.
     27: { health: 140704000000000000, damage: 71000000000, size: 7.6, armor: 28000000000000 },
-    28: { health: 906800000000000000, damage: 222000000000, size: 8, armor: 30000000000000 },
-    29: { health: 6700000000000000000, damage: 3700000000000, size: 10, armor: 300000000000000 }
+    28: { health: 906800000000000000, damage: 222000000000, size: 8, armor: 156000000000000 },
+    29: { health: 6700000000000000000, damage: 3700000000000, size: 10, armor: 361000000000000 }
 };
 
 export const SUMMON_STATS = {
