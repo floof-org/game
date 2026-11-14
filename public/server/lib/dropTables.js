@@ -3671,6 +3671,675 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Primrose",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rose",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Primrose",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rose",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Primrose",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Primrose",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Yin Yang",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rose",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Rose",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Yggdrasil",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Golden Leaf",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -5919,37 +6588,37 @@ export const DROP_TABLES = {
                             "petal": "Bone",
                             "chance": 22.99,
                             "rarity": 14,
-                            "amount": 4100
+                            "amount": 32000
                         },
                         {
                             "petal": "Bone",
                             "chance": 62.64,
                             "rarity": 14,
-                            "amount": 8800
+                            "amount": 61000
                         },
                         {
                             "petal": "Bone",
                             "chance": 11.982,
                             "rarity": 15,
-                            "amount": 60
+                            "amount": 190
                         },
                         {
                             "petal": "Bone",
                             "chance": 2.316,
                             "rarity": 14,
-                            "amount": 29300
+                            "amount": 100000
                         },
                         {
                             "petal": "Bone",
                             "chance": 0.061,
                             "rarity": 12,
-                            "amount": 13500000000
+                            "amount": 15000000000
                         },
                         {
                             "petal": "Bone",
                             "chance": 0.011,
                             "rarity": 14,
-                            "amount": 480000
+                            "amount": 390000
                         }
                     ]
                 },
@@ -5960,37 +6629,37 @@ export const DROP_TABLES = {
                             "petal": "Beetle Egg",
                             "chance": 32.746,
                             "rarity": 14,
-                            "amount": 4100
+                            "amount": 32000
                         },
                         {
                             "petal": "Beetle Egg",
                             "chance": 56.21,
                             "rarity": 14,
-                            "amount": 8800
+                            "amount": 61000
                         },
                         {
                             "petal": "Beetle Egg",
                             "chance": 9.002,
                             "rarity": 15,
-                            "amount": 60
+                            "amount": 190
                         },
                         {
                             "petal": "Beetle Egg",
                             "chance": 2.011,
                             "rarity": 14,
-                            "amount": 29300
+                            "amount": 100000
                         },
                         {
                             "petal": "Beetle Egg",
                             "chance": 0.023,
                             "rarity": 12,
-                            "amount": 13500000000
+                            "amount": 15000000000
                         },
                         {
                             "petal": "Beetle Egg",
                             "chance": 0.008,
                             "rarity": 14,
-                            "amount": 480000
+                            "amount": 390000
                         }
                     ]
                 },
@@ -6001,43 +6670,323 @@ export const DROP_TABLES = {
                             "petal": "Dice",
                             "chance": 3.647,
                             "rarity": 14,
-                            "amount": 1600
+                            "amount": 18000
                         },
                         {
                             "petal": "Dice",
                             "chance": 78.772,
                             "rarity": 14,
-                            "amount": 4100
+                            "amount": 32000
                         },
                         {
                             "petal": "Dice",
                             "chance": 11.253,
                             "rarity": 14,
-                            "amount": 8800
+                            "amount": 61000
                         },
                         {
                             "petal": "Dice",
                             "chance": 4.604,
                             "rarity": 15,
-                            "amount": 60
+                            "amount": 190
                         },
                         {
                             "petal": "Dice",
                             "chance": 1.707,
                             "rarity": 14,
-                            "amount": 29300
+                            "amount": 100000
                         },
                         {
                             "petal": "Dice",
                             "chance": 0.014,
                             "rarity": 12,
-                            "amount": 13500000000
+                            "amount": 15000000000
                         },
                         {
                             "petal": "Dice",
                             "chance": 0.003,
                             "rarity": 14,
-                            "amount": 480000
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bone",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dice",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bone",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dice",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Dice",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -7596,6 +8545,288 @@ export const DROP_TABLES = {
                             "chance": 0.03,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shade",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shade",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shade",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Shade",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -9504,6 +10735,417 @@ export const DROP_TABLES = {
                             "chance": 0.03,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dune",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dune",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dune",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Copper",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Copper",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -12369,6 +14011,564 @@ export const DROP_TABLES = {
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 2025000
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rock",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Heavy",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Diamond",
+                            "chance": 5.36,
+                            "rarity": 14,
+                            "amount": 6000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 86.454,
+                            "rarity": 14,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 5.197,
+                            "rarity": 14,
+                            "amount": 20000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 2.071,
+                            "rarity": 15,
+                            "amount": 60
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 0.823,
+                            "rarity": 14,
+                            "amount": 33000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 0.094,
+                            "rarity": 12,
+                            "amount": 5000000000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 0.001,
+                            "rarity": 14,
+                            "amount": 130000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rock",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Heavy",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Diamond",
+                            "chance": 60.123,
+                            "rarity": 14,
+                            "amount": 185000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 22.862,
+                            "rarity": 14,
+                            "amount": 245000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 10.184,
+                            "rarity": 15,
+                            "amount": 900
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 4.589,
+                            "rarity": 15,
+                            "amount": 1600
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 2.011,
+                            "rarity": 15,
+                            "amount": 2100
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 0.228,
+                            "rarity": 14,
+                            "amount": 1100000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 0.003,
+                            "rarity": 13,
+                            "amount": 1000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rock",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Rock",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Heavy",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Heavy",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Diamond",
+                            "chance": 13.832,
+                            "rarity": 16,
+                            "amount": 60
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 61.031,
+                            "rarity": 16,
+                            "amount": 150
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 14.59,
+                            "rarity": 16,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 6.428,
+                            "rarity": 15,
+                            "amount": 333000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 2.748,
+                            "rarity": 15,
+                            "amount": 830000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 1.216,
+                            "rarity": 14,
+                            "amount": 600000000
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 0.153,
+                            "rarity": 13,
+                            "amount": 666666666666
+                        },
+                        {
+                            "petal": "Diamond",
+                            "chance": 0.002,
+                            "rarity": 17,
+                            "amount": 33
                         }
                     ]
                 }
@@ -15757,6 +17957,693 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Iris",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Pincer",
+                            "chance": 16.552,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 59.321,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 16.8,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 6.542,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 0.773,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 0.012,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Missile",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Zinc",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Iris",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Pincer",
+                            "chance": 51.078,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 30.826,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 12.289,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 5.196,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 0.603,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 0.008,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Missile",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Zinc",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Iris",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Iris",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Pincer",
+                            "chance": 22.264,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 44.511,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 20.973,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 8.331,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 3.512,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 0.403,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Pincer",
+                            "chance": 0.006,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Missile",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Missile",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Scorpion Egg",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Zinc",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Zinc",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -18971,6 +21858,564 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bone",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 56.312,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 25.595,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 11.217,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 4.615,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 2.004,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.253,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.004,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bone",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 58.941,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 23.487,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 10.544,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 4.712,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 2.051,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.261,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bone",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Bone",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 41.609,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 33.392,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 15.025,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 6.314,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 2.496,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 1.03,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.132,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.002,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -21210,6 +24655,417 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cactus",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stinger",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cactus",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stinger",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cactus",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Cactus",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stinger",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Stinger",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -23181,6 +27037,435 @@ export const DROP_TABLES = {
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 2025000
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 3.181,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 91.632,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 3.128,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 1.371,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.61,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.077,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.001,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ruby",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 6000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 20000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 60
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 33000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 5000000000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 130000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 69.784,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 18.597,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 7.424,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 2.875,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 1.184,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.134,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.002,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ruby",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 185000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 245000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 900
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 1600
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 2100
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 1100000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 1000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 6.206,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 84.501,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 5.577,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 2.217,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.997,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.444,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.057,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.001,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ruby",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 60
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 150
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 333000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 830000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 600000000
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 666666666666
+                        },
+                        {
+                            "petal": "Ruby",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 33
                         }
                     ]
                 }
@@ -26514,6 +30799,675 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Glass",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stick",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dune",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Glass",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stick",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dune",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Glass",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Glass",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stick",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dune",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Dune",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -28995,6 +33949,564 @@ export const DROP_TABLES = {
                             "chance": 0.01,
                             "rarity": 14,
                             "amount": 5
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stick",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 56.312,
+                            "rarity": 14,
+                            "amount": 180
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 25.447,
+                            "rarity": 14,
+                            "amount": 320
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 11.345,
+                            "rarity": 14,
+                            "amount": 610
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 4.812,
+                            "rarity": 15,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 1.86,
+                            "rarity": 14,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 0.22,
+                            "rarity": 12,
+                            "amount": 150000000
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 0.004,
+                            "rarity": 14,
+                            "amount": 3900
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stick",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 64.005,
+                            "rarity": 14,
+                            "amount": 5550
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 22.12,
+                            "rarity": 14,
+                            "amount": 8450
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 8.776,
+                            "rarity": 15,
+                            "amount": 32
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 3.525,
+                            "rarity": 15,
+                            "amount": 48
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 1.408,
+                            "rarity": 15,
+                            "amount": 64
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 0.163,
+                            "rarity": 14,
+                            "amount": 35000
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 0.003,
+                            "rarity": 13,
+                            "amount": 40000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Fiberglass",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Stick",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Stick",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 68.871,
+                            "rarity": 16,
+                            "amount": 2
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 18.325,
+                            "rarity": 16,
+                            "amount": 5
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 7.606,
+                            "rarity": 16,
+                            "amount": 10
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 3.258,
+                            "rarity": 15,
+                            "amount": 9990
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 1.329,
+                            "rarity": 15,
+                            "amount": 25000
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 0.549,
+                            "rarity": 14,
+                            "amount": 20000000
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 0.061,
+                            "rarity": 13,
+                            "amount": 20000000000
+                        },
+                        {
+                            "petal": "Amulet of Fire",
+                            "chance": 0.001,
+                            "rarity": 17,
+                            "amount": 1
                         }
                     ]
                 }
@@ -31918,6 +37430,564 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Light",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 13.935,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 64.501,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 13.244,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 5.562,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 2.47,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.284,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.004,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Clover",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Light",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 39.614,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 35.899,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 14.951,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 6.417,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 2.766,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.348,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.005,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Clover",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Light",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Light",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 26.6,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 32.918,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 24.84,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 9.86,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 3.93,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 1.639,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.21,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.003,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Clover",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Clover",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -34247,6 +40317,417 @@ export const DROP_TABLES = {
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Powder",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Powder",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Powder",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Faster",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Faster",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -37652,6 +44133,693 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dust",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Antennae",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lens",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dust",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Antennae",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lens",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dust",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Dust",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Lightbulb",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Antennae",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Antennae",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lens",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Lens",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -40053,6 +47221,417 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Blood Light",
+                            "chance": 16.205,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 60.005,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 15.905,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 7.046,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 0.826,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 0.013,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 13.739,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 64.845,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 13.333,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 5.434,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 2.359,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 0.286,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 0.004,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Blood Light",
+                            "chance": 50.311,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 30.017,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 13.199,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 5.786,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 0.677,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 37.967,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 37.857,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 15.252,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 6.038,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 2.571,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 0.311,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Blood Light",
+                            "chance": 21.067,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 41.754,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 22.481,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 9.778,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 4.384,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 0.528,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Blood Light",
+                            "chance": 0.008,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Yucca",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Yucca",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 26.14,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 29.979,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 26.469,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 10.665,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 4.624,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 1.902,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 0.218,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Blood Leaf",
+                            "chance": 0.003,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -42289,6 +49868,417 @@ export const DROP_TABLES = {
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Jelly",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightning",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Jelly",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightning",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Jelly",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Jelly",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightning",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Jellyfish Egg",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -45488,6 +53478,564 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dirt",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Magnet",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shovel",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dirt",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Magnet",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shovel",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dirt",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Dirt",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Magnet",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shovel",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Shovel",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -46299,7 +54847,142 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
-            ]
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
+            ],
         }
     },
     "Beetle Pod": {
@@ -47601,6 +56284,288 @@ export const DROP_TABLES = {
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 2025000
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Emerald",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 6000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 20000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 60
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 33000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 5000000000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 130000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Emerald",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 185000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 245000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 900
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 1600
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 2100
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 1100000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 1000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Emerald",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 60
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 150
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 333000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 830000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 600000000
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 666666666666
+                        },
+                        {
+                            "petal": "Emerald",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 33
                         }
                     ]
                 }
@@ -50337,6 +59302,564 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Magnet",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Uranium",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 6000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 20000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 60
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 33000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 5000000000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 130000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Magnet",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Uranium",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 185000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 245000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 900
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 1600
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 2100
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 1100000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 1000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Beetle Egg",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Magnet",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Magnet",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Rare Cactus",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Uranium",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 60
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 150
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 333000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 830000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 600000000
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 666666666666
+                        },
+                        {
+                            "petal": "Uranium",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 33
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -52669,6 +62192,417 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Powder",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Powder",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Powder",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Powder",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Sand",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Sand",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Pomegranate",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -53477,6 +63411,141 @@ export const DROP_TABLES = {
                             "chance": 0.08,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "ӇЄҲƛƓƠƝ",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -56400,6 +66469,564 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightning",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 5.213,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 86.097,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 5.46,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 2.161,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.957,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.11,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.002,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightning",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 69.696,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 17.694,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 7.743,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 3.363,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 1.34,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.161,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.003,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lightning",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Lightning",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Fire Sand",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 11.886,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 67.676,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 12.707,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 4.937,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 1.927,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.774,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.092,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Cinderbrick",
+                            "chance": 0.001,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Shiny Wing",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -57508,17 +68135,6 @@ export const DROP_TABLES = {
                             "amount": 20
                         }
                     ]
-                },
-                {
-                    "weight": 1,
-                    "drops": [
-                        {
-                            "petal": "Resin",
-                            "chance": 0.91,
-                            "rarity": 10,
-                            "amount": 1
-                        }
-                    ]
                 }
             ],
             "17": [
@@ -57638,15 +68254,39 @@ export const DROP_TABLES = {
                     "drops": [
                         {
                             "petal": "Resin",
-                            "chance": 13.74,
-                            "rarity": 10,
-                            "amount": 10
+                            "chance": 13.18,
+                            "rarity": 8,
+                            "amount": 500000
                         },
                         {
                             "petal": "Resin",
-                            "chance": 1.94,
+                            "chance": 72.71,
+                            "rarity": 9,
+                            "amount": 5000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 12.29,
+                            "rarity": 9,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 1.01,
                             "rarity": 10,
-                            "amount": 20
+                            "amount": 75
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.8,
+                            "rarity": 11,
+                            "amount": 1
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.01,
+                            "rarity": 9,
+                            "amount": 31000
                         }
                     ]
                 }
@@ -57768,21 +68408,39 @@ export const DROP_TABLES = {
                     "drops": [
                         {
                             "petal": "Resin",
-                            "chance": 63.81,
+                            "chance": 9.05,
+                            "rarity": 9,
+                            "amount": 105000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 72.86,
                             "rarity": 10,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 14.39,
+                            "rarity": 11,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 3.01,
+                            "rarity": 10,
+                            "amount": 2600
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.68,
+                            "rarity": 11,
                             "amount": 24
                         },
                         {
                             "petal": "Resin",
-                            "chance": 3.64,
+                            "chance": 0.01,
                             "rarity": 10,
-                            "amount": 75
-                        },
-                        {
-                            "petal": "Resin",
-                            "chance": 0.67,
-                            "rarity": 11,
-                            "amount": 1
+                            "amount": 12000
                         }
                     ]
                 }
@@ -57922,21 +68580,45 @@ export const DROP_TABLES = {
                     "drops": [
                         {
                             "petal": "Resin",
-                            "chance": 81.51,
+                            "chance": 57.04,
                             "rarity": 10,
+                            "amount": 300
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 24.52,
+                            "rarity": 10,
+                            "amount": 4500
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 11.79,
+                            "rarity": 10,
+                            "amount": 10000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 4.014,
+                            "rarity": 11,
+                            "amount": 48
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 1.882,
+                            "rarity": 11,
                             "amount": 100
                         },
                         {
                             "petal": "Resin",
-                            "chance": 12.74,
+                            "chance": 0.753,
                             "rarity": 11,
-                            "amount": 6
+                            "amount": 200
                         },
                         {
                             "petal": "Resin",
-                            "chance": 0.12,
+                            "chance": 0.001,
                             "rarity": 11,
-                            "amount": 12
+                            "amount": 300
                         }
                     ]
                 }
@@ -58082,27 +68764,45 @@ export const DROP_TABLES = {
                     "drops": [
                         {
                             "petal": "Resin",
-                            "chance": 90.51,
-                            "rarity": 11,
-                            "amount": 12
-                        },
-                        {
-                            "petal": "Resin",
-                            "chance": 8.96,
-                            "rarity": 11,
-                            "amount": 24
-                        },
-                        {
-                            "petal": "Resin",
-                            "chance": 0.52,
-                            "rarity": 11,
-                            "amount": 48
-                        },
-                        {
-                            "petal": "Resin",
-                            "chance": 0.01,
+                            "chance": 79.42,
                             "rarity": 11,
                             "amount": 124
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 11.52,
+                            "rarity": 11,
+                            "amount": 456
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 5.46,
+                            "rarity": 10,
+                            "amount": 250000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 2.171,
+                            "rarity": 12,
+                            "amount": 3
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.965,
+                            "rarity": 12,
+                            "amount": 6
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.463,
+                            "rarity": 11,
+                            "amount": 4000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.001,
+                            "rarity": 11,
+                            "amount": 9100
                         }
                     ]
                 }
@@ -58214,31 +68914,31 @@ export const DROP_TABLES = {
                             "petal": "Resin",
                             "chance": 34.506,
                             "rarity": 11,
-                            "amount": 20
+                            "amount": 4000
                         },
                         {
                             "petal": "Resin",
                             "chance": 55.46,
                             "rarity": 11,
-                            "amount": 40
+                            "amount": 9100
                         },
                         {
                             "petal": "Resin",
                             "chance": 9.8,
-                            "rarity": 11,
-                            "amount": 60
+                            "rarity": 12,
+                            "amount": 51
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.233,
                             "rarity": 11,
-                            "amount": 80
+                            "amount": 32000
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.001,
-                            "rarity": 11,
-                            "amount": 100
+                            "rarity": 12,
+                            "amount": 135
                         }
                     ]
                 }
@@ -58349,32 +69049,32 @@ export const DROP_TABLES = {
                         {
                             "petal": "Resin",
                             "chance": 86.652,
-                            "rarity": 11,
-                            "amount": 100
+                            "rarity": 12,
+                            "amount": 500
                         },
                         {
                             "petal": "Resin",
                             "chance": 8.56,
-                            "rarity": 11,
-                            "amount": 125
+                            "rarity": 12,
+                            "amount": 1080
                         },
                         {
                             "petal": "Resin",
                             "chance": 3.834,
-                            "rarity": 11,
-                            "amount": 160
+                            "rarity": 13,
+                            "amount": 5
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.953,
-                            "rarity": 11,
-                            "amount": 200
+                            "rarity": 13,
+                            "amount": 8
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.001,
-                            "rarity": 12,
-                            "amount": 1
+                            "rarity": 13,
+                            "amount": 12
                         }
                     ]
                 }
@@ -58503,38 +69203,38 @@ export const DROP_TABLES = {
                         {
                             "petal": "Resin",
                             "chance": 78.21,
-                            "rarity": 12,
+                            "rarity": 13,
                             "amount": 3
                         },
                         {
                             "petal": "Resin",
                             "chance": 12.78,
-                            "rarity": 12,
-                            "amount": 6
+                            "rarity": 13,
+                            "amount": 25
                         },
                         {
                             "petal": "Resin",
                             "chance": 6.31,
-                            "rarity": 11,
-                            "amount": 9100
+                            "rarity": 12,
+                            "amount": 20000
                         },
                         {
                             "petal": "Resin",
                             "chance": 2.43,
-                            "rarity": 12,
-                            "amount": 25
+                            "rarity": 13,
+                            "amount": 100
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.26,
                             "rarity": 12,
-                            "amount": 51
+                            "amount": 94000
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.01,
                             "rarity": 13,
-                            "amount": 100
+                            "amount": 600
                         }
                     ]
                 }
@@ -58664,37 +69364,37 @@ export const DROP_TABLES = {
                             "petal": "Resin",
                             "chance": 59.92,
                             "rarity": 13,
-                            "amount": 75
+                            "amount": 200
                         },
                         {
                             "petal": "Resin",
                             "chance": 24.97,
                             "rarity": 13,
-                            "amount": 100
+                            "amount": 500
                         },
                         {
                             "petal": "Resin",
                             "chance": 11.23,
-                            "rarity": 13,
-                            "amount": 500
+                            "rarity": 12,
+                            "amount": 450000
                         },
                         {
                             "petal": "Resin",
                             "chance": 3.45,
                             "rarity": 14,
-                            "amount": 1
+                            "amount": 3
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.42,
-                            "rarity": 14,
-                            "amount": 3
+                            "rarity": 11,
+                            "amount": 1000000000
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.01,
                             "rarity": 13,
-                            "amount": 5000
+                            "amount": 13000
                         }
                     ]
                 }
@@ -58824,37 +69524,37 @@ export const DROP_TABLES = {
                             "petal": "Resin",
                             "chance": 71.05,
                             "rarity": 14,
-                            "amount": 3
+                            "amount": 20
                         },
                         {
                             "petal": "Resin",
                             "chance": 17.77,
                             "rarity": 14,
-                            "amount": 6
+                            "amount": 50
                         },
                         {
                             "petal": "Resin",
                             "chance": 7.92,
-                            "rarity": 14,
-                            "amount": 12
+                            "rarity": 13,
+                            "amount": 37500
                         },
                         {
                             "petal": "Resin",
                             "chance": 2.89,
                             "rarity": 14,
-                            "amount": 30
+                            "amount": 200
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.36,
-                            "rarity": 14,
-                            "amount": 60
+                            "rarity": 12,
+                            "amount": 56250000
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.01,
                             "rarity": 13,
-                            "amount": 37500
+                            "amount": 487500
                         }
                     ]
                 }
@@ -58983,38 +69683,596 @@ export const DROP_TABLES = {
                         {
                             "petal": "Resin",
                             "chance": 73.64,
-                            "rarity": 13,
-                            "amount": 56250
+                            "rarity": 14,
+                            "amount": 600
                         },
                         {
                             "petal": "Resin",
                             "chance": 16.21,
                             "rarity": 14,
-                            "amount": 300
+                            "amount": 1200
                         },
                         {
                             "petal": "Resin",
                             "chance": 6.2,
                             "rarity": 14,
-                            "amount": 750
+                            "amount": 3900
                         },
                         {
                             "petal": "Resin",
                             "chance": 3.66,
-                            "rarity": 14,
-                            "amount": 1050
+                            "rarity": 15,
+                            "amount": 18
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.28,
                             "rarity": 15,
-                            "amount": 15
+                            "amount": 36
                         },
                         {
                             "petal": "Resin",
                             "chance": 0.01,
                             "rarity": 13,
-                            "amount": 2250000
+                            "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Thorn",
+                            "chance": 11.497,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 71.941,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 11.415,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 4.601,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 0.538,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dahlia",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Third Eye",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Resin",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Thorn",
+                            "chance": 61.101,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 24.68,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 9.889,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 3.884,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 0.439,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dahlia",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Third Eye",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Resin",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Thorn",
+                            "chance": 12.33,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 67.302,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 12.364,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 5.564,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 2.191,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 0.245,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Thorn",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dahlia",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Dahlia",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Third Eye",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Third Eye",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Resin",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Resin",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -59826,6 +71084,141 @@ export const DROP_TABLES = {
                             "chance": 0.03,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lilypad",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lilypad",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lilypad",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -61390,6 +72783,270 @@ export const DROP_TABLES = {
                             "chance": 0.03,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bubble",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bubble",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bubble",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Air",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Air",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -64054,6 +75711,564 @@ export const DROP_TABLES = {
                         }
                     ]
                 }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lilypad",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bubble",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rubber",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 3.647,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 78.772,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 11.253,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 4.604,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.707,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.014,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.003,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lilypad",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bubble",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rubber",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 41.069,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 35.38,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 14.659,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 6.145,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 2.449,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.294,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.004,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Lilypad",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Lilypad",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Bubble",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Bubble",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Rubber",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Rubber",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 23.903,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 34.705,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 24.526,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 10.439,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 4.346,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 1.854,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.223,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Dark Spine",
+                            "chance": 0.004,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                }
             ]
         }
     },
@@ -64862,6 +77077,141 @@ export const DROP_TABLES = {
                             "chance": 0.08,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Salt",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Salt",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Salt",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Salt",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }
@@ -67239,6 +79589,417 @@ export const DROP_TABLES = {
                             "chance": 0.01,
                             "rarity": 13,
                             "amount": 6187500
+                        }
+                    ]
+                }
+            ],
+            "27": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 22.99,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 62.64,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 11.982,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 2.316,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.061,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.011,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 32.746,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 56.21,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 9.002,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 2.011,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.023,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.008,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 4.191,
+                            "rarity": 14,
+                            "amount": 18000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 89.633,
+                            "rarity": 14,
+                            "amount": 32000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 3.83,
+                            "rarity": 14,
+                            "amount": 61000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 1.619,
+                            "rarity": 15,
+                            "amount": 190
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.647,
+                            "rarity": 14,
+                            "amount": 100000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.079,
+                            "rarity": 12,
+                            "amount": 15000000000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.001,
+                            "rarity": 14,
+                            "amount": 390000
+                        }
+                    ]
+                }
+            ],
+            "28": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 54.367,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 27.86,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 12.168,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 4.967,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.628,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.01,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 61.391,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 23.697,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 10.335,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 4.07,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.5,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.007,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 86.145,
+                            "rarity": 14,
+                            "amount": 555000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 8.093,
+                            "rarity": 14,
+                            "amount": 845000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 3.634,
+                            "rarity": 15,
+                            "amount": 3200
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 1.431,
+                            "rarity": 15,
+                            "amount": 4800
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.621,
+                            "rarity": 15,
+                            "amount": 6400
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.075,
+                            "rarity": 14,
+                            "amount": 3500000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.001,
+                            "rarity": 13,
+                            "amount": 4000000000
+                        }
+                    ]
+                }
+            ],
+            "29": [
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Wing",
+                            "chance": 18.084,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 48.613,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 20.014,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 8.929,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 3.908,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.445,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Wing",
+                            "chance": 0.007,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 17.641,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 56.094,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 16.782,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 6.534,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 2.626,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.318,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Ant Egg",
+                            "chance": 0.005,
+                            "rarity": 17,
+                            "amount": 100
+                        }
+                    ]
+                },
+                {
+                    "weight": 1,
+                    "drops": [
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 3.172,
+                            "rarity": 16,
+                            "amount": 200
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 92.061,
+                            "rarity": 16,
+                            "amount": 500
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 2.848,
+                            "rarity": 16,
+                            "amount": 1000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 1.174,
+                            "rarity": 15,
+                            "amount": 999000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.498,
+                            "rarity": 15,
+                            "amount": 2500000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.219,
+                            "rarity": 14,
+                            "amount": 2000000000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.027,
+                            "rarity": 13,
+                            "amount": 2000000000000
+                        },
+                        {
+                            "petal": "Fire Missile",
+                            "chance": 0.001,
+                            "rarity": 17,
+                            "amount": 100
                         }
                     ]
                 }

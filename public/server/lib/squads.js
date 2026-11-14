@@ -6,7 +6,7 @@ export const SQUADS = globalThis.SQUADS ||= new Map();
 export const SQUAD_LEVEL_RANGE = 20;
 
 /** normal squad cap, owners are exempt and can exceed it */
-export const SQUAD_MAX_MEMBERS = 8;
+export const SQUAD_MAX_MEMBERS = 10;
 
 export const getUserId = client => client?.userId;
 
