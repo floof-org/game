@@ -112,7 +112,7 @@ export const CRAFT_ANNOUNCE_RARITY = 16;
  * Failures announce one rarity higher than successes: a failed Millom craft,
  * which would have produced Fictional.
  */
-export const CRAFT_FAIL_ANNOUNCE_RARITY = 16;
+export const CRAFT_FAIL_ANNOUNCE_RARITY = 17;
 
 function rarityKey(name) {
     return name.toLowerCase().replace(/\s+/g, "");
