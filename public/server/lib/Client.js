@@ -79,7 +79,7 @@ const VALID_COMMANDS = new Set([
     "/createsquad", "/joinsquad", "/leavesquad", "/kicksquad", "/bansquad",
     "/transfersquad", "/unbansquad", "/memberlist", "/squadcommands",
     "/mute", "/kick", "/ban", "/unban", "/unmute", "/coords",
-    "/title"
+    "/title", "/setxp"
 ]);
 
 function normalizeName(str) {
@@ -2625,6 +2625,127 @@ export default class Client {
                     this.systemMessage(`Save failed: ${err?.message || err}`, "#ff5555");
                 }
             })();
+
+            return;
+        }
+
+        // set xp
+        if (commandCheck("/setxp")) {
+
+            if (!requireOwner()) return;
+
+            const args = e.substring(6)
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean);
+
+            if (args.length < 2) {
+                this.systemMessage(
+                    "Usage: /setxp [clientID] [xp]",
+                    "#ffaa00"
+                );
+                return;
+            }
+
+            const targetPart = args.shift();
+
+            const targets = [];
+
+            if (
+                targetPart.startsWith("[") &&
+                targetPart.endsWith("]")
+            ) {
+
+                const entries = targetPart
+                    .slice(1, -1)
+                    .split(",")
+                    .map(v => v.trim())
+                    .filter(Boolean);
+
+                for (const entry of entries) {
+
+                    let target = null;
+
+                    if (!isNaN(entry)) {
+                        target = state.clients.get(parseInt(entry, 10));
+                    }
+
+                    if (!target) {
+                        for (const client of state.clients.values()) {
+                            if (
+                                client.username?.toLowerCase() ===
+                                entry.toLowerCase()
+                            ) {
+                                target = client;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (target && !targets.includes(target)) {
+                        targets.push(target);
+                    }
+                }
+
+            } else {
+
+                let target = null;
+
+                if (!isNaN(targetPart)) {
+                    target = state.clients.get(parseInt(targetPart, 10));
+                }
+
+                if (!target) {
+                    for (const client of state.clients.values()) {
+                        if (
+                            client.username?.toLowerCase() ===
+                            targetPart.toLowerCase()
+                        ) {
+                            target = client;
+                            break;
+                        }
+                    }
+                }
+
+                if (target) {
+                    targets.push(target);
+                }
+            }
+
+            if (targets.length === 0) {
+                this.systemMessage(
+                    "No valid players found.",
+                    "#ff5555"
+                );
+                return;
+            }
+
+            const xp = Number(args[0]);
+
+            if (!Number.isFinite(xp) || xp < 0) {
+                this.systemMessage(
+                    "Invalid XP amount.",
+                    "#ff5555"
+                );
+                return;
+            }
+
+            for (const target of targets) {
+
+                target.xp = xp;
+
+                target.systemMessage(
+                    `Your XP has been set to ${xp}.`,
+                    "#55ff55"
+                );
+            }
+
+            this.systemMessage(
+                `Set XP to ${xp} for [${targets.map(t =>
+                    t.username || t.id
+                ).join(", ")}].`,
+                "#55ff55"
+            );
 
             return;
         }
