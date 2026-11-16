@@ -2608,6 +2608,10 @@ export class Mob extends Entity {
                 if (client) {
                     client.addXP((Math.random() * 0.3 + 0.7) * Math.pow(3, this.rarity + 1));
 
+                    if (!this.friendly) {
+                        client.recordMobKill(this.index, this.rarity);
+                    }
+
                     const output = [];
                     for (const drop of mobConfigs[this.index].drops) {
                         if (Math.random() > drop.chance) {
